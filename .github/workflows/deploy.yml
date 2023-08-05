@@ -1,0 +1,63 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+
+name: Deploy to central
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/gradle.yml
+  deploy:
+    needs: build
+    strategy:
+      matrix:
+        include:
+          - target: publishIosArm64PublicationToSonatypeRepository
+            os: macos-latest
+          - target: publishAndroidReleasePublicationToSonatypeRepository
+            os: ubuntu-latest
+          - target: publishJvmPublicationToSonatypeRepository
+            os: ubuntu-latest
+          - target: publishLinuxX64PublicationToSonatypeRepository
+            os: ubuntu-latest
+          - target: publishKotlinMultiplatformPublicationToSonatypeRepository
+            os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Validate Gradle Wrapper
+      uses: gradle/wrapper-validation-action@v1
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/.konan
+        key: ${{ runner.os }}-${{ hashFiles('**/.lock') }}
+    - name: Import GPG key
+      uses: crazy-max/ghaction-import-gpg@v5
+      with:
+        gpg_private_key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+        passphrase: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    - name: Gradle publish
+      uses: gradle/gradle-build-action@ce999babab2de1c4b649dc15f0ee67e6246c994f
+      with:
+        arguments: |
+          ${{ matrix.target }}
+          closeSonatypeStagingRepository
+          -Psigning.gnupg.passphrase='${{secrets.OSSRH_GPG_SECRET_KEY_PASSWORD}}'
+          -Psigning.gnupg.keyName='${{secrets.OSSRH_GPG_SECRET_KEY_ID}}'
+          -PsonatypeUsername='${{secrets.OSSRH_USERNAME}}'
+          -PsonatypePassword='${{secrets.OSSRH_PASSWORD}}'
+
