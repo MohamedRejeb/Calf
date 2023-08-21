@@ -28,21 +28,17 @@ actual fun AdaptiveBottomSheet(
     windowInsets: WindowInsets,
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-
-    // Sheet content
-    if (openBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { openBottomSheet = false },
-            sheetState = adaptiveSheetState.materialSheetState,
-            shape = shape,
-            containerColor = containerColor,
-            contentColor = contentColor,
-            tonalElevation = tonalElevation,
-            scrimColor = scrimColor,
-            dragHandle = dragHandle,
-            windowInsets = windowInsets,
-            content = content,
-        )
-    }
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+        sheetState = adaptiveSheetState.materialSheetState,
+        shape = shape,
+        containerColor = containerColor,
+        contentColor = contentColor,
+        tonalElevation = tonalElevation,
+        scrimColor = scrimColor,
+        dragHandle = dragHandle,
+        windowInsets = windowInsets,
+        content = content,
+    )
 }

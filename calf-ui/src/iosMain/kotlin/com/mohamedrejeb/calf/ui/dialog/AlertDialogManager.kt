@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.dialog
 
+import androidx.compose.ui.window.DialogProperties
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ForeignException
@@ -50,7 +51,7 @@ class AlertDialogManager internal constructor(
      * Lambda that dismisses the dialog.
      */
     private val onDismissLambda: (() -> Unit) = {
-        alertController.dismissViewControllerAnimated(
+        UIApplication.sharedApplication.keyWindow?.rootViewController?.dismissViewControllerAnimated(
             flag = true,
             completion = {
                 isPresented = false
@@ -63,16 +64,8 @@ class AlertDialogManager internal constructor(
     /**
      * Pointer to the [dismiss] method.
      */
-    @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-    private val dismissPointer get() = try {
-        sel_registerName("dismiss")
-    } catch (e: ForeignException) {
-        println("failed")
-        null
-    } catch (e: Exception) {
-        println("exception")
-        null
-    }
+    @OptIn(ExperimentalForeignApi::class)
+    private val dismissPointer = sel_registerName("dismiss")
 
     /**
      * Dismisses the dialog.
@@ -88,7 +81,7 @@ class AlertDialogManager internal constructor(
     /**
      * Shows the dialog.
      */
-    @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+    @OptIn(ExperimentalForeignApi::class)
     fun showAlertDialog() {
         if (isPresented || isAnimating) return
         isAnimating = true
@@ -126,18 +119,12 @@ class AlertDialogManager internal constructor(
 
                 if (properties.dismissOnClickOutside) {
                     alertController.view.superview?.setUserInteractionEnabled(true)
-                    try {
-                        alertController.view.superview?.addGestureRecognizer(
-                            UITapGestureRecognizer(
-                                target = this,
-                                action = dismissPointer
-                            )
+                    alertController.view.superview?.addGestureRecognizer(
+                        UITapGestureRecognizer(
+                            target = this,
+                            action = dismissPointer
                         )
-                    } catch (e: ForeignException) {
-                        println("failed")
-                    } catch (e: Exception) {
-                        println("exception")
-                    }
+                    )
                 }
             }
         )

@@ -56,6 +56,9 @@ kotlin {
 
                 // Calf
                 api(project(":calf-ui"))
+//                api(project(":calf-sf-symbols"))
+                implementation(project(":calf-file-picker"))
+                implementation(project(":calf-navigation"))
             }
         }
 

@@ -19,7 +19,7 @@ import platform.darwin.NSObject
  */
 internal class BottomSheetManager(
     private val onDismiss: () -> Unit,
-    private val content: @Composable ColumnScope.() -> Unit
+    private val content: @Composable () -> Unit
 ) {
     /**
      * Indicates whether the bottom sheet is currently presented.
@@ -35,7 +35,7 @@ internal class BottomSheetManager(
      * The ui view controller that is used to present the bottom sheet.
      */
     private val bottomSheetUIViewController = ComposeUIViewController {
-        Column(content = content)
+        content()
     }
 
     private val bottomSheetTransitioningDelegate = BottomSheetTransitioningDelegate()

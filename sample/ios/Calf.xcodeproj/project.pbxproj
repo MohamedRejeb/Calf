@@ -23,6 +23,7 @@
 		EA12DD992A7A317000F3444A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		EA12DD9B2A7A317100F3444A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EA12DD9E2A7A317100F3444A /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		EA7279F32A85602B00BA2110 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +76,7 @@
 		EA12DD962A7A317000F3444A /* Calf */ = {
 			isa = PBXGroup;
 			children = (
+				EA7279F32A85602B00BA2110 /* Info.plist */,
 				EA12DD972A7A317000F3444A /* CalfApp.swift */,
 				EA12DD992A7A317000F3444A /* ContentView.swift */,
 				EA12DD9B2A7A317100F3444A /* Assets.xcassets */,
@@ -339,6 +341,7 @@
 				DEVELOPMENT_TEAM = V7T9SX3F3Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Calf/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -369,6 +372,7 @@
 				DEVELOPMENT_TEAM = V7T9SX3F3Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Calf/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

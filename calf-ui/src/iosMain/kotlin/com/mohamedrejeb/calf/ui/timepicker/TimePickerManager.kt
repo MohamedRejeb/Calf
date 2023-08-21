@@ -36,7 +36,7 @@ class TimePickerManager internal constructor(
         )
 
         onHourChanged(components.hour.toInt())
-        onHourChanged(components.minute.toInt())
+        onMinuteChanged(components.minute.toInt())
     }
 
     val datePickerWidth = mutableStateOf(0f)

@@ -18,9 +18,9 @@ kotlin {
     jvm("desktop") {
         jvmToolchain(11)
     }
-//    js(IR) {
-//        browser()
-//    }
+    js(IR) {
+        browser()
+    }
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -39,6 +39,7 @@ kotlin {
     sourceSets {
         val androidMain by getting {
             dependencies {
+                implementation(libs.activity.compose)
 //                implementation("androidx.compose.material3:material3:1.1.1")
             }
         }

@@ -1,8 +1,10 @@
 package com.mohamedrejeb.calf.ui.sheet
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -25,12 +27,26 @@ actual fun AdaptiveBottomSheet(
     windowInsets: WindowInsets,
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+    val shapes = MaterialTheme.shapes
+
     val sheetHelper = remember {
         BottomSheetManager(
             onDismiss = {
                 onDismissRequest()
             },
-            content = content
+            content = {
+                MaterialTheme(
+                    colorScheme = colorScheme,
+                    typography = typography,
+                    shapes = shapes,
+                ) {
+                    Column {
+                        content()
+                    }
+                }
+            }
         )
     }
 

@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.ui.dialog
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.window.DialogProperties
 
 @Composable
 expect fun AdaptiveAlertDialog(
