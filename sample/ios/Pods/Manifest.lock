@@ -9,7 +9,7 @@ EXTERNAL SOURCES:
     :path: "../common"
 
 SPEC CHECKSUMS:
-  common: 5f5cc0bbe28b2f0083c3f6725568931188f591ef
+  common: 615f3e98f89c650e36df6d90ea0b860defe387cb
 
 PODFILE CHECKSUM: f04908ddf70afc65eddb19edd15eae3d85155e10
 

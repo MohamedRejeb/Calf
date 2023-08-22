@@ -25,6 +25,8 @@ class AdaptiveNavHostController {
     }
 
     fun popBackStack(): Boolean {
+        if (backStack.size <= 1) return false
+
         return backStack.removeLastOrNull() != null
     }
 

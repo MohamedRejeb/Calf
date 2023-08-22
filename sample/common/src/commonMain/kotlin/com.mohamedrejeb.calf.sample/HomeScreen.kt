@@ -92,11 +92,11 @@ fun HomeScreen(
                     title = "Adaptive Switch",
                     icon = Icons.Outlined.ToggleOn,
                 )
-                ListItem(
-                    onClick = { navigate(Screen.DropDownMenu.name) },
-                    title = "Adaptive Drop Down Menu",
-                    icon = Icons.Outlined.Menu,
-                )
+//                ListItem(
+//                    onClick = { navigate(Screen.DropDownMenu.name) },
+//                    title = "Adaptive Drop Down Menu",
+//                    icon = Icons.Outlined.Menu,
+//                )
                 ListItem(
                     onClick = { navigate(Screen.DatePicker.name) },
                     title = "Adaptive Date Picker",
@@ -117,16 +117,16 @@ fun HomeScreen(
                     title = "Adaptive Web View",
                     icon = Icons.Outlined.Web,
                 )
-                ListItem(
-                    onClick = {  },
-                    title = "Adaptive Notification",
-                    icon = Icons.Outlined.Notifications,
-                )
-                ListItem(
-                    onClick = {  },
-                    title = "Adaptive Permission",
-                    icon = Icons.Outlined.PermIdentity,
-                )
+//                ListItem(
+//                    onClick = {  },
+//                    title = "Adaptive Notification",
+//                    icon = Icons.Outlined.Notifications,
+//                )
+//                ListItem(
+//                    onClick = {  },
+//                    title = "Adaptive Permission",
+//                    icon = Icons.Outlined.PermIdentity,
+//                )
             }
         }
     }

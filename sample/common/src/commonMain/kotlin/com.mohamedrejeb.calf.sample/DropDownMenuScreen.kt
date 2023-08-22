@@ -9,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropdownMenu
 
 @Composable
 fun DropDownMenuScreen(
@@ -60,10 +59,10 @@ fun DropDownMenuScreen(
                     )
                 }
 
-                AdaptiveDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                )
+//                AdaptiveDropdownMenu(
+//                    expanded = expanded,
+//                    onDismissRequest = { expanded = false }
+//                )
             }
         }
     }

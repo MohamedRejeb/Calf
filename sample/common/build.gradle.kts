@@ -25,7 +25,7 @@ kotlin {
 
     cocoapods {
         summary = "Calf"
-        homepage = "https://github.com/MohamedRejeb/Compose-Rich-Editor"
+        homepage = "https://github.com/MohamedRejeb/Calf"
         version = "1.0"
         ios.deploymentTarget = "14.1"
         podfile = project.file("../ios/Podfile")
@@ -33,6 +33,7 @@ kotlin {
             baseName = "Common"
             isStatic = true
 
+            // IMPORTANT: Exporting calf-ui is required for some functionalities to work
             export(project(":calf-ui"))
         }
     }
@@ -50,22 +51,19 @@ kotlin {
                 api(compose.foundation)
                 api(compose.material)
                 api(compose.material3)
-                api(compose.materialIconsExtended)
+                implementation(compose.materialIconsExtended)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-                api(compose.components.resources)
+                implementation(compose.components.resources)
 
                 // Calf
                 api(project(":calf-ui"))
-//                api(project(":calf-sf-symbols"))
                 implementation(project(":calf-file-picker"))
                 implementation(project(":calf-navigation"))
             }
         }
 
         val androidMain by getting {
-            dependencies {
-//                api("androidx.appcompat:appcompat:1.6.1")
-            }
+            dependencies {}
         }
 
         val desktopMain by getting {
@@ -73,7 +71,6 @@ kotlin {
         }
 
 //        val jsMain by getting {
-//            dependsOn(commonMain)
 //            dependencies {}
 //        }
 

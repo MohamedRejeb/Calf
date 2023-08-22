@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'common'
     spec.version                  = '1.0'
-    spec.homepage                 = 'https://github.com/MohamedRejeb/Compose-Rich-Editor'
+    spec.homepage                 = 'https://github.com/MohamedRejeb/Calf'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
     spec.license                  = ''
