@@ -34,6 +34,7 @@ kotlin {
             isStatic = true
 
             // IMPORTANT: Exporting calf-ui is required for some functionalities to work
+//            export(project(":calf-ui"))
             export("com.mohamedrejeb.calf:calf-ui:0.1.1")
         }
     }
@@ -58,6 +59,8 @@ kotlin {
                 // Calf
                 api("com.mohamedrejeb.calf:calf-ui:0.1.1")
                 implementation("com.mohamedrejeb.calf:calf-file-picker:0.1.1")
+//                api(project(":calf-ui"))
+//                implementation(project(":calf-file-picker"))
                 implementation(project(":calf-navigation"))
             }
         }
