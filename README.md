@@ -9,6 +9,8 @@ Calf is a library that allows you to easily create adaptive UIs for your Compose
 [![BuildPassing](https://shields.io/badge/build-passing-brightgreen)](https://github.com/MohamedRejeb/ksoup/actions)
 [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui%22)
 
+![Calf thumbnail](images/thumbnail.png)
+
 Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 
 ## Artifacts
