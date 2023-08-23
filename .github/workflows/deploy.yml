@@ -54,7 +54,7 @@ jobs:
       with:
         arguments: |
           ${{ matrix.target }}
-          closeSonatypeStagingRepository
+          closeAndReleaseSonatypeStagingRepository
       env:
         OSSRH_STAGING_PROFILE_ID: ${{ secrets.OSSRH_STAGING_PROFILE_ID }}
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
