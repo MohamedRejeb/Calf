@@ -16,7 +16,7 @@ publishing {
             archiveAppendix.set(this@withType.name)
         })
 
-        // Provide artifacts information requited by Maven Central
+        // Provide artifacts information required by Maven Central
         pom {
             name.set("Calf - Compose Adaptive Look & Feel")
             description.set("Calf is a library that allows you to easily create adaptive UIs for your Compose Multiplatform apps.")
@@ -35,7 +35,12 @@ publishing {
                     email.set("mohamedrejeb445@gmail.com")
                 }
             }
+            issueManagement {
+                system.set("Github")
+                url.set("https://github.com/MohamedRejeb/Calf/issues")
+            }
             scm {
+                connection.set("https://github.com/MohamedRejeb/Calf.git")
                 url.set("https://github.com/MohamedRejeb/Calf")
             }
         }
