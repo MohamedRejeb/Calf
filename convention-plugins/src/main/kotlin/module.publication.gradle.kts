@@ -21,25 +21,25 @@ publishing {
 
         // Provide artifacts information requited by Maven Central
         pom {
-            name.set("Dummy Kotlin Multiplatform library")
-            description.set("Dummy library to test deployment to Maven Central")
-            url.set("https://github.com/asm0dey/dummylib-multiplatform")
+            name.set("Calf - Compose Adaptive Look & Feel")
+            description.set("Calf is a library that allows you to easily create adaptive UIs for your Compose Multiplatform apps.")
+            url.set("https://github.com/MohamedRejeb/Calf")
 
             licenses {
                 license {
-                    name.set("MIT")
-                    url.set("https://opensource.org/licenses/MIT")
+                    name.set("Apache-2.0")
+                    url.set("https://opensource.org/licenses/Apache-2.0")
                 }
             }
             developers {
                 developer {
-                    id.set("asm0dey")
-                    name.set("Pasha Finkelshteyn")
-                    email.set("asm0dey@jetbrains.com")
+                    id.set("MohamedRejeb")
+                    name.set("Mohamed Rejeb")
+                    email.set("mohamedrejeb445@gmail.com")
                 }
             }
             scm {
-                url.set("https://github.com/asm0dey/dummylib-multiplatform")
+                url.set("https://github.com/MohamedRejeb/Calf")
             }
         }
     }
