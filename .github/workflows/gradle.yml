@@ -24,8 +24,6 @@ jobs:
         include:
           - target: iosSimulatorArm64Test
             os: macos-latest
-          - target: androidUnitTest
-            os: ubuntu-latest
           - target: desktopTest
             os: ubuntu-latest
           - target: testDebugUnitTest
