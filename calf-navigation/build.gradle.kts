@@ -27,7 +27,6 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets.commonMain.get().dependencies {
-        //put your multiplatform dependencies here
         implementation(compose.runtime)
         implementation(compose.foundation)
         implementation(compose.material)

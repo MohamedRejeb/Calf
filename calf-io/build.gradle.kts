@@ -24,12 +24,7 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    sourceSets.commonMain.get().dependencies {
-        //put your multiplatform dependencies here
-    }
-    sourceSets.commonTest.get().dependencies {
-        implementation(libs.kotlin.test)
-    }
+    sourceSets.commonMain.get().dependencies {}
 }
 
 android {
