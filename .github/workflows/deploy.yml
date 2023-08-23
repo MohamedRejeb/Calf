@@ -22,11 +22,15 @@ jobs:
         include:
           - target: publishIosArm64PublicationToSonatypeRepository
             os: macos-latest
+          - target: publishIosSimulatorArm64PublicationToSonatypeRepository
+            os: macos-latest
+          - target: publishIosX64PublicationToSonatypeRepository
+            os: macos-latest
           - target: publishAndroidReleasePublicationToSonatypeRepository
             os: ubuntu-latest
-          - target: publishJvmPublicationToSonatypeRepository
+          - target: publishDesktopPublicationToSonatypeRepository
             os: ubuntu-latest
-          - target: publishLinuxX64PublicationToSonatypeRepository
+          - target: publishJsPublicationToSonatypeRepository
             os: ubuntu-latest
           - target: publishKotlinMultiplatformPublicationToSonatypeRepository
             os: ubuntu-latest

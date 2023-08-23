@@ -9,3 +9,8 @@ plugins {
     alias(libs.plugins.kotlinNativeCocoapods).apply(false)
     alias(libs.plugins.composeMultiplatform).apply(false)
 }
+
+allprojects {
+    group = "com.mohamedrejeb.calf"
+    version = "0.1.0"
+}
