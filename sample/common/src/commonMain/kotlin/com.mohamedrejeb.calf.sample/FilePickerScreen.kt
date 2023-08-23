@@ -10,16 +10,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.io.readByteArray
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
-import com.mohamedrejeb.calf.picker.FilePickerType
+import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import com.mohamedrejeb.calf.picker.toImageBitmap
-import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun FilePickerScreen(
@@ -29,7 +26,7 @@ fun FilePickerScreen(
         mutableStateOf<ImageBitmap?>(null)
     }
     val pickerLauncher = rememberFilePickerLauncher(
-        type = FilePickerType.Image,
+        type = FilePickerFileType.Image,
         selectionMode = FilePickerSelectionMode.Single,
         onResult = { files ->
             files.firstOrNull()?.let { file ->

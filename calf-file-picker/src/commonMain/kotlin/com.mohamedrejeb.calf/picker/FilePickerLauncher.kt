@@ -5,16 +5,16 @@ import com.mohamedrejeb.calf.io.KmpFile
 
 @Composable
 expect fun rememberFilePickerLauncher(
-    type: FilePickerType = FilePickerType.Any,
+    type: FilePickerFileType = FilePickerFileType.All,
     selectionMode: FilePickerSelectionMode = FilePickerSelectionMode.Single,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher
 
-sealed class FilePickerType(vararg val value: String) {
-    data object Image: FilePickerType("image/*")
-    data object Video: FilePickerType("video/*")
-    data object ImageVideo: FilePickerType("image/*", "video/*")
-    data object Any: FilePickerType("*/*")
+sealed class FilePickerFileType(vararg val value: String) {
+    data object Image: FilePickerFileType("image/*")
+    data object Video: FilePickerFileType("video/*")
+    data object ImageVideo: FilePickerFileType("image/*", "video/*")
+    data object All: FilePickerFileType("*/*")
 }
 
 sealed class FilePickerSelectionMode {
@@ -23,8 +23,8 @@ sealed class FilePickerSelectionMode {
 }
 
 expect class FilePickerLauncher(
-    type: FilePickerType = FilePickerType.Any,
-    selectionMode: FilePickerSelectionMode = FilePickerSelectionMode.Single,
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
     onLaunch: () -> Unit,
 ) {
     fun launch()

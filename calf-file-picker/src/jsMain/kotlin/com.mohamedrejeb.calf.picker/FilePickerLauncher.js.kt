@@ -5,7 +5,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import com.mohamedrejeb.calf.io.KmpFile
 @Composable
 actual fun rememberFilePickerLauncher(
-    type: FilePickerType,
+    type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
@@ -24,7 +24,7 @@ actual fun rememberFilePickerLauncher(
 }
 
 actual class FilePickerLauncher actual constructor(
-    type: FilePickerType,
+    type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     private val onLaunch: () -> Unit,
 ) {

@@ -1,29 +1,20 @@
 package com.mohamedrejeb.calf.picker
 
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi
-import kotlinx.cinterop.ObjCClass
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import platform.Foundation.NSItemProviderReadingProtocol
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.*
 import platform.UIKit.UIApplication
-import platform.UIKit.UIImage
-import platform.UIKit.registerForRemoteNotifications
-import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeImage
 import platform.UniformTypeIdentifiers.UTTypeMovie
-import platform.UserNotifications.*
 import platform.darwin.DISPATCH_QUEUE_CONCURRENT
 import platform.darwin.NSObject
 
 @BetaInteropApi
 @Composable
 actual fun rememberFilePickerLauncher(
-    type: FilePickerType,
+    type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
@@ -88,7 +79,7 @@ private fun createPHPickerViewController(
 }
 
 actual class FilePickerLauncher actual constructor(
-    type: FilePickerType,
+    type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     private val onLaunch: () -> Unit,
 ) {
