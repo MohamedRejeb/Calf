@@ -7,9 +7,6 @@ plugins {
     signing
 }
 
-group = "com.mohamedrejeb.calf"
-version = "0.1.0"
-
 publishing {
     // Configure all publications
     publications.withType<MavenPublication> {

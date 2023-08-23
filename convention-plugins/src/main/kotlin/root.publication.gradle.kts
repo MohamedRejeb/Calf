@@ -2,6 +2,11 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin")
 }
 
+allprojects {
+    group = "com.mohamedrejeb.calf"
+    version = "0.1.0"
+}
+
 nexusPublishing {
     // Configure maven central repository
     // https://github.com/gradle-nexus/publish-plugin#publishing-to-maven-central-via-sonatype-ossrh
@@ -9,6 +14,8 @@ nexusPublishing {
         sonatype {
             nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"))
             snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            username.set(System.getenv("OSSRH_USERNAME"))
+            password.set(System.getenv("OSSRH_PASSWORD"))
         }
     }
 }
