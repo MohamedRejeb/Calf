@@ -48,10 +48,15 @@ publishing {
 }
 
 signing {
-    if (project.hasProperty("signing.gnupg.keyName")) {
-        useGpgCmd()
-        sign(publishing.publications)
-    }
+//    if (project.hasProperty("signing.gnupg.keyName")) {
+//        useGpgCmd()
+//    }
+    useInMemoryPgpKeys(
+        System.getenv("OSSRH_GPG_SECRET_KEY_ID"),
+        System.getenv("OSSRH_GPG_SECRET_KEY"),
+        System.getenv("OSSRH_GPG_SECRET_KEY_PASSWORD"),
+    )
+    sign(publishing.publications)
 }
 
 // TODO: remove after https://youtrack.jetbrains.com/issue/KT-46466 is fixed
