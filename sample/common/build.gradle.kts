@@ -1,6 +1,5 @@
 plugins {
     kotlin("multiplatform")
-    kotlin("native.cocoapods")
     id("org.jetbrains.compose")
     id("com.android.library")
 }
@@ -19,23 +18,18 @@ kotlin {
 //    js(IR) {
 //        browser()
 //    }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
 
-    cocoapods {
-        summary = "Calf"
-        homepage = "https://github.com/MohamedRejeb/Calf"
-        version = "1.0"
-        ios.deploymentTarget = "14.1"
-        podfile = project.file("../ios/Podfile")
-        framework {
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
             baseName = "Common"
             isStatic = true
 
             // IMPORTANT: Exporting calf-ui is required for some functionalities to work
-//            export(project(":calf-ui"))
-            export("com.mohamedrejeb.calf:calf-ui:0.1.1")
+            export(projects.calfUi)
         }
     }
 
@@ -57,11 +51,10 @@ kotlin {
                 implementation(compose.components.resources)
 
                 // Calf
-                api("com.mohamedrejeb.calf:calf-ui:0.1.1")
-                implementation("com.mohamedrejeb.calf:calf-file-picker:0.1.1")
-//                api(project(":calf-ui"))
-//                implementation(project(":calf-file-picker"))
-                implementation(project(":calf-navigation"))
+                // This is possible thanks to `enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")` in `settings.gradle.kts
+                api(projects.calfUi)
+                implementation(projects.calfFilePicker)
+                implementation(projects.calfNavigation)
             }
         }
 
@@ -85,7 +78,6 @@ kotlin {
             iosX64Main.dependsOn(this)
             iosArm64Main.dependsOn(this)
             iosSimulatorArm64Main.dependsOn(this)
-            dependencies {}
         }
     }
 }
@@ -98,5 +90,12 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlin {
+        jvmToolchain(8)
     }
 }

@@ -3,6 +3,7 @@ package com.mohamedrejeb.calf.ui.sheet
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
@@ -42,7 +43,9 @@ actual fun AdaptiveBottomSheet(
                     typography = typography,
                     shapes = shapes,
                 ) {
-                    Column {
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
                         content()
                     }
                 }

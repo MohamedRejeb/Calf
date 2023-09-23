@@ -1,5 +1,7 @@
 package com.mohamedrejeb.calf.navigation
 
-expect class NavController {
+expect class NavHostController
 
-}
+expect fun NavHostController.navigate(route: String)
+
+expect fun NavHostController.popBackStack(): Boolean
