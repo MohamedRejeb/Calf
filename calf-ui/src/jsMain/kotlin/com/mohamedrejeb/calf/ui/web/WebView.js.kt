@@ -79,6 +79,10 @@ actual class WebViewState actual constructor(webContent: WebContent) {
      */
     actual var pageTitle: String? by mutableStateOf(null)
         internal set
+
+    actual val settings: WebSettings = WebSettings()
+
+    actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {}
 }
 
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread

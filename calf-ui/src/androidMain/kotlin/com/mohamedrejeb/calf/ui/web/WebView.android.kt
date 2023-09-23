@@ -20,19 +20,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.mapSaver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -98,7 +93,29 @@ actual fun WebView(
             Modifier,
             captureBackPresses,
             navigator,
-            { onCreated() },
+            {
+                it.settings.standardFontFamily = "sans-serif"
+                it.settings.defaultFontSize = 16
+                it.settings.minimumFontSize = 8
+                it.settings.minimumLogicalFontSize = 8
+                it.settings.textZoom = 100
+                it.settings.allowContentAccess = true
+                it.settings.allowFileAccess = true
+                it.settings.blockNetworkImage = false
+                it.settings.blockNetworkLoads = false
+                it.settings.databaseEnabled = true
+                it.settings.domStorageEnabled = true
+                it.settings.loadsImagesAutomatically = true
+                it.settings.useWideViewPort = true
+                it.settings.loadWithOverviewMode = true
+                it.settings.javaScriptCanOpenWindowsAutomatically = true
+                it.settings.mediaPlaybackRequiresUserGesture = false
+                it.settings.setSupportMultipleWindows(true)
+                it.settings.setSupportZoom(true)
+                it.settings.builtInZoomControls = true
+                it.settings.displayZoomControls = false
+                it.settings.setGeolocationEnabled(true)
+                onCreated() },
             { onDispose() },
             client,
             chromeClient,
@@ -195,6 +212,8 @@ internal fun WebView(
             (factory?.invoke(context) ?: WebView(context)).apply {
                 onCreated(this)
 
+                applySettings(state.settings)
+
                 this.layoutParams = layoutParams
 
                 state.viewState?.let {
@@ -210,6 +229,30 @@ internal fun WebView(
             onDispose(it)
         }
     )
+}
+
+/**
+ * Applies the settings from the WebSettings object to the WebView
+ */
+private fun WebView.applySettings(webSettings: WebSettings) {
+    settings.javaScriptEnabled = webSettings.javaScriptEnabled
+    settings.javaScriptCanOpenWindowsAutomatically = webSettings.androidSettings.javaScriptCanOpenWindowsAutomatically
+    settings.allowFileAccess = webSettings.androidSettings.allowFileAccess
+    settings.allowContentAccess = webSettings.androidSettings.allowContentAccess
+    settings.blockNetworkImage = webSettings.androidSettings.blockNetworkImage
+    settings.blockNetworkLoads = webSettings.androidSettings.blockNetworkLoads
+    settings.databaseEnabled = webSettings.androidSettings.databaseEnabled
+    settings.domStorageEnabled = webSettings.androidSettings.domStorageEnabled
+    settings.loadsImagesAutomatically = webSettings.androidSettings.loadsImagesAutomatically
+    settings.useWideViewPort = webSettings.androidSettings.useWideViewPort
+    settings.loadWithOverviewMode = webSettings.androidSettings.loadWithOverviewMode
+    settings.mediaPlaybackRequiresUserGesture = webSettings.androidSettings.mediaPlaybackRequiresUserGesture
+    settings.setSupportMultipleWindows(webSettings.androidSettings.supportMultipleWindows)
+    settings.setSupportZoom(webSettings.androidSettings.supportZoom)
+    settings.displayZoomControls = webSettings.androidSettings.displayZoomControls
+    settings.setGeolocationEnabled(webSettings.androidSettings.setGeolocationEnabled)
+    settings.textZoom = webSettings.androidSettings.textZoom
+    settings.builtInZoomControls = webSettings.androidSettings.builtInZoomControls
 }
 
 /**
@@ -323,6 +366,12 @@ actual class WebViewState actual constructor(webContent: WebContent) {
     actual var pageTitle: String? by mutableStateOf(null)
         internal set
 
+    actual val settings: WebSettings = WebSettings()
+
+    actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {
+        webView?.evaluateJavascript(script, callback)
+    }
+
     /**
      * the favicon received from the loaded content of the current page
      */
@@ -346,7 +395,8 @@ actual class WebViewState actual constructor(webContent: WebContent) {
 
     // We need access to this in the state saver. An internal DisposableEffect or AndroidView
     // onDestroy is called after the state saver and so can't be used.
-    internal var webView by mutableStateOf<WebView?>(null)
+    var webView by mutableStateOf<WebView?>(null)
+        internal set
 }
 
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread

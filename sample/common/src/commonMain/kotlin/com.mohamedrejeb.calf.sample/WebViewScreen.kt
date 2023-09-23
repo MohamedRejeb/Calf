@@ -22,7 +22,10 @@ import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 import com.mohamedrejeb.calf.ui.toggle.CupertinoSwitch
 import com.mohamedrejeb.calf.ui.web.WebView
+import com.mohamedrejeb.calf.ui.web.rememberWebViewNavigator
 import com.mohamedrejeb.calf.ui.web.rememberWebViewState
+import com.mohamedrejeb.calf.ui.web.rememberWebViewStateWithHTMLData
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -36,9 +39,58 @@ fun WebViewScreen(
             .windowInsetsPadding(WindowInsets.systemBars)
             .windowInsetsPadding(WindowInsets.ime)
     ) {
-        val state = rememberWebViewState(
-            url = "https://github.com/MohamedRejeb"
+        val html = """
+        <html>
+        <head>
+            <title>Compose WebView Multiplatform</title>
+            <style>
+                body {
+                    background-color: #e0e8f0; 
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
+                    height: 100vh; 
+                    margin: 0;
+                }
+                h1, h2 {
+                    text-align: center; 
+                    color: white; 
+                }
+            </style>
+        </head>
+        <body>
+            <script type="text/javascript">
+                function callJS() {
+                    return 'Response from JS';
+                }
+            </script>
+            <h1>Compose WebView Multiplatform</h1>
+            <h2 id="subtitle">Basic Html Test</h2>
+        </body>
+        </html>
+    """.trimIndent()
+        val state = rememberWebViewStateWithHTMLData(
+            data = html
+//            url = "https://github.com/MohamedRejeb"
         )
+
+        LaunchedEffect(state) {
+            state.settings.apply {
+                javaScriptEnabled = true
+                androidSettings.supportZoom = true
+            }
+
+            delay(10000)
+            state.evaluateJavascript(
+                """
+                    document.getElementById("subtitle").innerText = "Hello from KMM!";
+                    callJS();
+                """.trimIndent()
+            ) {
+                println("JS Response: $it")
+            }
+        }
 
         WebView(
             state = state,
