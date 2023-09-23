@@ -3,7 +3,6 @@ package com.mohamedrejeb.calf.ui.dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ForeignException
 import kotlinx.cinterop.ObjCAction
 import platform.UIKit.*
 import platform.objc.sel_registerName

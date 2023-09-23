@@ -98,16 +98,15 @@ actual fun WebView(
 
     UIKitView(
         factory = {
-            println("onCreated")
             WKWebView().apply {
                 onCreated()
                 setUserInteractionEnabled(captureBackPresses)
+                configuration.defaultWebpagePreferences.allowsContentJavaScript = state.settings.javaScriptEnabled
                 state.webView = this
                 navigationDelegate = state
             }
         },
         onRelease = {
-            println("onRelease")
             onDispose()
             state.webView = null
         },
@@ -150,9 +149,22 @@ actual class WebViewState actual constructor(
     actual var pageTitle: String? by mutableStateOf(null)
         internal set
 
+    actual val settings: WebSettings = WebSettings()
+
+    actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {
+        webView?.evaluateJavaScript(script) { result, error ->
+            if (error != null) {
+                callback?.invoke(error.localizedDescription())
+            } else {
+                callback?.invoke(result?.toString())
+            }
+        }
+    }
+
     // We need access to this in the state saver. An internal DisposableEffect or AndroidView
     // onDestroy is called after the state saver and so can't be used.
-    internal var webView by mutableStateOf<WKWebView?>(null)
+    var webView by mutableStateOf<WKWebView?>(null)
+        internal set
 
     @Suppress("CONFLICTING_OVERLOADS")
     override fun webView(webView: WKWebView, didFinishNavigation: WKNavigation?) {

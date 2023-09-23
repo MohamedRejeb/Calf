@@ -1,15 +1,34 @@
 package com.mohamedrejeb.calf.ui.web
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.SwingPanel
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntSize
+import javafx.application.Platform
+import javafx.embed.swing.JFXPanel
+import javafx.scene.Parent
+import javafx.scene.Scene
+import javafx.scene.web.WebView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.awt.BorderLayout
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
+import java.awt.event.WindowListener
+import javax.swing.JFrame
+import javax.swing.JPanel
+import javax.swing.WindowConstants
 
 /**
  * A wrapper around the Android View WebView to provide a basic WebView composable.
@@ -45,6 +64,69 @@ actual fun WebView(
     onCreated: () -> Unit,
     onDispose: () -> Unit,
 ) {
+    val jfxPanel = remember { JFXPanel() }
+
+    LaunchedEffect(Unit) {
+        Platform.runLater {
+            val wv = WebView().apply {
+                engine.isJavaScriptEnabled = state.settings.javaScriptEnabled
+            }
+            jfxPanel.scene = Scene(wv)
+            state.webView = wv
+            onCreated()
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            onDispose()
+        }
+    }
+
+    val webView = state.webView
+
+    webView?.let { wv ->
+        LaunchedEffect(navigator, wv) {
+            navigator.handleNavigationEvents(wv)
+        }
+
+        LaunchedEffect(state, wv) {
+            snapshotFlow { state.content }.collect { content ->
+                when (content) {
+                    is WebContent.Url -> {
+                        Platform.runLater {
+                            wv.engine.load(content.url)
+                        }
+                    }
+
+                    is WebContent.Data -> {
+                        Platform.runLater {
+                            if (content.mimeType.isNullOrBlank())
+                                wv.engine.loadContent(content.data)
+                            else
+                                wv.engine.loadContent(content.data, content.mimeType)
+                        }
+                    }
+
+                    is WebContent.NavigatorOnly -> {
+                        // NO-OP
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+
+        SwingPanel(
+            factory = {
+                jfxPanel
+            },
+            update = {
+
+            },
+            modifier = modifier
+        )
+    }
 }
 
 /**
@@ -62,14 +144,14 @@ actual class WebViewState actual constructor(webContent: WebContent) {
     actual var content: WebContent by mutableStateOf(webContent)
 
     /**
-     * Whether the WebView is currently [LoadingState.Loading] data in its main frame (along with
+     * Whether the WebView is currently [LoadingState.Loading] data in its desktopMain frame (along with
      * progress) or the data loading has [LoadingState.Finished]. See [LoadingState]
      */
     actual var loadingState: LoadingState by mutableStateOf(LoadingState.Initializing)
         internal set
 
     /**
-     * Whether the webview is currently loading data in its main frame
+     * Whether the webview is currently loading data in its desktopMain frame
      */
     actual val isLoading: Boolean
         get() = loadingState !is LoadingState.Finished
@@ -79,14 +161,42 @@ actual class WebViewState actual constructor(webContent: WebContent) {
      */
     actual var pageTitle: String? by mutableStateOf(null)
         internal set
+
+    actual val settings: WebSettings = WebSettings()
+
+    actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {
+        Platform.runLater {
+            webView?.engine?.executeScript(script).let {
+                callback?.invoke(it?.toString())
+            }
+        }
+    }
+
+    var webView by mutableStateOf<WebView?>(null)
+        internal set
 }
 
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread
 internal suspend fun WebViewNavigator.handleNavigationEvents(
-
+    webView: WebView
 ): Nothing = withContext(Dispatchers.Main) {
     navigationEvents.collect { event ->
-
+        with(webView.engine) {
+            when (event) {
+                is WebViewNavigator.NavigationEvent.Back ->
+                    if (history.currentIndex > 0) history.go(-1)
+                is WebViewNavigator.NavigationEvent.Forward ->
+                    if (history.currentIndex < history.maxSize - 1) history.go(1)
+                is WebViewNavigator.NavigationEvent.Reload ->
+                    reload()
+                is WebViewNavigator.NavigationEvent.StopLoading ->
+                    stopLoading()
+                is WebViewNavigator.NavigationEvent.LoadHtml ->
+                    loadContent(event.html, event.mimeType)
+                is WebViewNavigator.NavigationEvent.LoadUrl ->
+                    loadUrl(event.url, event.additionalHttpHeaders)
+            }
+        }
     }
 }
 

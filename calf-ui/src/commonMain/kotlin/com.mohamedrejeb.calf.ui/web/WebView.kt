@@ -67,7 +67,7 @@ public sealed class WebContent {
         val historyUrl: String? = null
     ) : WebContent()
 
-    public object NavigatorOnly : WebContent()
+    public data object NavigatorOnly : WebContent()
 }
 
 internal fun WebContent.withUrl(url: String) = when (this) {
@@ -128,6 +128,10 @@ expect class WebViewState(webContent: WebContent) {
      */
     public var pageTitle: String?
         internal set
+
+    public val settings: WebSettings
+
+    public fun evaluateJavascript(script: String, callback: ((String?) -> Unit)? = null)
 }
 
 /**
@@ -139,10 +143,10 @@ expect class WebViewState(webContent: WebContent) {
 @Stable
 public class WebViewNavigator(private val coroutineScope: CoroutineScope) {
     internal sealed interface NavigationEvent {
-        object Back : NavigationEvent
-        object Forward : NavigationEvent
-        object Reload : NavigationEvent
-        object StopLoading : NavigationEvent
+        data object Back : NavigationEvent
+        data object Forward : NavigationEvent
+        data object Reload : NavigationEvent
+        data object StopLoading : NavigationEvent
 
         data class LoadUrl(
             val url: String,

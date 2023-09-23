@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
 import androidx.compose.ui.unit.dp
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
 import platform.UIKit.UIDatePicker
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class)
