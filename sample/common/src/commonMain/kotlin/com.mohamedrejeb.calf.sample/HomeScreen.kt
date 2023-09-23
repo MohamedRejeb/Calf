@@ -148,7 +148,7 @@ fun ListItem(
             .fillMaxWidth()
             .clip(CircleShape)
             .background(
-                color = MaterialTheme.colorScheme.primary.copy(.2f)
+                color = MaterialTheme.colorScheme.primary
             )
             .clickable {
                 onClick()
