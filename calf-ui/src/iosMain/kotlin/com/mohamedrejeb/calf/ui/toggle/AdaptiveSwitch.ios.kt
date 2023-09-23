@@ -1,7 +1,6 @@
 package com.mohamedrejeb.calf.ui.toggle
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

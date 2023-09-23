@@ -148,7 +148,7 @@ fun ListItem(
             .fillMaxWidth()
             .clip(CircleShape)
             .background(
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary.copy(.2f)
             )
             .clickable {
                 onClick()
@@ -158,18 +158,18 @@ fun ListItem(
         Icon(
             imageVector = icon,
             contentDescription = title,
-            tint = MaterialTheme.colorScheme.onPrimary,
+            tint = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = title,
-            color = MaterialTheme.colorScheme.onPrimary,
+            color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             Icons.Outlined.ArrowForwardIos,
             contentDescription = "Navigate",
-            tint = MaterialTheme.colorScheme.onPrimary
+            tint = MaterialTheme.colorScheme.onBackground
         )
     }
 }
