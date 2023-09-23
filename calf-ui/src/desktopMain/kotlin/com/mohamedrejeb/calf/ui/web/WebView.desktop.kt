@@ -69,7 +69,7 @@ actual fun WebView(
     LaunchedEffect(Unit) {
         Platform.runLater {
             val wv = WebView().apply {
-                engine.isJavaScriptEnabled = state.settings.javaScriptEnabled
+                applySettings(state.settings)
             }
             jfxPanel.scene = Scene(wv)
             state.webView = wv
@@ -162,7 +162,15 @@ actual class WebViewState actual constructor(webContent: WebContent) {
     actual var pageTitle: String? by mutableStateOf(null)
         internal set
 
-    actual val settings: WebSettings = WebSettings()
+    actual val settings: WebSettings = WebSettings(
+        onSettingsChanged = {
+            applySetting()
+        }
+    )
+
+    private fun applySetting() {
+        webView?.applySettings(settings)
+    }
 
     actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {
         Platform.runLater {
@@ -174,6 +182,10 @@ actual class WebViewState actual constructor(webContent: WebContent) {
 
     var webView by mutableStateOf<WebView?>(null)
         internal set
+}
+
+private fun WebView.applySettings(webSettings: WebSettings) {
+    engine.isJavaScriptEnabled = webSettings.javaScriptEnabled
 }
 
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread

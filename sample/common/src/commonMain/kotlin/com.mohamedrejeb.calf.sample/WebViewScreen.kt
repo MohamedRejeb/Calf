@@ -39,53 +39,21 @@ fun WebViewScreen(
             .windowInsetsPadding(WindowInsets.systemBars)
             .windowInsetsPadding(WindowInsets.ime)
     ) {
-        val html = """
-        <html>
-        <head>
-            <title>Compose WebView Multiplatform</title>
-            <style>
-                body {
-                    background-color: #e0e8f0; 
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    flex-direction: column;
-                    height: 100vh; 
-                    margin: 0;
-                }
-                h1, h2 {
-                    text-align: center; 
-                    color: white; 
-                }
-            </style>
-        </head>
-        <body>
-            <script type="text/javascript">
-                function callJS() {
-                    return 'Response from JS';
-                }
-            </script>
-            <h1>Compose WebView Multiplatform</h1>
-            <h2 id="subtitle">Basic Html Test</h2>
-        </body>
-        </html>
-    """.trimIndent()
-        val state = rememberWebViewStateWithHTMLData(
-            data = html
-//            url = "https://github.com/MohamedRejeb"
+        val state = rememberWebViewState(
+            url = "https://github.com/MohamedRejeb"
         )
 
-        LaunchedEffect(state) {
+        LaunchedEffect(state.isLoading) {
+            if (state.isLoading) return@LaunchedEffect
+
             state.settings.apply {
                 javaScriptEnabled = true
                 androidSettings.supportZoom = true
             }
 
-            delay(10000)
             state.evaluateJavascript(
                 """
-                    document.getElementById("subtitle").innerText = "Hello from KMM!";
-                    callJS();
+                    "Hello World!";
                 """.trimIndent()
             ) {
                 println("JS Response: $it")
