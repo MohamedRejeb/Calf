@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		843175010F83F5F973A5F95C /* Pods_Calf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73F1922E27300A3612F5A7B5 /* Pods_Calf.framework */; };
 		EA12DD982A7A317000F3444A /* CalfApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA12DD972A7A317000F3444A /* CalfApp.swift */; };
 		EA12DD9A2A7A317000F3444A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA12DD992A7A317000F3444A /* ContentView.swift */; };
 		EA12DD9C2A7A317100F3444A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EA12DD9B2A7A317100F3444A /* Assets.xcassets */; };
@@ -15,9 +14,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1844E739D359D3A5C8657EE7 /* Pods-Calf.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Calf.release.xcconfig"; path = "Target Support Files/Pods-Calf/Pods-Calf.release.xcconfig"; sourceTree = "<group>"; };
-		73F1922E27300A3612F5A7B5 /* Pods_Calf.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Calf.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A38549699681480BA6FA51A9 /* Pods-Calf.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Calf.debug.xcconfig"; path = "Target Support Files/Pods-Calf/Pods-Calf.debug.xcconfig"; sourceTree = "<group>"; };
 		EA12DD942A7A317000F3444A /* Calf.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Calf.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA12DD972A7A317000F3444A /* CalfApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalfApp.swift; sourceTree = "<group>"; };
 		EA12DD992A7A317000F3444A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -31,37 +27,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				843175010F83F5F973A5F95C /* Pods_Calf.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		01E6C9860376B132BF07CFCF /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				A38549699681480BA6FA51A9 /* Pods-Calf.debug.xcconfig */,
-				1844E739D359D3A5C8657EE7 /* Pods-Calf.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		E84763273064F494747C6593 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				73F1922E27300A3612F5A7B5 /* Pods_Calf.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		EA12DD8B2A7A317000F3444A = {
 			isa = PBXGroup;
 			children = (
 				EA12DD962A7A317000F3444A /* Calf */,
 				EA12DD952A7A317000F3444A /* Products */,
-				01E6C9860376B132BF07CFCF /* Pods */,
-				E84763273064F494747C6593 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -100,11 +76,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = EA12DDA22A7A317100F3444A /* Build configuration list for PBXNativeTarget "Calf" */;
 			buildPhases = (
-				FB53E161020CBFB2A3144012 /* [CP] Check Pods Manifest.lock */,
+				EA75E65B2AA78078001A8F1F /* Run Script */,
 				EA12DD902A7A317000F3444A /* Sources */,
 				EA12DD912A7A317000F3444A /* Frameworks */,
 				EA12DD922A7A317000F3444A /* Resources */,
-				E37BFDC87E02C185A5D4137E /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -161,24 +136,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		E37BFDC87E02C185A5D4137E /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Calf/Pods-Calf-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Calf/Pods-Calf-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Calf/Pods-Calf-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FB53E161020CBFB2A3144012 /* [CP] Check Pods Manifest.lock */ = {
+		EA75E65B2AA78078001A8F1F /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -186,19 +144,15 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
 			);
-			name = "[CP] Check Pods Manifest.lock";
+			name = "Run Script";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Calf-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "cd \"$SRCROOT/../..\"\n./gradlew :sample:common:embedAndSignAppleFrameworkForXcode\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -331,7 +285,6 @@
 		};
 		EA12DDA32A7A317100F3444A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A38549699681480BA6FA51A9 /* Pods-Calf.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -340,6 +293,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Calf/Preview Content\"";
 				DEVELOPMENT_TEAM = V7T9SX3F3Z;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../common/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Calf/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -352,6 +306,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					Common,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mohamedrejeb.Calf;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -362,7 +321,6 @@
 		};
 		EA12DDA42A7A317100F3444A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1844E739D359D3A5C8657EE7 /* Pods-Calf.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -371,6 +329,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Calf/Preview Content\"";
 				DEVELOPMENT_TEAM = V7T9SX3F3Z;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../common/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Calf/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -383,6 +342,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					Common,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mohamedrejeb.Calf;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

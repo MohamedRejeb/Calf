@@ -1,4 +1,0 @@
-target 'Calf' do
-    use_frameworks!
-    pod 'common', :path => '../common'
-end
