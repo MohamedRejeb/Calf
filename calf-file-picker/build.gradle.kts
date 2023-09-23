@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
@@ -6,17 +8,17 @@ plugins {
 }
 
 kotlin {
-    targetHierarchy.default()
+    kotlin.applyDefaultHierarchyTemplate()
     androidTarget {
         publishLibraryVariants("release")
         compilations.all {
             kotlinOptions {
-                jvmTarget = "1.8"
+                jvmTarget = "11"
             }
         }
     }
     jvm("desktop") {
-        jvmToolchain(17)
+        jvmToolchain(11)
     }
     js(IR) {
         browser()

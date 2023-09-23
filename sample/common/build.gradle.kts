@@ -5,10 +5,11 @@ plugins {
 }
 
 kotlin {
+    kotlin.applyDefaultHierarchyTemplate()
     androidTarget {
         compilations.all {
             kotlinOptions {
-                jvmTarget = "1.8"
+                jvmTarget = "11"
             }
         }
     }
@@ -58,27 +59,15 @@ kotlin {
             }
         }
 
-        val androidMain by getting {
-            dependencies {}
-        }
+        val androidMain by getting
 
-        val desktopMain by getting {
-            dependencies {}
-        }
+        val desktopMain by getting
 
 //        val jsMain by getting {
 //            dependencies {}
 //        }
 
-        val iosX64Main by getting
-        val iosArm64Main by getting
-        val iosSimulatorArm64Main by getting
-        val iosMain by creating {
-            dependsOn(commonMain)
-            iosX64Main.dependsOn(this)
-            iosArm64Main.dependsOn(this)
-            iosSimulatorArm64Main.dependsOn(this)
-        }
+        val iosMain by getting
     }
 }
 
@@ -92,10 +81,10 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlin {
-        jvmToolchain(8)
+        jvmToolchain(11)
     }
 }
