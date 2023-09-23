@@ -2,8 +2,10 @@ package com.mohamedrejeb.calf.ui.web
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup.LayoutParams
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -236,7 +238,7 @@ internal fun WebView(
  */
 private fun WebView.applySettings(webSettings: WebSettings) {
     settings.javaScriptEnabled = webSettings.javaScriptEnabled
-    settings.javaScriptCanOpenWindowsAutomatically = webSettings.androidSettings.javaScriptCanOpenWindowsAutomatically
+    settings.javaScriptCanOpenWindowsAutomatically = webSettings.javaScriptCanOpenWindowsAutomatically
     settings.allowFileAccess = webSettings.androidSettings.allowFileAccess
     settings.allowContentAccess = webSettings.androidSettings.allowContentAccess
     settings.blockNetworkImage = webSettings.androidSettings.blockNetworkImage
@@ -253,6 +255,12 @@ private fun WebView.applySettings(webSettings: WebSettings) {
     settings.setGeolocationEnabled(webSettings.androidSettings.setGeolocationEnabled)
     settings.textZoom = webSettings.androidSettings.textZoom
     settings.builtInZoomControls = webSettings.androidSettings.builtInZoomControls
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        settings.safeBrowsingEnabled = webSettings.androidSettings.safeBrowsingEnabled
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        settings.isAlgorithmicDarkeningAllowed = webSettings.androidSettings.isAlgorithmicDarkeningAllowed
+    }
 }
 
 /**
@@ -366,8 +374,17 @@ actual class WebViewState actual constructor(webContent: WebContent) {
     actual var pageTitle: String? by mutableStateOf(null)
         internal set
 
-    actual val settings: WebSettings = WebSettings()
+    actual val settings: WebSettings = WebSettings(
+        onSettingsChanged = {
+            applySettings()
+        }
+    )
 
+    private fun applySettings() {
+        webView?.applySettings(settings)
+    }
+
+    @JavascriptInterface
     actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {
         webView?.evaluateJavascript(script, callback)
     }

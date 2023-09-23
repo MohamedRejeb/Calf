@@ -80,7 +80,9 @@ actual class WebViewState actual constructor(webContent: WebContent) {
     actual var pageTitle: String? by mutableStateOf(null)
         internal set
 
-    actual val settings: WebSettings = WebSettings()
+    actual val settings: WebSettings = WebSettings(
+        onSettingsChanged = {}
+    )
 
     actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {}
 }

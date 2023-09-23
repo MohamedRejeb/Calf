@@ -27,7 +27,6 @@ include(
     ":calf-navigation",
     ":calf-file-picker",
     ":calf-io",
-    ":calf-javafx-webview",
 
     ":sample:android",
     ":sample:desktop",

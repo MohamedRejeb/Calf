@@ -72,16 +72,10 @@ actual fun WebView(
                     }
 
                     is WebContent.Data -> {
-                        if (content.baseUrl == null) return@collect
-                        val data = NSString
-                            .create(string = content.data)
-                            .dataUsingEncoding(NSUTF8StringEncoding) ?: return@collect
-                        val baseUrl = NSURL(string = content.baseUrl)
+                        val baseUrl = content.baseUrl?.let { NSURL(string = it) }
 
-                        wv.loadData(
-                            data,
-                            content.mimeType ?: "text/html",
-                            content.encoding,
+                        wv.loadHTMLString(
+                            content.data,
                             baseUrl
                         )
                     }
@@ -101,7 +95,7 @@ actual fun WebView(
             WKWebView().apply {
                 onCreated()
                 setUserInteractionEnabled(captureBackPresses)
-                configuration.defaultWebpagePreferences.allowsContentJavaScript = state.settings.javaScriptEnabled
+                applySettings(state.settings)
                 state.webView = this
                 navigationDelegate = state
             }
@@ -149,7 +143,15 @@ actual class WebViewState actual constructor(
     actual var pageTitle: String? by mutableStateOf(null)
         internal set
 
-    actual val settings: WebSettings = WebSettings()
+    actual val settings: WebSettings = WebSettings(
+        onSettingsChanged = {
+            applySetting()
+        }
+    )
+
+    private fun applySetting() {
+        webView?.applySettings(settings)
+    }
 
     actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {
         webView?.evaluateJavaScript(script) { result, error ->
@@ -177,8 +179,13 @@ actual class WebViewState actual constructor(
     }
 }
 
+private fun WKWebView.applySettings(webSettings: WebSettings) {
+    configuration.defaultWebpagePreferences.allowsContentJavaScript = webSettings.javaScriptEnabled
+    configuration.preferences.javaScriptEnabled = webSettings.javaScriptEnabled
+    configuration.preferences.javaScriptCanOpenWindowsAutomatically = webSettings.javaScriptCanOpenWindowsAutomatically
+}
+
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread
-@OptIn(BetaInteropApi::class)
 internal suspend fun WebViewNavigator.handleNavigationEvents(
     webView: WKWebView
 ): Nothing = withContext(Dispatchers.Main) {
