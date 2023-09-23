@@ -7,6 +7,8 @@ import com.mohamedrejeb.calf.io.KmpFile
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
+import java.net.URLConnection
+import java.nio.file.Files
 
 @Composable
 actual fun rememberFilePickerLauncher(
@@ -42,13 +44,12 @@ actual fun rememberFilePickerLauncher(
                     FilePickerFileType.ImageVideo -> listOf("image", "video")
                     FilePickerFileType.All -> emptyList()
                 }
-                fileDialog.setFilenameFilter { file, name ->
+                fileDialog.setFilenameFilter { _, name ->
                     if (mimeType.isEmpty()) {
                         return@setFilenameFilter true
                     }
 
-                    val contentType = file.toURI().toURL().openConnection().contentType
-                    println("contentType $contentType")
+                    val contentType = URLConnection.guessContentTypeFromName(name) ?: ""
                     contentType.startsWith(mimeType.first(), true)
                 }
 
