@@ -33,3 +33,5 @@ include(
 //    ":sample:web",
     ":sample:common",
 )
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

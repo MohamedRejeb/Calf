@@ -61,6 +61,18 @@ internal class BottomSheetManager(
         bottomSheetUIViewController.transitioningDelegate = bottomSheetTransitioningDelegate
         bottomSheetUIViewController.presentationController?.setDelegate(presentationControllerDelegate)
 
+        bottomSheetUIViewController.sheetPresentationController?.setDetents(
+            listOf(
+                UISheetPresentationControllerDetentIdentifierMedium,
+                UISheetPresentationControllerDetentIdentifierLarge
+            )
+        )
+        bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = true
+
+        println("Presenting bottom sheet")
+        println(bottomSheetUIViewController.sheetPresentationController)
+        println(bottomSheetUIViewController.sheetPresentationController?.detents)
+
         UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
             viewControllerToPresent = bottomSheetUIViewController,
             animated = true,
@@ -94,6 +106,7 @@ internal class BottomSheetManager(
 class BottomSheetControllerDelegate(
     private val onDismiss: () -> Unit
 ) : NSObject(), UIAdaptivePresentationControllerDelegateProtocol {
+
     override fun presentationControllerShouldDismiss(presentationController: UIPresentationController): Boolean {
         return true
     }

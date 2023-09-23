@@ -24,6 +24,8 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+    macosX64()
+    macosArm64()
 
     sourceSets.commonMain.get().dependencies {
         implementation(compose.runtime)
@@ -35,12 +37,33 @@ kotlin {
     }
 
     sourceSets {
+        val commonMain by getting
+
         val androidMain by getting {
             dependencies {
                 implementation(libs.activity.compose)
 //                implementation("androidx.compose.material3:material3:1.1.1")
             }
         }
+
+        val desktopMain by getting
+
+        val iosMain by getting
+        val macosX64Main by getting
+        val macosArm64Main by getting
+
+        // Group for Material3 targets
+        val materialMain by creating
+        androidMain.dependsOn(materialMain)
+        desktopMain.dependsOn(materialMain)
+        materialMain.dependsOn(commonMain)
+
+        // Group for UIKit targets
+        val uiKitMain by creating
+        iosMain.dependsOn(uiKitMain)
+        macosX64Main.dependsOn(uiKitMain)
+        macosArm64Main.dependsOn(uiKitMain)
+        uiKitMain.dependsOn(commonMain)
     }
 }
 

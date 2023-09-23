@@ -68,19 +68,34 @@ fun BottomSheetScreen(
                 },
                 adaptiveSheetState = sheetState,
             ) {
-                Column {
-                    Text("Bottom Sheet")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
-                                    openBottomSheet = false
+                LazyColumn {
+                    item {
+                        Text("Bottom Sheet")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                    if (!sheetState.isVisible) {
+                                        openBottomSheet = false
+                                    }
                                 }
                             }
+                        ) {
+                            Text("Close")
                         }
-                    ) {
-                        Text("Close")
+                    }
+
+                    items(100) {
+                        Text(
+                            text = "Item $it",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        )
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
                     }
                 }
             }

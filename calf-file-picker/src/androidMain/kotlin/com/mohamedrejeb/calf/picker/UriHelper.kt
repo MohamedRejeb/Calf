@@ -10,7 +10,6 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 
 internal object URIPathHelper {
-
     fun getPath(context: Context, uri: Uri?): String? {
         if (uri == null) return null
 

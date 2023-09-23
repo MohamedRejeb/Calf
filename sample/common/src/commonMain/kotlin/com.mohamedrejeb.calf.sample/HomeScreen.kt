@@ -36,6 +36,7 @@ fun HomeScreen(
             style = MaterialTheme.typography.displayLarge.copy(
                 fontWeight = FontWeight.Bold
             ),
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
                 .padding(16.dp)
         )
@@ -63,6 +64,7 @@ fun HomeScreen(
                 append("eel")
             },
             style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
                 .padding(16.dp)
         )
@@ -156,17 +158,18 @@ fun ListItem(
         Icon(
             imageVector = icon,
             contentDescription = title,
-            modifier = Modifier
+            tint = MaterialTheme.colorScheme.onPrimary,
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = title,
-            modifier = Modifier
+            color = MaterialTheme.colorScheme.onPrimary,
         )
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             Icons.Outlined.ArrowForwardIos,
             contentDescription = "Navigate",
+            tint = MaterialTheme.colorScheme.onPrimary
         )
     }
 }

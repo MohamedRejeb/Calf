@@ -1,6 +1,8 @@
 package com.mohamedrejeb.calf.navigation
 
-actual typealias NavHostController = AdaptiveNavHostController
+import androidx.navigation.NavHostController
+
+actual typealias NavHostController = NavHostController
 
 actual fun NavHostController.navigate(route: String) {
     navigate(route)
