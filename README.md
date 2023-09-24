@@ -36,7 +36,7 @@ Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
 // For Adaptive UI components
-implementation("com.mohamedrejeb.calf:calf-ui:0.2.0")
+api("com.mohamedrejeb.calf:calf-ui:0.2.0")
 
 // For Adaptive FilePicker
 implementation("com.mohamedrejeb.calf:calf-file-picker:0.2.0")
