@@ -36,10 +36,10 @@ Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
 // For Adaptive UI components
-api("com.mohamedrejeb.calf:calf-ui:0.1.1")
+api("com.mohamedrejeb.calf:calf-ui:0.2.0")
 
 // For Adaptive FilePicker
-implementation("com.mohamedrejeb.calf:calf-file-picker:0.1.1")
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.2.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -55,7 +55,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.1.1")
+                export("com.mohamedrejeb.calf:calf-ui:0.2.0")
             }
         }
     ...
@@ -72,7 +72,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.1.1")
+            export("com.mohamedrejeb.calf:calf-ui:0.2.0")
         }
     }
     ...
@@ -238,6 +238,49 @@ WebView(
 )
 ```
 
+#### Web View Settings
+
+You can customize the web view settings by changing the `WebSettings` object in the `WebViewState`:
+
+```kotlin
+val state = rememberWebViewState(
+    url = "https://github.com/MohamedRejeb"
+)
+
+LaunchedEffect(Unit) {
+    // Enable JavaScript
+    state.settings.javaScriptEnabled = true
+
+    // Enable Zoom in Android
+    state.settings.androidSettings.supportZoom = true
+}
+```
+
+#### Call JavaScript
+
+You can call JavaScript functions from the web view by using the `evaluateJavaScript` function:
+
+```kotlin
+val state = rememberWebViewState(
+    url = "https://github.com/MohamedRejeb"
+)
+
+LaunchedEffect(Unit) {
+    val jsCode = """
+        document.body.style.backgroundColor = "red";
+        document.title
+    """.trimIndent()
+
+    // Evaluate the JavaScript code
+    state.evaluateJavaScript(jsCode) {
+        // Do something with the result
+        println("JS Response: $it")
+    }
+}
+```
+
+> **Note:** The `evaluateJavaScript` method only works when you enable JavaScript in the web view settings.
+
 ### Calf File Picker
 
 Calf File Picker allows you to pick files from the device storage.
@@ -268,6 +311,38 @@ Button(
     Text("Open File Picker")
 }
 ```
+
+#### FilePickerFileType
+
+`FilePickerFileType` allows you to specify the type of files you want to pick:
+
+`FilePickerFileType.Image` - Allows you to pick images only
+`FilePickerFileType.Video` - Allows you to pick videos only
+`FilePickerFileType.ImageView` - Allows you to pick images and videos only
+`FilePickerFileType.Audio` - Allows you to pick audio files only
+`FilePickerFileType.Document` - Allows you to pick documents only
+`FilePickerFileType.Text` - Allows you to pick text files only
+`FilePickerFileType.Pdf` - Allows you to pick PDF files only
+`FilePickerFileType.Presentation` - Allows you to pick presentation files only
+`FilePickerFileType.Spreadsheet` - Allows you to pick spreadsheet files only
+`FilePickerFileType.Word` - Allows you to pick compressed word only
+`FilePickerFileType.All` - Allows you to pick all types of files
+`FilePickerFileType.Folder` - Allows you to pick folders
+
+You can also specify the file types you want to pick by using the `FilePickerFileType.Custom` type:
+
+```kotlin
+val type = FilePickerType.Custom(
+    "text/plain"
+)
+```
+
+#### FilePickerSelectionMode
+
+`FilePickerSelectionMode` allows you to specify the selection mode of the file picker:
+
+`FilePickerSelectionMode.Single` - Allows you to pick a single file
+`FilePickerSelectionMode.Multiple` - Allows you to pick multiple files
 
 ## Contribution
 If you've found an error in this sample, please file an issue. <br>
