@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.androidLibrary)
-    id("module.publication")
+//    id("module.publication")
 }
 
 val os: OperatingSystem = OperatingSystem.current()
