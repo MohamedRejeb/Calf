@@ -30,11 +30,6 @@ class AlertDialogManager internal constructor(
     internal var text: String,
     internal var properties: DialogProperties,
 ) {
-    private val alertController = UIAlertController.alertControllerWithTitle(
-        title = title,
-        message = text,
-        preferredStyle = UIAlertControllerStyleAlert
-    )
 
     /**
      * Indicates whether the dialog is presented or not.
