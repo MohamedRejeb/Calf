@@ -69,7 +69,6 @@ internal class BottomSheetManager(
         )
         bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = true
 
-        println("Presenting bottom sheet")
         println(bottomSheetUIViewController.sheetPresentationController)
         println(bottomSheetUIViewController.sheetPresentationController?.detents)
 

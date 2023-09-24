@@ -4,7 +4,6 @@ import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
@@ -50,6 +49,15 @@ internal object URIPathHelper {
                 val selection = "_id=?"
                 val selectionArgs = arrayOf(split[1])
                 return getDataColumn(context, contentUri, selection, selectionArgs)
+            }
+        } else if (isExternalStorageDocument(uri)) {
+            if (uri.pathSegments.size > 1) {
+                val docId = uri.pathSegments[1]
+                val split = docId.split(":".toRegex()).toTypedArray()
+                val type = split[0]
+                if ("primary".equals(type, ignoreCase = true) && split.size > 1) {
+                    return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
+                }
             }
         } else if ("content".equals(uri.scheme, ignoreCase = true)) {
             return getDataColumn(context, uri, null, null)

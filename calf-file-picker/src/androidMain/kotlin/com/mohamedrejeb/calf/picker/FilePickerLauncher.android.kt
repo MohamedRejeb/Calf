@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.picker
 
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,52 +16,204 @@ actual fun rememberFilePickerLauncher(
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
-    val context = LocalContext.current
     return when (selectionMode) {
         FilePickerSelectionMode.Single -> {
-            val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.PickVisualMedia(),
-                onResult = { uri ->
-                    val file = URIPathHelper.getPath(context, uri)?.let { File(it) }
-                    file?.let { onResult(listOf(it)) }
-                }
-            )
-
-            remember {
-                FilePickerLauncher(
-                    type = type,
-                    selectionMode = selectionMode,
-                    onLaunch = {
-                        singlePhotoPickerLauncher.launch(
-                            type.toPickVisualMediaRequest()
-                        )
-                    }
-                )
+            when (type) {
+                FilePickerFileType.Image, FilePickerFileType.Video, FilePickerFileType.ImageVideo ->
+                    pickSingleVisualMedia(
+                        type = type,
+                        selectionMode = selectionMode,
+                        onResult = onResult,
+                    )
+                FilePickerFileType.Folder ->
+                    pickFolder(
+                        type = type,
+                        selectionMode = selectionMode,
+                        onResult = onResult,
+                    )
+                else ->
+                    pickSingleFile(
+                        type = type,
+                        selectionMode = selectionMode,
+                        onResult = onResult,
+                    )
             }
         }
         FilePickerSelectionMode.Multiple -> {
-            val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.PickMultipleVisualMedia(),
-                onResult = { uriList ->
-                    val fileList = uriList.mapNotNull { uri ->
-                        URIPathHelper.getPath(context, uri)?.let { File(it) }
-                    }
-                    onResult(fileList)
-                }
-            )
-
-            remember {
-                FilePickerLauncher(
-                    type = type,
-                    selectionMode = selectionMode,
-                    onLaunch = {
-                        singlePhotoPickerLauncher.launch(
-                            type.toPickVisualMediaRequest()
-                        )
-                    }
-                )
+            when (type) {
+                FilePickerFileType.Image, FilePickerFileType.Video, FilePickerFileType.ImageVideo ->
+                    pickMultipleVisualMedia(
+                        type = type,
+                        selectionMode = selectionMode,
+                        onResult = onResult,
+                    )
+                FilePickerFileType.Folder ->
+                    pickFolder(
+                        type = type,
+                        selectionMode = selectionMode,
+                        onResult = onResult,
+                    )
+                else ->
+                    pickMultipleFiles(
+                        type = type,
+                        selectionMode = selectionMode,
+                        onResult = onResult,
+                    )
             }
         }
+    }
+}
+
+@Composable
+private fun pickSingleVisualMedia(
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher {
+    val context = LocalContext.current
+
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            val file = URIPathHelper.getPath(context, uri)?.let { File(it) }
+            file?.let { onResult(listOf(it)) }
+        }
+    )
+
+    return remember {
+        FilePickerLauncher(
+            type = type,
+            selectionMode = selectionMode,
+            onLaunch = {
+                singlePhotoPickerLauncher.launch(
+                    type.toPickVisualMediaRequest()
+                )
+            }
+        )
+    }
+}
+
+@Composable
+fun pickMultipleVisualMedia(
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher {
+    val context = LocalContext.current
+
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(),
+        onResult = { uriList ->
+            val fileList = uriList.mapNotNull { uri ->
+                URIPathHelper.getPath(context, uri)?.let { File(it) }
+            }
+            onResult(fileList)
+        }
+    )
+
+    return remember {
+        FilePickerLauncher(
+            type = type,
+            selectionMode = selectionMode,
+            onLaunch = {
+                singlePhotoPickerLauncher.launch(
+                    type.toPickVisualMediaRequest()
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun pickSingleFile(
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher {
+    val context = LocalContext.current
+
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            val file = URIPathHelper.getPath(context, uri)?.let { File(it) }
+            file?.let { onResult(listOf(it)) }
+        }
+    )
+
+    return remember {
+        FilePickerLauncher(
+            type = type,
+            selectionMode = selectionMode,
+            onLaunch = {
+                singlePhotoPickerLauncher.launch(
+                    type.value.first()
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun pickMultipleFiles(
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher {
+    val context = LocalContext.current
+
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents(),
+        onResult = { uriList ->
+            val fileList = uriList.mapNotNull { uri ->
+                URIPathHelper.getPath(context, uri)?.let { File(it) }
+            }
+            onResult(fileList)
+        }
+    )
+
+    return remember {
+        FilePickerLauncher(
+            type = type,
+            selectionMode = selectionMode,
+            onLaunch = {
+                singlePhotoPickerLauncher.launch(
+                    type.value.first()
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun pickFolder(
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher {
+    val context = LocalContext.current
+
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree(),
+        onResult = { uri ->
+            uri?.let { uri ->
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+                val file = URIPathHelper.getPath(context, uri)?.let { File(it) }
+                file?.let { onResult(listOf(it)) }
+            }
+        }
+    )
+
+    return remember {
+        FilePickerLauncher(
+            type = type,
+            selectionMode = selectionMode,
+            onLaunch = {
+                singlePhotoPickerLauncher.launch(null)
+            }
+        )
     }
 }
 

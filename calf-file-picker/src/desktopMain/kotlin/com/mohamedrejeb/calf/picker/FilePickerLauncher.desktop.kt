@@ -24,8 +24,8 @@ actual fun rememberFilePickerLauncher(
                 val frame: Frame? = null
                 val fileDialog = object : FileDialog(
                     frame,
-                    "Select File",
-                    LOAD
+                    "Select ${if (type == FilePickerFileType.Folder) "Folder" else "File"}",
+                    if (type == FilePickerFileType.Folder) SAVE else LOAD
                 ) {
                     override fun setVisible(value: Boolean) {
                         super.setVisible(value)
@@ -39,18 +39,28 @@ actual fun rememberFilePickerLauncher(
                 fileDialog.isMultipleMode = selectionMode == FilePickerSelectionMode.Multiple
 
                 val mimeType = when (type) {
-                    FilePickerFileType.Image -> listOf("image")
-                    FilePickerFileType.Video -> listOf("video")
-                    FilePickerFileType.ImageVideo -> listOf("image", "video")
+                    FilePickerFileType.Folder -> listOf("folder")
                     FilePickerFileType.All -> emptyList()
-                }
-                fileDialog.setFilenameFilter { _, name ->
-                    if (mimeType.isEmpty()) {
-                        return@setFilenameFilter true
+                    else -> type.value.map {
+                        it
+                            .removeSuffix("/*")
+                            .removeSuffix("/")
+                            .removeSuffix("*")
+                    }.filter {
+                        it.isNotEmpty()
                     }
-
-                    val contentType = URLConnection.guessContentTypeFromName(name) ?: ""
-                    contentType.startsWith(mimeType.first(), true)
+                }
+                fileDialog.setFilenameFilter { file, name ->
+                    if (mimeType.isEmpty()) {
+                        true
+                    } else if (mimeType.first().contains("folder", true)) {
+                        file.isDirectory
+                    } else {
+                        val contentType = URLConnection.guessContentTypeFromName(name) ?: ""
+                        mimeType.any {
+                            contentType.startsWith(it, true)
+                        }
+                    }
                 }
 
                 fileDialog

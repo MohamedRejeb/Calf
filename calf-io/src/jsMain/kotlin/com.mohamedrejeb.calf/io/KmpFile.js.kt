@@ -9,6 +9,8 @@ import org.w3c.files.FileReader
  */
 actual typealias KmpFile = File
 
+actual fun createKmpFile(path: String): KmpFile? = null
+
 actual fun KmpFile.exists() = true
 
 actual fun KmpFile.readByteArray(): ByteArray {
@@ -22,3 +24,12 @@ actual fun KmpFile.readByteArray(): ByteArray {
     fileReader.readAsText(this)
     return fileReader.result as ByteArray
 }
+
+actual val KmpFile.name: String?
+    get() = this.name
+
+actual val KmpFile.path: String?
+    get() = this.name
+
+actual val KmpFile.isDirectory: Boolean
+    get() = !this.name.contains(".")
