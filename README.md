@@ -216,7 +216,7 @@ AdaptiveTimePicker(
 
 #### WebView
 
-`WebView` is a view that adapts to the platform it is running on. It is a wrapper around `WebView` on Android and `WKWebView` on iOS.
+`WebView` is a view that adapts to the platform it is running on. It is a wrapper around `WebView` on Android, `WKWebView` on iOS and JavaFX `WebView` on Desktop.
 
 | Android                                         | iOS                                     |
 |-------------------------------------------------|-----------------------------------------|
@@ -317,16 +317,27 @@ Button(
 `FilePickerFileType` allows you to specify the type of files you want to pick:
 
 `FilePickerFileType.Image` - Allows you to pick images only
+
 `FilePickerFileType.Video` - Allows you to pick videos only
+
 `FilePickerFileType.ImageView` - Allows you to pick images and videos only
+
 `FilePickerFileType.Audio` - Allows you to pick audio files only
+
 `FilePickerFileType.Document` - Allows you to pick documents only
+
 `FilePickerFileType.Text` - Allows you to pick text files only
+
 `FilePickerFileType.Pdf` - Allows you to pick PDF files only
+
 `FilePickerFileType.Presentation` - Allows you to pick presentation files only
+
 `FilePickerFileType.Spreadsheet` - Allows you to pick spreadsheet files only
+
 `FilePickerFileType.Word` - Allows you to pick compressed word only
+
 `FilePickerFileType.All` - Allows you to pick all types of files
+
 `FilePickerFileType.Folder` - Allows you to pick folders
 
 You can also specify the file types you want to pick by using the `FilePickerFileType.Custom` type:
@@ -342,6 +353,7 @@ val type = FilePickerType.Custom(
 `FilePickerSelectionMode` allows you to specify the selection mode of the file picker:
 
 `FilePickerSelectionMode.Single` - Allows you to pick a single file
+
 `FilePickerSelectionMode.Multiple` - Allows you to pick multiple files
 
 ## Contribution
