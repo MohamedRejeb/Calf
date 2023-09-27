@@ -27,6 +27,7 @@ include(
     ":calf-navigation",
     ":calf-file-picker",
     ":calf-io",
+    ":calf-permissions",
 
     ":sample:android",
     ":sample:desktop",

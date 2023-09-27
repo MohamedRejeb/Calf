@@ -18,9 +18,9 @@ kotlin {
     jvm("desktop") {
         jvmToolchain(11)
     }
-//    js(IR) {
-//        browser()
-//    }
+    js(IR) {
+        browser()
+    }
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -32,6 +32,9 @@ kotlin {
     }
     sourceSets.commonTest.get().dependencies {
         implementation(libs.kotlin.test)
+    }
+    sourceSets.androidMain.get().dependencies {
+        implementation(libs.activity.compose)
     }
 }
 

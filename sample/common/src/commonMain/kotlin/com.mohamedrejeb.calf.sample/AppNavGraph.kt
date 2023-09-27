@@ -14,6 +14,7 @@ enum class Screen {
     Switch,
     FilePicker,
     WebView,
+    Map,
     DropDownMenu,
 }
 
@@ -90,6 +91,13 @@ fun AppNavGraph(
         }
         composable(Screen.WebView.name) {
             WebViewScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.Map.name) {
+            MapScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }
