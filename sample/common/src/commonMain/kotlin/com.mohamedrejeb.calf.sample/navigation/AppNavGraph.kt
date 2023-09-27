@@ -1,22 +1,20 @@
-package com.mohamedrejeb.calf.sample
+package com.mohamedrejeb.calf.sample.navigation
 
 import androidx.compose.runtime.Composable
 import com.mohamedrejeb.calf.navigation.AdaptiveNavHost
 import com.mohamedrejeb.calf.navigation.AdaptiveNavHostController
-
-enum class Screen {
-    Home,
-    Dialog,
-    BottomSheet,
-    DatePicker,
-    TimePicker,
-    ProgressBar,
-    Switch,
-    FilePicker,
-    WebView,
-    Map,
-    DropDownMenu,
-}
+import com.mohamedrejeb.calf.sample.ui.AlertDialogScreen
+import com.mohamedrejeb.calf.sample.ui.BottomSheetScreen
+import com.mohamedrejeb.calf.sample.ui.DatePickerScreen
+import com.mohamedrejeb.calf.sample.ui.DropDownMenuScreen
+import com.mohamedrejeb.calf.sample.ui.FilePickerScreen
+import com.mohamedrejeb.calf.sample.ui.HomeScreen
+import com.mohamedrejeb.calf.sample.ui.MapScreen
+import com.mohamedrejeb.calf.sample.ui.PermissionScreen
+import com.mohamedrejeb.calf.sample.ui.ProgressBarScreen
+import com.mohamedrejeb.calf.sample.ui.SwitchScreen
+import com.mohamedrejeb.calf.sample.ui.TimePickerScreen
+import com.mohamedrejeb.calf.sample.ui.WebViewScreen
 
 @Composable
 fun AppNavGraph(
@@ -91,6 +89,13 @@ fun AppNavGraph(
         }
         composable(Screen.WebView.name) {
             WebViewScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.Permission.name) {
+            PermissionScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }

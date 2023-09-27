@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sample
+package com.mohamedrejeb.calf.sample.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,15 +21,11 @@ import com.mohamedrejeb.calf.ui.timepicker.AdaptiveTimePicker
 import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 import com.mohamedrejeb.calf.ui.toggle.CupertinoSwitch
-import com.mohamedrejeb.calf.ui.web.WebView
-import com.mohamedrejeb.calf.ui.web.rememberWebViewNavigator
-import com.mohamedrejeb.calf.ui.web.rememberWebViewState
-import com.mohamedrejeb.calf.ui.web.rememberWebViewStateWithHTMLData
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WebViewScreen(
+fun SwitchScreen(
     navigateBack: () -> Unit
 ) {
     Box(
@@ -39,48 +35,10 @@ fun WebViewScreen(
             .windowInsetsPadding(WindowInsets.systemBars)
             .windowInsetsPadding(WindowInsets.ime)
     ) {
-        val state = rememberWebViewState(
-            url = "https://github.com/MohamedRejeb"
-        )
-
-        LaunchedEffect(state.isLoading) {
-            if (state.isLoading) return@LaunchedEffect
-
-            state.settings.apply {
-                javaScriptEnabled = true
-                androidSettings.supportZoom = true
-            }
-
-            state.evaluateJavascript(
-                """
-                    "Hello World!";
-                """.trimIndent()
-            ) {
-                println("JS Response: $it")
-            }
-        }
-
-        WebView(
-            state = state,
-            modifier = Modifier
-                .fillMaxSize()
-        )
-
-        if (state.isLoading)
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter)
-            )
-
         IconButton(
             onClick = {
                 navigateBack()
             },
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.onBackground,
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(16.dp)
@@ -89,6 +47,28 @@ fun WebViewScreen(
                 Icons.Filled.ArrowBackIosNew,
                 contentDescription = "Back",
                 tint = MaterialTheme.colorScheme.onBackground,
+            )
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .align(Alignment.Center)
+        ) {
+            val firstSwitchState = remember { mutableStateOf(false) }
+            AdaptiveSwitch(
+                checked = firstSwitchState.value,
+                onCheckedChange = { firstSwitchState.value = it },
+                modifier = Modifier
+                    .padding(16.dp)
+            )
+            val secondSwitchState = remember { mutableStateOf(true) }
+            AdaptiveSwitch(
+                checked = secondSwitchState.value,
+                onCheckedChange = { secondSwitchState.value = it },
+                modifier = Modifier
+                    .padding(16.dp)
             )
         }
     }

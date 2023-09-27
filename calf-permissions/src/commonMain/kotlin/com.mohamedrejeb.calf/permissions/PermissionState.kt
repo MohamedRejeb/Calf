@@ -56,6 +56,14 @@ interface PermissionState {
      * This behavior varies depending on the Android level API.
      */
     fun launchPermissionRequest()
+
+    /**
+     * Open the app settings page.
+     *
+     * This should always be triggered from non-composable scope, for example, from a side-effect
+     * or a non-composable callback. Otherwise, this will result in an IllegalStateException.
+     */
+    fun openAppSettings()
 }
 
 /**
@@ -66,7 +74,7 @@ enum class Permission {
     Gallery,
     ReadStorage,
     WriteStorage,
-    FileLocation,
+    FineLocation,
     CoarseLocation,
     RemoteNotification,
     RecordAudio,

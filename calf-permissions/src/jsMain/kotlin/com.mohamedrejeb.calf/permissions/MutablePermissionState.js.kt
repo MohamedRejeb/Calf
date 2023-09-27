@@ -43,13 +43,11 @@ internal actual class MutablePermissionState actual constructor(
 
     override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
 
-    override fun launchPermissionRequest() {
+    override fun launchPermissionRequest() {}
 
-    }
+    override fun openAppSettings() {}
 
-    internal actual fun refreshPermissionStatus() {
-
-    }
+    internal actual fun refreshPermissionStatus() {}
 
     private fun getPermissionStatus(): PermissionStatus {
         return PermissionStatus.Denied(false)

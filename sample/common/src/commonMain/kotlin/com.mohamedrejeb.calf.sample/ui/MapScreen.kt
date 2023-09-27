@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sample
+package com.mohamedrejeb.calf.sample.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

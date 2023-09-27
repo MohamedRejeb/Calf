@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sample
+package com.mohamedrejeb.calf.sample.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,22 +13,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.ui.cupertino.CupertinoActivityIndicator
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
+import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import com.mohamedrejeb.calf.ui.sheet.AdaptiveBottomSheet
 import com.mohamedrejeb.calf.ui.sheet.rememberAdaptiveSheetState
 import com.mohamedrejeb.calf.ui.timepicker.AdaptiveTimePicker
 import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
-import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
-import com.mohamedrejeb.calf.ui.toggle.CupertinoSwitch
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SwitchScreen(
+fun TimePickerScreen(
     navigateBack: () -> Unit
 ) {
-    Box(
+    val state = rememberAdaptiveTimePickerState()
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
@@ -40,7 +42,7 @@ fun SwitchScreen(
                 navigateBack()
             },
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .align(Alignment.Start)
                 .padding(16.dp)
         ) {
             Icon(
@@ -50,26 +52,23 @@ fun SwitchScreen(
             )
         }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        Text(
+            text = "Adaptive Time Picker",
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
-                .align(Alignment.Center)
-        ) {
-            val firstSwitchState = remember { mutableStateOf(false) }
-            AdaptiveSwitch(
-                checked = firstSwitchState.value,
-                onCheckedChange = { firstSwitchState.value = it },
-                modifier = Modifier
-                    .padding(16.dp)
-            )
-            val secondSwitchState = remember { mutableStateOf(true) }
-            AdaptiveSwitch(
-                checked = secondSwitchState.value,
-                onCheckedChange = { secondSwitchState.value = it },
-                modifier = Modifier
-                    .padding(16.dp)
-            )
-        }
+                .padding(16.dp)
+        )
+
+        Text(
+            text = "Selected time: ${state.hour}:${state.minute}",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .padding(16.dp)
+        )
+
+        AdaptiveTimePicker(
+            state = state,
+            modifier = Modifier
+        )
     }
 }

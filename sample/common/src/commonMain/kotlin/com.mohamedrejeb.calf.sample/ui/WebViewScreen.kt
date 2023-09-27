@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sample
+package com.mohamedrejeb.calf.sample.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,9 +9,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.ui.web.WebView
+import com.mohamedrejeb.calf.ui.web.rememberWebViewState
 
 @Composable
-fun DropDownMenuScreen(
+fun WebViewScreen(
     navigateBack: () -> Unit
 ) {
     Box(
@@ -21,6 +23,40 @@ fun DropDownMenuScreen(
             .windowInsetsPadding(WindowInsets.systemBars)
             .windowInsetsPadding(WindowInsets.ime)
     ) {
+        val state = rememberWebViewState(
+            url = "https://github.com/MohamedRejeb"
+        )
+
+        LaunchedEffect(state.isLoading) {
+            if (state.isLoading) return@LaunchedEffect
+
+            state.settings.apply {
+                javaScriptEnabled = true
+                androidSettings.supportZoom = true
+            }
+
+            state.evaluateJavascript(
+                """
+                    "Hello World!";
+                """.trimIndent()
+            ) {
+                println("JS Response: $it")
+            }
+        }
+
+        WebView(
+            state = state,
+            modifier = Modifier
+                .fillMaxSize()
+        )
+
+        if (state.isLoading)
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+            )
+
         IconButton(
             onClick = {
                 navigateBack()
@@ -38,32 +74,6 @@ fun DropDownMenuScreen(
                 contentDescription = "Back",
                 tint = MaterialTheme.colorScheme.onBackground,
             )
-        }
-
-        var expanded by remember { mutableStateOf(false) }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(16.dp)
-        ) {
-            Text("Options")
-            Box(
-                modifier = Modifier
-            ) {
-                IconButton(onClick = { expanded = !expanded }) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "More"
-                    )
-                }
-
-//                AdaptiveDropdownMenu(
-//                    expanded = expanded,
-//                    onDismissRequest = { expanded = false }
-//                )
-            }
         }
     }
 }

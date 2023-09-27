@@ -2,7 +2,10 @@ package com.mohamedrejeb.calf.permissions
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,7 +36,7 @@ internal actual fun rememberMutablePermissionState(
 ): MutablePermissionState {
     val context = LocalContext.current
     val permissionState = remember(permission) {
-        MutablePermissionState(permission, context, context.findActivity())
+        MutablePermissionState(permission, context, context.findActivity(), onPermissionResult)
     }
 
     // Refresh the permission status when the lifecycle is resumed
@@ -68,7 +71,8 @@ internal actual fun rememberMutablePermissionState(
 internal actual class MutablePermissionState(
     override val permission: Permission,
     private val context: Context?,
-    private val activity: Activity?
+    private val activity: Activity?,
+    private val onPermissionResult: (Boolean) -> Unit,
 ) : PermissionState {
 
     actual constructor(
@@ -76,7 +80,8 @@ internal actual class MutablePermissionState(
     ) : this(
         permission,
         null,
-        null
+        null,
+        {}
     )
 
     private val androidPermission = permission.toAndroidPermission()
@@ -85,6 +90,11 @@ internal actual class MutablePermissionState(
 
     override fun launchPermissionRequest() {
         if (androidPermission.isEmpty()) return
+        else if (permission.isAlwaysGranted()) {
+            refreshPermissionStatus()
+            onPermissionResult(true)
+            return
+        }
 
         launcher?.launch(
             androidPermission
@@ -93,6 +103,17 @@ internal actual class MutablePermissionState(
 
     internal var launcher: ActivityResultLauncher<String>? = null
 
+    override fun openAppSettings() {
+        if (context == null) return
+
+        val intent = Intent().apply {
+            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            data = Uri.fromParts("package", context.packageName, null)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
+    }
+
     internal actual fun refreshPermissionStatus() {
         status = getPermissionStatus()
     }
@@ -100,6 +121,8 @@ internal actual class MutablePermissionState(
     private fun getPermissionStatus(): PermissionStatus {
         if (context == null || activity == null || androidPermission.isEmpty()) {
             return PermissionStatus.Denied(false)
+        } else if (permission.isAlwaysGranted()) {
+            return PermissionStatus.Granted
         }
 
         val hasPermission = context.checkPermission(androidPermission)
