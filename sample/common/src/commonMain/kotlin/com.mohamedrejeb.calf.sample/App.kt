@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.sample
 
 import androidx.compose.runtime.*
 import com.mohamedrejeb.calf.navigation.rememberNavController
+import com.mohamedrejeb.calf.sample.navigation.AppNavGraph
 import com.mohamedrejeb.calf.sample.ui.theme.CalfTheme
 
 @Composable

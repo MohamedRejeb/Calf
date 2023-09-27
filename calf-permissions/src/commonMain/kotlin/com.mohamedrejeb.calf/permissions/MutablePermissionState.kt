@@ -31,7 +31,7 @@ internal expect fun rememberMutablePermissionState(
  */
 @ExperimentalPermissionsApi
 @Stable
-internal expect class MutablePermissionState(
+internal expect class MutablePermissionState internal constructor(
     permission: Permission,
 ) : PermissionState {
     internal fun refreshPermissionStatus()

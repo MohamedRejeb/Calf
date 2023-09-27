@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sample
+package com.mohamedrejeb.calf.sample.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,6 +39,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.navigation.Screen
 
 @Composable
 fun HomeScreen(
@@ -140,6 +141,11 @@ fun HomeScreen(
                     onClick = { navigate(Screen.WebView.name) },
                     title = "Adaptive Web View",
                     icon = Icons.Outlined.Web,
+                )
+                ListItem(
+                    onClick = { navigate(Screen.Permission.name) },
+                    title = "Permissions Controls",
+                    icon = Icons.Outlined.Map,
                 )
                 ListItem(
                     onClick = { navigate(Screen.Map.name) },

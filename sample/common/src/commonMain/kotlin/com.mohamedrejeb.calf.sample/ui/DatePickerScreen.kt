@@ -1,9 +1,12 @@
-package com.mohamedrejeb.calf.sample
+package com.mohamedrejeb.calf.sample.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -24,10 +27,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimePickerScreen(
+fun DatePickerScreen(
     navigateBack: () -> Unit
 ) {
-    val state = rememberAdaptiveTimePickerState()
+    val state = rememberAdaptiveDatePickerState()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -36,6 +39,10 @@ fun TimePickerScreen(
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
             .windowInsetsPadding(WindowInsets.ime)
+            .scrollable(
+                rememberScrollState(),
+                orientation = Orientation.Vertical
+            )
     ) {
         IconButton(
             onClick = {
@@ -53,20 +60,20 @@ fun TimePickerScreen(
         }
 
         Text(
-            text = "Adaptive Time Picker",
+            text = "Adaptive Date Picker",
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .padding(16.dp)
         )
 
         Text(
-            text = "Selected time: ${state.hour}:${state.minute}",
+            text = "Selected date millis: ${state.selectedDateMillis}",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier
                 .padding(16.dp)
         )
 
-        AdaptiveTimePicker(
+        AdaptiveDatePicker(
             state = state,
             modifier = Modifier
         )

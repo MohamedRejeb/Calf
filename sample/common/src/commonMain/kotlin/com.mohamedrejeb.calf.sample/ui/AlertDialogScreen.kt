@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sample
+package com.mohamedrejeb.calf.sample.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,15 +16,16 @@ import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import com.mohamedrejeb.calf.ui.sheet.AdaptiveBottomSheet
-import com.mohamedrejeb.calf.ui.sheet.rememberAdaptiveSheetState
 import com.mohamedrejeb.calf.ui.timepicker.AdaptiveTimePicker
 import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProgressBarScreen(
+fun AlertDialogScreen(
     navigateBack: () -> Unit
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -47,15 +48,28 @@ fun ProgressBarScreen(
             )
         }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .align(Alignment.Center)
+        Button(
+            onClick = {
+                showDialog = true
+            },
+            modifier = Modifier.align(Alignment.Center)
         ) {
-            AdaptiveCircularProgressIndicator()
-            AdaptiveCircularProgressIndicator(modifier = Modifier.size(60.dp))
-            AdaptiveCircularProgressIndicator(modifier = Modifier.size(90.dp))
+            Text("Show Alert Dialog")
+        }
+
+        if (showDialog) {
+            AdaptiveAlertDialog(
+                onConfirm = {
+                    showDialog = false
+                },
+                onDismiss = {
+                    showDialog = false
+                },
+                confirmText = "Ok",
+                dismissText = "Cancel",
+                title = "Alert Dialog",
+                text = "This is a native alert dialog from Calf",
+            )
         }
     }
 }

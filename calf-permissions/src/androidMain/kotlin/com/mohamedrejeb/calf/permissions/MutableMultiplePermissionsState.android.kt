@@ -29,7 +29,7 @@ internal actual fun rememberMutableMultiplePermissionsState(
     onPermissionsResult: (Map<Permission, Boolean>) -> Unit
 ): MultiplePermissionsState {
     // Create mutable permissions that can be requested individually
-    val mutablePermissions = rememberMutablePermissionsState(permissions)
+    val mutablePermissions = rememberMutablePermissionsState(permissions, onPermissionsResult)
     // Refresh permissions when the lifecycle is resumed.
     PermissionsLifecycleCheckerEffect(mutablePermissions)
 
@@ -61,13 +61,22 @@ internal actual fun rememberMutableMultiplePermissionsState(
 @ExperimentalPermissionsApi
 @Composable
 private fun rememberMutablePermissionsState(
-    permissions: List<Permission>
+    permissions: List<Permission>,
+    onPermissionsResult: (Map<Permission, Boolean>) -> Unit
 ): List<MutablePermissionState> {
     // Create list of MutablePermissionState for each permission
     val context = LocalContext.current
     val activity = context.findActivity()
     val mutablePermissions: List<MutablePermissionState> = remember(permissions) {
-        return@remember permissions.map { MutablePermissionState(it, context, activity) }
+        return@remember permissions.map {  permission ->
+            MutablePermissionState(
+                permission,
+                context,
+                activity,
+            ) { isGranted ->
+                onPermissionsResult(mapOf(permission to isGranted))
+            }
+        }
     }
     // Update each permission with its own launcher
     for (permissionState in mutablePermissions) {

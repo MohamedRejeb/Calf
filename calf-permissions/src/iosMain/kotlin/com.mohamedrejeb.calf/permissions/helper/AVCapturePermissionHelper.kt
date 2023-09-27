@@ -9,11 +9,11 @@ import platform.AVFoundation.AVMediaType
 import platform.AVFoundation.authorizationStatusForMediaType
 import platform.AVFoundation.requestAccessForMediaType
 
-internal class AVCapturePermissionDelegate(
+internal class AVCapturePermissionHelper(
     private val type: AVMediaType,
-): PermissionDelegate {
+): PermissionHelper {
     override fun launchPermissionRequest(onPermissionResult: (Boolean) -> Unit) {
-        val status = currentAuthorizationStatus()
+        val status = getCurrentAuthorizationStatus()
         when(status) {
             AVAuthorizationStatusAuthorized -> onPermissionResult(true)
             else -> {
@@ -25,15 +25,17 @@ internal class AVCapturePermissionDelegate(
     }
 
     @OptIn(ExperimentalPermissionsApi::class)
-    override fun getPermissionStatus(): PermissionStatus {
-        val status = currentAuthorizationStatus()
-        return when(status) {
+    override fun getPermissionStatus(onPermissionResult: (PermissionStatus) -> Unit) {
+        val status = getCurrentAuthorizationStatus()
+        val permissionStatus = when(status) {
             AVAuthorizationStatusAuthorized -> PermissionStatus.Granted
             else -> PermissionStatus.Denied(false)
         }
+
+        onPermissionResult(permissionStatus)
     }
 
-    private fun currentAuthorizationStatus(): AVAuthorizationStatus {
+    private fun getCurrentAuthorizationStatus(): AVAuthorizationStatus {
         return AVCaptureDevice.authorizationStatusForMediaType(type)
     }
 }

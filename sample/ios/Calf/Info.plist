@@ -4,5 +4,17 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+    <string>Just for tests</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>Just for tests</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+    <string>Just for tests</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Just for tests</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Just for tests</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>Just for tests</string>
 </dict>
 </plist>

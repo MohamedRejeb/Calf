@@ -104,7 +104,7 @@ internal fun Permission.toAndroidPermission(): String {
         Permission.Gallery -> android.Manifest.permission.READ_EXTERNAL_STORAGE
         Permission.ReadStorage -> android.Manifest.permission.READ_EXTERNAL_STORAGE
         Permission.WriteStorage -> android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-        Permission.FileLocation -> android.Manifest.permission.ACCESS_FINE_LOCATION
+        Permission.FineLocation -> android.Manifest.permission.ACCESS_FINE_LOCATION
         Permission.CoarseLocation -> android.Manifest.permission.ACCESS_COARSE_LOCATION
         Permission.RemoteNotification -> android.Manifest.permission.RECEIVE_BOOT_COMPLETED
         Permission.RecordAudio -> android.Manifest.permission.RECORD_AUDIO
@@ -121,12 +121,20 @@ internal fun Permission.toAndroidPermission(): String {
     }
 }
 
+internal fun Permission.isAlwaysGranted(): Boolean = when(this) {
+    Permission.Gallery,
+    Permission.ReadStorage,
+    Permission.WriteStorage,
+    Permission.RemoteNotification -> true
+    else -> false
+}
+
 internal fun getPermissionFromAndroidPermission(androidPermission: String): Permission? {
     return when (androidPermission) {
         android.Manifest.permission.CAMERA -> Permission.Camera
         android.Manifest.permission.READ_EXTERNAL_STORAGE -> Permission.ReadStorage
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE -> Permission.WriteStorage
-        android.Manifest.permission.ACCESS_FINE_LOCATION -> Permission.FileLocation
+        android.Manifest.permission.ACCESS_FINE_LOCATION -> Permission.FineLocation
         android.Manifest.permission.ACCESS_COARSE_LOCATION -> Permission.CoarseLocation
         android.Manifest.permission.RECEIVE_BOOT_COMPLETED -> Permission.RemoteNotification
         android.Manifest.permission.RECORD_AUDIO -> Permission.RecordAudio
