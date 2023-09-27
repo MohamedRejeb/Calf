@@ -55,6 +55,7 @@ kotlin {
                 // This is possible thanks to `enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")` in `settings.gradle.kts
                 api(projects.calfUi)
                 implementation(projects.calfFilePicker)
+                implementation(projects.calfPermissions)
                 implementation(projects.calfNavigation)
             }
         }
