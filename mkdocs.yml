@@ -1,0 +1,89 @@
+# Project information
+site_name: 'Calf'
+site_description: 'A library that allows you to easily create adaptive UIs for your Compose Multiplatform apps.'
+site_author: 'Mohamed Rejeb'
+site_url: 'https://github.com/MohamedRejeb/Calf'
+remote_branch: gh-pages
+edit_uri: ""
+
+# Repository
+repo_name: 'Calf'
+repo_url: 'https://github.com/MohamedRejeb/Calf'
+
+# Configuration
+theme:
+  name: 'material'
+  language: 'en'
+  favicon: 'images/logo.ico'
+  logo: 'images/logo.svg'
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+      primary: white
+      accent: white
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+      primary: teal
+      accent: lime
+  font:
+    text: 'Roboto'
+    code: 'Roboto Mono'
+
+# Social
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/MohamedRejeb
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/MohamadRejeb
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/mohamedrejeb/
+
+# Navigation
+nav:
+  - 'Overview': index.md
+  - 'Installation': installation.md
+  - 'Adaptive UI': ui.md
+  - 'File Picker': filepicker.md
+  - 'Permissions': permissions.md
+  #- 'Change Log': changelog.md
+  #- 'Contributing': contributing.md
+  - 'Code of Conduct': code_of_conduct.md
+
+# CSS
+extra_css:
+  - 'css/site.css'
+
+# Extensions
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - footnotes
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.mark
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+      # Plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+# Copyright
+copyright: |
+  &copy; 2023 <a href="https://github.com/MohamedRejeb"  target="_blank" rel="noopener">Mohamed Rejeb</a>
