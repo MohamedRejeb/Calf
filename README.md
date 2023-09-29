@@ -3,13 +3,13 @@
 Calf is a library that allows you to easily create adaptive UIs for your Compose Multiplatform apps.
 
 
-[![Kotlin](https://img.shields.io/badge/kotlin-1.9.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/kotlin-1.9.20--Beta-blue.svg?logo=kotlin)](http://kotlinlang.org)
 [![MohamedRejeb](https://raw.githubusercontent.com/MohamedRejeb/MohamedRejeb/main/badges/mohamedrejeb.svg)](https://github.com/MohamedRejeb)
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 [![BuildPassing](https://shields.io/badge/build-passing-brightgreen)](https://github.com/MohamedRejeb/ksoup/actions)
 [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui%22)
 
-![Calf thumbnail](images/thumbnail.png)
+![Calf thumbnail](docs/images/thumbnail.png)
 
 Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 
@@ -92,7 +92,7 @@ kotlin {
 
 | Android                                                         | iOS                                                     |
 |-----------------------------------------------------------------|---------------------------------------------------------|
-| ![Alert Dialog Android](images/AdaptiveAlertDialog-android.png) | ![Alert Dialog iOS](images/AdaptiveAlertDialog-ios.png) |
+| ![Alert Dialog Android](docs/images/AdaptiveAlertDialog-android.png) | ![Alert Dialog iOS](docs/images/AdaptiveAlertDialog-ios.png) |
 
 ```kotlin
 var showDialog by remember { mutableStateOf(false) }
@@ -121,7 +121,7 @@ if (showDialog) {
 
 | Android                                                         | iOS                                                     |
 |-----------------------------------------------------------------|---------------------------------------------------------|
-| ![Bottom Sheet Android](images/AdaptiveBottomSheet-android.png) | ![Bottom Sheet iOS](images/AdaptiveBottomSheet-ios.png) |
+| ![Bottom Sheet Android](docs/images/AdaptiveBottomSheet-android.png) | ![Bottom Sheet iOS](docs/images/AdaptiveBottomSheet-ios.png) |
 
 ```kotlin
 val scope = rememberCoroutineScope()
@@ -164,7 +164,7 @@ Box(
 
 | Android                                                                                      | iOS                                                                                  |
 |----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| ![Circular Progress Indicator Android](images/AdaptiveCircularProgressIndicator-android.png) | ![Circular Progress Indicator iOS](images/AdaptiveCircularProgressIndicator-ios.png) |
+| ![Circular Progress Indicator Android](docs/images/AdaptiveCircularProgressIndicator-android.png) | ![Circular Progress Indicator iOS](docs/images/AdaptiveCircularProgressIndicator-ios.png) |
 
 ```kotlin
 AdaptiveCircularProgressIndicator(
@@ -179,7 +179,7 @@ AdaptiveCircularProgressIndicator(
 
 | Android                                                       | iOS                                                   |
 |---------------------------------------------------------------|-------------------------------------------------------|
-| ![Date Picker Android](images/AdaptiveDatePicker-android.png) | ![Date Picker iOS](images/AdaptiveDatePicker-ios.png) |
+| ![Date Picker Android](docs/images/AdaptiveDatePicker-android.png) | ![Date Picker iOS](docs/images/AdaptiveDatePicker-ios.png) |
 
 ```kotlin
 val state = rememberAdaptiveDatePickerState()
@@ -199,7 +199,7 @@ AdaptiveDatePicker(
 
 | Android                                                       | iOS                                                   |
 |---------------------------------------------------------------|-------------------------------------------------------|
-| ![Time Picker Android](images/AdaptiveTimePicker-android.png) | ![Time Picker iOS](images/AdaptiveTimePicker-ios.png) |
+| ![Time Picker Android](docs/images/AdaptiveTimePicker-android.png) | ![Time Picker iOS](docs/images/AdaptiveTimePicker-ios.png) |
 
 ```kotlin
 val state = rememberAdaptiveTimePickerState()
@@ -220,7 +220,7 @@ AdaptiveTimePicker(
 
 | Android                                         | iOS                                     |
 |-------------------------------------------------|-----------------------------------------|
-| ![Web View Android](images/WebView-android.png) | ![Web View iOS](images/WebView-ios.png) |
+| ![Web View Android](docs/images/WebView-android.png) | ![Web View iOS](docs/images/WebView-ios.png) |
 
 ```kotlin
 val state = rememberWebViewState(
@@ -287,7 +287,7 @@ Calf File Picker allows you to pick files from the device storage.
 
 | Android                                                    | iOS                                                |
 |------------------------------------------------------------|----------------------------------------------------|
-| ![Web View Android](images/AdaptiveFilePicker-android.png) | ![Web View iOS](images/AdaptiveFilePicker-ios.png) |
+| ![Web View Android](docs/images/AdaptiveFilePicker-android.png) | ![Web View iOS](docs/images/AdaptiveFilePicker-ios.png) |
 
 ```kotlin
 val pickerLauncher = rememberFilePickerLauncher(
@@ -316,29 +316,18 @@ Button(
 
 `FilePickerFileType` allows you to specify the type of files you want to pick:
 
-`FilePickerFileType.Image` - Allows you to pick images only
-
-`FilePickerFileType.Video` - Allows you to pick videos only
-
-`FilePickerFileType.ImageView` - Allows you to pick images and videos only
-
-`FilePickerFileType.Audio` - Allows you to pick audio files only
-
-`FilePickerFileType.Document` - Allows you to pick documents only
-
-`FilePickerFileType.Text` - Allows you to pick text files only
-
-`FilePickerFileType.Pdf` - Allows you to pick PDF files only
-
-`FilePickerFileType.Presentation` - Allows you to pick presentation files only
-
-`FilePickerFileType.Spreadsheet` - Allows you to pick spreadsheet files only
-
-`FilePickerFileType.Word` - Allows you to pick compressed word only
-
-`FilePickerFileType.All` - Allows you to pick all types of files
-
-`FilePickerFileType.Folder` - Allows you to pick folders
+* `FilePickerFileType.Image` - Allows you to pick images only
+* `FilePickerFileType.Video` - Allows you to pick videos only
+* `FilePickerFileType.ImageView` - Allows you to pick images and videos only
+* `FilePickerFileType.Audio` - Allows you to pick audio files only
+* `FilePickerFileType.Document` - Allows you to pick documents only
+* `FilePickerFileType.Text` - Allows you to pick text files only
+* `FilePickerFileType.Pdf` - Allows you to pick PDF files only
+* `FilePickerFileType.Presentation` - Allows you to pick presentation files only
+* `FilePickerFileType.Spreadsheet` - Allows you to pick spreadsheet files only
+* `FilePickerFileType.Word` - Allows you to pick compressed word only
+* `FilePickerFileType.All` - Allows you to pick all types of files
+* `FilePickerFileType.Folder` - Allows you to pick folders
 
 You can also specify the file types you want to pick by using the `FilePickerFileType.Custom` type:
 
@@ -352,9 +341,8 @@ val type = FilePickerType.Custom(
 
 `FilePickerSelectionMode` allows you to specify the selection mode of the file picker:
 
-`FilePickerSelectionMode.Single` - Allows you to pick a single file
-
-`FilePickerSelectionMode.Multiple` - Allows you to pick multiple files
+* `FilePickerSelectionMode.Single` - Allows you to pick a single file
+* `FilePickerSelectionMode.Multiple` - Allows you to pick multiple files
 
 ## Contribution
 If you've found an error in this sample, please file an issue. <br>
@@ -369,7 +357,7 @@ Also, __[follow me](https://github.com/MohamedRejeb)__ on GitHub for more librar
 You can always <a href="https://www.buymeacoffee.com/MohamedRejeb"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=MohamedRejeb&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"></a>
 
 # License
-```markdown
+```
 Copyright 2023 Mohamed Rejeb
 
 Licensed under the Apache License, Version 2.0 (the "License");
