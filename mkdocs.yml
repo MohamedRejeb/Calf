@@ -19,15 +19,15 @@ theme:
   palette:
     - scheme: default
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/weather-night
         name: Switch to dark mode
       primary: white
       accent: white
     - scheme: slate
       toggle:
-        icon: material/toggle-switch
+        icon: material/weather-sunny
         name: Switch to light mode
-      primary: teal
+      primary: red
       accent: lime
   font:
     text: 'Roboto'
