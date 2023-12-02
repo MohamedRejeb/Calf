@@ -6,13 +6,13 @@ Add the following dependencies to your module `build.gradle.kts` file:
 
 ```kotlin
 // For Adaptive UI components
-api("com.mohamedrejeb.calf:calf-ui:0.2.0")
+api("com.mohamedrejeb.calf:calf-ui:0.3.0")
 
 // For Adaptive FilePicker
-implementation("com.mohamedrejeb.calf:calf-file-picker:0.2.0")
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.3.0")
 
 // For Permissions
-implementation("com.mohamedrejeb.calf:calf-permissions:0.2.0")
+implementation("com.mohamedrejeb.calf:calf-permissions:0.3.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -28,7 +28,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.2.0")
+                export("com.mohamedrejeb.calf:calf-ui:0.3.0")
             }
         }
     ...
@@ -45,7 +45,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.2.0")
+            export("com.mohamedrejeb.calf:calf-ui:0.3.0")
         }
     }
     ...
