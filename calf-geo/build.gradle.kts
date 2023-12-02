@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.androidLibrary)
-    id("module.publication")
+//    id("module.publication")
 }
 
 kotlin {
@@ -24,11 +25,19 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    sourceSets.commonMain.get().dependencies {}
+    sourceSets.commonMain.get().dependencies {
+        implementation(compose.runtime)
+        implementation(compose.foundation)
+    }
+    sourceSets.androidMain.get().dependencies {
+        implementation(libs.appcompat)
+        implementation(libs.lifecycle.extensions)
+        implementation(libs.play.services.location)
+    }
 }
 
 android {
-    namespace = "com.mohamedrejeb.calf.io"
+    namespace = "com.mohamedrejeb.calf.geo"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()

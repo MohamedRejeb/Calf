@@ -28,6 +28,8 @@ include(
     ":calf-file-picker",
     ":calf-io",
     ":calf-permissions",
+    ":calf-geo",
+    ":calf-maps",
 
     ":sample:android",
     ":sample:desktop",

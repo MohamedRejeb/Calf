@@ -39,7 +39,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.mohamedrejeb.calf.sf.symbols"
+    namespace = "com.mohamedrejeb.calf.permissions"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()

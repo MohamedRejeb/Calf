@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.androidLibrary)
-//    id("module.publication")
+    id("module.publication")
 }
 
 kotlin {
@@ -47,7 +47,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.mohamedrejeb.calf.sf.symbols"
+    namespace = "com.mohamedrejeb.calf.picker"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
