@@ -3,7 +3,7 @@
 Calf is a library that allows you to easily create adaptive UIs for your Compose Multiplatform apps.
 
 
-[![Kotlin](https://img.shields.io/badge/kotlin-1.9.20--Beta-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/kotlin-1.9.21-blue.svg?logo=kotlin)](http://kotlinlang.org)
 [![MohamedRejeb](https://raw.githubusercontent.com/MohamedRejeb/MohamedRejeb/main/badges/mohamedrejeb.svg)](https://github.com/MohamedRejeb)
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 [![BuildPassing](https://shields.io/badge/build-passing-brightgreen)](https://github.com/MohamedRejeb/ksoup/actions)
@@ -19,10 +19,11 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 |-----------------------|-------------------------------------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **calf-ui**           | Adaptive UI components                    | Android, iOS, Desktop | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui%22)                   |
 | **calf-file-picker**  | Native File Picker wrapper                | Android, iOS, Desktop | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |
+| **calf-permissions**  | API that allows you to handle permissions | Android, iOS          | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |                                                                                                                                                                        
+| **calf-geo**          | API that allows you to access geolocation | Coming soon... 🚧 🚧  | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-navigation**   | Native navigation wrapper                 | Coming soon... 🚧 🚧  | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-map**          | Native Maps wrapper                       | Coming soon... 🚧 🚧  | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-media**        | Video/Audio player                        | Coming soon... 🚧 🚧  | Coming soon... 🚧 🚧                                                                                                                                                                              |
-| **calf-permissions**  | API that allows you to handle permissions | Coming soon... 🚧 🚧  | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-notification** | Notification manager                      | Coming soon... 🚧 🚧  | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-sf-symbols**   | Apple SF Symbols icons                    | Coming soon... 🚧 🚧  | Coming soon... 🚧 🚧                                                                                                                                                                              |
 
