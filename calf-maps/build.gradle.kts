@@ -18,9 +18,9 @@ kotlin {
     jvm("desktop") {
         jvmToolchain(11)
     }
-//    js(IR) {
-//        browser()
-//    }
+    js(IR) {
+        browser()
+    }
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -36,7 +36,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.mohamedrejeb.calf.sf.symbols"
+    namespace = "com.mohamedrejeb.calf.maps"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
