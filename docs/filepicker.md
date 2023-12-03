@@ -20,7 +20,7 @@ Calf File Picker allows you to pick files from the device storage.
 
 ```kotlin
 val pickerLauncher = rememberFilePickerLauncher(
-    type = FilePickerType.Image,
+    type = FilePickerFileType.Image,
     selectionMode = FilePickerSelectionMode.Single,
     onResult = { files ->
         files.firstOrNull()?.let { file ->
@@ -61,7 +61,7 @@ Button(
 You can also specify the file types you want to pick by using the `FilePickerFileType.Custom` type:
 
 ```kotlin
-val type = FilePickerType.Custom(
+val type = FilePickerFileType.Custom(
     "text/plain"
 )
 ```
