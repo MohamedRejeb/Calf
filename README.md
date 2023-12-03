@@ -333,7 +333,7 @@ Button(
 You can also specify the file types you want to pick by using the `FilePickerFileType.Custom` type:
 
 ```kotlin
-val type = FilePickerType.Custom(
+val type = FilePickerFileType.Custom(
     "text/plain"
 )
 ```
