@@ -47,7 +47,7 @@ api("com.mohamedrejeb.calf:calf-web-view:0.3.0")
 implementation("com.mohamedrejeb.calf:calf-file-picker:0.3.0")
 ```
 
-If you are using `calf-web-view` artifact, make sure to export it to binaries:
+If you are using `calf-ui` artifact, make sure to export it to binaries:
 
 #### Regular Framewoek
 ```kotlin
@@ -60,7 +60,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-web-view:0.3.0")
+                export("com.mohamedrejeb.calf:calf-ui:0.3.0")
             }
         }
     ...
@@ -77,7 +77,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-web-view:0.3.0")
+            export("com.mohamedrejeb.calf:calf-ui:0.3.0")
         }
     }
     ...
@@ -85,7 +85,7 @@ kotlin {
 ...
 ```
 
-> **Important:** Exporting `calf-web-view` to binaries is required to make it work on iOS.
+> **Important:** Exporting `calf-ui` to binaries is required to make it work on iOS.
 
 ## Usage
 
