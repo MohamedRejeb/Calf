@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.ui.web
+package com.mohamedrejeb.calf.web
 
 class WebSettings internal constructor(
     private val onSettingsChanged: () -> Unit

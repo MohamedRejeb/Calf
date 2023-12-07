@@ -107,7 +107,7 @@ fun FilePickerScreen(
             selectionMode = FilePickerSelectionMode.Multiple,
             onResult = { files ->
                 pickedFiles = files
-
+                FilePickerFileType.ImageContentType
                 if (fileType == FilePickerFileType.Image) {
                     files.map { file ->
                         try {
