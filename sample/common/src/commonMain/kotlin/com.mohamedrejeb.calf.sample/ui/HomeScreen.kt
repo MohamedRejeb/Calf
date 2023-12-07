@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.PunchClock
 import androidx.compose.material.icons.outlined.Refresh
@@ -99,57 +100,57 @@ fun HomeScreen(
             item {
                 ListItem(
                     onClick = { navigate(Screen.Dialog.name) },
-                    title = "Adaptive Alert Dialog",
+                    title = Screen.Dialog.title,
                     icon = Icons.Outlined.Warning,
                 )
                 ListItem(
                     onClick = { navigate(Screen.BottomSheet.name) },
-                    title = "Adaptive Bottom Sheet",
+                    title = Screen.BottomSheet.title,
                     icon = Icons.Outlined.Pages,
                 )
                 ListItem(
                     onClick = { navigate(Screen.ProgressBar.name) },
-                    title = "Adaptive Progress Bar",
+                    title = Screen.ProgressBar.title,
                     icon = Icons.Outlined.Refresh,
                 )
                 ListItem(
                     onClick = { navigate(Screen.Switch.name) },
-                    title = "Adaptive Switch",
+                    title = Screen.Switch.title,
                     icon = Icons.Outlined.ToggleOn,
                 )
-//                ListItem(
-//                    onClick = { navigate(Screen.DropDownMenu.name) },
-//                    title = "Adaptive Drop Down Menu",
-//                    icon = Icons.Outlined.Menu,
-//                )
+                ListItem(
+                    onClick = { navigate(Screen.DropDownMenu.name) },
+                    title = Screen.DropDownMenu.title,
+                    icon = Icons.Outlined.Menu,
+                )
                 ListItem(
                     onClick = { navigate(Screen.DatePicker.name) },
-                    title = "Adaptive Date Picker",
+                    title = Screen.DatePicker.title,
                     icon = Icons.Outlined.CalendarMonth,
                 )
                 ListItem(
                     onClick = { navigate(Screen.TimePicker.name) },
-                    title = "Adaptive Time Picker",
+                    title = Screen.TimePicker.title,
                     icon = Icons.Outlined.PunchClock,
                 )
                 ListItem(
                     onClick = { navigate(Screen.FilePicker.name) },
-                    title = "Adaptive File Picker",
+                    title = Screen.FilePicker.title,
                     icon = Icons.Outlined.AttachFile,
                 )
                 ListItem(
                     onClick = { navigate(Screen.WebView.name) },
-                    title = "Adaptive Web View",
+                    title = Screen.WebView.title,
                     icon = Icons.Outlined.Web,
                 )
                 ListItem(
                     onClick = { navigate(Screen.Permission.name) },
-                    title = "Permissions Controls",
+                    title = Screen.Permission.title,
                     icon = Icons.Outlined.Map,
                 )
                 ListItem(
                     onClick = { navigate(Screen.Map.name) },
-                    title = "Adaptive Map",
+                    title = Screen.Map.title,
                     icon = Icons.Outlined.Map,
                 )
 //                ListItem(

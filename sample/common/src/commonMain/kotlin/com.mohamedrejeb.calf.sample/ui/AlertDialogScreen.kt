@@ -10,7 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.navigation.Screen
 import com.mohamedrejeb.calf.ui.cupertino.CupertinoActivityIndicator
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
@@ -20,56 +23,70 @@ import com.mohamedrejeb.calf.ui.timepicker.AdaptiveTimePicker
 import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlertDialogScreen(
     navigateBack: () -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
-    ) {
-        IconButton(
-            onClick = {
-                navigateBack()
-            },
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navigateBack() }
+                    ) {
+                        Icon(Icons.Filled.ArrowBackIosNew, contentDescription = null)
+                    }
+                },
+                title = {
+                    Text(
+                        text = Screen.Dialog.title,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            )
+        }
+    ) { paddingValues ->
+        var showDialog by remember { mutableStateOf(false) }
+
+        Box(
             modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp)
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .windowInsetsPadding(WindowInsets.ime)
         ) {
-            Icon(
-                Icons.Filled.ArrowBackIosNew,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground,
-            )
-        }
 
-        Button(
-            onClick = {
-                showDialog = true
-            },
-            modifier = Modifier.align(Alignment.Center)
-        ) {
-            Text("Show Alert Dialog")
-        }
+            Button(
+                onClick = {
+                    showDialog = true
+                },
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                Text("Show Alert Dialog")
+            }
 
-        if (showDialog) {
-            AdaptiveAlertDialog(
-                onConfirm = {
-                    showDialog = false
-                },
-                onDismiss = {
-                    showDialog = false
-                },
-                confirmText = "Ok",
-                dismissText = "Cancel",
-                title = "Alert Dialog",
-                text = "This is a native alert dialog from Calf",
-            )
+            if (showDialog) {
+                AdaptiveAlertDialog(
+                    onConfirm = {
+                        showDialog = false
+                    },
+                    onDismiss = {
+                        showDialog = false
+                    },
+                    confirmText = "Ok",
+                    dismissText = "Cancel",
+                    title = "Alert Dialog",
+                    text = "This is a native alert dialog from Calf",
+                )
+            }
         }
     }
 }

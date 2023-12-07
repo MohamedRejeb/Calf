@@ -23,6 +23,7 @@ dependencyResolutionManagement {
 rootProject.name = "Calf"
 include(
     ":calf-ui",
+    ":calf-ui-webview",
     ":calf-sf-symbols",
     ":calf-navigation",
     ":calf-file-picker",

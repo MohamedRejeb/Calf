@@ -10,7 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.navigation.Screen
 import com.mohamedrejeb.calf.ui.cupertino.CupertinoActivityIndicator
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
@@ -27,48 +30,53 @@ import kotlinx.coroutines.launch
 fun TimePickerScreen(
     navigateBack: () -> Unit
 ) {
-    val state = rememberAdaptiveTimePickerState()
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
-    ) {
-        IconButton(
-            onClick = {
-                navigateBack()
-            },
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(16.dp)
-        ) {
-            Icon(
-                Icons.Filled.ArrowBackIosNew,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground,
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navigateBack() }
+                    ) {
+                        Icon(Icons.Filled.ArrowBackIosNew, contentDescription = null)
+                    }
+                },
+                title = {
+                    Text(
+                        text = Screen.TimePicker.title,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             )
         }
+    ) { paddingValues ->
+        val state = rememberAdaptiveTimePickerState()
 
-        Text(
-            text = "Adaptive Time Picker",
-            style = MaterialTheme.typography.titleLarge,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .padding(16.dp)
-        )
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .windowInsetsPadding(WindowInsets.ime)
+        ) {
 
-        Text(
-            text = "Selected time: ${state.hour}:${state.minute}",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
-                .padding(16.dp)
-        )
+            Text(
+                text = "Selected time: ${state.hour}:${state.minute}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .padding(16.dp)
+            )
 
-        AdaptiveTimePicker(
-            state = state,
-            modifier = Modifier
-        )
+            AdaptiveTimePicker(
+                state = state,
+                modifier = Modifier
+            )
+        }
     }
 }
