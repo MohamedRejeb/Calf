@@ -18,7 +18,7 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 | Artifact              | Description                               | Platforms             | Version                                                                                                                                                                                           |
 |-----------------------|-------------------------------------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **calf-ui**           | Adaptive UI components                    | Android, iOS, Desktop | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui%22)                   |
-| **calf-web-view**     | Adaptive WebView components               | Android, iOS, Desktop | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-web-view)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-web-view%22)       |
+| **calf-ui-webview**   | Adaptive WebView components               | Android, iOS, Desktop | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui-webview)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui-webview%22)   |
 | **calf-file-picker**  | Native File Picker wrapper                | Android, iOS, Desktop | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |
 | **calf-permissions**  | API that allows you to handle permissions | Android, iOS          | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-permissions)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-permissions%22) |                                                                                                                                                                        
 | **calf-geo**          | API that allows you to access geolocation | Coming soon... 🚧 🚧  | Coming soon... 🚧 🚧                                                                                                                                                                              |
@@ -41,7 +41,7 @@ Add the following dependency to your module `build.gradle.kts` file:
 api("com.mohamedrejeb.calf:calf-ui:0.3.0")
 
 // For Adaptive WebView components
-api("com.mohamedrejeb.calf:calf-web-view:0.3.0")
+api("com.mohamedrejeb.calf:calf-ui-webview:0.3.0")
 
 // For Adaptive FilePicker
 implementation("com.mohamedrejeb.calf:calf-file-picker:0.3.0")

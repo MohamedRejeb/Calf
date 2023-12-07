@@ -69,7 +69,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.mohamedrejeb.calf.webview"
+    namespace = "com.mohamedrejeb.calf.ui.webview"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()

@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.web
+package com.mohamedrejeb.calf.ui.web
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -10,7 +10,6 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.mohamedrejeb.calf.web.WebSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch

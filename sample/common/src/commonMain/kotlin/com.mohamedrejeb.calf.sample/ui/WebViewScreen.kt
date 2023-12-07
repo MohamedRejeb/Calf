@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.mohamedrejeb.calf.sample.navigation.Screen
-import com.mohamedrejeb.calf.web.WebView
-import com.mohamedrejeb.calf.web.rememberWebViewState
+import com.mohamedrejeb.calf.ui.web.WebView
+import com.mohamedrejeb.calf.ui.web.rememberWebViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
