@@ -49,7 +49,7 @@ implementation("com.mohamedrejeb.calf:calf-file-picker:0.3.0")
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
 
-#### Regular Framewoek
+#### Regular Framework
 ```kotlin
 ...
 kotlin {
