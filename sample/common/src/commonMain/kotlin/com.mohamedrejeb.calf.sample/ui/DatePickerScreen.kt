@@ -13,7 +13,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.navigation.Screen
 import com.mohamedrejeb.calf.ui.cupertino.CupertinoActivityIndicator
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
@@ -30,52 +33,58 @@ import kotlinx.coroutines.launch
 fun DatePickerScreen(
     navigateBack: () -> Unit
 ) {
-    val state = rememberAdaptiveDatePickerState()
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
-            .scrollable(
-                rememberScrollState(),
-                orientation = Orientation.Vertical
-            )
-    ) {
-        IconButton(
-            onClick = {
-                navigateBack()
-            },
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(16.dp)
-        ) {
-            Icon(
-                Icons.Filled.ArrowBackIosNew,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground,
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navigateBack() }
+                    ) {
+                        Icon(Icons.Filled.ArrowBackIosNew, contentDescription = null)
+                    }
+                },
+                title = {
+                    Text(
+                        text = Screen.DatePicker.title,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             )
         }
+    ) { paddingValues ->
+        val state = rememberAdaptiveDatePickerState()
 
-        Text(
-            text = "Adaptive Date Picker",
-            style = MaterialTheme.typography.titleLarge,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .padding(16.dp)
-        )
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .windowInsetsPadding(WindowInsets.ime)
+                .scrollable(
+                    rememberScrollState(),
+                    orientation = Orientation.Vertical
+                )
+        ) {
 
-        Text(
-            text = "Selected date millis: ${state.selectedDateMillis}",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
-                .padding(16.dp)
-        )
+            Text(
+                text = "Selected date millis: ${state.selectedDateMillis}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .padding(16.dp)
+            )
 
-        AdaptiveDatePicker(
-            state = state,
-            modifier = Modifier
-        )
+            AdaptiveDatePicker(
+                state = state,
+                modifier = Modifier
+            )
+        }
     }
 }

@@ -10,7 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.navigation.Screen
 import com.mohamedrejeb.calf.ui.cupertino.CupertinoActivityIndicator
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
@@ -26,76 +29,89 @@ import kotlinx.coroutines.launch
 fun BottomSheetScreen(
     navigateBack: () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val sheetState = rememberAdaptiveSheetState()
-    var openBottomSheet by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
-    ) {
-        IconButton(
-            onClick = {
-                navigateBack()
-            },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp)
-        ) {
-            Icon(
-                Icons.Filled.ArrowBackIosNew,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground,
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navigateBack() }
+                    ) {
+                        Icon(Icons.Filled.ArrowBackIosNew, contentDescription = null)
+                    }
+                },
+                title = {
+                    Text(
+                        text = Screen.BottomSheet.title,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             )
         }
+    ) { paddingValues ->
+        val scope = rememberCoroutineScope()
+        val sheetState = rememberAdaptiveSheetState()
+        var openBottomSheet by remember { mutableStateOf(false) }
 
-        Button(
-            onClick = {
-                openBottomSheet = true
-            },
-            modifier = Modifier.align(Alignment.Center)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .windowInsetsPadding(WindowInsets.ime)
         ) {
-            Text("Show Bottom Sheet")
-        }
 
-        if (openBottomSheet) {
-            AdaptiveBottomSheet(
-                onDismissRequest = {
-                    openBottomSheet = false
+            Button(
+                onClick = {
+                    openBottomSheet = true
                 },
-                adaptiveSheetState = sheetState,
+                modifier = Modifier.align(Alignment.Center)
             ) {
-                LazyColumn {
-                    item {
-                        Text("Bottom Sheet")
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = {
-                                scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                    if (!sheetState.isVisible) {
-                                        openBottomSheet = false
+                Text("Show Bottom Sheet")
+            }
+
+            if (openBottomSheet) {
+                AdaptiveBottomSheet(
+                    onDismissRequest = {
+                        openBottomSheet = false
+                    },
+                    adaptiveSheetState = sheetState,
+                ) {
+                    LazyColumn {
+                        item {
+                            Text("Bottom Sheet")
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = {
+                                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                        if (!sheetState.isVisible) {
+                                            openBottomSheet = false
+                                        }
                                     }
                                 }
+                            ) {
+                                Text("Close")
                             }
-                        ) {
-                            Text("Close")
                         }
-                    }
 
-                    items(100) {
-                        Text(
-                            text = "Item $it",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        )
-                        Divider(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        )
+                        items(100) {
+                            Text(
+                                text = "Item $it",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            )
+                            Divider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }
