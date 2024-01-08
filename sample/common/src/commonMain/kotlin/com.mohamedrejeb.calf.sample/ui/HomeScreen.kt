@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.PunchClock
@@ -136,6 +137,11 @@ fun HomeScreen(
                     onClick = { navigate(Screen.FilePicker.name) },
                     title = "Adaptive File Picker",
                     icon = Icons.Outlined.AttachFile,
+                )
+                ListItem(
+                    onClick = { navigate(Screen.ImagePicker.name) },
+                    title = "Adaptive Image Picker",
+                    icon = Icons.Outlined.Camera,
                 )
                 ListItem(
                     onClick = { navigate(Screen.WebView.name) },

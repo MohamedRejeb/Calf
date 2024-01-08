@@ -9,6 +9,7 @@ enum class Screen {
     ProgressBar,
     Switch,
     FilePicker,
+    ImagePicker,
     WebView,
     Permission,
     Map,
