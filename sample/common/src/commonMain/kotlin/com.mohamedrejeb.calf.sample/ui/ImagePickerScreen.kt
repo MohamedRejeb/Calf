@@ -3,6 +3,8 @@ package com.mohamedrejeb.calf.sample.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -17,21 +19,37 @@ import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import com.mohamedrejeb.calf.picker.toImageBitmap
+import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 
 @Composable
 fun ImagePickerScreen(
     navigateBack: () -> Unit
 ) {
-    var imageBitmap by remember {
-        mutableStateOf<ImageBitmap?>(null)
+    var imageBitmaps by remember {
+        mutableStateOf<List<ImageBitmap>>(emptyList())
     }
-    val pickerLauncher = rememberFilePickerLauncher(
+    var isMultiple by remember { mutableStateOf(false) }
+    val singlePickerLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Image,
         selectionMode = FilePickerSelectionMode.Single,
         onResult = { files ->
-            files.firstOrNull()?.let { file ->
-                imageBitmap = try {
-                    file.readByteArray().toImageBitmap()
+            imageBitmaps = files.mapNotNull {
+                try {
+                    it.readByteArray().toImageBitmap()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
+            }
+        },
+    )
+    val multiplePickerLauncher = rememberFilePickerLauncher(
+        type = FilePickerFileType.Image,
+        selectionMode = FilePickerSelectionMode.Multiple,
+        onResult = { files ->
+            imageBitmaps = files.mapNotNull {
+                try {
+                    it.readByteArray().toImageBitmap()
                 } catch (e: Exception) {
                     e.printStackTrace()
                     null
@@ -46,6 +64,7 @@ fun ImagePickerScreen(
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
             .windowInsetsPadding(WindowInsets.ime)
+            .verticalScroll(rememberScrollState())
     ) {
         IconButton(
             onClick = {
@@ -61,9 +80,20 @@ fun ImagePickerScreen(
             )
         }
 
+        Row(Modifier.padding(16.dp)) {
+            Text("Select multiple images?", Modifier.weight(1f))
+            AdaptiveSwitch(isMultiple, onCheckedChange = { checked ->
+                isMultiple = checked
+            })
+        }
+
         Button(
             onClick = {
-                pickerLauncher.launch()
+                if (isMultiple) {
+                    multiplePickerLauncher.launch()
+                } else {
+                    singlePickerLauncher.launch()
+                }
             },
             modifier = Modifier.padding(16.dp)
         ) {
@@ -76,7 +106,7 @@ fun ImagePickerScreen(
             modifier = Modifier.padding(16.dp)
         )
 
-        imageBitmap?.let {
+        imageBitmaps.forEach {
             Image(
                 bitmap = it,
                 contentDescription = "Image",

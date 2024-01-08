@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.sample.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Button
@@ -29,6 +32,7 @@ import com.mohamedrejeb.calf.io.name
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
+import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 
 @Composable
 fun FilePickerScreen(
@@ -37,7 +41,15 @@ fun FilePickerScreen(
     var fileNames by remember {
         mutableStateOf<List<String>>(emptyList())
     }
-    val pickerLauncher = rememberFilePickerLauncher(
+    var isMultiple by remember { mutableStateOf(false) }
+    val singlePickerLauncher = rememberFilePickerLauncher(
+        type = FilePickerFileType.All,
+        selectionMode = FilePickerSelectionMode.Single,
+        onResult = { files ->
+            fileNames = files.map { it.name.orEmpty() }
+        },
+    )
+    val multiplePickerLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.All,
         selectionMode = FilePickerSelectionMode.Multiple,
         onResult = { files ->
@@ -51,6 +63,7 @@ fun FilePickerScreen(
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
             .windowInsetsPadding(WindowInsets.ime)
+            .verticalScroll(rememberScrollState())
     ) {
         IconButton(
             onClick = {
@@ -66,9 +79,20 @@ fun FilePickerScreen(
             )
         }
 
+        Row(Modifier.padding(16.dp)) {
+            Text("Select multiple files?", Modifier.weight(1f))
+            AdaptiveSwitch(isMultiple, onCheckedChange = { checked ->
+                isMultiple = checked
+            })
+        }
+
         Button(
             onClick = {
-                pickerLauncher.launch()
+                if (isMultiple) {
+                    multiplePickerLauncher.launch()
+                } else {
+                    singlePickerLauncher.launch()
+                }
             },
             modifier = Modifier.padding(16.dp)
         ) {
