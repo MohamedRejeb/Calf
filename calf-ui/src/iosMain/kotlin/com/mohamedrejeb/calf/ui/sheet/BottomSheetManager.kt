@@ -63,8 +63,8 @@ internal class BottomSheetManager(
 
         bottomSheetUIViewController.sheetPresentationController?.setDetents(
             listOf(
-                UISheetPresentationControllerDetentIdentifierMedium,
-                UISheetPresentationControllerDetentIdentifierLarge
+                UISheetPresentationControllerDetent.mediumDetent(),
+                UISheetPresentationControllerDetent.largeDetent()
             )
         )
         bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = true
