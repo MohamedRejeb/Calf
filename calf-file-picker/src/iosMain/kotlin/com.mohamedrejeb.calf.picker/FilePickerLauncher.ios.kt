@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSData
 import platform.Foundation.NSURL
-import platform.Foundation.dataWithContentsOfURL
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
 import platform.PhotosUI.PHPickerConfigurationAssetRepresentationModeCurrent
@@ -28,7 +27,6 @@ import platform.UniformTypeIdentifiers.UTTypeAudio
 import platform.UniformTypeIdentifiers.UTTypeData
 import platform.UniformTypeIdentifiers.UTTypeFolder
 import platform.UniformTypeIdentifiers.UTTypeImage
-import platform.UniformTypeIdentifiers.UTTypeMovie
 import platform.UniformTypeIdentifiers.UTTypeText
 import platform.UniformTypeIdentifiers.UTTypeVideo
 import platform.darwin.NSObject
@@ -36,6 +34,18 @@ import platform.darwin.NSObject
 @BetaInteropApi
 @Composable
 actual fun rememberFilePickerLauncher(
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher =
+    if (type == FilePickerFileType.Image) {
+        rememberImagePickerLauncher(type, selectionMode, onResult)
+    } else {
+        rememberDocumentPickerLauncher(type, selectionMode, onResult)
+    }
+
+@Composable
+private fun rememberDocumentPickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
@@ -87,6 +97,52 @@ actual fun rememberFilePickerLauncher(
     }
 }
 
+@Composable
+private fun rememberImagePickerLauncher(
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher {
+    val pickerDelegate = remember {
+        object : NSObject(), PHPickerViewControllerDelegateProtocol {
+            override fun picker(picker: PHPickerViewController, didFinishPicking: List<*>) {
+                picker.dismissViewControllerAnimated(true, null)
+                println("didFinishPicking: $didFinishPicking")
+                didFinishPicking.forEach {
+                    val result = it as? PHPickerResult ?: return@forEach
+                    result.itemProvider.loadFileRepresentationForTypeIdentifier(
+                        typeIdentifier = UTTypeImage.identifier,
+                    ) { url, error ->
+                        if (error != null) {
+                            println("Error: $error")
+                            return@loadFileRepresentationForTypeIdentifier
+                        }
+                        onResult(listOfNotNull(url))
+                    }
+                }
+            }
+        }
+    }
+
+    return remember {
+        FilePickerLauncher(
+            type = type,
+            selectionMode = selectionMode,
+            onLaunch = {
+                val imagePicker = createPHPickerViewController(
+                    delegate = pickerDelegate,
+                    selectionMode = selectionMode,
+                )
+                UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
+                    imagePicker,
+                    true,
+                    null
+                )
+            }
+        )
+    }
+}
+
 private fun createUIDocumentPickerViewController(
     delegate: UIDocumentPickerDelegateProtocol,
     type: FilePickerFileType,
@@ -112,6 +168,27 @@ private fun createUIDocumentPickerViewController(
     pickerController.delegate = delegate
     pickerController.allowsMultipleSelection = selectionMode == FilePickerSelectionMode.Multiple
     return pickerController
+}
+
+private fun createPHPickerViewController(
+    delegate: PHPickerViewControllerDelegateProtocol,
+    selectionMode: FilePickerSelectionMode,
+): PHPickerViewController {
+    val configuration = PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary())
+    val newFilter = PHPickerFilter.anyFilterMatchingSubfilters(
+        listOf(
+            PHPickerFilter.imagesFilter(),
+        )
+    )
+    configuration.filter = newFilter
+    configuration.preferredAssetRepresentationMode =
+        PHPickerConfigurationAssetRepresentationModeCurrent
+    configuration.selection = PHPickerConfigurationSelectionOrdered
+    configuration.selectionLimit = if (selectionMode == FilePickerSelectionMode.Multiple) 0 else 1
+    configuration.preselectedAssetIdentifiers = listOf<Nothing>()
+    val picker = PHPickerViewController(configuration)
+    picker.delegate = delegate
+    return picker
 }
 
 actual class FilePickerLauncher actual constructor(

@@ -7,7 +7,7 @@
 Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
-api("com.mohamedrejeb.calf:calf-ui:0.3.0")
+api("com.mohamedrejeb.calf:calf-ui:0.3.1")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -23,7 +23,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.3.0")
+                export("com.mohamedrejeb.calf:calf-ui:0.3.1")
             }
         }
     ...
@@ -40,7 +40,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.3.0")
+            export("com.mohamedrejeb.calf:calf-ui:0.3.1")
         }
     }
     ...

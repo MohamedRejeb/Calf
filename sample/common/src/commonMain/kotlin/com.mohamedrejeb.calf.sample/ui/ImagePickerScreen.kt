@@ -1,59 +1,60 @@
 package com.mohamedrejeb.calf.sample.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.mohamedrejeb.calf.io.name
-import com.mohamedrejeb.calf.picker.FilePickerFileType
+import com.mohamedrejeb.calf.io.readByteArray
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
+import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
+import com.mohamedrejeb.calf.picker.toImageBitmap
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 
 @Composable
-fun FilePickerScreen(
+fun ImagePickerScreen(
     navigateBack: () -> Unit
 ) {
-    var fileNames by remember {
-        mutableStateOf<List<String>>(emptyList())
+    var imageBitmaps by remember {
+        mutableStateOf<List<ImageBitmap>>(emptyList())
     }
     var isMultiple by remember { mutableStateOf(false) }
     val singlePickerLauncher = rememberFilePickerLauncher(
-        type = FilePickerFileType.All,
+        type = FilePickerFileType.Image,
         selectionMode = FilePickerSelectionMode.Single,
         onResult = { files ->
-            fileNames = files.map { it.name.orEmpty() }
+            imageBitmaps = files.mapNotNull {
+                try {
+                    it.readByteArray().toImageBitmap()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
+            }
         },
     )
     val multiplePickerLauncher = rememberFilePickerLauncher(
-        type = FilePickerFileType.All,
+        type = FilePickerFileType.Image,
         selectionMode = FilePickerSelectionMode.Multiple,
         onResult = { files ->
-            fileNames = files.map { it.name.orEmpty() }
+            imageBitmaps = files.mapNotNull {
+                try {
+                    it.readByteArray().toImageBitmap()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
+            }
         },
     )
 
@@ -80,7 +81,7 @@ fun FilePickerScreen(
         }
 
         Row(Modifier.padding(16.dp)) {
-            Text("Select multiple files?", Modifier.weight(1f))
+            Text("Select multiple images?", Modifier.weight(1f))
             AdaptiveSwitch(isMultiple, onCheckedChange = { checked ->
                 isMultiple = checked
             })
@@ -96,19 +97,24 @@ fun FilePickerScreen(
             },
             modifier = Modifier.padding(16.dp)
         ) {
-            Text("Pick Files")
+            Text("Pick image")
         }
 
         Text(
-            text = "Files picked:",
+            text = "Image picked:",
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(16.dp)
         )
-        Spacer(Modifier.height(8.dp))
-        fileNames.forEach {
-            Text(
-                text = "- $it",
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+
+        imageBitmaps.forEach {
+            Image(
+                bitmap = it,
+                contentDescription = "Image",
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clip(MaterialTheme.shapes.medium)
             )
         }
     }
