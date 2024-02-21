@@ -76,7 +76,7 @@ private fun pickSingleVisualMedia(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             val file = URIPathHelper.getPath(context, uri)?.let { File(it) }
-            file?.let { onResult(listOf(it)) }
+            file?.let { onResult(listOf(it)) } ?: onResult(emptyList())
         }
     )
 
@@ -136,7 +136,7 @@ private fun pickSingleFile(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             val file = URIPathHelper.getPath(context, uri)?.let { File(it) }
-            file?.let { onResult(listOf(it)) }
+            file?.let { onResult(listOf(it)) } ?: onResult(emptyList())
         }
     )
 
@@ -201,7 +201,7 @@ private fun pickFolder(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
                 val file = URIPathHelper.getPath(context, uri)?.let { File(it) }
-                file?.let { onResult(listOf(it)) }
+                file?.let { onResult(listOf(it)) } ?: onResult(emptyList())
             }
         }
     )
