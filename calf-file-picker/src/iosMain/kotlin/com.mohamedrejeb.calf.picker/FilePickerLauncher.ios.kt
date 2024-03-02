@@ -2,8 +2,13 @@ package com.mohamedrejeb.calf.picker
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import platform.Foundation.NSData
 import platform.Foundation.NSURL
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
@@ -45,6 +50,7 @@ private fun rememberDocumentPickerLauncher(
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
+    val coroutineScope = rememberCoroutineScope()
     val delegate = remember {
         object : NSObject(), UIDocumentPickerDelegateProtocol {
             override fun documentPicker(
@@ -61,7 +67,11 @@ private fun rememberDocumentPickerLauncher(
                 val dataList = didPickDocumentsAtURLs.mapNotNull {
                     it as? NSURL
                 }
-                onResult(dataList)
+                coroutineScope.launch {
+                    withContext(Dispatchers.Main) {
+                        onResult(dataList)
+                    }
+                }
             }
         }
     }
