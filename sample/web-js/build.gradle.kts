@@ -4,7 +4,7 @@ plugins {
 }
 
 kotlin {
-    js(IR) {
+    js {
         browser()
         binaries.executable()
     }
@@ -12,8 +12,9 @@ kotlin {
     sourceSets.jsMain.dependencies {
         implementation(projects.sample.common)
 
+        implementation(compose.runtime)
+        implementation(compose.foundation)
         implementation(compose.ui)
-        implementation(compose.html.core)
     }
 }
 
