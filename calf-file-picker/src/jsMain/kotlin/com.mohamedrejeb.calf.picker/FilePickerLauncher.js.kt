@@ -8,6 +8,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.browser.document
+import org.w3c.files.File
 
 @Composable
 actual fun rememberFilePickerLauncher(
@@ -26,7 +27,22 @@ actual fun rememberFilePickerLauncher(
                 fileInputElement.setAttribute("style", "display='none'")
                 fileInputElement.setAttribute("type", "file")
                 fileInputElement.setAttribute("name", "file")
+
+                fileInputElement.setAttribute("accept", type.value.joinToString(", "))
+
+                if (selectionMode == FilePickerSelectionMode.Multiple)
+                    fileInputElement.setAttribute("multiple", "true")
+                else
+                    fileInputElement.removeAttribute("multiple")
+
+                fileInputElement.addEventListener("change", {
+                    val files: Array<File> = fileInputElement.asDynamic().files
+                    onResult(files.map { KmpFile(it) })
+                    fileDialogVisible = false
+                })
+
                 js("fileInputElement.click();")
+
                 Unit
             },
         )

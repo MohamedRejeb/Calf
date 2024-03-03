@@ -12,7 +12,7 @@ actual class KmpFile(
 
 actual fun KmpFile.exists(context: PlatformContext) = file.exists()
 
-actual fun KmpFile.readByteArray(context: PlatformContext): ByteArray = file.readBytes()
+actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray = file.readBytes()
 
 actual fun KmpFile.getName(context: PlatformContext): String? = file.name
 

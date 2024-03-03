@@ -1,8 +1,9 @@
-package com.mohamedrejeb.calf.sample.screens.theme
+package com.mohamedrejeb.calf.sample.ui.theme
 
 import androidx.compose.material3.Typography
 
-val Typography = Typography(
+val Typography =
+    Typography(
     /* Other default text styles to override
     button = TextStyle(
         fontFamily = FontFamily.Default,
@@ -14,5 +15,5 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp
     )
-    */
-)
+     */
+    )
