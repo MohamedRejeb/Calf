@@ -1,0 +1,7 @@
+[*.{kt,kts}]
+ktlint_code_style = ktlint_official
+
+ktlint_standard_multiline-if-else = disabled
+ktlint_standard_property-naming = disabled
+ktlint_standard_function_naming_ignore_when_annotated_with = Composable
+ktlint_function_naming_ignore_when_annotated_with = Composable

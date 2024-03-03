@@ -1,23 +1,55 @@
 package com.mohamedrejeb.calf.io
 
-import java.io.File
+import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
+import com.mohamedrejeb.calf.core.PlatformContext
+import java.io.FileNotFoundException
 
 /**
  * An typealias representing a file in the platform specific implementation
  */
-actual typealias KmpFile = File
+actual class KmpFile(
+    val uri: Uri,
+)
 
-actual fun createKmpFile(path: String): KmpFile? = File(path)
+actual fun KmpFile.exists(context: PlatformContext): Boolean =
+    try {
+        val inputStream = context.contentResolver.openInputStream(uri)!!
+        inputStream.close()
 
-actual fun KmpFile.exists() = this.exists()
+        true
+    } catch (e: Exception) {
+        false
+    }
 
-actual fun KmpFile.readByteArray(): ByteArray = this.readBytes()
+/**
+ * Reads the content of the file as a byte array
+ *
+ * @param context the context to use to open the file
+ * @throws FileNotFoundException if the file is not found
+ * @return the content of the file as a byte array
+ */
+@Throws(FileNotFoundException::class)
+actual fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
+    val inputStream =
+        context.contentResolver.openInputStream(uri)
+            ?: throw FileNotFoundException("File not found")
 
-actual val KmpFile.name: String?
-    get() = this.name
+    return inputStream.readBytes().also {
+        inputStream.close()
+    }
+}
 
-actual val KmpFile.path: String?
-    get() = this.path
+actual fun KmpFile.getName(context: PlatformContext): String? {
+    val documentFile = DocumentFile.fromSingleUri(context, uri)
 
-actual val KmpFile.isDirectory: Boolean
-    get() = this.isDirectory
+    return documentFile?.name
+}
+
+actual fun KmpFile.getPath(context: PlatformContext): String? = uri.toString()
+
+actual fun KmpFile.isDirectory(context: PlatformContext): Boolean {
+    val documentFile = DocumentFile.fromSingleUri(context, uri)
+
+    return documentFile?.isDirectory == true
+}

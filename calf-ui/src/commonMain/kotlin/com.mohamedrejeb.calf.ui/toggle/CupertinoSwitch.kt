@@ -1,5 +1,3 @@
-@file:Suppress("INVISIBLE_MEMBER")
-
 package com.mohamedrejeb.calf.ui.toggle
 
 import androidx.compose.animation.animateColorAsState
@@ -19,12 +17,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
@@ -41,7 +41,7 @@ fun CupertinoSwitch(
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val animatedAspectRatio by animateFloatAsState(if (isPressed) 1.25f else 1f)
-    val animatedBackground by animateColorAsState(colors.trackColor(enabled, checked).value)
+    val animatedBackground by animateColorAsState(colors.trackColor(enabled, checked))
     val animatedAlignment by animateFloatAsState(if (checked) 1f else -1f)
 
     Column(
@@ -67,10 +67,26 @@ fun CupertinoSwitch(
                 .fillMaxHeight()
                 .clip(CircleShape)
                 .aspectRatio(animatedAspectRatio)
-                .background(colors.thumbColor(enabled, checked).value)
+                .background(colors.thumbColor(enabled, checked))
                 .align(BiasAlignment.Horizontal(animatedAlignment))
         ) {
             thumbContent?.invoke()
         }
     }
 }
+
+@Stable
+internal fun SwitchColors.trackColor(enabled: Boolean, checked: Boolean): Color =
+    if (enabled) {
+        if (checked) checkedTrackColor else uncheckedTrackColor
+    } else {
+        if (checked) disabledCheckedTrackColor else disabledUncheckedTrackColor
+    }
+
+@Stable
+internal fun SwitchColors.thumbColor(enabled: Boolean, checked: Boolean): Color =
+    if (enabled) {
+        if (checked) checkedThumbColor else uncheckedThumbColor
+    } else {
+        if (checked) disabledCheckedThumbColor else disabledUncheckedThumbColor
+    }

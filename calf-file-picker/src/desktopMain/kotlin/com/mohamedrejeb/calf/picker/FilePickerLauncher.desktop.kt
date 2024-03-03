@@ -1,14 +1,17 @@
 package com.mohamedrejeb.calf.picker
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.AwtWindow
 import com.mohamedrejeb.calf.io.KmpFile
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
 import java.net.URLConnection
-import java.nio.file.Files
 
 @Composable
 actual fun rememberFilePickerLauncher(
@@ -22,34 +25,37 @@ actual fun rememberFilePickerLauncher(
         AwtWindow(
             create = {
                 val frame: Frame? = null
-                val fileDialog = object : FileDialog(
-                    frame,
-                    "Select ${if (type == FilePickerFileType.Folder) "Folder" else "File"}",
-                    if (type == FilePickerFileType.Folder) SAVE else LOAD
-                ) {
-                    override fun setVisible(value: Boolean) {
-                        super.setVisible(value)
-                        if (value) {
-                            onResult(files?.toList() ?: emptyList())
-                            fileDialogVisible = false
+                val fileDialog =
+                    object : FileDialog(
+                        frame,
+                        "Select ${if (type == FilePickerFileType.Folder) "Folder" else "File"}",
+                        if (type == FilePickerFileType.Folder) SAVE else LOAD,
+                    ) {
+                        override fun setVisible(value: Boolean) {
+                            super.setVisible(value)
+                            if (value) {
+                                onResult(files.orEmpty().map { KmpFile(it) })
+                                fileDialogVisible = false
+                            }
                         }
                     }
-                }
 
                 fileDialog.isMultipleMode = selectionMode == FilePickerSelectionMode.Multiple
 
-                val mimeType = when (type) {
-                    FilePickerFileType.Folder -> listOf("folder")
-                    FilePickerFileType.All -> emptyList()
-                    else -> type.value.map {
-                        it
-                            .removeSuffix("/*")
-                            .removeSuffix("/")
-                            .removeSuffix("*")
-                    }.filter {
-                        it.isNotEmpty()
+                val mimeType =
+                    when (type) {
+                        FilePickerFileType.Folder -> listOf("folder")
+                        FilePickerFileType.All -> emptyList()
+                        else ->
+                            type.value.map {
+                                it
+                                    .removeSuffix("/*")
+                                    .removeSuffix("/")
+                                    .removeSuffix("*")
+                            }.filter {
+                                it.isNotEmpty()
+                            }
                     }
-                }
                 fileDialog.setFilenameFilter { file, name ->
                     if (mimeType.isEmpty()) {
                         true
@@ -67,7 +73,7 @@ actual fun rememberFilePickerLauncher(
             },
             dispose = {
                 it.dispose()
-            }
+            },
         )
     }
 
@@ -77,7 +83,7 @@ actual fun rememberFilePickerLauncher(
             selectionMode = selectionMode,
             onLaunch = {
                 fileDialogVisible = true
-            }
+            },
         )
     }
 }

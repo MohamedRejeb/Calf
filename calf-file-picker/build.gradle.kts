@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
@@ -28,21 +26,17 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets.commonMain.get().dependencies {
+        api(projects.calfIo)
+
         implementation(compose.runtime)
         implementation(compose.foundation)
-        implementation(compose.material)
-        api(project(":calf-io"))
     }
     sourceSets.commonTest.get().dependencies {
         implementation(libs.kotlin.test)
     }
 
-    sourceSets {
-        val androidMain by getting {
-            dependencies {
-                implementation(libs.activity.compose)
-            }
-        }
+    sourceSets.androidMain.dependencies {
+        implementation(libs.activity.compose)
     }
 }
 

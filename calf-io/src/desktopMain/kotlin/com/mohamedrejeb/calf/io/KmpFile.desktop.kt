@@ -1,23 +1,21 @@
 package com.mohamedrejeb.calf.io
 
+import com.mohamedrejeb.calf.core.PlatformContext
 import java.io.File
 
 /**
  * An typealias representing a file in the platform specific implementation
  */
-actual typealias KmpFile = File
+actual class KmpFile(
+    val file: File,
+)
 
-actual fun createKmpFile(path: String): KmpFile? = File(path)
+actual fun KmpFile.exists(context: PlatformContext) = file.exists()
 
-actual fun KmpFile.exists() = this.exists()
+actual fun KmpFile.readByteArray(context: PlatformContext): ByteArray = file.readBytes()
 
-actual fun KmpFile.readByteArray(): ByteArray = this.readBytes()
+actual fun KmpFile.getName(context: PlatformContext): String? = file.name
 
-actual val KmpFile.name: String?
-    get() = this.name
+actual fun KmpFile.getPath(context: PlatformContext): String? = file.path
 
-actual val KmpFile.path: String?
-    get() = this.path
-
-actual val KmpFile.isDirectory: Boolean
-    get() = this.isDirectory
+actual fun KmpFile.isDirectory(context: PlatformContext): Boolean = file.isDirectory

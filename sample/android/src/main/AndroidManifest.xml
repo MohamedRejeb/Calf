@@ -25,7 +25,10 @@
     <application
         android:allowBackup="false"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        android:enableOnBackInvokedCallback="true"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        tools:targetApi="tiramisu"
+    >
         <activity
             android:name="com.mohamedrejeb.calf.sample.MainActivity"
             android:exported="true"

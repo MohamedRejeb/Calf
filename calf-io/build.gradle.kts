@@ -24,7 +24,11 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    sourceSets.commonMain.get().dependencies {}
+    sourceSets.commonMain.dependencies {
+        api(projects.calfCore)
+
+        implementation(libs.documentfile)
+    }
 }
 
 android {
