@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.androidLibrary)
-//    id("module.publication")
 }
 
 kotlin {
@@ -25,11 +24,11 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    sourceSets.commonMain.get().dependencies {
+    sourceSets.commonMain.dependencies {
         implementation(compose.runtime)
         implementation(compose.foundation)
     }
-    sourceSets.androidMain.get().dependencies {
+    sourceSets.androidMain.dependencies {
         implementation(libs.appcompat)
         implementation(libs.lifecycle.extensions)
         implementation(libs.play.services.location)

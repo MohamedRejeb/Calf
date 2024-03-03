@@ -1,4 +1,3 @@
-import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -11,14 +10,10 @@ kotlin {
         jvmToolchain(11)
         withJava()
     }
-    sourceSets {
-        val jvmMain by getting {
-            dependencies {
-                implementation(project(":sample:common"))
-                implementation(compose.desktop.currentOs)
-            }
-        }
-        val jvmTest by getting
+
+    sourceSets.jvmMain.dependencies {
+        implementation(projects.sample.common)
+        implementation(compose.desktop.currentOs)
     }
 }
 
@@ -27,7 +22,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "compose-richeditor"
+            packageName = "Calf"
             packageVersion = "1.0.0"
         }
     }
