@@ -13,21 +13,22 @@ fun rememberAdaptiveDatePickerState(
     yearRange: IntRange = DatePickerDefaults.YearRange,
     initialMaterialDisplayMode: DisplayMode = DisplayMode.Picker,
     initialUIKitDisplayMode: UIKitDisplayMode = UIKitDisplayMode.Picker,
-): AdaptiveDatePickerState = rememberSaveable(
-    saver = AdaptiveDatePickerState.Saver()
-) {
-    AdaptiveDatePickerState(
-        initialSelectedDateMillis = initialSelectedDateMillis,
-        initialDisplayedMonthMillis = initialDisplayedMonthMillis,
-        yearRange = yearRange,
-        initialMaterialDisplayMode = initialMaterialDisplayMode,
-        initialUIKitDisplayMode = initialUIKitDisplayMode
-    )
-}
+): AdaptiveDatePickerState =
+    rememberSaveable(
+        saver = AdaptiveDatePickerState.Saver(),
+    ) {
+        AdaptiveDatePickerState(
+            initialSelectedDateMillis = initialSelectedDateMillis,
+            initialDisplayedMonthMillis = initialDisplayedMonthMillis,
+            yearRange = yearRange,
+            initialMaterialDisplayMode = initialMaterialDisplayMode,
+            initialUIKitDisplayMode = initialUIKitDisplayMode,
+        )
+    }
 
 /**
  * A state object that can be hoisted to observe the date picker state. See
- * [rememberDatePickerState].
+ * [rememberAdaptiveDatePickerState].
  *
  * The state's [selectedDateMillis] will provide a timestamp that represents the _start_ of the day.
  *
@@ -42,7 +43,7 @@ fun rememberAdaptiveDatePickerState(
  * @param yearRange an [IntRange] that holds the year range that the date picker will be limited
  * to
  * @param initialMaterialDisplayMode an initial [DisplayMode] that this state will hold
- * @see rememberDatePickerState
+ * @see rememberAdaptiveDatePickerState
  * @throws [IllegalArgumentException] if the initial selected date or displayed month represent
  * a year that is out of the year range.
  */
@@ -55,7 +56,6 @@ expect class AdaptiveDatePickerState(
     initialMaterialDisplayMode: DisplayMode,
     initialUIKitDisplayMode: UIKitDisplayMode,
 ) {
-
     /**
      * A timestamp that represents the _start_ of the day of the selected date in _UTC_ milliseconds
      * from the epoch.
@@ -64,7 +64,7 @@ expect class AdaptiveDatePickerState(
      *
      * @see [setSelection]
      */
-    val selectedDateMillis: Long?
+    var selectedDateMillis: Long?
 
     /**
      * Sets the selected date.
@@ -75,6 +75,10 @@ expect class AdaptiveDatePickerState(
      * @throws IllegalArgumentException in case the given timestamps do not fall within the year
      * range this state was created with.
      */
+    @Deprecated(
+        message = "Use selectedDateMillis property instead",
+        replaceWith = ReplaceWith("selectedDateMillis = dateMillis"),
+    )
     fun setSelection(dateMillis: Long?)
 
     /**
@@ -93,19 +97,25 @@ expect class AdaptiveDatePickerState(
 
 @OptIn(ExperimentalMaterial3Api::class)
 internal val DisplayMode.value: Int
-    get() = when (this) {
-        DisplayMode.Picker -> 0
-        DisplayMode.Input -> 1
-        else -> -1
+    get() =
+        when (this) {
+            DisplayMode.Picker -> 0
+            DisplayMode.Input -> 1
+            else -> -1
+        }
+
+@OptIn(ExperimentalMaterial3Api::class)
+internal fun displayModeFromValue(value: Int) =
+    when (value) {
+        0 -> DisplayMode.Picker
+        else -> DisplayMode.Input
+    }
+
+internal fun uiKitDisplayModeFromValue(value: Int) =
+    when (value) {
+        0 -> UIKitDisplayMode.Picker
+        else -> UIKitDisplayMode.Wheels
     }
 
 @OptIn(ExperimentalMaterial3Api::class)
-internal fun displayModeFromValue(value: Int) = when (value) {
-    0 -> DisplayMode.Picker
-    else -> DisplayMode.Input
-}
-
-internal fun uiKitDisplayModeFromValue(value: Int) = when (value) {
-    0 -> UIKitDisplayMode.Picker
-    else -> UIKitDisplayMode.Wheels
-}
+internal expect fun getCalendarLocalDefault(): CalendarLocale

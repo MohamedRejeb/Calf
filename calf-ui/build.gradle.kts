@@ -1,4 +1,5 @@
 import org.gradle.internal.os.OperatingSystem
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -11,6 +12,8 @@ val os: OperatingSystem = OperatingSystem.current()
 val arch: String = System.getProperty("os.arch")
 val isAarch64: Boolean = arch.contains("aarch64")
 
+println("arch: $arch")
+
 val platform = when {
     os.isWindows -> "win"
     os.isMacOsX -> "mac"
@@ -18,7 +21,17 @@ val platform = when {
 } + if (isAarch64) "-aarch64" else ""
 
 kotlin {
-    kotlin.applyDefaultHierarchyTemplate()
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("material") {
+                withAndroidTarget()
+                withJvm()
+                withJs()
+            }
+        }
+    }
+
     androidTarget {
         publishLibraryVariants("release")
         compilations.all {
@@ -44,33 +57,19 @@ kotlin {
         implementation(libs.kotlinx.coroutines.core)
     }
 
-    sourceSets {
-        val commonMain by getting
+    sourceSets.androidMain.dependencies {
+        implementation(libs.activity.compose)
+        implementation(libs.kotlinx.coroutines.android)
+    }
 
-        val androidMain by getting {
-            dependencies {
-                implementation(libs.activity.compose)
-                implementation(libs.kotlinx.coroutines.android)
-            }
-        }
-
-        val desktopMain by getting {
-            dependencies {
-                implementation("org.openjfx:javafx-base:19:$platform")
-                implementation("org.openjfx:javafx-graphics:19:$platform")
-                implementation("org.openjfx:javafx-controls:19:$platform")
-                implementation("org.openjfx:javafx-media:19:$platform")
-                implementation("org.openjfx:javafx-web:19:$platform")
-                implementation("org.openjfx:javafx-swing:19:$platform")
-                implementation(libs.kotlinx.coroutines.javafx)
-            }
-        }
-
-        // Group for Material3 targets
-        val materialMain by creating
-        androidMain.dependsOn(materialMain)
-        desktopMain.dependsOn(materialMain)
-        materialMain.dependsOn(commonMain)
+    sourceSets.named("desktopMain").dependencies {
+        implementation("org.openjfx:javafx-base:19:$platform")
+        implementation("org.openjfx:javafx-graphics:19:$platform")
+        implementation("org.openjfx:javafx-controls:19:$platform")
+        implementation("org.openjfx:javafx-media:19:$platform")
+        implementation("org.openjfx:javafx-web:19:$platform")
+        implementation("org.openjfx:javafx-swing:19:$platform")
+        implementation(libs.kotlinx.coroutines.javafx)
     }
 }
 

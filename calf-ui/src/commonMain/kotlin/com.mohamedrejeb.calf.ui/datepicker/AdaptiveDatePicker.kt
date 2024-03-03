@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 expect fun AdaptiveDatePicker(
     state: AdaptiveDatePickerState,
     modifier: Modifier = Modifier,
-    dateFormatter: DatePickerFormatter = remember { DatePickerFormatter() },
+    dateFormatter: DatePickerFormatter = remember { DatePickerDefaults.dateFormatter() },
     title: (@Composable () -> Unit)? = null,
     headline: (@Composable () -> Unit)? = null,
     showModeToggle: Boolean = true,

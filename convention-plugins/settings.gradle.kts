@@ -1,3 +1,5 @@
+rootProject.name = "convention-plugins"
+
 pluginManagement {
     repositories {
         google()
@@ -7,6 +9,7 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    @Suppress("UnstableApiUsage")
     repositories {
         google()
         gradlePluginPortal()

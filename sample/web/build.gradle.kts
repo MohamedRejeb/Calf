@@ -8,13 +8,12 @@ kotlin {
         browser()
         binaries.executable()
     }
-    sourceSets {
-        val jsMain by getting {
-            dependencies {
-                implementation(compose.ui)
-                implementation(project(":sample:common"))
-            }
-        }
+
+    sourceSets.jsMain.dependencies {
+        implementation(projects.sample.common)
+
+        implementation(compose.ui)
+        implementation(compose.html.core)
     }
 }
 

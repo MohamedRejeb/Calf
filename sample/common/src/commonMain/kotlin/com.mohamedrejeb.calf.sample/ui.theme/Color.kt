@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sample.ui.theme
+package com.mohamedrejeb.calf.sample.screens.theme
 
 import androidx.compose.ui.graphics.Color
 

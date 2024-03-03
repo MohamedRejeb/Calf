@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.io
 
+import com.mohamedrejeb.calf.core.PlatformContext
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
@@ -13,19 +14,18 @@ import platform.posix.memcpy
 /**
  * A typealias representing a file in the platform specific implementation
  */
-@Suppress("CONFLICTING_OVERLOADS")
-actual typealias KmpFile = NSURL
+actual class KmpFile(
+    val url: NSURL,
+)
 
-actual fun createKmpFile(path: String): KmpFile? = NSURL(fileURLWithPath = path)
-
-actual fun KmpFile.exists(): Boolean {
-    return NSFileManager.defaultManager.fileExistsAtPath(this.path ?: return false)
+actual fun KmpFile.exists(context: PlatformContext): Boolean {
+    return NSFileManager.defaultManager.fileExistsAtPath(url.path ?: return false)
 }
 
 @OptIn(ExperimentalForeignApi::class)
-actual fun KmpFile.readByteArray(): ByteArray {
-    val data = NSData.dataWithContentsOfURL(this) ?: return ByteArray(0)
-    val byteArraySize: Int = if (data.length > Int.MAX_VALUE.toUInt()) Int.MAX_VALUE else data.length .toInt()
+actual fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
+    val data = NSData.dataWithContentsOfURL(url) ?: return ByteArray(0)
+    val byteArraySize: Int = if (data.length > Int.MAX_VALUE.toUInt()) Int.MAX_VALUE else data.length.toInt()
     return ByteArray(byteArraySize).apply {
         usePinned {
             memcpy(it.addressOf(0), data.bytes, data.length)
@@ -33,11 +33,8 @@ actual fun KmpFile.readByteArray(): ByteArray {
     }
 }
 
-actual val KmpFile.name: String?
-    get() = this.lastPathComponent
+actual fun KmpFile.getName(context: PlatformContext): String? = url.lastPathComponent
 
-actual val KmpFile.path: String?
-    get() = this.path
+actual fun KmpFile.getPath(context: PlatformContext): String? = url.path
 
-actual val KmpFile.isDirectory: Boolean
-    get() = !this.path.orEmpty().contains(".")
+actual fun KmpFile.isDirectory(context: PlatformContext): Boolean = !url.path.orEmpty().contains(".")

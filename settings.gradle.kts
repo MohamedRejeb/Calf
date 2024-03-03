@@ -1,3 +1,5 @@
+rootProject.name = "Calf"
+
 pluginManagement {
     includeBuild("convention-plugins")
     repositories {
@@ -13,6 +15,7 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    @Suppress("UnstableApiUsage")
     repositories {
         google()
         mavenCentral()
@@ -20,8 +23,9 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Calf"
 include(
+    // Artifact modules
+    ":calf-core",
     ":calf-ui",
     ":calf-sf-symbols",
     ":calf-navigation",
@@ -30,10 +34,10 @@ include(
     ":calf-permissions",
     ":calf-geo",
     ":calf-maps",
-
+    // Sample modules
     ":sample:android",
     ":sample:desktop",
-//    ":sample:web",
+    ":sample:web",
     ":sample:common",
 )
 

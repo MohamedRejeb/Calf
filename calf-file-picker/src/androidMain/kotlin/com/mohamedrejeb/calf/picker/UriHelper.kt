@@ -9,7 +9,10 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 
 internal object URIPathHelper {
-    fun getPath(context: Context, uri: Uri?): String? {
+    fun getPath(
+        context: Context,
+        uri: Uri?,
+    ): String? {
         if (uri == null) return null
 
         // DocumentProvider
@@ -22,19 +25,22 @@ internal object URIPathHelper {
                 if ("primary".equals(type, ignoreCase = true)) {
                     return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
                 }
-
             } else if (isDownloadsDocument(uri)) {
                 val id = DocumentsContract.getDocumentId(uri)
-                val contentUri = ContentUris.withAppendedId(
-                    Uri.parse("content://downloads/public_downloads"),
-                    java.lang.Long.valueOf(id)
-                )
+                val contentUri =
+                    ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"),
+                        java.lang.Long.valueOf(id),
+                    )
                 return getDataColumn(context, contentUri, null, null)
             } else if (isMediaDocument(uri)) {
                 val docId = DocumentsContract.getDocumentId(uri)
                 val split = docId.split(":".toRegex()).toTypedArray()
                 val type = split[0]
                 var contentUri: Uri? = null
+                println("docId: $docId")
+                println("type: $type")
+
                 when (type) {
                     "image" -> {
                         contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -48,7 +54,10 @@ internal object URIPathHelper {
                 }
                 val selection = "_id=?"
                 val selectionArgs = arrayOf(split[1])
+                println("contentUri: $contentUri")
+                println("selectionArgs: $selectionArgs")
                 return getDataColumn(context, contentUri, selection, selectionArgs)
+                    ?: getDataColumn(context, uri, null, null)
             }
         } else if (isExternalStorageDocument(uri)) {
             if (uri.pathSegments.size > 1) {
@@ -60,6 +69,7 @@ internal object URIPathHelper {
                 }
             }
         } else if ("content".equals(uri.scheme, ignoreCase = true)) {
+            println("content")
             return getDataColumn(context, uri, null, null)
         } else if ("file".equals(uri.scheme, ignoreCase = true)) {
             return uri.path
@@ -67,7 +77,12 @@ internal object URIPathHelper {
         return null
     }
 
-    private fun getDataColumn(context: Context, uri: Uri?, selection: String?, selectionArgs: Array<String>?): String? {
+    private fun getDataColumn(
+        context: Context,
+        uri: Uri?,
+        selection: String?,
+        selectionArgs: Array<String>?,
+    ): String? {
         var cursor: Cursor? = null
         val column = "_data"
         val projection = arrayOf(column)

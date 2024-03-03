@@ -5,7 +5,7 @@ plugins {
 }
 
 kotlin {
-    kotlin.applyDefaultHierarchyTemplate()
+    applyDefaultHierarchyTemplate()
     androidTarget {
         compilations.all {
             kotlinOptions {
@@ -16,14 +16,14 @@ kotlin {
     jvm("desktop") {
         jvmToolchain(11)
     }
-//    js(IR) {
-//        browser()
-//    }
+    js(IR) {
+        browser()
+    }
 
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "Common"
@@ -34,41 +34,20 @@ kotlin {
         }
     }
 
-    sourceSets {
-        all {
-            languageSettings {
-                optIn("org.jetbrains.compose.resources.ExperimentalResourceApi")
-            }
-        }
+    sourceSets.commonMain.dependencies {
+        api(compose.runtime)
+        api(compose.foundation)
+        api(compose.material)
+        api(compose.material3)
+        implementation(compose.materialIconsExtended)
 
-        val commonMain by getting {
-            dependencies {
-                api(compose.runtime)
-                api(compose.foundation)
-                api(compose.material)
-                api(compose.material3)
-                implementation(compose.materialIconsExtended)
-                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-                implementation(compose.components.resources)
-
-                // Calf
-                // This is possible thanks to `enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")` in `settings.gradle.kts
-                api(projects.calfUi)
-                implementation(projects.calfFilePicker)
-                implementation(projects.calfPermissions)
-                implementation(projects.calfNavigation)
-            }
-        }
-
-        val androidMain by getting
-
-        val desktopMain by getting
-
-//        val jsMain by getting {
-//            dependencies {}
-//        }
-
-        val iosMain by getting
+        // Calf
+        // This is possible thanks to `enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")`
+        // in `settings.gradle.kts
+        api(projects.calfUi)
+        implementation(projects.calfFilePicker)
+        implementation(projects.calfPermissions)
+        implementation(projects.calfNavigation)
     }
 }
 
