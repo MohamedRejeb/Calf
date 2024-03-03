@@ -17,7 +17,7 @@ import androidx.compose.runtime.Stable
 @Composable
 fun rememberPermissionState(
     permission: Permission,
-    onPermissionResult: (Boolean) -> Unit = {}
+    onPermissionResult: (Boolean) -> Unit = {},
 ): PermissionState {
     return rememberMutablePermissionState(permission, onPermissionResult)
 }
@@ -33,7 +33,6 @@ fun rememberPermissionState(
 @ExperimentalPermissionsApi
 @Stable
 interface PermissionState {
-
     /**
      * The permission to control and observe.
      */
@@ -70,6 +69,7 @@ interface PermissionState {
  * Enum representing the different supported permissions.
  */
 enum class Permission {
+    Call,
     Camera,
     Gallery,
     ReadStorage,
