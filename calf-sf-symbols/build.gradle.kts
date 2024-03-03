@@ -25,18 +25,10 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    sourceSets.all {
-        languageSettings {
-            optIn("org.jetbrains.compose.resources.ExperimentalResourceApi")
-        }
-    }
-
     sourceSets.commonMain.get().dependencies {
         implementation(compose.runtime)
         implementation(compose.foundation)
         implementation(compose.material)
-        @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-        implementation(compose.components.resources)
     }
     sourceSets.commonTest.get().dependencies {
         implementation(libs.kotlin.test)
