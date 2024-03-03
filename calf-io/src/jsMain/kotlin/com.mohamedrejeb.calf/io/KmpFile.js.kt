@@ -1,8 +1,13 @@
 package com.mohamedrejeb.calf.io
 
 import com.mohamedrejeb.calf.core.PlatformContext
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.Uint8Array
+import org.khronos.webgl.get
 import org.w3c.files.File
 import org.w3c.files.FileReader
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * A typealias representing a file in the platform specific implementation
@@ -13,17 +18,24 @@ actual class KmpFile(
 
 actual fun KmpFile.exists(context: PlatformContext) = true
 
-actual fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
-    val fileReader = FileReader()
-    fileReader.onload = {
-        val arrayBuffer = it.target.asDynamic().result as String
-        ByteArray(arrayBuffer.length) { index ->
-            arrayBuffer[index].code.toByte()
+actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray =
+    suspendCoroutine { continuation ->
+        val fileReader = FileReader()
+        fileReader.readAsArrayBuffer(file)
+        fileReader.onloadend = { event ->
+            if (event.target.asDynamic().readyState == FileReader.DONE) {
+                val arrayBuffer: ArrayBuffer = event.target.asDynamic().result
+                val array = Uint8Array(arrayBuffer)
+                val byteArray =
+                    ByteArray(array.length) { index ->
+                        array[index]
+                    }
+                continuation.resume(byteArray)
+            } else {
+                continuation.resume(ByteArray(0))
+            }
         }
     }
-    fileReader.readAsText(file)
-    return fileReader.result as ByteArray
-}
 
 actual fun KmpFile.getName(context: PlatformContext): String? = file.name
 

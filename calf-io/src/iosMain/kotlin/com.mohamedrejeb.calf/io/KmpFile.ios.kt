@@ -23,7 +23,7 @@ actual fun KmpFile.exists(context: PlatformContext): Boolean {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-actual fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
+actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
     val data = NSData.dataWithContentsOfURL(url) ?: return ByteArray(0)
     val byteArraySize: Int = if (data.length > Int.MAX_VALUE.toUInt()) Int.MAX_VALUE else data.length.toInt()
     return ByteArray(byteArraySize).apply {

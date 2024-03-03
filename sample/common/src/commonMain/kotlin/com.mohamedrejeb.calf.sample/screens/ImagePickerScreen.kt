@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,10 +38,12 @@ import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import com.mohamedrejeb.calf.picker.toImageBitmap
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
+import kotlinx.coroutines.launch
 
 @Composable
 fun ImagePickerScreen(navigateBack: () -> Unit) {
     val context = LocalPlatformContext.current
+    val scope = rememberCoroutineScope()
 
     var imageBitmaps by remember {
         mutableStateOf<List<ImageBitmap>>(emptyList())
@@ -52,15 +55,17 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
             type = FilePickerFileType.Image,
             selectionMode = FilePickerSelectionMode.Single,
             onResult = { files ->
-                imageBitmaps =
-                    files.mapNotNull {
-                        try {
-                            it.readByteArray(context).toImageBitmap()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            null
+                scope.launch {
+                    imageBitmaps =
+                        files.mapNotNull {
+                            try {
+                                it.readByteArray(context).toImageBitmap()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                null
+                            }
                         }
-                    }
+                }
             },
         )
 
@@ -69,15 +74,17 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
             type = FilePickerFileType.Image,
             selectionMode = FilePickerSelectionMode.Multiple,
             onResult = { files ->
-                imageBitmaps =
-                    files.mapNotNull {
-                        try {
-                            it.readByteArray(context).toImageBitmap()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            null
+                scope.launch {
+                    imageBitmaps =
+                        files.mapNotNull {
+                            try {
+                                it.readByteArray(context).toImageBitmap()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                null
+                            }
                         }
-                    }
+                }
             },
         )
 

@@ -21,7 +21,7 @@ expect fun KmpFile.exists(context: PlatformContext): Boolean
  * @param context The platform context.
  * @return The content of the file as a byte array.
  */
-expect fun KmpFile.readByteArray(context: PlatformContext): ByteArray
+expect suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray
 
 /**
  * Reads the name of the KmpFile.

@@ -30,7 +30,7 @@ actual fun KmpFile.exists(context: PlatformContext): Boolean =
  * @return the content of the file as a byte array
  */
 @Throws(FileNotFoundException::class)
-actual fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
+actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
     val inputStream =
         context.contentResolver.openInputStream(uri)
             ?: throw FileNotFoundException("File not found")
