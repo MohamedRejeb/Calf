@@ -7,6 +7,7 @@ nexus-publish = "2.0.0-rc-1"
 documentfile = "1.0.1"
 
 conventionPlugin = "0.1.0"
+calf = "0.4.0"
 
 # For sample
 compose-compiler = "1.5.4"
@@ -41,6 +42,9 @@ documentfile = { module = "androidx.documentfile:documentfile", version.ref = "d
 # For sample
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
+calf-file-picker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
+calf-permissions = { module = "com.mohamedrejeb.calf:calf-permissions", version.ref = "calf" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

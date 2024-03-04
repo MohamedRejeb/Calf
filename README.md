@@ -15,17 +15,17 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 
 ## Artifacts
 
-| Artifact              | Description                               | Platforms                  | Version                                                                                                                                                                                           |
-|-----------------------|-------------------------------------------|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **calf-ui**           | Adaptive UI components                    | Android, iOS, Desktop, Web | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui%22)                   |
-| **calf-file-picker**  | Native File Picker wrapper                | Android, iOS, Desktop, Web | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |
-| **calf-permissions**  | API that allows you to handle permissions | Android, iOS               | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |                                                                                                                                                                        
-| **calf-geo**          | API that allows you to access geolocation | Coming soon... 🚧 🚧       | Coming soon... 🚧 🚧                                                                                                                                                                              |
-| **calf-navigation**   | Native navigation wrapper                 | Coming soon... 🚧 🚧       | Coming soon... 🚧 🚧                                                                                                                                                                              |
-| **calf-map**          | Native Maps wrapper                       | Coming soon... 🚧 🚧       | Coming soon... 🚧 🚧                                                                                                                                                                              |
-| **calf-media**        | Video/Audio player                        | Coming soon... 🚧 🚧       | Coming soon... 🚧 🚧                                                                                                                                                                              |
-| **calf-notification** | Notification manager                      | Coming soon... 🚧 🚧       | Coming soon... 🚧 🚧                                                                                                                                                                              |
-| **calf-sf-symbols**   | Apple SF Symbols icons                    | Coming soon... 🚧 🚧       | Coming soon... 🚧 🚧                                                                                                                                                                              |
+| Artifact              | Description                               | Platforms                            | Version                                                                                                                                                                                           |
+|-----------------------|-------------------------------------------|--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **calf-ui**           | Adaptive UI components                    | Android, iOS, Desktop, Web(Js, Wasm) | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui%22)                   |
+| **calf-file-picker**  | Native File Picker wrapper                | Android, iOS, Desktop, Web(Js, Wasm) | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |
+| **calf-permissions**  | API that allows you to handle permissions | Android, iOS                         | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |                                                                                                                                                                        
+| **calf-geo**          | API that allows you to access geolocation | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
+| **calf-navigation**   | Native navigation wrapper                 | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
+| **calf-map**          | Native Maps wrapper                       | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
+| **calf-media**        | Video/Audio player                        | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
+| **calf-notification** | Notification manager                      | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
+| **calf-sf-symbols**   | Apple SF Symbols icons                    | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
 
 > The main focus for now is Android and iOS, but more Desktop components are coming that allows you to create adaptive UIs for Desktop as well (Windows, macOS, Linux)
 
@@ -33,14 +33,21 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui%22)
 
+| Kotlin version | Compose version | Calf version |
+|----------------|-----------------|--------------|
+| 1.9.22         | 1.6.0           | 0.4.0        |
+| 1.9.21         | 1.5.11          | 0.3.1        |
+| 1.9.20         | 1.5.10          | 0.2.0        |
+| 1.9.0          | 1.5.0           | 0.1.1        |
+
 Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
 // For Adaptive UI components
-api("com.mohamedrejeb.calf:calf-ui:0.3.1")
+api("com.mohamedrejeb.calf:calf-ui:0.4.0")
 
 // For Adaptive FilePicker
-implementation("com.mohamedrejeb.calf:calf-file-picker:0.3.1")
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.4.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -56,7 +63,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.3.1")
+                export("com.mohamedrejeb.calf:calf-ui:0.4.0")
             }
         }
     ...
@@ -73,7 +80,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.3.1")
+            export("com.mohamedrejeb.calf:calf-ui:0.4.0")
         }
     }
     ...
@@ -286,19 +293,28 @@ LaunchedEffect(Unit) {
 
 Calf File Picker allows you to pick files from the device storage.
 
-| Android                                                    | iOS                                                |
-|------------------------------------------------------------|----------------------------------------------------|
-| ![Web View Android](docs/images/AdaptiveFilePicker-android.png) | ![Web View iOS](docs/images/AdaptiveFilePicker-ios.png) |
+| Android                                                            | iOS                                                        |
+|--------------------------------------------------------------------|------------------------------------------------------------|
+| ![File Picker Android](docs/images/AdaptiveFilePicker-android.png) | ![File Picker iOS](docs/images/AdaptiveFilePicker-ios.png) |
+
+| Desktop                                                            | Web                                                        |
+|--------------------------------------------------------------------|------------------------------------------------------------|
+| ![File Picker Desktop](docs/images/AdaptiveFilePicker-desktop.png) | ![File Picker Web](docs/images/AdaptiveFilePicker-web.png) |
 
 ```kotlin
+val scope = rememberCoroutineScope()
+val context = LocalPlatformContext.current
+
 val pickerLauncher = rememberFilePickerLauncher(
     type = FilePickerFileType.Image,
     selectionMode = FilePickerSelectionMode.Single,
     onResult = { files ->
-        files.firstOrNull()?.let { file ->
-            // Do something with the selected file
-            // You can get the ByteArray of the file
-            file.readByteArray()
+        scope.launch {
+            files.firstOrNull()?.let { file ->
+                // Do something with the selected file
+                // You can get the ByteArray of the file
+                file.readByteArray(context)
+            }
         }
     }
 )
@@ -344,6 +360,8 @@ val type = FilePickerFileType.Custom(
 
 * `FilePickerSelectionMode.Single` - Allows you to pick a single file
 * `FilePickerSelectionMode.Multiple` - Allows you to pick multiple files
+
+Read the full file picker documentation [here](docs/filepicker.md).
 
 ## Contribution
 If you've found an error in this sample, please file an issue. <br>
