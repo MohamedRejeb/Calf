@@ -293,19 +293,28 @@ LaunchedEffect(Unit) {
 
 Calf File Picker allows you to pick files from the device storage.
 
-| Android                                                    | iOS                                                |
-|------------------------------------------------------------|----------------------------------------------------|
-| ![Web View Android](docs/images/AdaptiveFilePicker-android.png) | ![Web View iOS](docs/images/AdaptiveFilePicker-ios.png) |
+| Android                                                            | iOS                                                        |
+|--------------------------------------------------------------------|------------------------------------------------------------|
+| ![File Picker Android](docs/images/AdaptiveFilePicker-android.png) | ![File Picker iOS](docs/images/AdaptiveFilePicker-ios.png) |
+
+| Desktop                                                            | Web                                                        |
+|--------------------------------------------------------------------|------------------------------------------------------------|
+| ![File Picker Desktop](docs/images/AdaptiveFilePicker-desktop.png) | ![File Picker Web](docs/images/AdaptiveFilePicker-web.png) |
 
 ```kotlin
+val scope = rememberCoroutineScope()
+val context = LocalPlatformContext.current
+
 val pickerLauncher = rememberFilePickerLauncher(
     type = FilePickerFileType.Image,
     selectionMode = FilePickerSelectionMode.Single,
     onResult = { files ->
-        files.firstOrNull()?.let { file ->
-            // Do something with the selected file
-            // You can get the ByteArray of the file
-            file.readByteArray()
+        scope.launch {
+            files.firstOrNull()?.let { file ->
+                // Do something with the selected file
+                // You can get the ByteArray of the file
+                file.readByteArray(context)
+            }
         }
     }
 )
@@ -351,6 +360,8 @@ val type = FilePickerFileType.Custom(
 
 * `FilePickerSelectionMode.Single` - Allows you to pick a single file
 * `FilePickerSelectionMode.Multiple` - Allows you to pick multiple files
+
+Read the full file picker documentation [here](docs/filepicker.md).
 
 ## Contribution
 If you've found an error in this sample, please file an issue. <br>

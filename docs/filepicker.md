@@ -14,19 +14,29 @@ implementation("com.mohamedrejeb.calf:calf-file-picker:0.4.0")
 
 Calf File Picker allows you to pick files from the device storage.
 
-| Android                                                    | iOS                                                |
-|------------------------------------------------------------|----------------------------------------------------|
-| ![Web View Android](images/AdaptiveFilePicker-android.png) | ![Web View iOS](images/AdaptiveFilePicker-ios.png) |
+
+| Android                                                       | iOS                                                   |
+|---------------------------------------------------------------|-------------------------------------------------------|
+| ![File Picker Android](images/AdaptiveFilePicker-android.png) | ![File Picker iOS](images/AdaptiveFilePicker-ios.png) |
+
+| Desktop                                                       | Web                                                   |
+|---------------------------------------------------------------|-------------------------------------------------------|
+| ![File Picker Desktop](images/AdaptiveFilePicker-desktop.png) | ![File Picker Web](images/AdaptiveFilePicker-web.png) |
 
 ```kotlin
+val scope = rememberCoroutineScope()
+val context = LocalPlatformContext.current
+
 val pickerLauncher = rememberFilePickerLauncher(
     type = FilePickerFileType.Image,
     selectionMode = FilePickerSelectionMode.Single,
     onResult = { files ->
-        files.firstOrNull()?.let { file ->
-            // Do something with the selected file
-            // You can get the ByteArray of the file
-            file.readByteArray()
+        scope.launch {
+            files.firstOrNull()?.let { file ->
+                // Do something with the selected file
+                // You can get the ByteArray of the file
+                file.readByteArray(context)
+            }
         }
     }
 )
@@ -72,3 +82,84 @@ val type = FilePickerFileType.Custom(
 
 * `FilePickerSelectionMode.Single` - Allows you to pick a single file
 * `FilePickerSelectionMode.Multiple` - Allows you to pick multiple files
+
+#### Extensions
+
+* Read the `ByteArray` of the file using the `readByteArray` extension function:
+
+```kotlin
+val context = LocalPlatformContext.current
+
+LaunchedEffect(file) {
+    val byteArray = file.readByteArray(context)
+}
+```
+
+> The `readByteArray` extension function is a suspending function, so you need to call it from a coroutine scope.
+
+> It's not recommended to use `readByteArray` extension function on large files, as it reads the entire file into memory.
+> For large files, it's recommended to use the platform-specific APIs to read the file.
+
+* Check if the file exists using the `exists` extension function:
+
+```kotlin
+val context = LocalPlatformContext.current
+
+val exists = file.exists(context)
+```
+
+* Get the file name using the `getName` extension function:
+
+```kotlin
+val context = LocalPlatformContext.current
+
+val name = file.getName(context)
+```
+
+* Get the file path using the `getPath` extension function:
+
+```kotlin
+val context = LocalPlatformContext.current
+
+val path = file.getPath(context)
+```
+
+* Check if the file is a directory using the `isDirectory` extension function:
+
+```kotlin
+val context = LocalPlatformContext.current
+
+val isDirectory = file.isDirectory(context)
+```
+
+* Check if the file is a file using the `isFile` extension function:
+
+```kotlin
+val context = LocalPlatformContext.current
+
+val isFile = file.isFile(context)
+```
+
+#### Platform-specific APIs
+
+KmpFile is a wrapper around platform-specific APIs, so you can use the platform-specific APIs to read the file:
+
+##### Android
+```kotlin
+val uri: Uri = kmpFile.uri
+```
+
+##### iOS
+```kotlin
+val nsUrl: NSURL = kmpFile.nsUrl
+```
+
+##### Desktop
+```kotlin
+val file: java.io.File = kmpFile.file
+```
+
+##### Web
+```kotlin
+val file: org.w3c.files.File = kmpFile.file
+```
