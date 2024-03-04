@@ -99,6 +99,7 @@ LaunchedEffect(file) {
 
 > It's not recommended to use `readByteArray` extension function on large files, as it reads the entire file into memory.
 > For large files, it's recommended to use the platform-specific APIs to read the file.
+> You can read more about accessing the platform-specific APIs below.
 
 * Check if the file exists using the `exists` extension function:
 
@@ -130,14 +131,6 @@ val path = file.getPath(context)
 val context = LocalPlatformContext.current
 
 val isDirectory = file.isDirectory(context)
-```
-
-* Check if the file is a file using the `isFile` extension function:
-
-```kotlin
-val context = LocalPlatformContext.current
-
-val isFile = file.isFile(context)
 ```
 
 #### Platform-specific APIs
