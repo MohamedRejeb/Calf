@@ -46,3 +46,11 @@ expect fun KmpFile.getPath(context: PlatformContext): String?
  * @return True if the file is a directory, false otherwise.
  */
 expect fun KmpFile.isDirectory(context: PlatformContext): Boolean
+
+/**
+ * Checks if the KmpFile is a file.
+ *
+ * @param context The platform context.
+ * @return True if the file is a file, false otherwise.
+ */
+fun KmpFile.isFile(context: PlatformContext): Boolean = !isDirectory(context)
