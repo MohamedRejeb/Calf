@@ -29,6 +29,10 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 
 > The main focus for now is Android and iOS, but more Desktop components are coming that allows you to create adaptive UIs for Desktop as well (Windows, macOS, Linux)
 
+## Web Demo
+
+You can try the web demo [here](https://calf-library.netlify.app/)
+
 ## Contribution
 If you've found an error in this sample, please file an issue. <br>
 Feel free to help out by sending a pull request :heart:.
