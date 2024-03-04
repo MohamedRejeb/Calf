@@ -37,7 +37,7 @@ include(
     // Sample modules
     ":sample:android",
     ":sample:desktop",
-    ":sample:web",
+    ":sample:web-js",
     ":sample:web-wasm",
     ":sample:common",
 )

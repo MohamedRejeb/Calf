@@ -36,7 +36,7 @@ kotlin {
             isStatic = true
 
             // IMPORTANT: Exporting calf-ui is required for some functionalities to work
-            export(projects.calfUi)
+            export(libs.calf.ui)
         }
     }
 
@@ -50,9 +50,9 @@ kotlin {
         // Calf
         // This is possible thanks to `enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")`
         // in `settings.gradle.kts
-        api(projects.calfUi)
-        implementation(projects.calfFilePicker)
-        implementation(projects.calfPermissions)
+        api(libs.calf.ui)
+        implementation(libs.calf.file.picker)
+        implementation(libs.calf.permissions)
         implementation(projects.calfNavigation)
     }
 }
