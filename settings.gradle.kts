@@ -34,6 +34,7 @@ include(
     ":calf-permissions",
     ":calf-geo",
     ":calf-maps",
+    ":calf-file-picker-coil",
     // Sample modules
     ":sample:android",
     ":sample:desktop",
