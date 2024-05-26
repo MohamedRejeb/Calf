@@ -24,14 +24,15 @@ import platform.UIKit.UIApplicationOpenSettingsURLString
 @Composable
 internal actual fun rememberMutablePermissionState(
     permission: Permission,
-    onPermissionResult: (Boolean) -> Unit
+    onPermissionResult: (Boolean) -> Unit,
 ): MutablePermissionState {
-    val permissionState = remember(permission) {
-        MutablePermissionState(
-            permission = permission,
-            onPermissionResult = onPermissionResult,
-        )
-    }
+    val permissionState =
+        remember(permission) {
+            MutablePermissionState(
+                permission = permission,
+                onPermissionResult = onPermissionResult,
+            )
+        }
 
     return permissionState
 }
@@ -47,12 +48,11 @@ internal actual fun rememberMutablePermissionState(
 @Stable
 internal actual class MutablePermissionState(
     override val permission: Permission,
-    private val onPermissionResult: (Boolean) -> Unit
+    private val onPermissionResult: (Boolean) -> Unit,
 ) : PermissionState {
-
     actual constructor(
-        permission: Permission
-    ): this(permission, {})
+        permission: Permission,
+    ) : this(permission, {})
 
     private val permissionDelegate = permission.getPermissionDelegate()
 
@@ -67,12 +67,12 @@ internal actual class MutablePermissionState(
             onPermissionResult = {
                 onPermissionResult(it)
                 refreshPermissionStatus()
-            }
+            },
         )
     }
 
     override fun openAppSettings() {
-        val settingsUrl = NSURL.URLWithString(UIApplicationOpenSettingsURLString)!!
+        val settingsUrl = NSURL.URLWithString(UIApplicationOpenSettingsURLString) ?: return
         UIApplication.sharedApplication.openURL(settingsUrl)
     }
 

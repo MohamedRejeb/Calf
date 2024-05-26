@@ -1,11 +1,17 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeMultiplatform)
 }
 
 kotlin {
     js {
-        browser()
+        moduleName = "web"
+        browser {
+            commonWebpackConfig {
+                outputFileName = "web.js"
+            }
+        }
         binaries.executable()
     }
 

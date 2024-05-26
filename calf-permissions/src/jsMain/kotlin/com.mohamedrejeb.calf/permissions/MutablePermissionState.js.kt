@@ -21,7 +21,7 @@ import androidx.compose.runtime.setValue
 @Composable
 internal actual fun rememberMutablePermissionState(
     permission: Permission,
-    onPermissionResult: (Boolean) -> Unit
+    onPermissionResult: (Boolean) -> Unit,
 ): MutablePermissionState {
     return remember(permission) {
         MutablePermissionState(permission)
@@ -40,7 +40,6 @@ internal actual fun rememberMutablePermissionState(
 internal actual class MutablePermissionState actual constructor(
     override val permission: Permission,
 ) : PermissionState {
-
     override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
 
     override fun launchPermissionRequest() {}

@@ -1,7 +1,8 @@
 plugins {
-    alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.composeMultiplatform)
 }
 
 android {

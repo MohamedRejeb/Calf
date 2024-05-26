@@ -1,9 +1,9 @@
 [versions]
 agp = "8.2.2"
-kotlin = "1.9.22"
-compose = "1.6.0"
-kotlinx-serialization-json = "1.6.2"
-nexus-publish = "2.0.0-rc-1"
+kotlin = "2.0.0"
+compose = "1.6.10"
+kotlinx-serialization-json = "1.6.3"
+nexus-publish = "2.0.0"
 documentfile = "1.0.1"
 
 conventionPlugin = "0.1.0"
@@ -11,14 +11,14 @@ calf = "0.4.0"
 
 # For sample
 compose-compiler = "1.5.4"
-activity-compose = "1.8.2"
+activity-compose = "1.9.0"
 navigation-compose = "2.7.7"
 android-minSdk = "24"
 android-compileSdk = "34"
-kotlinx-coroutines = "1.8.0"
+kotlinx-coroutines = "1.8.1"
 appcompat = "1.6.1"
 android-lifecycle = "2.2.0"
-play-services-location = "21.1.0"
+play-services-location = "21.2.0"
 
 [libraries]
 gradlePlugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -54,5 +54,6 @@ kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 conventionPlugin = { id = "com.mohamedrejeb.gradle.setup", version.ref = "conventionPlugin" }

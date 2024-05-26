@@ -4,6 +4,7 @@ captures
 .externalNativeBuild
 .cxx
 xcuserdata
+.kotlin
 
 .gradle
 build/
