@@ -112,20 +112,20 @@ private fun rememberImagePickerLauncher(
                     picker: PHPickerViewController,
                     didFinishPicking: List<*>,
                 ) {
-                    picker.dismissViewControllerAnimated(true, null)
-                    println("didFinishPicking: $didFinishPicking")
                     didFinishPicking.forEach {
                         val result = it as? PHPickerResult ?: return@forEach
                         result.itemProvider.loadFileRepresentationForTypeIdentifier(
                             typeIdentifier = UTTypeImage.identifier,
                         ) { url, error ->
                             if (error != null) {
-                                println("Error: $error")
                                 return@loadFileRepresentationForTypeIdentifier
                             }
-                            onResult(listOfNotNull(url?.let(::KmpFile)))
+
+                            onResult(listOfNotNull(url?.createTempFile()?.let(::KmpFile)))
                         }
                     }
+
+                    picker.dismissViewControllerAnimated(true, null)
                 }
             }
         }
@@ -140,6 +140,7 @@ private fun rememberImagePickerLauncher(
                         delegate = pickerDelegate,
                         selectionMode = selectionMode,
                     )
+
                 UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
                     imagePicker,
                     true,
