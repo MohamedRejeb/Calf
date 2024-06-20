@@ -1,14 +1,14 @@
 [versions]
 agp = "8.2.2"
 kotlin = "2.0.0"
-compose = "1.6.10"
+compose = "1.6.11"
 kotlinx-serialization-json = "1.6.3"
 nexus-publish = "2.0.0"
 documentfile = "1.0.1"
 coil = "3.0.0-alpha06"
 
 conventionPlugin = "0.1.0"
-calf = "0.4.0"
+calf = "0.4.1"
 
 # For sample
 compose-compiler = "1.5.4"
@@ -17,9 +17,9 @@ navigation-compose = "2.7.7"
 android-minSdk = "24"
 android-compileSdk = "34"
 kotlinx-coroutines = "1.8.1"
-appcompat = "1.6.1"
+appcompat = "1.7.0"
 android-lifecycle = "2.2.0"
-play-services-location = "21.2.0"
+play-services-location = "21.3.0"
 
 [libraries]
 gradlePlugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
