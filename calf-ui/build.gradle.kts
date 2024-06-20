@@ -2,6 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.androidLibrary)
 }
@@ -34,12 +35,12 @@ kotlin {
     }
 
     sourceSets.desktopMain.dependencies {
-        implementation("org.openjfx:javafx-base:19:$platform")
-        implementation("org.openjfx:javafx-graphics:19:$platform")
-        implementation("org.openjfx:javafx-controls:19:$platform")
-        implementation("org.openjfx:javafx-media:19:$platform")
-        implementation("org.openjfx:javafx-web:19:$platform")
-        implementation("org.openjfx:javafx-swing:19:$platform")
+        implementation("org.openjfx:javafx-base:17:$platform")
+        implementation("org.openjfx:javafx-graphics:17:$platform")
+        implementation("org.openjfx:javafx-controls:17:$platform")
+        implementation("org.openjfx:javafx-media:17:$platform")
+        implementation("org.openjfx:javafx-web:17:$platform")
+        implementation("org.openjfx:javafx-swing:17:$platform")
         implementation(libs.kotlinx.coroutines.javafx)
     }
 }

@@ -47,14 +47,16 @@ actual fun rememberFilePickerLauncher(
                         FilePickerFileType.Folder -> listOf("folder")
                         FilePickerFileType.All -> emptyList()
                         else ->
-                            type.value.map {
-                                it
-                                    .removeSuffix("/*")
-                                    .removeSuffix("/")
-                                    .removeSuffix("*")
-                            }.filter {
-                                it.isNotEmpty()
-                            }
+                            type.value
+                                .map {
+                                    it
+                                        .removeSuffix("/*")
+                                        .removeSuffix("/")
+                                        .removeSuffix("*")
+                                }
+                                .filter {
+                                    it.isNotEmpty()
+                                }
                     }
                 fileDialog.setFilenameFilter { file, name ->
                     if (mimeType.isEmpty()) {

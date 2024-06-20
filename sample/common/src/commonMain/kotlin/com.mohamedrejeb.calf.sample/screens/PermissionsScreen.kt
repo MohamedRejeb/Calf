@@ -11,12 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -78,16 +77,31 @@ fun PermissionScreen(navigateBack: () -> Unit) {
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-private fun LazyItemScope.PermissionItem(permission: Permission) {
+private fun PermissionItem(permission: Permission) {
     val permissionState = rememberPermissionState(permission = permission)
+
     Spacer(modifier = Modifier.height(16.dp))
-    Text(text = permission.name)
+
+    Text(
+        text = permission.name,
+    )
+
     Text(
         text = "Is permission granted: ${permissionState.status.isGranted}",
     )
-    Button(onClick = { permissionState.launchPermissionRequest() }) {
-        Text("Request permission")
+
+    Button(
+        onClick = {
+            println("Click")
+            permissionState.launchPermissionRequest()
+        },
+    ) {
+        Text(
+            text = "Request permission",
+        )
     }
+
     Spacer(modifier = Modifier.height(16.dp))
-    Divider()
+
+    HorizontalDivider()
 }

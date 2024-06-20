@@ -12,14 +12,14 @@ fun KotlinMultiplatformExtension.applyHierarchyTemplate() {
                 withAndroidTarget()
                 withJvm()
                 withJs()
-                withWasm()
+                withWasmJs()
             }
 
             group("nonAndroid") {
                 withJvm()
                 withIos()
                 withJs()
-                withWasm()
+                withWasmJs()
             }
         }
     }

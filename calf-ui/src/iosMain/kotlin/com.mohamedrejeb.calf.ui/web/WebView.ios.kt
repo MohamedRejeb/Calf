@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSString
@@ -168,12 +169,14 @@ actual class WebViewState actual constructor(
     var webView by mutableStateOf<WKWebView?>(null)
         internal set
 
-    @Suppress("CONFLICTING_OVERLOADS")
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+    @ObjCSignatureOverride
     override fun webView(webView: WKWebView, didFinishNavigation: WKNavigation?) {
         loadingState = LoadingState.Finished
     }
 
-    @Suppress("CONFLICTING_OVERLOADS")
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+    @ObjCSignatureOverride
     override fun webView(webView: WKWebView, didCommitNavigation: WKNavigation?) {
         loadingState = LoadingState.Loading(webView.estimatedProgress.toFloat())
     }
@@ -186,6 +189,7 @@ private fun WKWebView.applySettings(webSettings: WebSettings) {
 }
 
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread
+@OptIn(BetaInteropApi::class)
 internal suspend fun WebViewNavigator.handleNavigationEvents(
     webView: WKWebView
 ): Nothing = withContext(Dispatchers.Main) {
