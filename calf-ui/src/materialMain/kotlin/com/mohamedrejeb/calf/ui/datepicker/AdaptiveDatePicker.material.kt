@@ -20,19 +20,8 @@ actual fun AdaptiveDatePicker(
         state = state.datePickerState,
         modifier = modifier,
         dateFormatter = dateFormatter,
-        title = title ?: {
-            DatePickerDefaults.DatePickerTitle(
-                state = state.datePickerState,
-                modifier = Modifier.padding(DatePickerTitlePadding)
-            )
-        },
-        headline = headline ?: {
-            DatePickerDefaults.DatePickerHeadline(
-                state = state.datePickerState,
-                dateFormatter = dateFormatter,
-                modifier = Modifier.padding(DatePickerHeadlinePadding)
-            )
-        },
+        title = title,
+        headline = headline,
         showModeToggle = showModeToggle,
         colors = colors,
     )
