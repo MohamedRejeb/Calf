@@ -19,6 +19,7 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 |-----------------------|-------------------------------------------|--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **calf-ui**           | Adaptive UI components                    | Android, iOS, Desktop, Web(Js, Wasm) | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui%22)                   |
 | **calf-file-picker**  | Native File Picker wrapper                | Android, iOS, Desktop, Web(Js, Wasm) | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |
+| **calf-webview**      | WebView component                         | Android, iOS, Desktop                | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-webview)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-webview%22)         |
 | **calf-permissions**  | API that allows you to handle permissions | Android, iOS                         | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |                                                                                                                                                                        
 | **calf-geo**          | API that allows you to access geolocation | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-navigation**   | Native navigation wrapper                 | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
@@ -39,7 +40,8 @@ You can try the web demo [here](https://calf-library.netlify.app/)
 
 | Kotlin version | Compose version | Calf version |
 |----------------|-----------------|--------------|
-| 1.9.22         | 1.6.0           | 0.4.0        |
+| 2.0.0          | 1.6.11          | 0.5.0        |
+| 1.9.22         | 1.6.0           | 0.4.1        |
 | 1.9.21         | 1.5.11          | 0.3.1        |
 | 1.9.20         | 1.5.10          | 0.2.0        |
 | 1.9.0          | 1.5.0           | 0.1.1        |
@@ -48,10 +50,10 @@ Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
 // For Adaptive UI components
-api("com.mohamedrejeb.calf:calf-ui:0.4.0")
+api("com.mohamedrejeb.calf:calf-ui:0.5.0")
 
 // For Adaptive FilePicker
-implementation("com.mohamedrejeb.calf:calf-file-picker:0.4.0")
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.5.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -67,7 +69,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.4.0")
+                export("com.mohamedrejeb.calf:calf-ui:0.5.0")
             }
         }
     ...
@@ -84,7 +86,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.4.0")
+            export("com.mohamedrejeb.calf:calf-ui:0.5.0")
         }
     }
     ...
