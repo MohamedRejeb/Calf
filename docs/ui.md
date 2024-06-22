@@ -6,7 +6,8 @@
 
 | Kotlin version | Compose version | Calf version |
 |----------------|-----------------|--------------|
-| 1.9.22         | 1.6.0           | 0.4.0        |
+| 2.0.0          | 1.6.11          | 0.5.0        |
+| 1.9.22         | 1.6.0           | 0.4.1        |
 | 1.9.21         | 1.5.11          | 0.3.1        |
 | 1.9.20         | 1.5.10          | 0.2.0        |
 | 1.9.0          | 1.5.0           | 0.1.1        |
@@ -19,7 +20,7 @@ api("com.mohamedrejeb.calf:calf-ui:0.5.0")
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
 
-#### Regular Framewoek
+#### Regular Framework
 ```kotlin
 ...
 kotlin {

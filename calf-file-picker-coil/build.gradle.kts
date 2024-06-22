@@ -3,12 +3,10 @@ plugins {
     alias(libs.plugins.androidLibrary)
 }
 
+kotlinMultiplatformSetup()
 modulePublicationSetup()
-androidLibrarySetup()
 
 kotlin {
-    applyHierarchyTemplate()
-    applyTargets()
     sourceSets.commonMain.dependencies {
         api(projects.calfCore)
         api(projects.calfIo)

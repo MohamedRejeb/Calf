@@ -57,7 +57,7 @@ private fun rememberDocumentPickerLauncher(
                     controller: UIDocumentPickerViewController,
                     didPickDocumentAtURL: NSURL,
                 ) {
-                    onResult(listOf(KmpFile(didPickDocumentAtURL)))
+                    onResult(listOfNotNull(didPickDocumentAtURL.createTempFile()?.let(::KmpFile)))
                 }
 
                 override fun documentPicker(
@@ -66,7 +66,7 @@ private fun rememberDocumentPickerLauncher(
                 ) {
                     val dataList =
                         didPickDocumentsAtURLs.mapNotNull {
-                            (it as? NSURL)?.let(::KmpFile)
+                            (it as? NSURL)?.createTempFile()?.let(::KmpFile)
                         }
                     coroutineScope.launch {
                         withContext(Dispatchers.Main) {
