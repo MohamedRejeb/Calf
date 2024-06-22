@@ -1,6 +1,6 @@
 # Project information
 site_name: 'Calf'
-site_description: 'A library that allows you to easily create adaptive UIs for your Compose Multiplatform apps.'
+site_description: 'A library that allows you to easily create adaptive UIs and access platform specific APIs from your Compose Multiplatform apps.'
 site_author: 'Mohamed Rejeb'
 site_url: 'https://github.com/MohamedRejeb/Calf'
 remote_branch: gh-pages
@@ -48,6 +48,7 @@ nav:
   - 'Overview': index.md
   - 'Installation': installation.md
   - 'Adaptive UI': ui.md
+  - 'WebView': webview.md
   - 'File Picker': filepicker.md
   - 'Permissions': permissions.md
   #- 'Change Log': changelog.md
@@ -86,4 +87,4 @@ plugins:
 
 # Copyright
 copyright: |
-  &copy; 2023 <a href="https://github.com/MohamedRejeb"  target="_blank" rel="noopener">Mohamed Rejeb</a>
+  &copy; 2024 <a href="https://github.com/MohamedRejeb"  target="_blank" rel="noopener">Mohamed Rejeb</a>

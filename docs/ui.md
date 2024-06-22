@@ -14,7 +14,7 @@
 Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
-api("com.mohamedrejeb.calf:calf-ui:0.4.0")
+api("com.mohamedrejeb.calf:calf-ui:0.5.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -30,7 +30,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.4.0")
+                export("com.mohamedrejeb.calf:calf-ui:0.5.0")
             }
         }
     ...
@@ -47,7 +47,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.4.0")
+            export("com.mohamedrejeb.calf:calf-ui:0.5.0")
         }
     }
     ...
@@ -186,70 +186,3 @@ AdaptiveTimePicker(
     modifier = Modifier
 )
 ```
-
-#### WebView
-
-`WebView` is a view that adapts to the platform it is running on. It is a wrapper around `WebView` on Android, `WKWebView` on iOS and JavaFX `WebView` on Desktop.
-
-| Android                                         | iOS                                     |
-|-------------------------------------------------|-----------------------------------------|
-| ![Web View Android](images/WebView-android.png) | ![Web View iOS](images/WebView-ios.png) |
-
-```kotlin
-val state = rememberWebViewState(
-    url = "https://github.com/MohamedRejeb"
-)
-
-LaunchedEffect(state.isLoading) {
-    // Get the current loading state
-}
-
-WebView(
-    state = state,
-    modifier = Modifier
-        .fillMaxSize()
-)
-```
-
-#### Web View Settings
-
-You can customize the web view settings by changing the `WebSettings` object in the `WebViewState`:
-
-```kotlin
-val state = rememberWebViewState(
-    url = "https://github.com/MohamedRejeb"
-)
-
-LaunchedEffect(Unit) {
-    // Enable JavaScript
-    state.settings.javaScriptEnabled = true
-
-    // Enable Zoom in Android
-    state.settings.androidSettings.supportZoom = true
-}
-```
-
-#### Call JavaScript
-
-You can call JavaScript functions from the web view by using the `evaluateJavaScript` function:
-
-```kotlin
-val state = rememberWebViewState(
-    url = "https://github.com/MohamedRejeb"
-)
-
-LaunchedEffect(Unit) {
-    val jsCode = """
-        document.body.style.backgroundColor = "red";
-        document.title
-    """.trimIndent()
-
-    // Evaluate the JavaScript code
-    state.evaluateJavaScript(jsCode) {
-        // Do something with the result
-        println("JS Response: $it")
-    }
-}
-```
-
-> **Note:** The `evaluateJavaScript` method only works when you enable JavaScript in the web view settings.

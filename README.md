@@ -1,7 +1,6 @@
 # Calf - Compose Adaptive Look & Feel
 
-Calf is a library that allows you to easily create adaptive UIs for your Compose Multiplatform apps.
-
+Calf is a library that allows you to easily create adaptive UIs and access platform specific APIs from your Compose Multiplatform apps.
 
 [![Kotlin](https://img.shields.io/badge/kotlin-2.0.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
 [![Kotlin](https://img.shields.io/badge/compose-1.6.11-blue.svg?logo=jetpackcompose)](https://www.jetbrains.com/lp/compose-multiplatform)
@@ -229,13 +228,22 @@ AdaptiveTimePicker(
 )
 ```
 
-#### WebView
+### WebView
 
 `WebView` is a view that adapts to the platform it is running on. It is a wrapper around `WebView` on Android, `WKWebView` on iOS and JavaFX `WebView` on Desktop.
 
 | Android                                         | iOS                                     |
 |-------------------------------------------------|-----------------------------------------|
 | ![Web View Android](docs/images/WebView-android.png) | ![Web View iOS](docs/images/WebView-ios.png) |
+
+#### Installation
+
+Add the following dependency to your module `build.gradle.kts` file:
+```kotlin
+implementation("com.mohamedrejeb.calf:calf-webview:0.5.0")
+```
+
+#### Usage
 
 ```kotlin
 val state = rememberWebViewState(
@@ -307,6 +315,15 @@ Calf File Picker allows you to pick files from the device storage.
 | Desktop                                                            | Web                                                        |
 |--------------------------------------------------------------------|------------------------------------------------------------|
 | ![File Picker Desktop](docs/images/AdaptiveFilePicker-desktop.png) | ![File Picker Web](docs/images/AdaptiveFilePicker-web.png) |
+
+#### Installation
+
+Add the following dependency to your module `build.gradle.kts` file:
+```kotlin
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.5.0")
+```
+
+#### Usage
 
 ```kotlin
 val scope = rememberCoroutineScope()
