@@ -69,7 +69,7 @@ internal actual fun rememberMutablePermissionState(
 @ExperimentalPermissionsApi
 @Stable
 internal actual class MutablePermissionState(
-    override val permission: Permission,
+    actual override val permission: Permission,
     private val context: Context?,
     private val activity: Activity?,
     private val onPermissionResult: (Boolean) -> Unit,
@@ -86,9 +86,9 @@ internal actual class MutablePermissionState(
 
     private val androidPermission = permission.toAndroidPermission()
 
-    override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
+    actual override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
 
-    override fun launchPermissionRequest() {
+    actual override fun launchPermissionRequest() {
         if (androidPermission.isEmpty()) return
         else if (permission.isAlwaysGranted()) {
             refreshPermissionStatus()
@@ -103,7 +103,7 @@ internal actual class MutablePermissionState(
 
     internal var launcher: ActivityResultLauncher<String>? = null
 
-    override fun openAppSettings() {
+    actual override fun openAppSettings() {
         if (context == null) return
 
         val intent = Intent().apply {

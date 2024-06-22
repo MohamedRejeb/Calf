@@ -31,14 +31,15 @@ include(
     // Artifact modules
     ":calf-core",
     ":calf-ui",
+    ":calf-webview",
     ":calf-sf-symbols",
     ":calf-navigation",
-    ":calf-file-picker",
     ":calf-io",
+    ":calf-file-picker",
+    ":calf-file-picker-coil",
     ":calf-permissions",
     ":calf-geo",
     ":calf-maps",
-    ":calf-file-picker-coil",
     // Sample modules
     ":sample:android",
     ":sample:desktop",

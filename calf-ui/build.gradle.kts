@@ -1,5 +1,3 @@
-import org.gradle.internal.os.OperatingSystem
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeCompiler)
@@ -9,17 +7,6 @@ plugins {
 
 composeMultiplatformSetup()
 modulePublicationSetup()
-
-val os: OperatingSystem = OperatingSystem.current()
-val arch: String = System.getProperty("os.arch")
-val isAarch64: Boolean = arch.contains("aarch64")
-
-val platform =
-    when {
-        os.isWindows -> "win"
-        os.isMacOsX -> "mac"
-        else -> "linux"
-    } + if (isAarch64) "-aarch64" else ""
 
 kotlin {
     sourceSets.commonMain.dependencies {
@@ -35,12 +22,6 @@ kotlin {
     }
 
     sourceSets.desktopMain.dependencies {
-        implementation("org.openjfx:javafx-base:17:$platform")
-        implementation("org.openjfx:javafx-graphics:17:$platform")
-        implementation("org.openjfx:javafx-controls:17:$platform")
-        implementation("org.openjfx:javafx-media:17:$platform")
-        implementation("org.openjfx:javafx-web:17:$platform")
-        implementation("org.openjfx:javafx-swing:17:$platform")
-        implementation(libs.kotlinx.coroutines.javafx)
+        implementation(libs.kotlinx.coroutines.swing)
     }
 }

@@ -8,72 +8,87 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import com.mohamedrejeb.calf.sample.navigation.Screen
 import com.mohamedrejeb.calf.ui.web.WebView
 import com.mohamedrejeb.calf.ui.web.rememberWebViewState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebViewScreen(
     navigateBack: () -> Unit
 ) {
-    Box(
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navigateBack() }
+                    ) {
+                        Icon(Icons.Filled.ArrowBackIosNew, contentDescription = null)
+                    }
+                },
+                title = {
+                    Text(
+                        text = "Web View",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
             .windowInsetsPadding(WindowInsets.ime)
-    ) {
-        val state = rememberWebViewState(
-            url = "https://github.com/MohamedRejeb"
-        )
+    ) { paddingValues ->
 
-        LaunchedEffect(state.isLoading) {
-            if (state.isLoading) return@LaunchedEffect
-
-            state.settings.apply {
-                javaScriptEnabled = true
-                androidSettings.supportZoom = true
-            }
-
-            state.evaluateJavascript(
-                """
-                    "Hello World!";
-                """.trimIndent()
-            ) {
-                println("JS Response: $it")
-            }
-        }
-
-        WebView(
-            state = state,
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-        )
-
-        if (state.isLoading)
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter)
-            )
-
-        IconButton(
-            onClick = {
-                navigateBack()
-            },
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.onBackground,
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp)
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            Icon(
-                Icons.Filled.ArrowBackIosNew,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground,
+            val state = rememberWebViewState(
+                url = "https://github.com/MohamedRejeb"
             )
+
+            LaunchedEffect(state.isLoading) {
+                if (state.isLoading) return@LaunchedEffect
+
+                state.settings.apply {
+                    javaScriptEnabled = true
+                    androidSettings.supportZoom = true
+                }
+
+                state.evaluateJavascript(
+                    """
+                        "Hello World!";
+                    """.trimIndent()
+                ) {
+                    println("JS Response: $it")
+                }
+            }
+
+            WebView(
+                state = state,
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+
+            if (state.isLoading)
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                )
         }
     }
 }

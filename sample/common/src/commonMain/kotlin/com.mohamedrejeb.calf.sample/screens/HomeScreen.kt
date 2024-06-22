@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -206,7 +207,7 @@ fun ListItem(
         )
         Spacer(modifier = Modifier.weight(1f))
         Icon(
-            Icons.Outlined.ArrowForwardIos,
+            Icons.AutoMirrored.Outlined.ArrowForwardIos,
             contentDescription = "Navigate",
             tint = MaterialTheme.colorScheme.onBackground
         )

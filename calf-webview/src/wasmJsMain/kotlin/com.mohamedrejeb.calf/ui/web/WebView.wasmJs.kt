@@ -80,41 +80,38 @@ actual class WebViewState actual constructor(webContent: WebContent) {
     actual var pageTitle: String? by mutableStateOf(null)
         internal set
 
-    actual val settings: WebSettings =
-        WebSettings(
-            onSettingsChanged = {},
-        )
+    actual val settings: WebSettings = WebSettings(
+        onSettingsChanged = {}
+    )
 
-    actual fun evaluateJavascript(
-        script: String,
-        callback: ((String?) -> Unit)?,
-    ) {}
+    actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {}
 }
 
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread
-internal suspend fun WebViewNavigator.handleNavigationEvents(): Nothing =
-    withContext(Dispatchers.Main) {
-        navigationEvents.collect { event ->
+internal suspend fun WebViewNavigator.handleNavigationEvents(
+
+): Nothing = withContext(Dispatchers.Main) {
+    navigationEvents.collect { event ->
+
+    }
+}
+
+actual val WebStateSaver: Saver<WebViewState, Any> = run {
+    val pageTitleKey = "pagetitle"
+    val lastLoadedUrlKey = "lastloaded"
+
+    mapSaver(
+        save = {
+            mapOf(
+                pageTitleKey to it.pageTitle,
+                lastLoadedUrlKey to it.lastLoadedUrl,
+            )
+        },
+        restore = {
+            WebViewState(WebContent.NavigatorOnly).apply {
+                this.pageTitle = it[pageTitleKey] as String?
+                this.lastLoadedUrl = it[lastLoadedUrlKey] as String?
+            }
         }
-    }
-
-actual val WebStateSaver: Saver<WebViewState, Any> =
-    run {
-        val pageTitleKey = "pagetitle"
-        val lastLoadedUrlKey = "lastloaded"
-
-        mapSaver(
-            save = {
-                mapOf(
-                    pageTitleKey to it.pageTitle,
-                    lastLoadedUrlKey to it.lastLoadedUrl,
-                )
-            },
-            restore = {
-                WebViewState(WebContent.NavigatorOnly).apply {
-                    this.pageTitle = it[pageTitleKey] as String?
-                    this.lastLoadedUrl = it[lastLoadedUrlKey] as String?
-                }
-            },
-        )
-    }
+    )
+}

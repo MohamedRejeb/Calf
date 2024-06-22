@@ -38,22 +38,22 @@ internal actual class MutableMultiplePermissionsState actual constructor(
     private val mutablePermissions: List<MutablePermissionState>
 ) : MultiplePermissionsState {
 
-    override val permissions: List<PermissionState> = mutablePermissions
+    actual override val permissions: List<PermissionState> = mutablePermissions
 
-    override val revokedPermissions: List<PermissionState> by derivedStateOf {
+    actual override val revokedPermissions: List<PermissionState> by derivedStateOf {
         permissions.filter { it.status != PermissionStatus.Granted }
     }
 
-    override val allPermissionsGranted: Boolean by derivedStateOf {
+    actual override val allPermissionsGranted: Boolean by derivedStateOf {
         permissions.all { it.status.isGranted } || // Up to date when the lifecycle is resumed
                 revokedPermissions.isEmpty() // Up to date when the user launches the action
     }
 
-    override val shouldShowRationale: Boolean by derivedStateOf {
+    actual override val shouldShowRationale: Boolean by derivedStateOf {
         permissions.any { it.status.shouldShowRationale }
     }
 
-    override fun launchMultiplePermissionRequest() {
+    actual override fun launchMultiplePermissionRequest() {
         // Launch the permission request
     }
 

@@ -85,7 +85,7 @@ fun BottomSheetScreen(
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         )
-                        Divider(
+                        HorizontalDivider(
                             modifier = Modifier
                                 .fillMaxWidth()
                         )

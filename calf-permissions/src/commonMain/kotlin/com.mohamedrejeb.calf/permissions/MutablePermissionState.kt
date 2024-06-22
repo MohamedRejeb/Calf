@@ -2,6 +2,9 @@ package com.mohamedrejeb.calf.permissions
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 /**
  * Creates a [MutablePermissionState] that is remembered across compositions.
@@ -34,5 +37,14 @@ internal expect fun rememberMutablePermissionState(
 internal expect class MutablePermissionState internal constructor(
     permission: Permission,
 ) : PermissionState {
+
+    override val permission: Permission
+
+    override var status: PermissionStatus
+
+    override fun launchPermissionRequest()
+
+    override fun openAppSettings()
+
     internal fun refreshPermissionStatus()
 }

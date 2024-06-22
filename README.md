@@ -1,9 +1,9 @@
 # Calf - Compose Adaptive Look & Feel
 
-Calf is a library that allows you to easily create adaptive UIs for your Compose Multiplatform apps.
+Calf is a library that allows you to easily create adaptive UIs and access platform specific APIs from your Compose Multiplatform apps.
 
-
-[![Kotlin](https://img.shields.io/badge/kotlin-1.9.22-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.0.0-blue.svg?logo=kotlin)](http://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/compose-1.6.11-blue.svg?logo=jetpackcompose)](https://www.jetbrains.com/lp/compose-multiplatform)
 [![MohamedRejeb](https://raw.githubusercontent.com/MohamedRejeb/MohamedRejeb/main/badges/mohamedrejeb.svg)](https://github.com/MohamedRejeb)
 [![Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 [![BuildPassing](https://shields.io/badge/build-passing-brightgreen)](https://github.com/MohamedRejeb/ksoup/actions)
@@ -19,6 +19,7 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 |-----------------------|-------------------------------------------|--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **calf-ui**           | Adaptive UI components                    | Android, iOS, Desktop, Web(Js, Wasm) | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-ui)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-ui%22)                   |
 | **calf-file-picker**  | Native File Picker wrapper                | Android, iOS, Desktop, Web(Js, Wasm) | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |
+| **calf-webview**      | WebView component                         | Android, iOS, Desktop                | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-webview)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-webview%22)         |
 | **calf-permissions**  | API that allows you to handle permissions | Android, iOS                         | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22) |                                                                                                                                                                        
 | **calf-geo**          | API that allows you to access geolocation | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-navigation**   | Native navigation wrapper                 | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
@@ -39,6 +40,7 @@ You can try the web demo [here](https://calf-library.netlify.app/)
 
 | Kotlin version | Compose version | Calf version |
 |----------------|-----------------|--------------|
+| 2.0.0          | 1.6.11          | 0.5.0        |
 | 1.9.22         | 1.6.0           | 0.4.1        |
 | 1.9.21         | 1.5.11          | 0.3.1        |
 | 1.9.20         | 1.5.10          | 0.2.0        |
@@ -48,10 +50,10 @@ Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
 // For Adaptive UI components
-api("com.mohamedrejeb.calf:calf-ui:0.4.1")
+api("com.mohamedrejeb.calf:calf-ui:0.5.0")
 
 // For Adaptive FilePicker
-implementation("com.mohamedrejeb.calf:calf-file-picker:0.4.1")
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.5.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -67,7 +69,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.4.1")
+                export("com.mohamedrejeb.calf:calf-ui:0.5.0")
             }
         }
     ...
@@ -84,7 +86,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.4.1")
+            export("com.mohamedrejeb.calf:calf-ui:0.5.0")
         }
     }
     ...
@@ -226,13 +228,22 @@ AdaptiveTimePicker(
 )
 ```
 
-#### WebView
+### WebView
 
 `WebView` is a view that adapts to the platform it is running on. It is a wrapper around `WebView` on Android, `WKWebView` on iOS and JavaFX `WebView` on Desktop.
 
 | Android                                         | iOS                                     |
 |-------------------------------------------------|-----------------------------------------|
 | ![Web View Android](docs/images/WebView-android.png) | ![Web View iOS](docs/images/WebView-ios.png) |
+
+#### Installation
+
+Add the following dependency to your module `build.gradle.kts` file:
+```kotlin
+implementation("com.mohamedrejeb.calf:calf-webview:0.5.0")
+```
+
+#### Usage
 
 ```kotlin
 val state = rememberWebViewState(
@@ -304,6 +315,15 @@ Calf File Picker allows you to pick files from the device storage.
 | Desktop                                                            | Web                                                        |
 |--------------------------------------------------------------------|------------------------------------------------------------|
 | ![File Picker Desktop](docs/images/AdaptiveFilePicker-desktop.png) | ![File Picker Web](docs/images/AdaptiveFilePicker-web.png) |
+
+#### Installation
+
+Add the following dependency to your module `build.gradle.kts` file:
+```kotlin
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.5.0")
+```
+
+#### Usage
 
 ```kotlin
 val scope = rememberCoroutineScope()

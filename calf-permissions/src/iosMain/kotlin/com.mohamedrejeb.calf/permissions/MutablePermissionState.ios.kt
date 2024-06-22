@@ -47,7 +47,7 @@ internal actual fun rememberMutablePermissionState(
 @ExperimentalPermissionsApi
 @Stable
 internal actual class MutablePermissionState(
-    override val permission: Permission,
+    actual override val permission: Permission,
     private val onPermissionResult: (Boolean) -> Unit,
 ) : PermissionState {
     actual constructor(
@@ -56,13 +56,13 @@ internal actual class MutablePermissionState(
 
     private val permissionDelegate = permission.getPermissionDelegate()
 
-    override var status: PermissionStatus by mutableStateOf(PermissionStatus.Denied(false))
+    actual override var status: PermissionStatus by mutableStateOf(PermissionStatus.Denied(false))
 
     init {
         refreshPermissionStatus()
     }
 
-    override fun launchPermissionRequest() {
+    actual override fun launchPermissionRequest() {
         permissionDelegate.launchPermissionRequest(
             onPermissionResult = {
                 onPermissionResult(it)
@@ -71,7 +71,7 @@ internal actual class MutablePermissionState(
         )
     }
 
-    override fun openAppSettings() {
+    actual override fun openAppSettings() {
         val settingsUrl = NSURL.URLWithString(UIApplicationOpenSettingsURLString) ?: return
         UIApplication.sharedApplication.openURL(settingsUrl)
     }
