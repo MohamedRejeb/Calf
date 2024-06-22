@@ -157,18 +157,25 @@ private fun createUIDocumentPickerViewController(
     selectionMode: FilePickerSelectionMode,
 ): UIDocumentPickerViewController {
     val contentTypes =
-        type.value.mapNotNull { mimeType ->
-            when (mimeType) {
-                FilePickerFileType.ImageContentType -> UTTypeImage
-                FilePickerFileType.VideoContentType -> UTTypeVideo
-                FilePickerFileType.AudioContentType -> UTTypeAudio
-                FilePickerFileType.DocumentContentType -> UTTypeApplication
-                FilePickerFileType.TextContentType -> UTTypeText
-                FilePickerFileType.AllContentType -> UTTypeData
-                FilePickerFileType.FolderContentType -> UTTypeFolder
-                else -> UTType.typeWithMIMEType(mimeType)
+        if (type is FilePickerFileType.Extension)
+            type.value
+                .mapNotNull { extension ->
+                    UTType.typeWithFilenameExtension(extension)
+                }
+                .ifEmpty { listOf(UTTypeData) }
+        else
+            type.value.mapNotNull { mimeType ->
+                when (mimeType) {
+                    FilePickerFileType.ImageContentType -> UTTypeImage
+                    FilePickerFileType.VideoContentType -> UTTypeVideo
+                    FilePickerFileType.AudioContentType -> UTTypeAudio
+                    FilePickerFileType.DocumentContentType -> UTTypeApplication
+                    FilePickerFileType.TextContentType -> UTTypeText
+                    FilePickerFileType.AllContentType -> UTTypeData
+                    FilePickerFileType.FolderContentType -> UTTypeFolder
+                    else -> UTType.typeWithMIMEType(mimeType)
+                }
             }
-        }
 
     val pickerController =
         UIDocumentPickerViewController(
