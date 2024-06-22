@@ -23,4 +23,9 @@ kotlin {
     sourceSets.androidMain.dependencies {
         implementation(libs.activity.compose)
     }
+
+    sourceSets.desktopMain.dependencies {
+        implementation(libs.jna)
+        implementation(libs.apache.tika)
+    }
 }

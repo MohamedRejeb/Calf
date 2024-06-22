@@ -8,13 +8,29 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.AwtWindow
 import com.mohamedrejeb.calf.io.KmpFile
-import java.awt.FileDialog
-import java.awt.Frame
+import com.mohamedrejeb.calf.picker.platform.awt.AwtFilePicker
+import com.mohamedrejeb.calf.picker.platform.util.Platform
+import com.mohamedrejeb.calf.picker.platform.util.PlatformUtil
+import com.mohamedrejeb.calf.picker.platform.windows.WindowsFilePicker
 import java.io.File
-import java.net.URLConnection
 
 @Composable
 actual fun rememberFilePickerLauncher(
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher {
+    return when(PlatformUtil.current) {
+        Platform.Windows ->
+            rememberWindowsFilePickerLauncher(type, selectionMode, onResult)
+
+        else ->
+            rememberAwtFilePickerLauncher(type, selectionMode, onResult)
+    }
+}
+
+@Composable
+private fun rememberAwtFilePickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
@@ -24,54 +40,31 @@ actual fun rememberFilePickerLauncher(
     if (fileDialogVisible) {
         AwtWindow(
             create = {
-                val frame: Frame? = null
-                val fileDialog =
-                    object : FileDialog(
-                        frame,
-                        "Select ${if (type == FilePickerFileType.Folder) "Folder" else "File"}",
-                        if (type == FilePickerFileType.Folder) SAVE else LOAD,
-                    ) {
-                        override fun setVisible(value: Boolean) {
-                            super.setVisible(value)
-                            if (value) {
-                                onResult(files.orEmpty().map { KmpFile(it) })
-                                fileDialogVisible = false
-                            }
+                if (type == FilePickerFileType.Folder)
+                    AwtFilePicker.current.pickDirectory(
+                        initialDirectory = null,
+                        title = "Select a folder",
+                        parentWindow = null,
+                        onResult = { file ->
+                            onResult(
+                                if (file == null)
+                                    emptyList()
+                                else
+                                    listOf(KmpFile(file))
+                            )
                         }
-                    }
-
-                fileDialog.isMultipleMode = selectionMode == FilePickerSelectionMode.Multiple
-
-                val mimeType =
-                    when (type) {
-                        FilePickerFileType.Folder -> listOf("folder")
-                        FilePickerFileType.All -> emptyList()
-                        else ->
-                            type.value
-                                .map {
-                                    it
-                                        .removeSuffix("/*")
-                                        .removeSuffix("/")
-                                        .removeSuffix("*")
-                                }
-                                .filter {
-                                    it.isNotEmpty()
-                                }
-                    }
-                fileDialog.setFilenameFilter { file, name ->
-                    if (mimeType.isEmpty()) {
-                        true
-                    } else if (mimeType.first().contains("folder", true)) {
-                        file.isDirectory
-                    } else {
-                        val contentType = URLConnection.guessContentTypeFromName(name) ?: ""
-                        mimeType.any {
-                            contentType.startsWith(it, true)
+                    )
+                else
+                    AwtFilePicker.current.launchFilePicker(
+                        initialDirectory = null,
+                        type = type,
+                        selectionMode = selectionMode,
+                        title = "Select a file",
+                        parentWindow = null,
+                        onResult = { files ->
+                            onResult(files.map { KmpFile(it) })
                         }
-                    }
-                }
-
-                fileDialog
+                    )
             },
             dispose = {
                 it.dispose()
@@ -85,6 +78,47 @@ actual fun rememberFilePickerLauncher(
             selectionMode = selectionMode,
             onLaunch = {
                 fileDialogVisible = true
+            },
+        )
+    }
+}
+
+@Composable
+private fun rememberWindowsFilePickerLauncher(
+    type: FilePickerFileType,
+    selectionMode: FilePickerSelectionMode,
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher {
+    return remember {
+        FilePickerLauncher(
+            type = type,
+            selectionMode = selectionMode,
+            onLaunch = {
+                if (type == FilePickerFileType.Folder)
+                    WindowsFilePicker.current.pickDirectory(
+                        initialDirectory = null,
+                        title = "Select a folder",
+                        parentWindow = null,
+                        onResult = { file ->
+                            onResult(
+                                if (file == null)
+                                    emptyList()
+                                else
+                                    listOf(KmpFile(file))
+                            )
+                        }
+                    )
+                else
+                    WindowsFilePicker.current.launchFilePicker(
+                        initialDirectory = null,
+                        type = type,
+                        selectionMode = selectionMode,
+                        title = "Select a file",
+                        parentWindow = null,
+                        onResult = { files ->
+                            onResult(files.map { KmpFile(it) })
+                        }
+                    )
             },
         )
     }
