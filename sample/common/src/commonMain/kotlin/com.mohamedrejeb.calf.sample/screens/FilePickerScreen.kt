@@ -47,7 +47,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
 
     val singlePickerLauncher =
         rememberFilePickerLauncher(
-            type = FilePickerFileType.Extension(listOf("yaml")),
+            type = FilePickerFileType.Extension(listOf("pdf")),
             selectionMode = FilePickerSelectionMode.Single,
             onResult = { files ->
                 fileNames = files.map { it.getName(context).orEmpty() }
