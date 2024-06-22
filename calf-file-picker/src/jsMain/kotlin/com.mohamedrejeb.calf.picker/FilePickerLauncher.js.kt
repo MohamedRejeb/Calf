@@ -8,7 +8,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.browser.document
+import org.w3c.dom.HTMLInputElement
+import org.w3c.dom.asList
 import org.w3c.files.File
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 @Composable
 actual fun rememberFilePickerLauncher(
@@ -23,27 +27,40 @@ actual fun rememberFilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
             onLaunch = {
-                val fileInputElement = document.createElement("input")
-                fileInputElement.setAttribute("style", "display='none'")
-                fileInputElement.setAttribute("type", "file")
-                fileInputElement.setAttribute("name", "file")
+                val fileInputElement = document.createElement("input") as HTMLInputElement
 
-                fileInputElement.setAttribute("accept", type.value.joinToString(", "))
+                with(fileInputElement) {
+                    style.display = "none"
+                    this.type = "file"
+                    name = "file"
 
-                if (selectionMode == FilePickerSelectionMode.Multiple)
-                    fileInputElement.setAttribute("multiple", "true")
-                else
-                    fileInputElement.removeAttribute("multiple")
+                    accept =
+                        if (type is FilePickerFileType.Extension)
+                            type.value.joinToString(", ") { ".$it" }
+                        else
+                            type.value.joinToString(", ")
 
-                fileInputElement.addEventListener("change", {
-                    val files: Array<File> = fileInputElement.asDynamic().files
-                    onResult(files.map { KmpFile(it) })
-                    fileDialogVisible = false
-                })
+                    multiple = selectionMode == FilePickerSelectionMode.Multiple
 
-                js("fileInputElement.click()")
+                    onchange = { event ->
+                        try {
+                            // Get the selected files
+                            val files = event.target
+                                ?.unsafeCast<HTMLInputElement>()
+                                ?.files
+                                ?.asList()
+                                .orEmpty()
 
-                Unit
+                            // Return the result
+                            onResult(files.map { KmpFile(it) })
+                            fileDialogVisible = false
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
+                        }
+                    }
+
+                    click()
+                }
             },
         )
     }

@@ -8,8 +8,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.browser.document
-import org.w3c.dom.Element
-import org.w3c.files.File
+import org.w3c.dom.HTMLInputElement
+import org.w3c.dom.asList
 
 @Composable
 actual fun rememberFilePickerLauncher(
@@ -24,29 +24,40 @@ actual fun rememberFilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
             onLaunch = {
-                val fileInputElement = document.createElement("input")
-                fileInputElement.setAttribute("style", "display='none'")
-                fileInputElement.setAttribute("type", "file")
-                fileInputElement.setAttribute("name", "file")
+                val fileInputElement = document.createElement("input") as HTMLInputElement
 
-                fileInputElement.setAttribute("accept", type.value.joinToString(", "))
+                with(fileInputElement) {
+                    style.display = "none"
+                    this.type = "file"
+                    name = "file"
 
-                if (selectionMode == FilePickerSelectionMode.Multiple)
-                    fileInputElement.setAttribute("multiple", "true")
-                else
-                    fileInputElement.removeAttribute("multiple")
+                    accept =
+                        if (type is FilePickerFileType.Extension)
+                            type.value.joinToString(", ") { ".$it" }
+                        else
+                            type.value.joinToString(", ")
 
-                fileInputElement.addEventListener("change") {
-                    val filesCount = getInputElementFilesCount(fileInputElement)
-                    val files =
-                        List(filesCount) { index ->
-                            getInputElementFile(fileInputElement, index)
+                    multiple = selectionMode == FilePickerSelectionMode.Multiple
+
+                    onchange = { event ->
+                        try {
+                            // Get the selected files
+                            val files = event.target
+                                ?.unsafeCast<HTMLInputElement>()
+                                ?.files
+                                ?.asList()
+                                .orEmpty()
+
+                            // Return the result
+                            onResult(files.map { KmpFile(it) })
+                            fileDialogVisible = false
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
                         }
-                    onResult(files.map { KmpFile(it) })
-                    fileDialogVisible = false
-                }
+                    }
 
-                openFileDialog(fileInputElement)
+                    click()
+                }
             },
         )
     }
@@ -61,12 +72,3 @@ actual class FilePickerLauncher actual constructor(
         onLaunch()
     }
 }
-
-private fun getInputElementFilesCount(element: Element): Int = js("element.files.length")
-
-private fun getInputElementFile(
-    element: Element,
-    index: Int,
-): File = js("element.files[index]")
-
-private fun openFileDialog(element: Element): Unit = js("element.click()")

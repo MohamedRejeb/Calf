@@ -43,6 +43,13 @@ sealed class FilePickerFileType(vararg val value: String) {
      */
     data class Custom(val contentType: List<String>): FilePickerFileType(*contentType.toTypedArray())
 
+    /**
+     * Custom file extensions
+     *
+     * @param extensions List of extensions
+     */
+    data class Extension(val extensions: List<String>): FilePickerFileType(*extensions.toTypedArray())
+
     companion object {
         const val FolderContentType = "folder"
         const val AudioContentType = "audio/*"
