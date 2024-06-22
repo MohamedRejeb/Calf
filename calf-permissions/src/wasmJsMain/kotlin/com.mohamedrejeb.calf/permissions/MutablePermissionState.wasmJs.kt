@@ -38,13 +38,13 @@ internal actual fun rememberMutablePermissionState(
 @ExperimentalPermissionsApi
 @Stable
 internal actual class MutablePermissionState actual constructor(
-    override val permission: Permission,
+    actual override val permission: Permission,
 ) : PermissionState {
-    override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
+    actual override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
 
-    override fun launchPermissionRequest() {}
+    actual override fun launchPermissionRequest() {}
 
-    override fun openAppSettings() {}
+    actual override fun openAppSettings() {}
 
     internal actual fun refreshPermissionStatus() {}
 

@@ -2,6 +2,8 @@ package com.mohamedrejeb.calf.permissions
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 
 /**
  * Creates a [MultiplePermissionsState] that is remembered across compositions.
@@ -32,5 +34,15 @@ internal expect fun rememberMutableMultiplePermissionsState(
 internal expect class MutableMultiplePermissionsState(
     mutablePermissions: List<MutablePermissionState>
 ) : MultiplePermissionsState {
+    override val permissions: List<PermissionState>
+
+    override val revokedPermissions: List<PermissionState>
+
+    override val allPermissionsGranted: Boolean
+
+    override val shouldShowRationale: Boolean
+
+    override fun launchMultiplePermissionRequest()
+
     internal fun updatePermissionsStatus(permissionsStatus: Map<Permission, Boolean>)
 }
