@@ -5,6 +5,8 @@ import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
 import com.mohamedrejeb.calf.picker.platform.windows.api.JnaFileChooser
 import jodd.net.MimeTypes
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.awt.Window
 import java.io.File
 
@@ -16,7 +18,7 @@ internal class WindowsFilePicker: PlatformFilePicker {
         title: String?,
         parentWindow: Window?,
         onResult: (List<File>) -> Unit,
-    ) {
+    ) = withContext(Dispatchers.Default) {
         val fileChooser = JnaFileChooser()
 
         // Setup file chooser
@@ -62,7 +64,7 @@ internal class WindowsFilePicker: PlatformFilePicker {
         title: String?,
         parentWindow: Window?,
         onResult: (File?) -> Unit,
-    ) {
+    ) = withContext(Dispatchers.Default) {
         val fileChooser = JnaFileChooser()
 
         // Setup file chooser
@@ -100,9 +102,5 @@ internal class WindowsFilePicker: PlatformFilePicker {
             val filterName = fileExtensions.joinToString(", ", "Supported Files (", ")")
             addFilter(filterName, *fileExtensions.toTypedArray())
         }
-    }
-
-    companion object {
-        val current: WindowsFilePicker by lazy { WindowsFilePicker() }
     }
 }

@@ -174,8 +174,4 @@ internal class AwtFilePicker: PlatformFilePicker {
         // Dispose the dialog when the continuation is cancelled
         continuation.invokeOnCancellation { dialog.dispose() }
     }
-
-    companion object {
-        val current: AwtFilePicker by lazy { AwtFilePicker() }
-    }
 }
