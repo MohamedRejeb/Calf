@@ -9,9 +9,6 @@ import org.w3c.files.FileReader
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-/**
- * A typealias representing a file in the platform specific implementation
- */
 actual class KmpFile(
     val file: File,
 )
