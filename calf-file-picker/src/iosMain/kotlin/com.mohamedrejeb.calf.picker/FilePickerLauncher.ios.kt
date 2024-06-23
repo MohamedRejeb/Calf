@@ -3,6 +3,7 @@ package com.mohamedrejeb.calf.picker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +43,7 @@ actual fun rememberFilePickerLauncher(
         rememberDocumentPickerLauncher(type, selectionMode, onResult)
     }
 
+@OptIn(InternalCalfApi::class)
 @Composable
 private fun rememberDocumentPickerLauncher(
     type: FilePickerFileType,
@@ -64,8 +66,8 @@ private fun rememberDocumentPickerLauncher(
                                 listOfNotNull(
                                     didPickDocumentAtURL.createTempFile()?.let { tempUrl ->
                                         KmpFile(
-                                            url = tempUrl,
-                                            originalUrl = didPickDocumentAtURL
+                                            url = didPickDocumentAtURL,
+                                            tempUrl = tempUrl,
                                         )
                                     }
                                 )
@@ -86,8 +88,8 @@ private fun rememberDocumentPickerLauncher(
                             else
                                 nsUrl.createTempFile()?.let { tempUrl ->
                                     KmpFile(
-                                        url = tempUrl,
-                                        originalUrl = nsUrl
+                                        url = nsUrl,
+                                        tempUrl = tempUrl
                                     )
                                 }
                         }
@@ -127,6 +129,7 @@ private fun rememberDocumentPickerLauncher(
     }
 }
 
+@OptIn(InternalCalfApi::class)
 @Composable
 private fun rememberImagePickerLauncher(
     type: FilePickerFileType,
@@ -153,8 +156,8 @@ private fun rememberImagePickerLauncher(
                                 listOfNotNull(
                                     url?.createTempFile()?.let { tempUrl ->
                                         KmpFile(
-                                            url = tempUrl,
-                                            originalUrl = url,
+                                            url = url,
+                                            tempUrl = tempUrl,
                                         )
                                     }
                                 )
