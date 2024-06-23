@@ -7,7 +7,6 @@ import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import platform.Foundation.NSURL
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
@@ -57,7 +56,22 @@ private fun rememberDocumentPickerLauncher(
                     controller: UIDocumentPickerViewController,
                     didPickDocumentAtURL: NSURL,
                 ) {
-                    onResult(listOfNotNull(didPickDocumentAtURL.createTempFile()?.let(::KmpFile)))
+                    coroutineScope.launch(Dispatchers.Main) {
+                        val result =
+                            if (type == FilePickerFileType.Folder)
+                                listOf(KmpFile(didPickDocumentAtURL))
+                            else
+                                listOfNotNull(
+                                    didPickDocumentAtURL.createTempFile()?.let { tempUrl ->
+                                        KmpFile(
+                                            url = tempUrl,
+                                            originalUrl = didPickDocumentAtURL
+                                        )
+                                    }
+                                )
+
+                        onResult(result)
+                    }
                 }
 
                 override fun documentPicker(
@@ -66,12 +80,26 @@ private fun rememberDocumentPickerLauncher(
                 ) {
                     val dataList =
                         didPickDocumentsAtURLs.mapNotNull {
-                            (it as? NSURL)?.createTempFile()?.let(::KmpFile)
+                            val nsUrl = it as? NSURL ?: return@mapNotNull null
+                            if (type == FilePickerFileType.Folder)
+                                KmpFile(nsUrl)
+                            else
+                                nsUrl.createTempFile()?.let { tempUrl ->
+                                    KmpFile(
+                                        url = tempUrl,
+                                        originalUrl = nsUrl
+                                    )
+                                }
                         }
-                    coroutineScope.launch {
-                        withContext(Dispatchers.Main) {
-                            onResult(dataList)
-                        }
+
+                    coroutineScope.launch(Dispatchers.Main) {
+                        onResult(dataList)
+                    }
+                }
+
+                override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
+                    coroutineScope.launch(Dispatchers.Main) {
+                        onResult(emptyList())
                     }
                 }
             }
@@ -121,7 +149,16 @@ private fun rememberImagePickerLauncher(
                                 return@loadFileRepresentationForTypeIdentifier
                             }
 
-                            onResult(listOfNotNull(url?.createTempFile()?.let(::KmpFile)))
+                            onResult(
+                                listOfNotNull(
+                                    url?.createTempFile()?.let { tempUrl ->
+                                        KmpFile(
+                                            url = tempUrl,
+                                            originalUrl = url,
+                                        )
+                                    }
+                                )
+                            )
                         }
                     }
 

@@ -7,8 +7,10 @@ import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
+import platform.Foundation.NSURLIsDirectoryKey
 import platform.Foundation.dataWithContentsOfURL
 import platform.Foundation.lastPathComponent
+import platform.UIKit.UIApplication
 import platform.posix.memcpy
 
 /**
@@ -16,7 +18,10 @@ import platform.posix.memcpy
  */
 actual class KmpFile(
     val url: NSURL,
-)
+    val originalUrl: NSURL,
+) {
+    constructor(url: NSURL) : this(url, url)
+}
 
 actual fun KmpFile.exists(context: PlatformContext): Boolean {
     return NSFileManager.defaultManager.fileExistsAtPath(url.path ?: return false)
@@ -33,8 +38,17 @@ actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
     }
 }
 
-actual fun KmpFile.getName(context: PlatformContext): String? = url.lastPathComponent
+actual fun KmpFile.getName(context: PlatformContext): String? =
+    url.absoluteString
+        ?.removeSuffix("/")
+        ?.split('/')
+        ?.lastOrNull()
 
-actual fun KmpFile.getPath(context: PlatformContext): String? = url.path
+actual fun KmpFile.getPath(context: PlatformContext): String? =
+    url.absoluteString
 
-actual fun KmpFile.isDirectory(context: PlatformContext): Boolean = !url.path.orEmpty().contains(".")
+@OptIn(ExperimentalForeignApi::class)
+actual fun KmpFile.isDirectory(context: PlatformContext): Boolean {
+    val result = url.resourceValuesForKeys(listOf(NSURLIsDirectoryKey), error = null)
+    return result?.get(NSURLIsDirectoryKey) == true
+}
