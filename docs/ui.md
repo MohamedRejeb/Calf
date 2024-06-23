@@ -64,7 +64,7 @@ kotlin {
 
 `AdaptiveAlertDialog` is a dialog that adapts to the platform it is running on. It is a wrapper around `AlertDialog` on Android and `UIAlertController` on iOS.
 
-| Android                                                         | iOS                                                     |
+| Material (Android, Desktop, Web)                                | Cupertino (iOS)                                         |
 |-----------------------------------------------------------------|---------------------------------------------------------|
 | ![Alert Dialog Android](images/AdaptiveAlertDialog-android.png) | ![Alert Dialog iOS](images/AdaptiveAlertDialog-ios.png) |
 
@@ -93,7 +93,7 @@ if (showDialog) {
 
 `AdaptiveBottomSheet` is a bottom sheet that adapts to the platform it is running on. It is a wrapper around `ModalBottomSheet` on Android and `UIModalPresentationPopover` on iOS.
 
-| Android                                                         | iOS                                                     |
+| Material (Android, Desktop, Web)                                | Cupertino (iOS)                                         |
 |-----------------------------------------------------------------|---------------------------------------------------------|
 | ![Bottom Sheet Android](images/AdaptiveBottomSheet-android.png) | ![Bottom Sheet iOS](images/AdaptiveBottomSheet-ios.png) |
 
@@ -136,7 +136,7 @@ Box(
 
 `AdaptiveCircularProgressIndicator` is a circular progress indicator that adapts to the platform it is running on. It is a wrapper around `CircularProgressIndicator` on Android, and it implements similar look to `UIActivityIndicatorView` on iOS.
 
-| Android                                                                                      | iOS                                                                                  |
+| Material (Android, Desktop, Web)                                                             | Cupertino (iOS)                                                                      |
 |----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
 | ![Circular Progress Indicator Android](images/AdaptiveCircularProgressIndicator-android.png) | ![Circular Progress Indicator iOS](images/AdaptiveCircularProgressIndicator-ios.png) |
 
@@ -147,11 +147,28 @@ AdaptiveCircularProgressIndicator(
 )
 ```
 
+#### AdaptiveClickable
+
+`.adaptiveClickable` is a clickable modifier that replaces indication on iOS with scaling effect.
+
+```kotlin
+Box(
+    modifier = Modifier
+        .size(50.dp)
+        .background(Color.Red)
+        .adaptiveClickable(
+            shape = RoundedCornerShape(8.dp),
+        ) {
+            // Handle click
+        }
+)
+```
+
 #### AdaptiveDatePicker
 
 `AdaptiveDatePicker` is a date picker that adapts to the platform it is running on. It is a wrapper around `DatePicker` on Android and `UIDatePicker` on iOS.
 
-| Android                                                       | iOS                                                   |
+| Material (Android, Desktop, Web)                              | Cupertino (iOS)                                       |
 |---------------------------------------------------------------|-------------------------------------------------------|
 | ![Date Picker Android](images/AdaptiveDatePicker-android.png) | ![Date Picker iOS](images/AdaptiveDatePicker-ios.png) |
 
@@ -171,7 +188,7 @@ AdaptiveDatePicker(
 
 `AdaptiveTimePicker` is a time picker that adapts to the platform it is running on. It is a wrapper around `TimePicker` on Android and `UIDatePicker` on iOS.
 
-| Android                                                       | iOS                                                   |
+| Material (Android, Desktop, Web)                              | Cupertino (iOS)                                       |
 |---------------------------------------------------------------|-------------------------------------------------------|
 | ![Time Picker Android](images/AdaptiveTimePicker-android.png) | ![Time Picker iOS](images/AdaptiveTimePicker-ios.png) |
 
