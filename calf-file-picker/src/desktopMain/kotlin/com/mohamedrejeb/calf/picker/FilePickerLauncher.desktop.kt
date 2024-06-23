@@ -12,6 +12,7 @@ import com.mohamedrejeb.calf.picker.platform.awt.AwtFilePicker
 import com.mohamedrejeb.calf.picker.platform.util.Platform
 import com.mohamedrejeb.calf.picker.platform.util.PlatformUtil
 import com.mohamedrejeb.calf.picker.platform.windows.WindowsFilePicker
+import jodd.net.MimeTypes
 import java.io.File
 
 @Composable
@@ -40,8 +41,14 @@ private fun rememberAwtFilePickerLauncher(
     if (fileDialogVisible) {
         AwtWindow(
             create = {
+                if (type !is FilePickerFileType.Extension) {
+                    type.value.forEach { mimetype ->
+                        MimeTypes.findExtensionsByMimeTypes(mimetype, true)
+                    }
+                }
+
                 if (type == FilePickerFileType.Folder)
-                    AwtFilePicker.current.pickDirectory(
+                    AwtFilePicker.current.launchDirectoryPicker(
                         initialDirectory = null,
                         title = "Select a folder",
                         parentWindow = null,
@@ -52,6 +59,7 @@ private fun rememberAwtFilePickerLauncher(
                                 else
                                     listOf(KmpFile(file))
                             )
+                            fileDialogVisible = false
                         }
                     )
                 else
@@ -63,6 +71,7 @@ private fun rememberAwtFilePickerLauncher(
                         parentWindow = null,
                         onResult = { files ->
                             onResult(files.map { KmpFile(it) })
+                            fileDialogVisible = false
                         }
                     )
             },
@@ -95,7 +104,7 @@ private fun rememberWindowsFilePickerLauncher(
             selectionMode = selectionMode,
             onLaunch = {
                 if (type == FilePickerFileType.Folder)
-                    WindowsFilePicker.current.pickDirectory(
+                    WindowsFilePicker.current.launchDirectoryPicker(
                         initialDirectory = null,
                         title = "Select a folder",
                         parentWindow = null,
@@ -136,3 +145,9 @@ actual class FilePickerLauncher actual constructor(
 
 val File.extension: String
     get() = name.substringAfterLast(".")
+
+fun main() {
+    MimeTypes.findExtensionsByMimeTypes("video/*", true).also {
+        println(it)
+    }
+}

@@ -26,6 +26,5 @@ kotlin {
 
     sourceSets.desktopMain.dependencies {
         implementation(libs.jna)
-        implementation(libs.apache.tika)
     }
 }

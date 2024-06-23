@@ -6,7 +6,6 @@ kotlinx-serialization-json = "1.6.3"
 nexus-publish = "2.0.0"
 documentfile = "1.0.1"
 jna = "5.14.0"
-tika = "2.9.0"
 coil = "3.0.0-alpha06"
 
 conventionPlugin = "0.1.0"
@@ -46,7 +45,6 @@ documentfile = { module = "androidx.documentfile:documentfile", version.ref = "d
 
 # Desktop
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
-apache-tika = { module = "org.apache.tika:tika-core", version.ref = "tika" }
 
 # For sample
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }

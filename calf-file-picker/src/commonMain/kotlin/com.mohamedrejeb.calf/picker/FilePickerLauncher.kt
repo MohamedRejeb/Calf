@@ -33,7 +33,7 @@ sealed class FilePickerFileType(vararg val value: String) {
     )
     data object Pdf: FilePickerFileType(PdfContentType)
     data object Text: FilePickerFileType(TextContentType)
-    data object Folder: FilePickerFileType("folder")
+    data object Folder: FilePickerFileType(FolderContentType)
     data object All: FilePickerFileType(AllContentType)
 
     /**

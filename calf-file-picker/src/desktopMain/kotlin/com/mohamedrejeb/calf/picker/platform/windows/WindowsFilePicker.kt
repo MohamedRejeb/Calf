@@ -3,7 +3,7 @@ package com.mohamedrejeb.calf.picker.platform.windows
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.platform.windows.api.JnaFileChooser
-import org.apache.tika.mime.MimeTypes
+import jodd.net.MimeTypes
 import java.awt.Window
 import java.io.File
 
@@ -34,15 +34,13 @@ internal class WindowsFilePicker {
             val fileExtensions =
                 if (type is FilePickerFileType.Extension)
                     type.extensions
-                else {
-                    val allTypes = MimeTypes.getDefaultMimeTypes()
+                else
                     type.value
                         .map {
-                            allTypes.forName(it).extensions
+                            MimeTypes.findExtensionsByMimeTypes(it, it.contains('*'))
                         }
                         .flatten()
                         .distinct()
-                }
             setup(initialDirectory, fileExtensions, title)
         }
 
@@ -58,7 +56,7 @@ internal class WindowsFilePicker {
         onResult(result)
     }
 
-    fun pickDirectory(
+    fun launchDirectoryPicker(
         initialDirectory: String?,
         title: String?,
         parentWindow: Window?,

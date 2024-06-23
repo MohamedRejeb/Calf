@@ -27,7 +27,7 @@ internal class AwtFilePicker {
         onResult = onResult,
     )
 
-    fun pickDirectory(
+    fun launchDirectoryPicker(
         initialDirectory: String?,
         title: String?,
         parentWindow: Window?,
@@ -109,9 +109,6 @@ internal class AwtFilePicker {
         // Set initial directory
         dialog.directory = initialDirectory
 
-        // Show the dialog
-        dialog.isVisible = true
-
         return dialog
     }
 
@@ -155,9 +152,6 @@ internal class AwtFilePicker {
 
         // Set initial directory
         dialog.directory = initialDirectory
-
-        // Show the dialog
-        dialog.isVisible = true
 
         return dialog
     }
