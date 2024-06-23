@@ -37,8 +37,8 @@ actual fun rememberFilePickerLauncher(
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher =
-    if (type == FilePickerFileType.Image) {
-        rememberImagePickerLauncher(type, selectionMode, onResult)
+    if (type == FilePickerFileType.Image || type == FilePickerFileType.Video || type == FilePickerFileType.ImageVideo) {
+        rememberImageVideoPickerLauncher(type, selectionMode, onResult)
     } else {
         rememberDocumentPickerLauncher(type, selectionMode, onResult)
     }
@@ -131,7 +131,7 @@ private fun rememberDocumentPickerLauncher(
 
 @OptIn(InternalCalfApi::class)
 @Composable
-private fun rememberImagePickerLauncher(
+private fun rememberImageVideoPickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
@@ -145,8 +145,9 @@ private fun rememberImagePickerLauncher(
                 ) {
                     didFinishPicking.forEach {
                         val result = it as? PHPickerResult ?: return@forEach
+
                         result.itemProvider.loadFileRepresentationForTypeIdentifier(
-                            typeIdentifier = UTTypeImage.identifier,
+                            typeIdentifier = result.itemProvider.registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier,
                         ) { url, error ->
                             if (error != null) {
                                 return@loadFileRepresentationForTypeIdentifier
@@ -178,6 +179,7 @@ private fun rememberImagePickerLauncher(
                 val imagePicker =
                     createPHPickerViewController(
                         delegate = pickerDelegate,
+                        type = type,
                         selectionMode = selectionMode,
                     )
 
@@ -229,15 +231,25 @@ private fun createUIDocumentPickerViewController(
 
 private fun createPHPickerViewController(
     delegate: PHPickerViewControllerDelegateProtocol,
+    type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
 ): PHPickerViewController {
     val configuration = PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary())
+    val filterList = mutableListOf<PHPickerFilter>()
+    when (type) {
+        FilePickerFileType.Image ->
+            filterList.add(PHPickerFilter.imagesFilter())
+
+        FilePickerFileType.Video ->
+            filterList.add(PHPickerFilter.videosFilter())
+
+        else -> {
+            filterList.add(PHPickerFilter.imagesFilter())
+            filterList.add(PHPickerFilter.videosFilter())
+        }
+    }
     val newFilter =
-        PHPickerFilter.anyFilterMatchingSubfilters(
-            listOf(
-                PHPickerFilter.imagesFilter(),
-            ),
-        )
+        PHPickerFilter.anyFilterMatchingSubfilters(filterList.toList())
     configuration.filter = newFilter
     configuration.preferredAssetRepresentationMode =
         PHPickerConfigurationAssetRepresentationModeCurrent
