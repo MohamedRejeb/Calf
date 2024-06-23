@@ -3,11 +3,11 @@ package com.mohamedrejeb.calf.picker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import platform.Foundation.NSURL
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
@@ -43,6 +43,7 @@ actual fun rememberFilePickerLauncher(
         rememberDocumentPickerLauncher(type, selectionMode, onResult)
     }
 
+@OptIn(InternalCalfApi::class)
 @Composable
 private fun rememberDocumentPickerLauncher(
     type: FilePickerFileType,
@@ -57,7 +58,22 @@ private fun rememberDocumentPickerLauncher(
                     controller: UIDocumentPickerViewController,
                     didPickDocumentAtURL: NSURL,
                 ) {
-                    onResult(listOfNotNull(didPickDocumentAtURL.createTempFile()?.let(::KmpFile)))
+                    coroutineScope.launch(Dispatchers.Main) {
+                        val result =
+                            if (type == FilePickerFileType.Folder)
+                                listOf(KmpFile(didPickDocumentAtURL))
+                            else
+                                listOfNotNull(
+                                    didPickDocumentAtURL.createTempFile()?.let { tempUrl ->
+                                        KmpFile(
+                                            url = didPickDocumentAtURL,
+                                            tempUrl = tempUrl,
+                                        )
+                                    }
+                                )
+
+                        onResult(result)
+                    }
                 }
 
                 override fun documentPicker(
@@ -66,12 +82,26 @@ private fun rememberDocumentPickerLauncher(
                 ) {
                     val dataList =
                         didPickDocumentsAtURLs.mapNotNull {
-                            (it as? NSURL)?.createTempFile()?.let(::KmpFile)
+                            val nsUrl = it as? NSURL ?: return@mapNotNull null
+                            if (type == FilePickerFileType.Folder)
+                                KmpFile(nsUrl)
+                            else
+                                nsUrl.createTempFile()?.let { tempUrl ->
+                                    KmpFile(
+                                        url = nsUrl,
+                                        tempUrl = tempUrl
+                                    )
+                                }
                         }
-                    coroutineScope.launch {
-                        withContext(Dispatchers.Main) {
-                            onResult(dataList)
-                        }
+
+                    coroutineScope.launch(Dispatchers.Main) {
+                        onResult(dataList)
+                    }
+                }
+
+                override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
+                    coroutineScope.launch(Dispatchers.Main) {
+                        onResult(emptyList())
                     }
                 }
             }
@@ -99,6 +129,7 @@ private fun rememberDocumentPickerLauncher(
     }
 }
 
+@OptIn(InternalCalfApi::class)
 @Composable
 private fun rememberImagePickerLauncher(
     type: FilePickerFileType,
@@ -121,7 +152,16 @@ private fun rememberImagePickerLauncher(
                                 return@loadFileRepresentationForTypeIdentifier
                             }
 
-                            onResult(listOfNotNull(url?.createTempFile()?.let(::KmpFile)))
+                            onResult(
+                                listOfNotNull(
+                                    url?.createTempFile()?.let { tempUrl ->
+                                        KmpFile(
+                                            url = url,
+                                            tempUrl = tempUrl,
+                                        )
+                                    }
+                                )
+                            )
                         }
                     }
 

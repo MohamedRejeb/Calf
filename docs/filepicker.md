@@ -150,7 +150,7 @@ val uri: Uri = kmpFile.uri
 
 ##### iOS
 ```kotlin
-val nsUrl: NSURL = kmpFile.nsUrl
+val nsUrl: NSURL = kmpFile.url
 ```
 
 ##### Desktop
