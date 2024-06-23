@@ -3,7 +3,7 @@ package com.mohamedrejeb.calf.io
 import com.mohamedrejeb.calf.core.PlatformContext
 
 /**
- * Represents a file in a platform-agnostic way.
+ * A wrapper class for a file in the platform specific implementation.
  */
 expect class KmpFile
 

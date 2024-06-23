@@ -33,6 +33,8 @@ import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
+import com.mohamedrejeb.calf.sample.Platform
+import com.mohamedrejeb.calf.sample.currentPlatform
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 
 @Composable
@@ -129,9 +131,12 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             onClick = {
                 directoryPickerLauncher.launch()
             },
+            enabled = currentPlatform != Platform.Web,
             modifier = Modifier.padding(16.dp),
         ) {
-            Text("Pick Directory")
+            Text(
+                text = "Pick Directory" + if (currentPlatform == Platform.Web) " (Not supported on Web)" else "",
+            )
         }
 
         Text(

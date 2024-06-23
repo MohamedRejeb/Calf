@@ -10,9 +10,6 @@ import org.w3c.files.FileReader
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-/**
- * Represents a file in a platform-agnostic way.
- */
 actual class KmpFile(
     val file: File,
 )

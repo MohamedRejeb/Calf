@@ -5,9 +5,6 @@ import androidx.documentfile.provider.DocumentFile
 import com.mohamedrejeb.calf.core.PlatformContext
 import java.io.FileNotFoundException
 
-/**
- * An typealias representing a file in the platform specific implementation
- */
 actual class KmpFile(
     val uri: Uri,
 )

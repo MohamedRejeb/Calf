@@ -24,6 +24,9 @@ actual fun rememberFilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
             onLaunch = {
+                if (type == FilePickerFileType.Folder)
+                    return@FilePickerLauncher
+
                 val fileInputElement = document.createElement("input") as HTMLInputElement
 
                 with(fileInputElement) {

@@ -3,9 +3,6 @@ package com.mohamedrejeb.calf.io
 import com.mohamedrejeb.calf.core.PlatformContext
 import java.io.File
 
-/**
- * An typealias representing a file in the platform specific implementation
- */
 actual class KmpFile(
     val file: File,
 )
