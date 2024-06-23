@@ -12,7 +12,7 @@ fun Project.rootPublicationSetup() {
 
     allprojects {
         group = "com.mohamedrejeb.calf"
-        version = "0.4.1"
+        version = "0.5.0"
     }
 
     nexusPublishing {
