@@ -1,17 +1,13 @@
 package com.mohamedrejeb.calf.picker
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.window.AwtWindow
+import androidx.compose.runtime.rememberCoroutineScope
 import com.mohamedrejeb.calf.io.KmpFile
-import java.awt.FileDialog
-import java.awt.Frame
+import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
+import jodd.net.MimeTypes
+import kotlinx.coroutines.launch
 import java.io.File
-import java.net.URLConnection
 
 @Composable
 actual fun rememberFilePickerLauncher(
@@ -19,72 +15,40 @@ actual fun rememberFilePickerLauncher(
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
-    var fileDialogVisible by rememberSaveable { mutableStateOf(false) }
-
-    if (fileDialogVisible) {
-        AwtWindow(
-            create = {
-                val frame: Frame? = null
-                val fileDialog =
-                    object : FileDialog(
-                        frame,
-                        "Select ${if (type == FilePickerFileType.Folder) "Folder" else "File"}",
-                        if (type == FilePickerFileType.Folder) SAVE else LOAD,
-                    ) {
-                        override fun setVisible(value: Boolean) {
-                            super.setVisible(value)
-                            if (value) {
-                                onResult(files.orEmpty().map { KmpFile(it) })
-                                fileDialogVisible = false
-                            }
-                        }
-                    }
-
-                fileDialog.isMultipleMode = selectionMode == FilePickerSelectionMode.Multiple
-
-                val mimeType =
-                    when (type) {
-                        FilePickerFileType.Folder -> listOf("folder")
-                        FilePickerFileType.All -> emptyList()
-                        else ->
-                            type.value
-                                .map {
-                                    it
-                                        .removeSuffix("/*")
-                                        .removeSuffix("/")
-                                        .removeSuffix("*")
-                                }
-                                .filter {
-                                    it.isNotEmpty()
-                                }
-                    }
-                fileDialog.setFilenameFilter { file, name ->
-                    if (mimeType.isEmpty()) {
-                        true
-                    } else if (mimeType.first().contains("folder", true)) {
-                        file.isDirectory
-                    } else {
-                        val contentType = URLConnection.guessContentTypeFromName(name) ?: ""
-                        mimeType.any {
-                            contentType.startsWith(it, true)
-                        }
-                    }
-                }
-
-                fileDialog
-            },
-            dispose = {
-                it.dispose()
-            },
-        )
-    }
+    val scope = rememberCoroutineScope()
 
     return remember {
         FilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
             onLaunch = {
-                fileDialogVisible = true
+                scope.launch {
+                    if (type == FilePickerFileType.Folder)
+                        PlatformFilePicker.current.launchDirectoryPicker(
+                            initialDirectory = null,
+                            title = "Select a folder",
+                            parentWindow = null,
+                            onResult = { file ->
+                                onResult(
+                                    if (file == null)
+                                        emptyList()
+                                    else
+                                        listOf(KmpFile(file))
+                                )
+                            }
+                        )
+                    else
+                        PlatformFilePicker.current.launchFilePicker(
+                            initialDirectory = null,
+                            type = type,
+                            selectionMode = selectionMode,
+                            title = "Select a file",
+                            parentWindow = null,
+                            onResult = { files ->
+                                onResult(files.map { KmpFile(it) })
+                            }
+                        )
+                }
             },
         )
     }
@@ -102,3 +66,9 @@ actual class FilePickerLauncher actual constructor(
 
 val File.extension: String
     get() = name.substringAfterLast(".")
+
+fun main() {
+    MimeTypes.findExtensionsByMimeTypes("video/*", true).also {
+        println(it)
+    }
+}

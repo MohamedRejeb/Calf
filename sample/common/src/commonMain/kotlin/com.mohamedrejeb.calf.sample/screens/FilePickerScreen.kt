@@ -63,6 +63,15 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             },
         )
 
+    val directoryPickerLauncher =
+        rememberFilePickerLauncher(
+            type = FilePickerFileType.Folder,
+            selectionMode = FilePickerSelectionMode.Single,
+            onResult = { files ->
+                fileNames = files.map { it.getName(context).orEmpty() }
+            },
+        )
+
     Column(
         modifier =
             Modifier
@@ -114,6 +123,15 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             modifier = Modifier.padding(16.dp),
         ) {
             Text("Pick Files")
+        }
+
+        Button(
+            onClick = {
+                directoryPickerLauncher.launch()
+            },
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Text("Pick Directory")
         }
 
         Text(

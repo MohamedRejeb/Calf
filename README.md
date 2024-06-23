@@ -364,17 +364,22 @@ Button(
 * `FilePickerFileType.Document` - Allows you to pick documents only
 * `FilePickerFileType.Text` - Allows you to pick text files only
 * `FilePickerFileType.Pdf` - Allows you to pick PDF files only
-* `FilePickerFileType.Presentation` - Allows you to pick presentation files only
-* `FilePickerFileType.Spreadsheet` - Allows you to pick spreadsheet files only
-* `FilePickerFileType.Word` - Allows you to pick compressed word only
 * `FilePickerFileType.All` - Allows you to pick all types of files
 * `FilePickerFileType.Folder` - Allows you to pick folders
 
-You can also specify the file types you want to pick by using the `FilePickerFileType.Custom` type:
+You can filter files by custom mime types using `FilePickerFileType.Custom`.
 
 ```kotlin
 val type = FilePickerFileType.Custom(
-    "text/plain"
+    listOf("text/plain")
+)
+```
+
+You can also filter files by custom extensions using `FilePickerFileType.Extension`.
+
+```kotlin
+val type = FilePickerFileType.Extension(
+    listOf("txt")
 )
 ```
 

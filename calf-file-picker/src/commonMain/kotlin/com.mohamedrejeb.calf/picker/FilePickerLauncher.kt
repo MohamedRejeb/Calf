@@ -33,7 +33,7 @@ sealed class FilePickerFileType(vararg val value: String) {
     )
     data object Pdf: FilePickerFileType(PdfContentType)
     data object Text: FilePickerFileType(TextContentType)
-    data object Folder: FilePickerFileType("folder")
+    data object Folder: FilePickerFileType(FolderContentType)
     data object All: FilePickerFileType(AllContentType)
 
     /**
@@ -42,6 +42,13 @@ sealed class FilePickerFileType(vararg val value: String) {
      * @param contentType List of content types
      */
     data class Custom(val contentType: List<String>): FilePickerFileType(*contentType.toTypedArray())
+
+    /**
+     * Custom file extensions
+     *
+     * @param extensions List of extensions
+     */
+    data class Extension(val extensions: List<String>): FilePickerFileType(*extensions.toTypedArray())
 
     companion object {
         const val FolderContentType = "folder"

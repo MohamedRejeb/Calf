@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.picker
 
+import android.webkit.MimeTypeMap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,7 +61,7 @@ private fun pickSingleVisualMedia(
     type: FilePickerFileType,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
-    val singlePhotoPickerLauncher =
+    val mediaPickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickVisualMedia(),
             onResult = { uri ->
@@ -73,7 +74,7 @@ private fun pickSingleVisualMedia(
             type = type,
             selectionMode = FilePickerSelectionMode.Single,
             onLaunch = {
-                singlePhotoPickerLauncher.launch(
+                mediaPickerLauncher.launch(
                     type.toPickVisualMediaRequest(),
                 )
             },
@@ -86,7 +87,7 @@ fun pickMultipleVisualMedia(
     type: FilePickerFileType,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
-    val singlePhotoPickerLauncher =
+    val mediaPickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickMultipleVisualMedia(),
             onResult = { uriList ->
@@ -103,7 +104,7 @@ fun pickMultipleVisualMedia(
             type = type,
             selectionMode = FilePickerSelectionMode.Multiple,
             onLaunch = {
-                singlePhotoPickerLauncher.launch(
+                mediaPickerLauncher.launch(
                     type.toPickVisualMediaRequest(),
                 )
             },
@@ -116,7 +117,7 @@ private fun pickSingleFile(
     type: FilePickerFileType,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
-    val singlePhotoPickerLauncher =
+    val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument(),
             onResult = { uri ->
@@ -129,8 +130,13 @@ private fun pickSingleFile(
             type = type,
             selectionMode = FilePickerSelectionMode.Single,
             onLaunch = {
-                singlePhotoPickerLauncher.launch(
-                    type.value.toList().toTypedArray(),
+                val mimeTypeMap = MimeTypeMap.getSingleton()
+
+                filePickerLauncher.launch(
+                    if (type is FilePickerFileType.Extension)
+                        type.value.mapNotNull { mimeTypeMap.getMimeTypeFromExtension(it) }.toTypedArray()
+                    else
+                        type.value.toList().toTypedArray()
                 )
             },
         )
@@ -142,7 +148,7 @@ private fun pickMultipleFiles(
     type: FilePickerFileType,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
-    val singlePhotoPickerLauncher =
+    val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenMultipleDocuments(),
             onResult = { uriList ->
@@ -159,8 +165,13 @@ private fun pickMultipleFiles(
             type = type,
             selectionMode = FilePickerSelectionMode.Multiple,
             onLaunch = {
-                singlePhotoPickerLauncher.launch(
-                    type.value.toList().toTypedArray(),
+                val mimeTypeMap = MimeTypeMap.getSingleton()
+
+                filePickerLauncher.launch(
+                    if (type is FilePickerFileType.Extension)
+                        type.value.mapNotNull { mimeTypeMap.getMimeTypeFromExtension(it) }.toTypedArray()
+                    else
+                        type.value.toList().toTypedArray()
                 )
             },
         )

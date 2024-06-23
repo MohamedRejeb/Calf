@@ -5,6 +5,7 @@ compose = "1.6.11"
 kotlinx-serialization-json = "1.6.3"
 nexus-publish = "2.0.0"
 documentfile = "1.0.1"
+jna = "5.14.0"
 coil = "3.0.0-alpha06"
 
 conventionPlugin = "0.1.0"
@@ -27,6 +28,7 @@ gradlePlugin-jetbrainsCompose = { module = "org.jetbrains.compose:compose-gradle
 gradlePlugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "android-lifecycle" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
@@ -41,8 +43,10 @@ coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 # Android
 documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 
+# Desktop
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+
 # For sample
-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
 calf-file-picker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
