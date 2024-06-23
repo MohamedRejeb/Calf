@@ -2,13 +2,14 @@ package com.mohamedrejeb.calf.picker.platform.windows
 
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
+import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
 import com.mohamedrejeb.calf.picker.platform.windows.api.JnaFileChooser
 import jodd.net.MimeTypes
 import java.awt.Window
 import java.io.File
 
-internal class WindowsFilePicker {
-    fun launchFilePicker(
+internal class WindowsFilePicker: PlatformFilePicker {
+    override suspend fun launchFilePicker(
         initialDirectory: String?,
         type: FilePickerFileType,
         selectionMode: FilePickerSelectionMode,
@@ -56,7 +57,7 @@ internal class WindowsFilePicker {
         onResult(result)
     }
 
-    fun launchDirectoryPicker(
+    override suspend fun launchDirectoryPicker(
         initialDirectory: String?,
         title: String?,
         parentWindow: Window?,

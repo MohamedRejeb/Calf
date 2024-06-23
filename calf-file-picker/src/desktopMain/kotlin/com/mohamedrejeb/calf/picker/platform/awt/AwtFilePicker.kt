@@ -2,6 +2,8 @@ package com.mohamedrejeb.calf.picker.platform.awt
 
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
+import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.awt.Dialog
 import java.awt.FileDialog
 import java.awt.Frame
@@ -9,16 +11,17 @@ import java.awt.Window
 import java.io.File
 import java.io.FilenameFilter
 import java.net.URLConnection
+import kotlin.coroutines.resume
 
-internal class AwtFilePicker {
-    fun launchFilePicker(
+internal class AwtFilePicker: PlatformFilePicker {
+    override suspend fun launchFilePicker(
         initialDirectory: String?,
         type: FilePickerFileType,
         selectionMode: FilePickerSelectionMode,
         title: String?,
         parentWindow: Window?,
         onResult: (List<File>) -> Unit,
-    ): FileDialog = callAwtFilePicker(
+    ) = callAwtFilePicker(
         title = title,
         initialDirectory = initialDirectory,
         type = type,
@@ -27,35 +30,39 @@ internal class AwtFilePicker {
         onResult = onResult,
     )
 
-    fun launchDirectoryPicker(
+    override suspend fun launchDirectoryPicker(
         initialDirectory: String?,
         title: String?,
         parentWindow: Window?,
         onResult: (File?) -> Unit,
-    ): FileDialog = callAwtDirectoryPicker(
+    ) = callAwtDirectoryPicker(
         title = title,
         initialDirectory = initialDirectory,
         parentWindow = parentWindow,
         onResult = onResult,
     )
 
-    private fun callAwtFilePicker(
+    private suspend fun callAwtFilePicker(
         title: String?,
         initialDirectory: String?,
         type: FilePickerFileType,
         selectionMode: FilePickerSelectionMode,
         parentWindow: Window?,
         onResult: (List<File>) -> Unit,
-    ): FileDialog {
+    ) = suspendCancellableCoroutine { continuation ->
+        var dialog: FileDialog? = null
+
         fun handleResult(value: Boolean, files: Array<File>?) {
             if (value) {
                 val result = files?.toList().orEmpty()
                 onResult(result)
+                continuation.resume(Unit)
+                dialog?.dispose()
             }
         }
 
         // Handle parentWindow: Dialog, Frame, or null
-        val dialog = when (parentWindow) {
+        dialog = when (parentWindow) {
             is Dialog -> object : FileDialog(parentWindow, title, LOAD) {
                 override fun setVisible(value: Boolean) {
                     super.setVisible(value)
@@ -109,24 +116,32 @@ internal class AwtFilePicker {
         // Set initial directory
         dialog.directory = initialDirectory
 
-        return dialog
+        // Show the dialog
+        dialog.isVisible = true
+
+        // Dispose the dialog when the continuation is cancelled
+        continuation.invokeOnCancellation { dialog.dispose() }
     }
 
-    private fun callAwtDirectoryPicker(
+    private suspend fun callAwtDirectoryPicker(
         title: String?,
         initialDirectory: String?,
         parentWindow: Window?,
         onResult: (File?) -> Unit,
-    ): FileDialog {
+    ) = suspendCancellableCoroutine { continuation ->
+        var dialog: FileDialog? = null
+
         fun handleResult(value: Boolean, files: Array<File>?) {
             if (value) {
                 val result = files?.firstOrNull()
                 onResult(result)
+                continuation.resume(Unit)
+                dialog?.dispose()
             }
         }
 
         // Handle parentWindow: Dialog, Frame, or null
-        val dialog = when (parentWindow) {
+        dialog = when (parentWindow) {
             is Dialog -> object : FileDialog(parentWindow, title, SAVE) {
                 override fun setVisible(value: Boolean) {
                     super.setVisible(value)
@@ -153,7 +168,11 @@ internal class AwtFilePicker {
         // Set initial directory
         dialog.directory = initialDirectory
 
-        return dialog
+        // Show the dialog
+        dialog.isVisible = true
+
+        // Dispose the dialog when the continuation is cancelled
+        continuation.invokeOnCancellation { dialog.dispose() }
     }
 
     companion object {
