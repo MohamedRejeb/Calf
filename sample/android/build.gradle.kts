@@ -25,11 +25,11 @@ android {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
     packaging {
         resources {
@@ -37,9 +37,9 @@ android {
         }
     }
     dependencies {
-        implementation(project(":sample:common"))
+        implementation(projects.sample.common)
 
         implementation(libs.activity.compose)
-        implementation("androidx.appcompat:appcompat:1.6.1")
+        implementation(libs.appcompat)
     }
 }
