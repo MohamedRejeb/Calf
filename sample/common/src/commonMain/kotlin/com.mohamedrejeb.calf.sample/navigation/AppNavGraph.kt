@@ -3,6 +3,7 @@ package com.mohamedrejeb.calf.sample.navigation
 import androidx.compose.runtime.Composable
 import com.mohamedrejeb.calf.navigation.AdaptiveNavHost
 import com.mohamedrejeb.calf.navigation.AdaptiveNavHostController
+import com.mohamedrejeb.calf.sample.screens.AdaptiveClickableScreen
 import com.mohamedrejeb.calf.sample.screens.AlertDialogScreen
 import com.mohamedrejeb.calf.sample.screens.BottomSheetScreen
 import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
@@ -76,6 +77,13 @@ fun AppNavGraph(
         }
         composable(Screen.TimePicker.name) {
             TimePickerScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.AdaptiveClickable.name) {
+            AdaptiveClickableScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }

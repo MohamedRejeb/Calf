@@ -4,6 +4,7 @@ enum class Screen {
     Home,
     Dialog,
     BottomSheet,
+    AdaptiveClickable,
     DatePicker,
     TimePicker,
     ProgressBar,
