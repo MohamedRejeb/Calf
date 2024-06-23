@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
+import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -118,6 +119,11 @@ fun HomeScreen(
                     onClick = { navigate(Screen.Switch.name) },
                     title = "Adaptive Switch",
                     icon = Icons.Outlined.ToggleOn,
+                )
+                ListItem(
+                    onClick = { navigate(Screen.AdaptiveClickable.name) },
+                    title = "Adaptive Clickable",
+                    icon = Icons.Outlined.AdsClick,
                 )
 //                ListItem(
 //                    onClick = { navigate(Screen.DropDownMenu.name) },
