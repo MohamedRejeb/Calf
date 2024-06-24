@@ -50,11 +50,11 @@ You can try the web demo [here](https://calf-library.netlify.app/)
 
 For more information, check the documentation:
 
-- [Getting Started](docs/installation.md)
-- [Adaptive UI](docs/ui.md)
-- [WebView](docs/webview.md)
-- [File Picker](docs/filepicker.md)
-- [Permissions](docs/permissions.md)
+- [Getting Started](https://mohamedrejeb.github.io/Calf/installation/)
+- [Adaptive UI](https://mohamedrejeb.github.io/Calf/ui/)
+- [WebView](https://mohamedrejeb.github.io/Calf/webview/)
+- [File Picker](https://mohamedrejeb.github.io/Calf/filepicker/)
+- [Permissions](https://mohamedrejeb.github.io/Calf/permissions/)
 
 ## Contribution
 If you've found an error in this sample, please file an issue. <br>
