@@ -28,9 +28,7 @@ actual fun AdaptiveBottomSheet(
     windowInsets: WindowInsets,
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
-    val shapes = MaterialTheme.shapes
+    val compositionLocalContext = currentCompositionLocalContext
 
     val sheetHelper = remember {
         BottomSheetManager(
@@ -38,11 +36,7 @@ actual fun AdaptiveBottomSheet(
                 onDismissRequest()
             },
             content = {
-                MaterialTheme(
-                    colorScheme = colorScheme,
-                    typography = typography,
-                    shapes = shapes,
-                ) {
+                CompositionLocalProvider(compositionLocalContext) {
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
