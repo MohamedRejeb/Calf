@@ -3,8 +3,8 @@ package com.mohamedrejeb.calf.picker.platform.mac
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
-import io.github.vinceglb.filekit.core.platform.mac.foundation.Foundation
-import io.github.vinceglb.filekit.core.platform.mac.foundation.ID
+import com.mohamedrejeb.calf.picker.platform.mac.foundation.Foundation
+import com.mohamedrejeb.calf.picker.platform.mac.foundation.ID
 import jodd.net.MimeTypes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
