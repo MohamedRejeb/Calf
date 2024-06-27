@@ -1,4 +1,4 @@
-package io.github.vinceglb.filekit.core.platform.mac.foundation
+package com.mohamedrejeb.calf.picker.platform.mac.foundation
 
 import com.sun.jna.Callback
 import com.sun.jna.Library
