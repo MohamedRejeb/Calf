@@ -88,7 +88,7 @@ internal class MacOSFilePicker: PlatformFilePicker {
 				}
 
 				// Set file extensions
-				if (type !is FilePickerFileType.Folder) {
+				if (type !is FilePickerFileType.Folder && type !is FilePickerFileType.All) {
 					val extensions =
 						if (type is FilePickerFileType.Extension)
 							type.extensions
@@ -99,9 +99,15 @@ internal class MacOSFilePicker: PlatformFilePicker {
 								}
 								.flatten()
 								.distinct()
-					val items = extensions.map { Foundation.nsString(it) }
-					val nsData = Foundation.invokeVarArg("NSArray", "arrayWithObjects:", *items.toTypedArray())
-					Foundation.invoke(openPanel, "setAllowedFileTypes:", nsData)
+
+					val items = extensions
+						.map { Foundation.nsString(it) }
+						.take(256)
+
+					if (items.isNotEmpty()) {
+						val nsData = Foundation.invokeVarArg("NSArray", "arrayWithObjects:", *items.toTypedArray())
+						Foundation.invoke(openPanel, "setAllowedFileTypes:", nsData)
+					}
 				}
 
 				// Open the file picker
