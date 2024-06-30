@@ -10,7 +10,7 @@ import kotlinx.coroutines.withContext
 import java.awt.Window
 import java.io.File
 
-internal class WindowsFilePicker: PlatformFilePicker {
+internal class WindowsFilePicker : PlatformFilePicker {
     override suspend fun launchFilePicker(
         initialDirectory: String?,
         type: FilePickerFileType,
@@ -35,15 +35,21 @@ internal class WindowsFilePicker: PlatformFilePicker {
 
             // Set initial directory, title and file extensions
             val fileExtensions =
-                if (type is FilePickerFileType.Extension)
-                    type.extensions
-                else
-                    type.value
-                        .map {
-                            MimeTypes.findExtensionsByMimeTypes(it, it.contains('*'))
-                        }
-                        .flatten()
-                        .distinct()
+                when (type) {
+                    is FilePickerFileType.All ->
+                        emptyList()
+
+                    is FilePickerFileType.Extension ->
+                        type.extensions
+
+                    else ->
+                        type.value
+                            .map {
+                                MimeTypes.findExtensionsByMimeTypes(it, it.contains('*'))
+                            }
+                            .flatten()
+                            .distinct()
+                }
             setup(initialDirectory, fileExtensions, title)
         }
 
@@ -51,11 +57,11 @@ internal class WindowsFilePicker: PlatformFilePicker {
         fileChooser.showOpenDialog(parentWindow)
 
         // Return selected files
-		val result =
-			if (selectionMode == FilePickerSelectionMode.Single)
-				listOfNotNull(fileChooser.selectedFile)
-			else
-				fileChooser.selectedFiles.mapNotNull { it }
+        val result =
+            if (selectionMode == FilePickerSelectionMode.Single)
+                listOfNotNull(fileChooser.selectedFile)
+            else
+                fileChooser.selectedFiles.mapNotNull { it }
         onResult(result)
     }
 
