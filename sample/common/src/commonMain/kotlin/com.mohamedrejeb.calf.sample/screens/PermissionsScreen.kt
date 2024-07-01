@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,23 +30,24 @@ import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
 import com.mohamedrejeb.calf.permissions.Permission
 import com.mohamedrejeb.calf.permissions.isGranted
 import com.mohamedrejeb.calf.permissions.rememberPermissionState
+import com.mohamedrejeb.calf.permissions.shouldShowRationale
 
 @Composable
 fun PermissionScreen(navigateBack: () -> Unit) {
     Box(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .windowInsetsPadding(WindowInsets.systemBars)
-                .windowInsetsPadding(WindowInsets.ime),
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.systemBars)
+            .windowInsetsPadding(WindowInsets.ime),
     ) {
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp),
         ) {
             items(Permission.entries) { permission ->
                 PermissionItem(permission = permission)
@@ -57,14 +59,14 @@ fun PermissionScreen(navigateBack: () -> Unit) {
                 navigateBack()
             },
             colors =
-                IconButtonDefaults.iconButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onBackground,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
+            IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.onBackground,
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
             modifier =
-                Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp),
+            Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp),
         ) {
             Icon(
                 Icons.Filled.ArrowBackIosNew,
@@ -89,6 +91,13 @@ private fun PermissionItem(permission: Permission) {
     Text(
         text = "Is permission granted: ${permissionState.status.isGranted}",
     )
+
+    LaunchedEffect(permissionState.status) {
+        println("${permission.name}: ${permissionState.status}")
+        if (!permissionState.status.isGranted && permissionState.status.shouldShowRationale) {
+            println("${permission.name}: Show Rationale")
+        }
+    }
 
     Button(
         onClick = {

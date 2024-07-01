@@ -76,6 +76,7 @@ enum class Permission {
     WriteStorage,
     FineLocation,
     CoarseLocation,
+    Notification,
     RemoteNotification,
     RecordAudio,
     BluetoothLe,

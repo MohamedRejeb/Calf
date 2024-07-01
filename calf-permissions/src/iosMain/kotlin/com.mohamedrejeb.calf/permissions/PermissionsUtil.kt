@@ -4,6 +4,7 @@ import com.mohamedrejeb.calf.permissions.helper.AVCapturePermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.BluetoothPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.GalleryPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.GrantedPermissionHelper
+import com.mohamedrejeb.calf.permissions.helper.LocalNotificationPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.LocationPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.PermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.RemoteNotificationPermissionHelper
@@ -16,10 +17,12 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
         Permission.Gallery -> GalleryPermissionHelper()
         Permission.ReadStorage, Permission.WriteStorage, Permission.Call -> GrantedPermissionHelper()
         Permission.FineLocation, Permission.CoarseLocation -> LocationPermissionHelper()
+        Permission.Notification -> LocalNotificationPermissionHelper()
         Permission.RemoteNotification -> RemoteNotificationPermissionHelper()
         Permission.RecordAudio -> AVCapturePermissionHelper(AVMediaTypeAudio)
         Permission.BluetoothLe, Permission.BluetoothScan,
         Permission.BluetoothConnect, Permission.BluetoothAdvertise,
         -> BluetoothPermissionHelper()
+
     }
 }
