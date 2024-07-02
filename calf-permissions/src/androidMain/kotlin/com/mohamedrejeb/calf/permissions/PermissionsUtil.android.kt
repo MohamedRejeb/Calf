@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.permissions
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -101,31 +102,37 @@ internal fun Activity.shouldShowRationale(permission: String): Boolean {
 
 internal fun Permission.toAndroidPermission(): String {
     return when (this) {
-        Permission.Call -> android.Manifest.permission.CALL_PHONE
-        Permission.Camera -> android.Manifest.permission.CAMERA
-        Permission.Gallery -> android.Manifest.permission.READ_EXTERNAL_STORAGE
-        Permission.ReadStorage -> android.Manifest.permission.READ_EXTERNAL_STORAGE
-        Permission.WriteStorage -> android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-        Permission.FineLocation -> android.Manifest.permission.ACCESS_FINE_LOCATION
-        Permission.CoarseLocation -> android.Manifest.permission.ACCESS_COARSE_LOCATION
-        Permission.RemoteNotification -> android.Manifest.permission.RECEIVE_BOOT_COMPLETED
-        Permission.RecordAudio -> android.Manifest.permission.RECORD_AUDIO
-        Permission.BluetoothLe -> android.Manifest.permission.BLUETOOTH
+        Permission.Call -> Manifest.permission.CALL_PHONE
+        Permission.Camera -> Manifest.permission.CAMERA
+        Permission.Gallery -> Manifest.permission.READ_EXTERNAL_STORAGE
+        Permission.ReadStorage -> Manifest.permission.READ_EXTERNAL_STORAGE
+        Permission.WriteStorage -> Manifest.permission.WRITE_EXTERNAL_STORAGE
+        Permission.FineLocation -> Manifest.permission.ACCESS_FINE_LOCATION
+        Permission.CoarseLocation -> Manifest.permission.ACCESS_COARSE_LOCATION
+        Permission.RemoteNotification -> Manifest.permission.RECEIVE_BOOT_COMPLETED
+        Permission.RecordAudio -> Manifest.permission.RECORD_AUDIO
+        Permission.BluetoothLe -> Manifest.permission.BLUETOOTH
         Permission.BluetoothScan ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                android.Manifest.permission.BLUETOOTH_SCAN
+                Manifest.permission.BLUETOOTH_SCAN
             } else {
                 ""
             }
         Permission.BluetoothConnect ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                android.Manifest.permission.BLUETOOTH_CONNECT
+                Manifest.permission.BLUETOOTH_CONNECT
             } else {
                 ""
             }
         Permission.BluetoothAdvertise ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                android.Manifest.permission.BLUETOOTH_ADVERTISE
+                Manifest.permission.BLUETOOTH_ADVERTISE
+            } else {
+                ""
+            }
+        Permission.Notification ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.POST_NOTIFICATIONS
             } else {
                 ""
             }
@@ -150,6 +157,7 @@ internal fun getPermissionFromAndroidPermission(androidPermission: String): Perm
         android.Manifest.permission.WRITE_EXTERNAL_STORAGE -> Permission.WriteStorage
         android.Manifest.permission.ACCESS_FINE_LOCATION -> Permission.FineLocation
         android.Manifest.permission.ACCESS_COARSE_LOCATION -> Permission.CoarseLocation
+        android.Manifest.permission.POST_NOTIFICATIONS -> Permission.Notification
         android.Manifest.permission.RECEIVE_BOOT_COMPLETED -> Permission.RemoteNotification
         android.Manifest.permission.RECORD_AUDIO -> Permission.RecordAudio
         android.Manifest.permission.BLUETOOTH -> Permission.BluetoothLe

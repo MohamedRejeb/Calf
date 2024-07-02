@@ -212,3 +212,27 @@ On iOS you need to add the following key to your `Info.plist` file:
 ```
 
 The string value is the message that will be displayed to the user when the permission is requested.
+
+### Post Notifications Permission
+
+To request the post notifications permission, use `Permission.Notification`.
+
+#### Android
+
+On Android API version 33 and up, you need to add the following permission to your `AndroidManifest.xml` file:
+
+```xml
+<!-- For Posting Notifications -->
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+```
+
+#### iOS
+
+On iOS you need to add the following key to your `Info.plist` file:
+
+```xml
+<key>NSUserNotificationsUsageDescription</key>
+<string>Notifications permission is required to show notifications</string>
+```
+
+The string value is the message that will be displayed to the user when the permission is requested.
