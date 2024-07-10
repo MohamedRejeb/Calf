@@ -9,6 +9,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
@@ -106,10 +107,14 @@ internal actual class MutablePermissionState(
     actual override fun openAppSettings() {
         if (context == null) return
 
-        val intent = Intent().apply {
-            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-            data = Uri.fromParts("package", context.packageName, null)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        val intent = when (permission) {
+            Permission.Notification -> if (supportsNotificationSettings()) {
+                createAppNotificationsIntent(context)
+            } else {
+                createAppSettingsIntent(context)
+            }
+
+            else -> createAppSettingsIntent(context)
         }
         context.startActivity(intent)
     }
@@ -132,4 +137,20 @@ internal actual class MutablePermissionState(
             PermissionStatus.Denied(activity.shouldShowRationale(androidPermission))
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createAppNotificationsIntent(context: Context) =
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        }
+
+    private fun supportsNotificationSettings() =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
+    private fun createAppSettingsIntent(context: Context) =
+        Intent().apply {
+            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            data = Uri.fromParts("package", context.packageName, null)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
 }

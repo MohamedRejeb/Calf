@@ -110,7 +110,24 @@ private fun PermissionItem(permission: Permission) {
         )
     }
 
+
+
     Spacer(modifier = Modifier.height(16.dp))
+
+    if (permission == Permission.Notification) {
+        Button(
+            onClick = {
+                permissionState.openAppSettings()
+            },
+        ) {
+            Text(
+                text = "Open Notification Settings",
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+
 
     HorizontalDivider()
 }
