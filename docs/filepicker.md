@@ -173,7 +173,7 @@ You can use it by adding the following dependency to your module `build.gradle.k
 implementation("com.mohamedrejeb.calf:calf-file-picker-coil:0.5.1")  
 ```  
 
-Currently, this package contains a `KmpFileFetcher` that you can use to let Coil know how to load a [KmpFile] by adding it to Coil's  `ImageLoader`:
+Currently, this package contains a `KmpFileFetcher` that you can use to let Coil know how to load a KmpFile by adding it to Coil's  `ImageLoader`:
 
 ```kotlin  
 ImageLoader.Builder(context)  
