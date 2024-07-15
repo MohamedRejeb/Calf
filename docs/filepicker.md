@@ -162,3 +162,23 @@ val file: java.io.File = kmpFile.file
 ```kotlin
 val file: org.w3c.files.File = kmpFile.file
 ```
+
+#### Coil etensions
+
+In case you're using [Coil](https://github.com/coil-kt/coil) in your project, Calf has a dedicated package that includes utilities to ease the integration between both libraries.
+
+You can use it by adding the following dependency to your module `build.gradle.kts` file:
+
+```kotlin  
+implementation("com.mohamedrejeb.calf:calf-file-picker-coil:0.5.1")  
+```  
+
+Currently, this package contains a `KmpFileFetcher` that you can use to let Coil know how to load a [KmpFile] by adding it to Coil's  `ImageLoader`:
+
+```kotlin  
+ImageLoader.Builder(context)  
+ .components { add(KmpFileFetcher.Factory()) }
+ .build()  
+```  
+
+For more info regarding how to extend the Image Pipeline in Coil, you can read [here](https://coil-kt.github.io/coil/image_pipeline/).
