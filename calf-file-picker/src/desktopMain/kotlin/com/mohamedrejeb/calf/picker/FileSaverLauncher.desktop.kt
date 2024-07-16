@@ -10,28 +10,20 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun rememberFileSaverLauncher(
-    bytes: ByteArray?,
-    baseName: String,
-    extension: String,
-    initialDirectory: String?,
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher {
     val scope = rememberCoroutineScope()
 
-    val currentBytes by rememberUpdatedState(bytes)
-    val currentBaseName by rememberUpdatedState(baseName)
-    val currentExtension by rememberUpdatedState(extension)
-    val currentInitialDirectory by rememberUpdatedState(initialDirectory)
     val currentOnResult by rememberUpdatedState(onResult)
 
     return FileSaverLauncher(
-        onLaunch = {
+        onLaunch = { bytes, baseName, extension, initialDirectory ->
             scope.launch {
                 val file = AwtFileSaver.saveFile(
-                    bytes = currentBytes,
-                    baseName = currentBaseName,
-                    extension = currentExtension,
-                    initialDirectory = currentInitialDirectory,
+                    bytes = bytes,
+                    baseName = baseName,
+                    extension = extension,
+                    initialDirectory = initialDirectory,
                     parentWindow = null,
                 )
 
@@ -42,9 +34,24 @@ fun rememberFileSaverLauncher(
 }
 
 class FileSaverLauncher(
-    private val onLaunch: () -> Unit,
+    private val onLaunch: (
+        bytes: ByteArray?,
+        baseName: String,
+        extension: String,
+        initialDirectory: String?,
+    ) -> Unit,
 ) {
-    fun launch() {
-        onLaunch()
+    fun launch(
+        bytes: ByteArray?,
+        baseName: String,
+        extension: String,
+        initialDirectory: String?,
+    ) {
+        onLaunch(
+            bytes,
+            baseName,
+            extension,
+            initialDirectory,
+        )
     }
 }
