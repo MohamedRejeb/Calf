@@ -7,7 +7,7 @@
 Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
-implementation("com.mohamedrejeb.calf:calf-permissions:0.5.1")
+implementation("com.mohamedrejeb.calf:calf-permissions:0.5.2")
 ```
 
 ## Usage
