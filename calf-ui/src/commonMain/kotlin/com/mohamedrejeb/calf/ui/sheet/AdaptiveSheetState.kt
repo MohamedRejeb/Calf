@@ -3,10 +3,17 @@ package com.mohamedrejeb.calf.ui.sheet
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.CancellationException
+
+private class SheetValueHolder @OptIn(ExperimentalMaterial3Api::class) constructor(
+    var value: SheetValue
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -14,15 +21,31 @@ fun rememberAdaptiveSheetState(
     skipPartiallyExpanded: Boolean = false,
     confirmValueChange: (SheetValue) -> Boolean = { true },
 ): AdaptiveSheetState {
-    return rememberSaveable(
-        skipPartiallyExpanded, confirmValueChange,
+    val sheetValueHolder = remember {
+        SheetValueHolder(SheetValue.Hidden)
+    }
+
+    val state = rememberSaveable(
+        skipPartiallyExpanded,
+        confirmValueChange,
         saver = AdaptiveSheetState.Saver(
             skipPartiallyExpanded = skipPartiallyExpanded,
             confirmValueChange = confirmValueChange
         )
     ) {
-        AdaptiveSheetState(skipPartiallyExpanded, SheetValue.Hidden, confirmValueChange)
+        if (skipPartiallyExpanded && sheetValueHolder.value == SheetValue.PartiallyExpanded)
+            sheetValueHolder.value = SheetValue.Expanded
+
+        AdaptiveSheetState(skipPartiallyExpanded, sheetValueHolder.value, confirmValueChange)
     }
+
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { state.currentValue }
+            .collect { sheetValueHolder.value = it }
+    }
+
+    return state
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
