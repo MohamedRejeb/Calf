@@ -5,9 +5,13 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.currentCompositionLocalContext
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -36,11 +40,14 @@ actual fun AdaptiveBottomSheet(
                 onDismissRequest()
             },
             content = {
+                val sheetCompositionLocalContext = currentCompositionLocalContext
+
                 CompositionLocalProvider(compositionLocalContext) {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        content()
+                    CompositionLocalProvider(sheetCompositionLocalContext) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            content = content,
+                        )
                     }
                 }
             }
