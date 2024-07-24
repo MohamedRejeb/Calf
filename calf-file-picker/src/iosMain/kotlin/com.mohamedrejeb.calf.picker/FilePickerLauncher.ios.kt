@@ -202,13 +202,6 @@ private fun rememberImageVideoPickerLauncher(
     }
 }
 
-@OptIn(InternalCalfApi::class)
-private suspend fun loadFileRepresentationForTypeIdentifier(result: PHPickerResult): List<KmpFile> {
-    val results = mutableListOf<KmpFile>()
-
-
-    return results
-}
 
 private fun createUIDocumentPickerViewController(
     delegate: UIDocumentPickerDelegateProtocol,
