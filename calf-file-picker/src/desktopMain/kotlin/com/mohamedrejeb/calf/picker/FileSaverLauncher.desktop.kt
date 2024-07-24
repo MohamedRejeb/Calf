@@ -4,10 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.picker.platform.awt.AwtFileSaver
 import kotlinx.coroutines.launch
 
+@ExperimentalCalfApi
 @Composable
 fun rememberFileSaverLauncher(
     onResult: (KmpFile?) -> Unit,
@@ -33,6 +35,7 @@ fun rememberFileSaverLauncher(
     )
 }
 
+@ExperimentalCalfApi
 class FileSaverLauncher(
     private val onLaunch: (
         bytes: ByteArray?,
