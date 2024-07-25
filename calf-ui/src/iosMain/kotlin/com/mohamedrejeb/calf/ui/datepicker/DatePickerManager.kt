@@ -67,13 +67,17 @@ class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constru
             datePickerWidth.value = this.size.width.toFloat()
             datePickerHeight.value = this.size.height.toFloat()
         }
+        applyColors(colors)
     }
 
-    private fun stripTimeFromDate(originalDate: NSDate): NSDate {
-        val components = NSCalendar.currentCalendar.components(
-            NSCalendarUnitYear or NSCalendarUnitMonth or NSCalendarUnitDay,
-            originalDate
-        )
-        return NSCalendar.currentCalendar.dateFromComponents(components) ?: originalDate
+    fun applyColors(colors: DatePickerColors) {
+        applyTheme(isDark = !isDark(colors.dayContentColor))
+        datePicker.tintColor = colors.selectedDayContentColor.toUIColor()
+        datePicker.backgroundColor = colors.containerColor.toUIColor()
     }
+
+    fun applyTheme(isDark: Boolean) {
+        datePicker.applyTheme(isDark)
+    }
+
 }
