@@ -14,11 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Foundation.setValue
-import platform.UIKit.UIColor
 import platform.UIKit.UIDatePicker
-import platform.UIKit.UILabel
-import platform.UIKit.UIView
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class, InternalCalfApi::class, BetaInteropApi::class)
 @Composable
