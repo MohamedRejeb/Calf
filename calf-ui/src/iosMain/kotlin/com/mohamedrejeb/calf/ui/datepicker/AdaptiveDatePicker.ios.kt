@@ -71,22 +71,3 @@ actual fun AdaptiveDatePicker(
             )
     )
 }
-
-fun UIView.lookForLabels(color: UIColor, level: Int = 1) {
-    subviews.forEach {
-        val uiView = (it as? UIView) ?: return@forEach
-//        println("${"-".repeat(level)} -> $uiView")
-        uiView.lookForLabels(color, level = level + 1)
-
-//        if (uiView is UIButton) {
-//            println("${"-".repeat(level)} -> btn title: ${uiView.currentTitle}")
-//        }
-
-        if (uiView !is UILabel)
-            return@forEach
-
-//        println("${"-".repeat(level)} -> text: ${uiView.text}")
-
-        uiView.setValue(color, forKey = "textColor")
-    }
-}
