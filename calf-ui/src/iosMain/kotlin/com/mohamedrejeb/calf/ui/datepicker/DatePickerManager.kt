@@ -9,8 +9,14 @@ import platform.Foundation.*
 import platform.UIKit.*
 import platform.objc.sel_registerName
 
-@OptIn(ExperimentalForeignApi::class)
-class DatePickerManager internal constructor(
+@OptIn(
+    ExperimentalForeignApi::class,
+    ExperimentalMaterial3Api::class
+)
+@InternalCalfApi
+class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constructor(
+    initialSelectedDateMillis: Long?,
+    colors: DatePickerColors,
     private val datePicker: UIDatePicker,
     displayMode: UIKitDisplayMode,
     private val onSelectionChanged: (dateMillis: Long?) -> Unit,
@@ -28,7 +34,7 @@ class DatePickerManager internal constructor(
     @ObjCAction
     fun dateSelection() {
         onSelectionChanged(
-            stripTimeFromDate(datePicker.date).timeIntervalSince1970.toLong() * 1000
+            datePicker.date.timeIntervalSince1970.toLong() * 1000
         )
     }
 
@@ -36,7 +42,10 @@ class DatePickerManager internal constructor(
     val datePickerHeight = mutableStateOf(0f)
 
     init {
-        datePicker.date = NSDate()
+        val date = initialSelectedDateMillis
+            ?.let { NSDate.dateWithTimeIntervalSince1970(it / 1000.0) }
+            ?: NSDate()
+        datePicker.setDate(date, animated = false)
         datePicker.locale = NSLocale.currentLocale
         datePicker.datePickerMode = UIDatePickerMode.UIDatePickerModeDate
         datePicker.preferredDatePickerStyle = when(displayMode) {
