@@ -10,10 +10,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.core.InternalCalfApi
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIDatePicker
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class, InternalCalfApi::class, BetaInteropApi::class)
 @Composable
 actual fun AdaptiveDatePicker(
     state: AdaptiveDatePickerState,
@@ -29,6 +31,8 @@ actual fun AdaptiveDatePicker(
     }
     val datePickerManager = remember {
         DatePickerManager(
+            initialSelectedDateMillis = state.selectedDateMillis,
+            colors = colors,
             datePicker = datePicker,
             displayMode = state.initialUIKitDisplayMode,
             onSelectionChanged = { dateMillis ->
