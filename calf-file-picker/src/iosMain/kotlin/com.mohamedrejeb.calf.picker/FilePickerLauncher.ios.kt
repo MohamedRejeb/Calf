@@ -7,6 +7,8 @@ import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -149,11 +151,16 @@ private fun rememberImageVideoPickerLauncher(
                 didFinishPicking: List<*>,
             ) {
                 scope.launch {
-                    val results = didFinishPicking.mapNotNull {
-                        val result = it as? PHPickerResult ?: return@mapNotNull null
+                    val results = didFinishPicking
+                        .mapNotNull {
+                            val result = it as? PHPickerResult ?: return@mapNotNull null
 
-                        result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend()
-                    }
+                            async {
+                                result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend()
+                            }
+                        }
+                        .awaitAll()
+                        .filterNotNull()
 
                     withContext(Dispatchers.Main) {
                         onResult(results)
@@ -188,29 +195,30 @@ private fun rememberImageVideoPickerLauncher(
 }
 
 @OptIn(InternalCalfApi::class)
-private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(): KmpFile? = suspendCancellableCoroutine { continuation ->
-    val progress = loadFileRepresentationForTypeIdentifier(
-        typeIdentifier = registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier
-    ) { url, error ->
-        if (error != null) {
-            continuation.resume(null)
-            return@loadFileRepresentationForTypeIdentifier
+private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(): KmpFile? =
+    suspendCancellableCoroutine { continuation ->
+        val progress = loadFileRepresentationForTypeIdentifier(
+            typeIdentifier = registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier
+        ) { url, error ->
+            if (error != null) {
+                continuation.resume(null)
+                return@loadFileRepresentationForTypeIdentifier
+            }
+
+            continuation.resume(
+                url?.createTempFile()?.let { tempUrl ->
+                    KmpFile(
+                        url = url,
+                        tempUrl = tempUrl,
+                    )
+                }
+            )
         }
 
-        continuation.resume(
-            url?.createTempFile()?.let { tempUrl ->
-                KmpFile(
-                    url = url,
-                    tempUrl = tempUrl,
-                )
-            }
-        )
+        continuation.invokeOnCancellation {
+            progress.cancel()
+        }
     }
-
-    continuation.invokeOnCancellation {
-        progress.cancel()
-    }
-}
 
 private fun createUIDocumentPickerViewController(
     delegate: UIDocumentPickerDelegateProtocol,
