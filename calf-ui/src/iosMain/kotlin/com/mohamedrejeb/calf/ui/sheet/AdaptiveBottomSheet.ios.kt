@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.sheet
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -34,8 +35,11 @@ actual fun AdaptiveBottomSheet(
 ) {
     val compositionLocalContext = currentCompositionLocalContext
 
-    val sheetHelper = remember {
+    val isDark = isSystemInDarkTheme()
+
+    val sheetManager = remember {
         BottomSheetManager(
+            dark = isDark,
             onDismiss = {
                 onDismissRequest()
             },
@@ -58,22 +62,25 @@ actual fun AdaptiveBottomSheet(
         adaptiveSheetState.show()
     }
 
+    LaunchedEffect(isDark) {
+        sheetManager.applyTheme(isDark)
+    }
+
     LaunchedEffect(adaptiveSheetState.sheetValue) {
-        println(adaptiveSheetState.sheetValue)
         if (adaptiveSheetState.sheetValue == SheetValue.Hidden) {
-            sheetHelper.hide(
+            sheetManager.hide(
                 completion = {
                     adaptiveSheetState.deferredUntilHidden.complete(Unit)
                 }
             )
         } else {
-            sheetHelper.show()
+            sheetManager.show()
         }
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            sheetHelper.hide()
+            sheetManager.hide()
             adaptiveSheetState.sheetValue = SheetValue.Hidden
         }
     }

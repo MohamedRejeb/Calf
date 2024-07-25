@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.ui.timepicker
 
 import androidx.compose.runtime.mutableStateOf
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
@@ -10,6 +11,7 @@ import platform.UIKit.*
 import platform.objc.sel_registerName
 
 @OptIn(ExperimentalForeignApi::class)
+@InternalCalfApi
 class TimePickerManager internal constructor(
     private val datePicker: UIDatePicker,
     initialMinute: Int,

@@ -5,7 +5,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.DialogProperties
+import com.mohamedrejeb.calf.core.InternalCalfApi
 
+@OptIn(InternalCalfApi::class)
 @Composable
 actual fun AdaptiveAlertDialog(
     onConfirm: () -> Unit,
