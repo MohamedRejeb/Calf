@@ -5,12 +5,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.mutableStateOf
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.applyTheme
+import com.mohamedrejeb.calf.ui.utils.datetime.KotlinxDatetimeCalendarModel
 import com.mohamedrejeb.calf.ui.utils.isDark
 import com.mohamedrejeb.calf.ui.utils.toUIColor
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toNSTimeZone
 import platform.Foundation.*
 import platform.UIKit.*
 import platform.objc.sel_registerName
@@ -48,15 +51,27 @@ class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constru
     val datePickerHeight = mutableStateOf(0f)
 
     init {
-        val date = initialSelectedDateMillis
-            ?.let { NSDate.dateWithTimeIntervalSince1970(it / 1000.0) }
-            ?: NSDate()
+        val date =
+            if (initialSelectedDateMillis != null) {
+                val calendarModel = KotlinxDatetimeCalendarModel(getCalendarLocalDefault())
+                val canonicalDate = calendarModel.getCanonicalDate(initialSelectedDateMillis)
+                NSDate.dateWithTimeIntervalSince1970(canonicalDate.utcTimeMillis / 1000.0)
+            } else {
+                NSDate()
+            }
+
         datePicker.setDate(date, animated = false)
-        datePicker.locale = NSLocale.currentLocale
+
+        datePicker.locale = getCalendarLocalDefault()
+        datePicker.timeZone = TimeZone.UTC.toNSTimeZone()
+
         datePicker.datePickerMode = UIDatePickerMode.UIDatePickerModeDate
         datePicker.preferredDatePickerStyle = when(displayMode) {
-            UIKitDisplayMode.Picker -> UIDatePickerStyle.UIDatePickerStyleInline
-            else -> UIDatePickerStyle.UIDatePickerStyleWheels
+            UIKitDisplayMode.Picker ->
+                UIDatePickerStyle.UIDatePickerStyleInline
+
+            else ->
+                UIDatePickerStyle.UIDatePickerStyleWheels
         }
         datePicker.addTarget(
             target = this,
