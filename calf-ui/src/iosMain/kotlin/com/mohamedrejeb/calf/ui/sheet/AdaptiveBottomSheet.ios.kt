@@ -49,7 +49,7 @@ actual fun AdaptiveBottomSheet(
                 CompositionLocalProvider(compositionLocalContext) {
                     CompositionLocalProvider(sheetCompositionLocalContext) {
                         Column(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = modifier.fillMaxSize(),
                             content = content,
                         )
                     }
