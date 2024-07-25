@@ -7,8 +7,10 @@ import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import platform.Foundation.NSItemProvider
 import platform.Foundation.NSURL
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
@@ -30,6 +32,7 @@ import platform.UniformTypeIdentifiers.UTTypeImage
 import platform.UniformTypeIdentifiers.UTTypeText
 import platform.UniformTypeIdentifiers.UTTypeVideo
 import platform.darwin.NSObject
+import kotlin.coroutines.resume
 
 @BetaInteropApi
 @Composable
@@ -51,7 +54,8 @@ private fun rememberDocumentPickerLauncher(
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
+
     val delegate =
         remember {
             object : NSObject(), UIDocumentPickerDelegateProtocol {
@@ -59,7 +63,7 @@ private fun rememberDocumentPickerLauncher(
                     controller: UIDocumentPickerViewController,
                     didPickDocumentAtURL: NSURL,
                 ) {
-                    coroutineScope.launch(Dispatchers.Main) {
+                    scope.launch(Dispatchers.Main) {
                         val result =
                             if (type == FilePickerFileType.Folder)
                                 listOf(KmpFile(didPickDocumentAtURL))
@@ -95,13 +99,13 @@ private fun rememberDocumentPickerLauncher(
                                 }
                         }
 
-                    coroutineScope.launch(Dispatchers.Main) {
+                    scope.launch(Dispatchers.Main) {
                         onResult(dataList)
                     }
                 }
 
                 override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
-                    coroutineScope.launch(Dispatchers.Main) {
+                    scope.launch(Dispatchers.Main) {
                         onResult(emptyList())
                     }
                 }
@@ -130,13 +134,13 @@ private fun rememberDocumentPickerLauncher(
     }
 }
 
-@OptIn(InternalCalfApi::class)
 @Composable
 private fun rememberImageVideoPickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
+    val scope = rememberCoroutineScope()
 
     val pickerDelegate = remember {
         object : NSObject(), PHPickerViewControllerDelegateProtocol {
@@ -144,37 +148,18 @@ private fun rememberImageVideoPickerLauncher(
                 picker: PHPickerViewController,
                 didFinishPicking: List<*>,
             ) {
-                var pendingOperations = didFinishPicking.size
-                val results = mutableListOf<KmpFile>()
+                scope.launch {
+                    val results = didFinishPicking.mapNotNull {
+                        val result = it as? PHPickerResult ?: return@mapNotNull null
 
-                didFinishPicking.forEach {
-                    val result = it as? PHPickerResult ?: return@forEach
+                        result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend()
+                    }
 
-
-                    println(result.itemProvider.registeredTypeIdentifiers.size)
-                    result.itemProvider.loadFileRepresentationForTypeIdentifier(
-                        typeIdentifier = result.itemProvider.registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier) { url, error ->
-                        if (error != null) {
-                            return@loadFileRepresentationForTypeIdentifier
-                        }
-
-                        url?.createTempFile()?.let { tempUrl ->
-                            results.add(
-                                KmpFile(
-                                    url = url,
-                                    tempUrl = tempUrl,
-                                )
-                            )
-                        }
-
-                        pendingOperations--
-
-                        if(pendingOperations == 0){
-                            //only call one onResult, in file picker it isnt called twice
-                            onResult(results)
-                        }
+                    withContext(Dispatchers.Main) {
+                        onResult(results)
                     }
                 }
+
                 picker.dismissViewControllerAnimated(true, null)
             }
         }
@@ -202,6 +187,30 @@ private fun rememberImageVideoPickerLauncher(
     }
 }
 
+@OptIn(InternalCalfApi::class)
+private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(): KmpFile? = suspendCancellableCoroutine { continuation ->
+    val progress = loadFileRepresentationForTypeIdentifier(
+        typeIdentifier = registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier
+    ) { url, error ->
+        if (error != null) {
+            continuation.resume(null)
+            return@loadFileRepresentationForTypeIdentifier
+        }
+
+        continuation.resume(
+            url?.createTempFile()?.let { tempUrl ->
+                KmpFile(
+                    url = url,
+                    tempUrl = tempUrl,
+                )
+            }
+        )
+    }
+
+    continuation.invokeOnCancellation {
+        progress.cancel()
+    }
+}
 
 private fun createUIDocumentPickerViewController(
     delegate: UIDocumentPickerDelegateProtocol,
