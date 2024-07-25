@@ -66,9 +66,3 @@ actual class FilePickerLauncher actual constructor(
 
 val File.extension: String
     get() = name.substringAfterLast(".")
-
-fun main() {
-    MimeTypes.findExtensionsByMimeTypes("video/*", true).also {
-        println(it)
-    }
-}
