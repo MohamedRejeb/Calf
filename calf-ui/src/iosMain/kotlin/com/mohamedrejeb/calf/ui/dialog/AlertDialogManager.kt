@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.ui.dialog
 
 import androidx.compose.ui.window.DialogProperties
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
@@ -21,6 +22,7 @@ import platform.objc.sel_registerName
  * @constructor Creates an [AlertDialogManager] instance.
  * @see [UIAlertController]
  */
+@InternalCalfApi
 class AlertDialogManager internal constructor(
     internal var onConfirm: () -> Unit,
     internal var onDismiss: () -> Unit,

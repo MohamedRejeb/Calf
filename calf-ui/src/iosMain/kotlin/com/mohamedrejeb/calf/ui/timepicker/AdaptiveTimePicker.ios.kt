@@ -8,10 +8,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIDatePicker
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalForeignApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalForeignApi::class, InternalCalfApi::class)
 @Composable
 actual fun AdaptiveTimePicker(
     state: AdaptiveTimePickerState,

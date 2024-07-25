@@ -1,14 +1,29 @@
 package com.mohamedrejeb.calf.ui.sheet
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.ComposeUIViewController
+import com.mohamedrejeb.calf.ui.utils.applyTheme
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.cValue
-import platform.CoreGraphics.*
-import platform.UIKit.*
+import platform.CoreGraphics.CGFloat
+import platform.CoreGraphics.CGRect
+import platform.CoreGraphics.CGRectGetMaxY
+import platform.CoreGraphics.CGRectGetMinX
+import platform.CoreGraphics.CGRectGetWidth
+import platform.CoreGraphics.CGRectMake
+import platform.CoreGraphics.CGRectZero
+import platform.UIKit.UIAdaptivePresentationControllerDelegateProtocol
+import platform.UIKit.UIApplication
+import platform.UIKit.UIEdgeInsetsInsetRect
+import platform.UIKit.UIModalPresentationPopover
+import platform.UIKit.UIPresentationController
+import platform.UIKit.UISheetPresentationControllerDetent
+import platform.UIKit.UIViewController
+import platform.UIKit.UIViewControllerTransitioningDelegateProtocol
+import platform.UIKit.presentationController
+import platform.UIKit.sheetPresentationController
+import platform.UIKit.transitioningDelegate
 import platform.darwin.NSObject
 
 /**
@@ -18,6 +33,7 @@ import platform.darwin.NSObject
  * @param content The Compose content of the bottom sheet.
  */
 internal class BottomSheetManager(
+    dark: Boolean,
     private val onDismiss: () -> Unit,
     private val content: @Composable () -> Unit
 ) {
@@ -49,6 +65,14 @@ internal class BottomSheetManager(
             onDismiss()
         }
     )
+
+    init {
+        applyTheme(dark)
+    }
+
+    fun applyTheme(dark: Boolean) {
+        bottomSheetUIViewController.applyTheme(dark)
+    }
 
     /**
      * Shows the bottom sheet.
