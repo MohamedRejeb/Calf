@@ -64,3 +64,33 @@ kotlin {
 ```
 
 > **Important:** Exporting `calf-ui` to binaries is required to make it work on iOS.
+
+## Snapshots
+
+Add the snapshots repository to your list of repositories in `build.gradle.kts`:
+
+```kotlin
+allprojects {
+    repositories {
+        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+    }
+}
+```
+
+Or to your dependency resolution management in `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
+    }
+}
+```
+
+Use the snapshot version:
+
+```kotlin
+api("com.mohamedrejeb.calf:calf-ui:0.5.0-SNAPSHOT")
+```
+
+>Note: Snapshots are deployed for each new commit on `main` that passes CI. They can potentially contain breaking changes or may be unstable. Use at your own risk.
