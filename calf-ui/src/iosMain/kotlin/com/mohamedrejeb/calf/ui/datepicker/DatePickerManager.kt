@@ -87,7 +87,7 @@ class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constru
 
     fun applyColors(colors: DatePickerColors) {
         applyTheme(isDark = !isDark(colors.dayContentColor))
-        datePicker.tintColor = colors.selectedDayContentColor.toUIColor()
+        datePicker.tintColor = colors.selectedDayContainerColor.toUIColor()
         datePicker.backgroundColor = colors.containerColor.toUIColor()
     }
 
