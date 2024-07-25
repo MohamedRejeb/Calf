@@ -6,6 +6,7 @@ import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerFormatter
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
@@ -29,6 +30,7 @@ actual fun AdaptiveDatePicker(
     val datePicker = remember {
         UIDatePicker()
     }
+
     val datePickerManager = remember {
         DatePickerManager(
             initialSelectedDateMillis = state.selectedDateMillis,
@@ -41,10 +43,15 @@ actual fun AdaptiveDatePicker(
         )
     }
 
+    LaunchedEffect(colors) {
+        datePickerManager.applyColors(colors)
+    }
+
     UIKitView(
         factory = {
             datePicker
         },
+        background = colors.containerColor,
         modifier = modifier
             .then(
                 if (datePickerManager.datePickerWidth.value > 0f)
