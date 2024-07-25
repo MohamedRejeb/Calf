@@ -7,6 +7,7 @@ import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import platform.Foundation.NSURL
 import platform.Photos.PHPhotoLibrary
@@ -136,40 +137,48 @@ private fun rememberImageVideoPickerLauncher(
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
-    val pickerDelegate =
-        remember {
-            object : NSObject(), PHPickerViewControllerDelegateProtocol {
-                override fun picker(
-                    picker: PHPickerViewController,
-                    didFinishPicking: List<*>,
-                ) {
-                    didFinishPicking.forEach {
-                        val result = it as? PHPickerResult ?: return@forEach
 
-                        result.itemProvider.loadFileRepresentationForTypeIdentifier(
-                            typeIdentifier = result.itemProvider.registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier,
-                        ) { url, error ->
-                            if (error != null) {
-                                return@loadFileRepresentationForTypeIdentifier
-                            }
+    val pickerDelegate = remember {
+        object : NSObject(), PHPickerViewControllerDelegateProtocol {
+            override fun picker(
+                picker: PHPickerViewController,
+                didFinishPicking: List<*>,
+            ) {
+                var pendingOperations = didFinishPicking.size
+                val results = mutableListOf<KmpFile>()
 
-                            onResult(
-                                listOfNotNull(
-                                    url?.createTempFile()?.let { tempUrl ->
-                                        KmpFile(
-                                            url = url,
-                                            tempUrl = tempUrl,
-                                        )
-                                    }
+                didFinishPicking.forEach {
+                    val result = it as? PHPickerResult ?: return@forEach
+
+
+                    println(result.itemProvider.registeredTypeIdentifiers.size)
+                    result.itemProvider.loadFileRepresentationForTypeIdentifier(
+                        typeIdentifier = result.itemProvider.registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier) { url, error ->
+                        if (error != null) {
+                            return@loadFileRepresentationForTypeIdentifier
+                        }
+
+                        url?.createTempFile()?.let { tempUrl ->
+                            results.add(
+                                KmpFile(
+                                    url = url,
+                                    tempUrl = tempUrl,
                                 )
                             )
                         }
-                    }
 
-                    picker.dismissViewControllerAnimated(true, null)
+                        pendingOperations--
+
+                        if(pendingOperations == 0){
+                            //only call one onResult, in file picker it isnt called twice
+                            onResult(results)
+                        }
+                    }
                 }
+                picker.dismissViewControllerAnimated(true, null)
             }
         }
+    }
 
     return remember {
         FilePickerLauncher(
@@ -192,6 +201,7 @@ private fun rememberImageVideoPickerLauncher(
         )
     }
 }
+
 
 private fun createUIDocumentPickerViewController(
     delegate: UIDocumentPickerDelegateProtocol,
