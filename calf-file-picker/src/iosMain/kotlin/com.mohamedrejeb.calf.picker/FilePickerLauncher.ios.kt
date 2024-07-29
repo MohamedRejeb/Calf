@@ -25,6 +25,7 @@ import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
+import platform.UIKit.UIViewController
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeApplication
 import platform.UniformTypeIdentifiers.UTTypeAudio
@@ -126,7 +127,7 @@ private fun rememberDocumentPickerLauncher(
                         selectionMode = selectionMode,
                     )
 
-                UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
+                findTopViewController()?.presentViewController(
                     pickerController,
                     true,
                     null,
@@ -184,7 +185,7 @@ private fun rememberImageVideoPickerLauncher(
                         selectionMode = selectionMode,
                     )
 
-                UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
+                findTopViewController()?.presentViewController(
                     imagePicker,
                     true,
                     null,
@@ -256,6 +257,7 @@ private fun createUIDocumentPickerViewController(
     return pickerController
 }
 
+
 private fun createPHPickerViewController(
     delegate: PHPickerViewControllerDelegateProtocol,
     type: FilePickerFileType,
@@ -287,6 +289,16 @@ private fun createPHPickerViewController(
     picker.delegate = delegate
     return picker
 }
+
+fun findTopViewController(): UIViewController? {
+    val keyWindow = UIApplication.sharedApplication.keyWindow
+    var topController = keyWindow?.rootViewController
+    while (topController?.presentedViewController != null) {
+        topController = topController.presentedViewController
+    }
+    return topController
+}
+
 
 actual class FilePickerLauncher actual constructor(
     type: FilePickerFileType,
