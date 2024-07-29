@@ -58,6 +58,7 @@ private fun rememberDocumentPickerLauncher(
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val scope = rememberCoroutineScope()
+    val currentUIViewController = LocalUIViewController.current
 
     val delegate =
         remember {
@@ -127,7 +128,7 @@ private fun rememberDocumentPickerLauncher(
                         selectionMode = selectionMode,
                     )
 
-                findTopViewController()?.presentViewController(
+                currentUIViewController.presentViewController(
                     pickerController,
                     true,
                     null,
@@ -144,6 +145,7 @@ private fun rememberImageVideoPickerLauncher(
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val scope = rememberCoroutineScope()
+    val currentUIViewController = LocalUIViewController.current
 
     val pickerDelegate = remember {
         object : NSObject(), PHPickerViewControllerDelegateProtocol {
@@ -185,7 +187,7 @@ private fun rememberImageVideoPickerLauncher(
                         selectionMode = selectionMode,
                     )
 
-                findTopViewController()?.presentViewController(
+                currentUIViewController.presentViewController(
                     imagePicker,
                     true,
                     null,
@@ -288,15 +290,6 @@ private fun createPHPickerViewController(
     val picker = PHPickerViewController(configuration)
     picker.delegate = delegate
     return picker
-}
-
-fun findTopViewController(): UIViewController? {
-    val keyWindow = UIApplication.sharedApplication.keyWindow
-    var topController = keyWindow?.rootViewController
-    while (topController?.presentedViewController != null) {
-        topController = topController.presentedViewController
-    }
-    return topController
 }
 
 
