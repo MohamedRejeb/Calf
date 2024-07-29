@@ -117,7 +117,7 @@ private fun rememberDocumentPickerLauncher(
             }
         }
 
-    return remember {
+    return remember(currentUIViewController) {
         FilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
@@ -176,7 +176,7 @@ private fun rememberImageVideoPickerLauncher(
         }
     }
 
-    return remember {
+    return remember(currentUIViewController) {
         FilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
