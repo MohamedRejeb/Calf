@@ -12,11 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.core.InternalCalfApi
-import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIDatePicker
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class, InternalCalfApi::class, BetaInteropApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class, InternalCalfApi::class)
 @Composable
 actual fun AdaptiveDatePicker(
     state: AdaptiveDatePickerState,

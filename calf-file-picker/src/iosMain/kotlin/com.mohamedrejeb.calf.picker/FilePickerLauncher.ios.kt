@@ -5,7 +5,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
-import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -36,7 +35,6 @@ import platform.UniformTypeIdentifiers.UTTypeVideo
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
 
-@BetaInteropApi
 @Composable
 actual fun rememberFilePickerLauncher(
     type: FilePickerFileType,
