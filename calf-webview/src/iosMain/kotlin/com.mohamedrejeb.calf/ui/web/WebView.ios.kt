@@ -41,7 +41,7 @@ import platform.darwin.NSObject
  * @param onDispose Called when the WebView is destroyed. Provides a bundle which can be saved
  * if you need to save and restore state in this WebView.
  */
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun WebView(
     state: WebViewState,
