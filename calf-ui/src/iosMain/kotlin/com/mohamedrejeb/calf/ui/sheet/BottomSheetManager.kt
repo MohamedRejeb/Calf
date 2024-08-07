@@ -3,27 +3,15 @@ package com.mohamedrejeb.calf.ui.sheet
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.ComposeUIViewController
 import com.mohamedrejeb.calf.ui.utils.applyTheme
-import kotlinx.cinterop.CValue
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.cValue
-import platform.CoreGraphics.CGFloat
-import platform.CoreGraphics.CGRect
-import platform.CoreGraphics.CGRectGetMaxY
-import platform.CoreGraphics.CGRectGetMinX
-import platform.CoreGraphics.CGRectGetWidth
-import platform.CoreGraphics.CGRectMake
-import platform.CoreGraphics.CGRectZero
 import platform.UIKit.UIAdaptivePresentationControllerDelegateProtocol
 import platform.UIKit.UIApplication
-import platform.UIKit.UIEdgeInsetsInsetRect
-import platform.UIKit.UIModalPresentationPopover
+import platform.UIKit.UIModalPresentationPageSheet
+import platform.UIKit.UIModalTransitionStyleCoverVertical
 import platform.UIKit.UIPresentationController
 import platform.UIKit.UISheetPresentationControllerDetent
 import platform.UIKit.UIViewController
-import platform.UIKit.UIViewControllerTransitioningDelegateProtocol
 import platform.UIKit.presentationController
 import platform.UIKit.sheetPresentationController
-import platform.UIKit.transitioningDelegate
 import platform.darwin.NSObject
 
 /**
@@ -33,6 +21,7 @@ import platform.darwin.NSObject
  * @param content The Compose content of the bottom sheet.
  */
 internal class BottomSheetManager(
+    private val parentUIViewController: UIViewController,
     dark: Boolean,
     private val onDismiss: () -> Unit,
     private val content: @Composable () -> Unit
@@ -47,56 +36,64 @@ internal class BottomSheetManager(
      */
     private var isAnimating = false
 
-    /**
-     * The ui view controller that is used to present the bottom sheet.
-     */
-    private val bottomSheetUIViewController = ComposeUIViewController {
-        content()
-    }
-
-    private val bottomSheetTransitioningDelegate = BottomSheetTransitioningDelegate()
+    private var isDark = dark
 
     /**
      * The presentation controller delegate that is used to detect when the bottom sheet is dismissed.
      */
-    private val presentationControllerDelegate = BottomSheetControllerDelegate(
-        onDismiss = {
-            isPresented = false
-            onDismiss()
-        }
-    )
+    private val presentationControllerDelegate by lazy {
+        BottomSheetControllerDelegate(
+            onDismiss = {
+                isPresented = false
+                onDismiss()
+            }
+        )
+    }
 
-    init {
-        applyTheme(dark)
+    /**
+     * The ui view controller that is used to present the bottom sheet.
+     */
+    private val bottomSheetUIViewController: UIViewController by lazy {
+        ComposeUIViewController(content).apply {
+            modalPresentationStyle = UIModalPresentationPageSheet
+            modalTransitionStyle = UIModalTransitionStyleCoverVertical
+            presentationController?.delegate = presentationControllerDelegate
+            applyTheme(isDark)
+        }
     }
 
     fun applyTheme(dark: Boolean) {
-        bottomSheetUIViewController.applyTheme(dark)
+        isDark = dark
+
+        if (isPresented)
+            bottomSheetUIViewController.applyTheme(dark)
     }
 
     /**
      * Shows the bottom sheet.
      */
-    fun show() {
+    fun show(
+        skipPartiallyExpanded: Boolean,
+    ) {
+        applyTheme(isDark)
+
         if (isPresented || isAnimating) return
         isAnimating = true
 
-        bottomSheetUIViewController.modalPresentationStyle = UIModalPresentationPopover
-        bottomSheetUIViewController.transitioningDelegate = bottomSheetTransitioningDelegate
-        bottomSheetUIViewController.presentationController?.setDelegate(presentationControllerDelegate)
-
         bottomSheetUIViewController.sheetPresentationController?.setDetents(
-            listOf(
-                UISheetPresentationControllerDetent.mediumDetent(),
-                UISheetPresentationControllerDetent.largeDetent()
-            )
+            if (skipPartiallyExpanded)
+                listOf(
+                    UISheetPresentationControllerDetent.largeDetent()
+                )
+            else
+                listOf(
+                    UISheetPresentationControllerDetent.largeDetent(),
+                    UISheetPresentationControllerDetent.mediumDetent(),
+                )
         )
         bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = true
 
-        println(bottomSheetUIViewController.sheetPresentationController)
-        println(bottomSheetUIViewController.sheetPresentationController?.detents)
-
-        UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
+        parentUIViewController.presentViewController(
             viewControllerToPresent = bottomSheetUIViewController,
             animated = true,
             completion = {
@@ -133,46 +130,9 @@ class BottomSheetControllerDelegate(
     override fun presentationControllerShouldDismiss(presentationController: UIPresentationController): Boolean {
         return true
     }
+
     override fun presentationControllerDidDismiss(presentationController: UIPresentationController) {
         onDismiss()
     }
-}
 
-class BottomSheetTransitioningDelegate : NSObject(), UIViewControllerTransitioningDelegateProtocol {
-    override fun presentationControllerForPresentedViewController(
-        presented: UIViewController,
-        presentingViewController: UIViewController?,
-        sourceViewController: UIViewController
-    ): UIPresentationController {
-        return BottomSheetPresentationController(
-            presented,
-            presentingViewController,
-        )
-    }
-}
-
-class BottomSheetPresentationController(
-    presentedViewController: UIViewController,
-    presentingViewController: UIViewController?
-): UIPresentationController(
-    presentedViewController = presentedViewController,
-    presentingViewController = presentingViewController,
-) {
-    @OptIn(ExperimentalForeignApi::class)
-    override fun frameOfPresentedViewInContainerView(): CValue<CGRect> {
-        val containerView = containerView ?: return cValue { CGRectZero }
-        val safeAreaInsets = containerView.safeAreaInsets
-
-        val safeAreaFrame = UIEdgeInsetsInsetRect(containerView.bounds, safeAreaInsets)
-        val presentedHeight: CGFloat = 300.0
-
-        return cValue {
-            CGRectMake(
-                x = CGRectGetMinX(safeAreaFrame),
-                y = CGRectGetMaxY(safeAreaFrame) - presentedHeight,
-                width = CGRectGetWidth(safeAreaFrame),
-                height = presentedHeight
-            )
-        }
-    }
 }

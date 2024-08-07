@@ -4,7 +4,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
@@ -12,7 +11,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentCompositionLocalContext
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -34,11 +37,13 @@ actual fun AdaptiveBottomSheet(
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
     val compositionLocalContext = currentCompositionLocalContext
+    val currentUIViewController = LocalUIViewController.current
 
     val isDark = isSystemInDarkTheme()
 
-    val sheetManager = remember {
+    val sheetManager = remember(currentUIViewController) {
         BottomSheetManager(
+            parentUIViewController = currentUIViewController,
             dark = isDark,
             onDismiss = {
                 onDismissRequest()
@@ -48,8 +53,23 @@ actual fun AdaptiveBottomSheet(
 
                 CompositionLocalProvider(compositionLocalContext) {
                     CompositionLocalProvider(sheetCompositionLocalContext) {
+                        if (!adaptiveSheetState.skipPartiallyExpanded) {
+                            var update by remember { mutableIntStateOf(0) }
+
+                            LaunchedEffect(Unit) {
+                                while (true) {
+                                    withFrameMillis {
+                                        update++
+                                    }
+                                }
+                            }
+
+                            @Suppress("UNUSED_EXPRESSION")
+                            update
+                        }
+
                         Column(
-                            modifier = modifier.fillMaxSize(),
+                            modifier = modifier,
                             content = content,
                         )
                     }
@@ -74,7 +94,7 @@ actual fun AdaptiveBottomSheet(
                 }
             )
         } else {
-            sheetManager.show()
+            sheetManager.show(adaptiveSheetState.skipPartiallyExpanded)
         }
     }
 

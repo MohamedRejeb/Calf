@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,7 +22,7 @@ fun BottomSheetScreen(
 ) {
     val scope = rememberCoroutineScope()
     val sheetState = rememberAdaptiveSheetState()
-    var openBottomSheet by remember { mutableStateOf(false) }
+    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -61,7 +62,10 @@ fun BottomSheetScreen(
                 },
                 adaptiveSheetState = sheetState,
             ) {
-                LazyColumn {
+                LazyColumn(
+                    modifier = Modifier
+                        .background(color = MaterialTheme.colorScheme.surface)
+                ) {
                     item {
                         Text("Bottom Sheet")
                         Spacer(modifier = Modifier.height(16.dp))

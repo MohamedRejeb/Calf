@@ -21,13 +21,9 @@ actual fun AdaptiveBottomSheet(
     contentColor: Color,
     tonalElevation: Dp,
     scrimColor: Color,
-    dragHandle:
-        @Composable()
-        (() -> Unit)?,
+    dragHandle: @Composable (() -> Unit)?,
     windowInsets: WindowInsets,
-    content:
-        @Composable()
-        (ColumnScope.() -> Unit),
+    content: @Composable (ColumnScope.() -> Unit),
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
