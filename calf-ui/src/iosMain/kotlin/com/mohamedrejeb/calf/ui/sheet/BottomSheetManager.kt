@@ -21,6 +21,7 @@ import platform.darwin.NSObject
  * @param content The Compose content of the bottom sheet.
  */
 internal class BottomSheetManager(
+    private val parentUIViewController: UIViewController,
     dark: Boolean,
     private val onDismiss: () -> Unit,
     private val content: @Composable () -> Unit
@@ -35,39 +36,37 @@ internal class BottomSheetManager(
      */
     private var isAnimating = false
 
+    private var isDark = dark
+
+    /**
+     * The presentation controller delegate that is used to detect when the bottom sheet is dismissed.
+     */
+    private val presentationControllerDelegate by lazy {
+        BottomSheetControllerDelegate(
+            onDismiss = {
+                isPresented = false
+                onDismiss()
+            }
+        )
+    }
+
     /**
      * The ui view controller that is used to present the bottom sheet.
      */
-    private var bottomSheetUIViewController: UIViewController? = null
-
-    private var isDark = dark
-
-    private fun initBottomSheetUIViewController(): UIViewController {
-        val uiViewController = ComposeUIViewController(content).apply {
+    private val bottomSheetUIViewController: UIViewController by lazy {
+        ComposeUIViewController(content).apply {
             modalPresentationStyle = UIModalPresentationPageSheet
             modalTransitionStyle = UIModalTransitionStyleCoverVertical
-            presentationController?.delegate = BottomSheetControllerDelegate(
-                onDismiss = {
-                    isPresented = false
-                    onDismiss()
-                    disposeBottomSheetUIViewController()
-                }
-            )
+            presentationController?.delegate = presentationControllerDelegate
             applyTheme(isDark)
         }
-
-        bottomSheetUIViewController = uiViewController
-
-        return uiViewController
-    }
-
-    private fun disposeBottomSheetUIViewController() {
-        bottomSheetUIViewController = null
     }
 
     fun applyTheme(dark: Boolean) {
         isDark = dark
-        bottomSheetUIViewController?.applyTheme(dark)
+
+        if (isPresented)
+            bottomSheetUIViewController.applyTheme(dark)
     }
 
     /**
@@ -76,12 +75,12 @@ internal class BottomSheetManager(
     fun show(
         skipPartiallyExpanded: Boolean,
     ) {
-        val uiViewController = initBottomSheetUIViewController()
+        applyTheme(isDark)
 
         if (isPresented || isAnimating) return
         isAnimating = true
 
-        uiViewController.sheetPresentationController?.setDetents(
+        bottomSheetUIViewController.sheetPresentationController?.setDetents(
             if (skipPartiallyExpanded)
                 listOf(
                     UISheetPresentationControllerDetent.largeDetent()
@@ -92,10 +91,10 @@ internal class BottomSheetManager(
                     UISheetPresentationControllerDetent.mediumDetent(),
                 )
         )
-        uiViewController.sheetPresentationController?.prefersGrabberVisible = true
+        bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = true
 
-        UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
-            viewControllerToPresent = uiViewController,
+        parentUIViewController.presentViewController(
+            viewControllerToPresent = bottomSheetUIViewController,
             animated = true,
             completion = {
                 isPresented = true
@@ -113,13 +112,12 @@ internal class BottomSheetManager(
         if (!isPresented || isAnimating) return
         isAnimating = true
 
-        bottomSheetUIViewController?.dismissViewControllerAnimated(
+        bottomSheetUIViewController.dismissViewControllerAnimated(
             flag = true,
             completion = {
                 isPresented = false
                 isAnimating = false
                 completion?.invoke()
-                disposeBottomSheetUIViewController()
             }
         )
     }
