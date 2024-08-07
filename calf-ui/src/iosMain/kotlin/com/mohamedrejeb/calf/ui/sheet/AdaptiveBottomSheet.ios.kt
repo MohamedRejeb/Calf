@@ -37,11 +37,13 @@ actual fun AdaptiveBottomSheet(
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
     val compositionLocalContext = currentCompositionLocalContext
+    val currentUIViewController = LocalUIViewController.current
 
     val isDark = isSystemInDarkTheme()
 
-    val sheetManager = remember {
+    val sheetManager = remember(currentUIViewController) {
         BottomSheetManager(
+            parentUIViewController = currentUIViewController,
             dark = isDark,
             onDismiss = {
                 onDismissRequest()
