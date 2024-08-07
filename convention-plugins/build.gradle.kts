@@ -1,8 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    `kotlin-dsl-base`
-    `java-gradle-plugin`
+    `kotlin-dsl`
 }
 
 java {
@@ -23,6 +22,7 @@ dependencies {
     implementation(libs.gradlePlugin.android)
     implementation(libs.gradlePlugin.jetbrainsCompose)
     implementation(libs.gradlePlugin.kotlin)
+    implementation(libs.gradlePlugin.composeCompiler)
     implementation(libs.nexus.publish)
 
     // hack to access version catalogue https://github.com/gradle/gradle/issues/15383

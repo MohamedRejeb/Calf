@@ -14,7 +14,7 @@ calf = "0.5.3"
 
 # For sample
 compose-compiler = "1.5.4"
-activity-compose = "1.9.0"
+activity-compose = "1.9.1"
 navigation-compose = "2.7.7"
 android-minSdk = "21"
 android-compileSdk = "34"
@@ -27,6 +27,7 @@ play-services-location = "21.3.0"
 gradlePlugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 gradlePlugin-jetbrainsCompose = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "compose" }
 gradlePlugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+gradlePlugin-composeCompiler = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }

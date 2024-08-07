@@ -1,5 +1,5 @@
 plugins {
-//    id("root.publication")
+    id("root.publication")
     // trick: for the same plugin versions in all sub-modules
     alias(libs.plugins.androidApplication).apply(false)
     alias(libs.plugins.androidLibrary).apply(false)
@@ -11,5 +11,3 @@ plugins {
     alias(libs.plugins.composeMultiplatform).apply(false)
     alias(libs.plugins.conventionPlugin).apply(false)
 }
-
-rootPublicationSetup()
