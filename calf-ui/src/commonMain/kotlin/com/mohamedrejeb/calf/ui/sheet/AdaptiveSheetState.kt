@@ -9,6 +9,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import kotlinx.coroutines.CancellationException
 
 private class SheetValueHolder @OptIn(ExperimentalMaterial3Api::class) constructor(
@@ -21,6 +23,8 @@ fun rememberAdaptiveSheetState(
     skipPartiallyExpanded: Boolean = false,
     confirmValueChange: (SheetValue) -> Boolean = { true },
 ): AdaptiveSheetState {
+    val density = LocalDensity.current
+
     val sheetValueHolder = remember {
         SheetValueHolder(SheetValue.Hidden)
     }
@@ -28,21 +32,26 @@ fun rememberAdaptiveSheetState(
     val state = rememberSaveable(
         skipPartiallyExpanded,
         confirmValueChange,
+        density,
+        sheetValueHolder,
         saver = AdaptiveSheetState.Saver(
             skipPartiallyExpanded = skipPartiallyExpanded,
-            confirmValueChange = confirmValueChange
+            confirmValueChange = confirmValueChange,
+            density = density,
         )
     ) {
         if (skipPartiallyExpanded && sheetValueHolder.value == SheetValue.PartiallyExpanded)
             sheetValueHolder.value = SheetValue.Expanded
 
-        AdaptiveSheetState(skipPartiallyExpanded, sheetValueHolder.value, confirmValueChange)
+        AdaptiveSheetState(skipPartiallyExpanded, density, sheetValueHolder.value, confirmValueChange)
     }
 
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(state) {
         snapshotFlow { state.currentValue }
-            .collect { sheetValueHolder.value = it }
+            .collect {
+                sheetValueHolder.value = it
+            }
     }
 
     return state
@@ -52,6 +61,7 @@ fun rememberAdaptiveSheetState(
 @Stable
 expect class AdaptiveSheetState(
     skipPartiallyExpanded: Boolean,
+    density: Density,
     initialValue: SheetValue = SheetValue.Hidden,
     confirmValueChange: (SheetValue) -> Boolean = { true },
     skipHiddenState: Boolean = false,
@@ -79,7 +89,8 @@ expect class AdaptiveSheetState(
          */
         fun Saver(
             skipPartiallyExpanded: Boolean,
-            confirmValueChange: (SheetValue) -> Boolean
+            confirmValueChange: (SheetValue) -> Boolean,
+            density: Density
         ): Saver<AdaptiveSheetState, SheetValue>
     }
 }

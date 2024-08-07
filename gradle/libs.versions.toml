@@ -3,13 +3,14 @@ agp = "8.2.2"
 kotlin = "2.0.10"
 compose = "1.6.11"
 kotlinx-serialization-json = "1.6.3"
+kotlinx-datetime = "0.6.0"
 nexus-publish = "2.0.0"
 documentfile = "1.0.1"
 jna = "5.14.0"
-coil = "3.0.0-alpha06"
+coil = "3.0.0-alpha07"
 
 conventionPlugin = "0.1.0"
-calf = "0.4.1"
+calf = "0.5.2"
 
 # For sample
 compose-compiler = "1.5.4"
@@ -37,6 +38,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-javafx = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-javafx", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 nexus-publish = { module = "io.github.gradle-nexus.publish-plugin:io.github.gradle-nexus.publish-plugin.gradle.plugin", version.ref = "nexus-publish" }
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 
@@ -51,6 +53,7 @@ navigation-compose = { module = "androidx.navigation:navigation-compose", versio
 calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
 calf-file-picker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
 calf-permissions = { module = "com.mohamedrejeb.calf:calf-permissions", version.ref = "calf" }
+calf-webview = { module = "com.mohamedrejeb.calf:calf-webview", version.ref = "calf" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

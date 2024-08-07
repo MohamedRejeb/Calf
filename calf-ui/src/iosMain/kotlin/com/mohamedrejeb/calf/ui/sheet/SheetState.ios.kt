@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.Density
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.concurrent.Volatile
@@ -15,7 +16,8 @@ import kotlin.concurrent.Volatile
 @Stable
 actual class AdaptiveSheetState @OptIn(ExperimentalMaterial3Api::class)
 actual constructor(
-    skipPartiallyExpanded: Boolean,
+    internal val skipPartiallyExpanded: Boolean,
+    density: Density,
     initialValue: SheetValue,
     confirmValueChange: (SheetValue) -> Boolean,
     skipHiddenState: Boolean,
@@ -67,11 +69,12 @@ actual constructor(
          */
         actual fun Saver(
             skipPartiallyExpanded: Boolean,
-            confirmValueChange: (SheetValue) -> Boolean
+            confirmValueChange: (SheetValue) -> Boolean,
+            density: Density
         ) = Saver<AdaptiveSheetState, SheetValue>(
             save = { it.currentValue },
             restore = { savedValue ->
-                AdaptiveSheetState(skipPartiallyExpanded, savedValue, confirmValueChange, false)
+                AdaptiveSheetState(skipPartiallyExpanded, density, savedValue, confirmValueChange, false)
             }
         )
     }

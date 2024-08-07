@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeCompiler)
@@ -31,13 +29,13 @@ kotlin {
         api(compose.material3)
         implementation(compose.materialIconsExtended)
 
+        implementation(libs.kotlinx.datetime)
+
         // Calf
-        // This is possible thanks to `enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")`
-        // in `settings.gradle.kts
         api(projects.calfUi)
-        implementation(projects.calfWebview)
         implementation(projects.calfFilePicker)
         implementation(projects.calfPermissions)
+        implementation(projects.calfWebview)
         implementation(projects.calfNavigation)
     }
 }
