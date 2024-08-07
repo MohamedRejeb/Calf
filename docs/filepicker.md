@@ -7,7 +7,7 @@
 Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
-implementation("com.mohamedrejeb.calf:calf-file-picker:0.5.2")
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.5.3")
 ```
 
 ## Usage

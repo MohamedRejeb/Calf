@@ -10,7 +10,7 @@ jna = "5.14.0"
 coil = "3.0.0-alpha07"
 
 conventionPlugin = "0.1.0"
-calf = "0.5.2"
+calf = "0.5.3"
 
 # For sample
 compose-compiler = "1.5.4"
