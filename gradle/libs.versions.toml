@@ -1,6 +1,6 @@
 [versions]
 agp = "8.2.2"
-kotlin = "2.0.0"
+kotlin = "2.0.10"
 compose = "1.6.11"
 kotlinx-serialization-json = "1.6.3"
 nexus-publish = "2.0.0"
