@@ -15,14 +15,10 @@ fun KotlinMultiplatformExtension.applyTargets() {
     jvmToolchain(11)
     jvm("desktop")
 
-    js {
-        browser()
-    }
+    js().browser()
 
     @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-    }
+    wasmJs().browser()
 
     iosX64()
     iosArm64()

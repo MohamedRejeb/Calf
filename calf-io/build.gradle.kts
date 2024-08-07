@@ -1,10 +1,7 @@
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    id("kotlin.multiplatform")
+    id("module.publication")
 }
-
-kotlinMultiplatformSetup()
-modulePublicationSetup()
 
 kotlin {
     sourceSets.commonMain.dependencies {

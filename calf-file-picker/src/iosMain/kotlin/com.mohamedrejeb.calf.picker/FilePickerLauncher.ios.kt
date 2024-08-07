@@ -6,6 +6,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.interop.LocalUIViewController
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -37,6 +38,7 @@ import platform.UniformTypeIdentifiers.UTTypeVideo
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
 
+@OptIn(BetaInteropApi::class)
 @Composable
 actual fun rememberFilePickerLauncher(
     type: FilePickerFileType,
@@ -49,7 +51,7 @@ actual fun rememberFilePickerLauncher(
         rememberDocumentPickerLauncher(type, selectionMode, onResult)
     }
 
-@OptIn(InternalCalfApi::class)
+@OptIn(InternalCalfApi::class, BetaInteropApi::class)
 @Composable
 private fun rememberDocumentPickerLauncher(
     type: FilePickerFileType,
@@ -137,6 +139,7 @@ private fun rememberDocumentPickerLauncher(
     }
 }
 
+@OptIn(BetaInteropApi::class)
 @Composable
 private fun rememberImageVideoPickerLauncher(
     type: FilePickerFileType,
