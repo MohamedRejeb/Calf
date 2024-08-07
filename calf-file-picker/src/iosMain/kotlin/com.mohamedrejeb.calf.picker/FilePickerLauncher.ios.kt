@@ -3,6 +3,7 @@ package com.mohamedrejeb.calf.picker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.interop.LocalUIViewController
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
+import platform.UIKit.UIViewController
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeApplication
 import platform.UniformTypeIdentifiers.UTTypeAudio
@@ -55,6 +57,7 @@ private fun rememberDocumentPickerLauncher(
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val scope = rememberCoroutineScope()
+    val currentUIViewController = LocalUIViewController.current
 
     val delegate =
         remember {
@@ -112,7 +115,7 @@ private fun rememberDocumentPickerLauncher(
             }
         }
 
-    return remember {
+    return remember(currentUIViewController) {
         FilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
@@ -124,7 +127,7 @@ private fun rememberDocumentPickerLauncher(
                         selectionMode = selectionMode,
                     )
 
-                UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
+                currentUIViewController.presentViewController(
                     pickerController,
                     true,
                     null,
@@ -141,6 +144,7 @@ private fun rememberImageVideoPickerLauncher(
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val scope = rememberCoroutineScope()
+    val currentUIViewController = LocalUIViewController.current
 
     val pickerDelegate = remember {
         object : NSObject(), PHPickerViewControllerDelegateProtocol {
@@ -170,7 +174,7 @@ private fun rememberImageVideoPickerLauncher(
         }
     }
 
-    return remember {
+    return remember(currentUIViewController) {
         FilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
@@ -182,7 +186,7 @@ private fun rememberImageVideoPickerLauncher(
                         selectionMode = selectionMode,
                     )
 
-                UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
+                currentUIViewController.presentViewController(
                     imagePicker,
                     true,
                     null,
@@ -254,6 +258,7 @@ private fun createUIDocumentPickerViewController(
     return pickerController
 }
 
+
 private fun createPHPickerViewController(
     delegate: PHPickerViewControllerDelegateProtocol,
     type: FilePickerFileType,
@@ -285,6 +290,7 @@ private fun createPHPickerViewController(
     picker.delegate = delegate
     return picker
 }
+
 
 actual class FilePickerLauncher actual constructor(
     type: FilePickerFileType,
