@@ -9,16 +9,19 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.interop.LocalUIViewController
 import androidx.compose.ui.unit.Dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,7 +39,7 @@ actual fun AdaptiveBottomSheet(
     windowInsets: WindowInsets,
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
-    val compositionLocalContext = currentCompositionLocalContext
+    val compositionLocalContext = rememberUpdatedState(currentCompositionLocalContext)
     val currentUIViewController = LocalUIViewController.current
 
     val isDark = isSystemInDarkTheme()
@@ -51,7 +54,7 @@ actual fun AdaptiveBottomSheet(
             content = {
                 val sheetCompositionLocalContext = currentCompositionLocalContext
 
-                CompositionLocalProvider(compositionLocalContext) {
+                CompositionLocalProvider(compositionLocalContext.value) {
                     CompositionLocalProvider(sheetCompositionLocalContext) {
                         if (!adaptiveSheetState.skipPartiallyExpanded) {
                             var update by remember { mutableIntStateOf(0) }
