@@ -53,7 +53,7 @@ class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constru
     init {
         val date =
             if (initialSelectedDateMillis != null) {
-                val calendarModel = KotlinxDatetimeCalendarModel(getCalendarLocalDefault())
+                val calendarModel = KotlinxDatetimeCalendarModel()
                 val canonicalDate = calendarModel.getCanonicalDate(initialSelectedDateMillis)
                 NSDate.dateWithTimeIntervalSince1970(canonicalDate.utcTimeMillis / 1000.0)
             } else {
