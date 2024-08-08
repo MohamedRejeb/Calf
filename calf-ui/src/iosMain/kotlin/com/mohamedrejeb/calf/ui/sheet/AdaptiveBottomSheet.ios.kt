@@ -56,6 +56,7 @@ actual fun AdaptiveBottomSheet(
 
                 CompositionLocalProvider(compositionLocalContext.value) {
                     CompositionLocalProvider(sheetCompositionLocalContext) {
+                        // TODO: To remove on 1.7.0
                         if (!adaptiveSheetState.skipPartiallyExpanded) {
                             var update by remember { mutableIntStateOf(0) }
 
