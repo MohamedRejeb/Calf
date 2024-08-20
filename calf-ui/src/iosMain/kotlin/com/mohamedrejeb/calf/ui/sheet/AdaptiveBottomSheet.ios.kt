@@ -4,12 +4,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.getValue
@@ -42,12 +43,21 @@ actual fun AdaptiveBottomSheet(
     val compositionLocalContext = rememberUpdatedState(currentCompositionLocalContext)
     val currentUIViewController = LocalUIViewController.current
 
+    val skipPartiallyExpandedState = rememberUpdatedState(adaptiveSheetState.skipPartiallyExpanded)
+    val modifierState = rememberUpdatedState(modifier)
+    val shapeState = rememberUpdatedState(shape)
+    val containerColorState = rememberUpdatedState(containerColor)
+    val contentColorState = rememberUpdatedState(contentColor)
+    val tonalElevationState = rememberUpdatedState(tonalElevation)
+    val contentState = rememberUpdatedState(content)
+
     val isDark = isSystemInDarkTheme()
 
     val sheetManager = remember(currentUIViewController) {
         BottomSheetManager(
             parentUIViewController = currentUIViewController,
-            dark = isDark,
+            isDark = isDark,
+            containerColor = containerColor,
             onDismiss = {
                 onDismissRequest()
             },
@@ -57,7 +67,7 @@ actual fun AdaptiveBottomSheet(
                 CompositionLocalProvider(compositionLocalContext.value) {
                     CompositionLocalProvider(sheetCompositionLocalContext) {
                         // TODO: To remove on 1.7.0
-                        if (!adaptiveSheetState.skipPartiallyExpanded) {
+                        if (!skipPartiallyExpandedState.value) {
                             var update by remember { mutableIntStateOf(0) }
 
                             LaunchedEffect(Unit) {
@@ -72,10 +82,18 @@ actual fun AdaptiveBottomSheet(
                             update
                         }
 
-                        Column(
-                            modifier = modifier,
-                            content = content,
-                        )
+                        Surface(
+                            shape = shapeState.value,
+                            color = containerColorState.value,
+                            contentColor = contentColorState.value,
+                            tonalElevation = tonalElevationState.value,
+                            modifier = modifierState.value.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                content = contentState.value,
+                            )
+                        }
                     }
                 }
             }
@@ -88,6 +106,10 @@ actual fun AdaptiveBottomSheet(
 
     LaunchedEffect(isDark) {
         sheetManager.applyTheme(isDark)
+    }
+
+    LaunchedEffect(containerColor) {
+        sheetManager.applyContainerColor(containerColor)
     }
 
     LaunchedEffect(adaptiveSheetState.sheetValue) {
