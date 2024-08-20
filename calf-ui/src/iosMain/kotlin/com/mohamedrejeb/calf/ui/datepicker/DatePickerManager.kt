@@ -47,8 +47,8 @@ class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constru
         )
     }
 
-    val datePickerWidth = mutableStateOf(0f)
-    val datePickerHeight = mutableStateOf(0f)
+    internal val datePickerWidth = mutableStateOf(0f)
+    internal val datePickerHeight = mutableStateOf(0f)
 
     init {
         val date =
@@ -85,13 +85,13 @@ class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constru
         applyColors(colors)
     }
 
-    fun applyColors(colors: DatePickerColors) {
+    internal fun applyColors(colors: DatePickerColors) {
         applyTheme(isDark = !isDark(colors.dayContentColor))
         datePicker.tintColor = colors.selectedDayContainerColor.toUIColor()
         datePicker.backgroundColor = colors.containerColor.toUIColor()
     }
 
-    fun applyTheme(isDark: Boolean) {
+    internal fun applyTheme(isDark: Boolean) {
         datePicker.applyTheme(isDark)
     }
 
