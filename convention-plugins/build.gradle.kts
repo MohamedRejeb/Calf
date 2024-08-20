@@ -28,10 +28,3 @@ dependencies {
     // hack to access version catalogue https://github.com/gradle/gradle/issues/15383
     compileOnly(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
 }
-
-gradlePlugin {
-    plugins.create(project.name) {
-        id = "com.mohamedrejeb.gradle.setup"
-        implementationClass = "com.mohamedrejeb.gradle.GradleSetupPlugin"
-    }
-}

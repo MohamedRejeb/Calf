@@ -5,7 +5,11 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationOpenSettingsURLString
@@ -26,11 +30,14 @@ internal actual fun rememberMutablePermissionState(
     permission: Permission,
     onPermissionResult: (Boolean) -> Unit,
 ): MutablePermissionState {
+    val scope = rememberCoroutineScope()
+
     val permissionState =
         remember(permission) {
-            MutablePermissionState(
+            MutablePermissionStateImpl(
                 permission = permission,
                 onPermissionResult = onPermissionResult,
+                scope = scope,
             )
         }
 
@@ -46,23 +53,21 @@ internal actual fun rememberMutablePermissionState(
  */
 @ExperimentalPermissionsApi
 @Stable
-internal actual class MutablePermissionState(
-    actual override val permission: Permission,
+internal class MutablePermissionStateImpl(
+    override val permission: Permission,
     private val onPermissionResult: (Boolean) -> Unit,
-) : PermissionState {
-    actual constructor(
-        permission: Permission,
-    ) : this(permission, {})
+    private val scope: CoroutineScope,
+) : MutablePermissionState {
 
     private val permissionDelegate = permission.getPermissionDelegate()
 
-    actual override var status: PermissionStatus by mutableStateOf(PermissionStatus.Denied(false))
+    override var status: PermissionStatus by mutableStateOf(PermissionStatus.Denied(false))
 
     init {
         refreshPermissionStatus()
     }
 
-    actual override fun launchPermissionRequest() {
+    override fun launchPermissionRequest() {
         permissionDelegate.launchPermissionRequest(
             onPermissionResult = {
                 onPermissionResult(it)
@@ -71,14 +76,16 @@ internal actual class MutablePermissionState(
         )
     }
 
-    actual override fun openAppSettings() {
+    override fun openAppSettings() {
         val settingsUrl = NSURL.URLWithString(UIApplicationOpenSettingsURLString) ?: return
         UIApplication.sharedApplication.openURL(settingsUrl)
     }
 
-    internal actual fun refreshPermissionStatus() {
+    override fun refreshPermissionStatus() {
         permissionDelegate.getPermissionStatus { status ->
-            this.status = status
+            scope.launch(Dispatchers.Main) {
+                this@MutablePermissionStateImpl.status = status
+            }
         }
     }
 }

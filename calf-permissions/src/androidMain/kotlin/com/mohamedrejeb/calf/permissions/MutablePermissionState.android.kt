@@ -37,7 +37,7 @@ internal actual fun rememberMutablePermissionState(
 ): MutablePermissionState {
     val context = LocalContext.current
     val permissionState = remember(permission) {
-        MutablePermissionState(permission, context, context.findActivity(), onPermissionResult)
+        MutablePermissionStateImpl(permission, context, context.findActivity(), onPermissionResult)
     }
 
     // Refresh the permission status when the lifecycle is resumed
@@ -69,27 +69,18 @@ internal actual fun rememberMutablePermissionState(
  */
 @ExperimentalPermissionsApi
 @Stable
-internal actual class MutablePermissionState(
-    actual override val permission: Permission,
-    private val context: Context?,
-    private val activity: Activity?,
+internal class MutablePermissionStateImpl(
+    override val permission: Permission,
+    private val context: Context,
+    private val activity: Activity,
     private val onPermissionResult: (Boolean) -> Unit,
-) : PermissionState {
-
-    actual constructor(
-        permission: Permission,
-    ) : this(
-        permission,
-        null,
-        null,
-        {}
-    )
+) : MutablePermissionState {
 
     private val androidPermission = permission.toAndroidPermission()
 
-    actual override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
+    override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
 
-    actual override fun launchPermissionRequest() {
+    override fun launchPermissionRequest() {
         if (androidPermission.isEmpty()) return
         else if (permission.isAlwaysGranted()) {
             refreshPermissionStatus()
@@ -104,9 +95,7 @@ internal actual class MutablePermissionState(
 
     internal var launcher: ActivityResultLauncher<String>? = null
 
-    actual override fun openAppSettings() {
-        if (context == null) return
-
+    override fun openAppSettings() {
         val intent = when (permission) {
             Permission.Notification -> if (supportsNotificationSettings()) {
                 createAppNotificationsIntent(context)
@@ -119,12 +108,12 @@ internal actual class MutablePermissionState(
         context.startActivity(intent)
     }
 
-    internal actual fun refreshPermissionStatus() {
+    override fun refreshPermissionStatus() {
         status = getPermissionStatus()
     }
 
     private fun getPermissionStatus(): PermissionStatus {
-        if (context == null || activity == null || androidPermission.isEmpty()) {
+        if (androidPermission.isEmpty()) {
             return PermissionStatus.Denied(false)
         } else if (permission.isAlwaysGranted()) {
             return PermissionStatus.Granted
