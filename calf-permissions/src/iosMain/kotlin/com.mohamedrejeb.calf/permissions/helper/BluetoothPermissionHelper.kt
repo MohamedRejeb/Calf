@@ -9,48 +9,24 @@ import platform.CoreBluetooth.CBManager
 import platform.CoreBluetooth.CBManagerAuthorization
 import platform.CoreBluetooth.CBManagerAuthorizationAllowedAlways
 import platform.CoreBluetooth.CBManagerAuthorizationNotDetermined
-import platform.CoreBluetooth.CBManagerAuthorizationRestricted
-import platform.CoreBluetooth.CBManagerState
 import platform.CoreBluetooth.CBManagerStatePoweredOn
 import platform.CoreBluetooth.CBManagerStateUnknown
 import platform.Foundation.NSSelectorFromString
 import platform.darwin.NSObject
 
-internal class BluetoothPermissionHelper: PermissionHelper {
-    @OptIn(ExperimentalForeignApi::class)
+internal class BluetoothPermissionHelper : PermissionHelper {
+    @OptIn(ExperimentalForeignApi::class, ExperimentalPermissionsApi::class)
     override fun launchPermissionRequest(onPermissionResult: (Boolean) -> Unit) {
-        val isNotDetermined =
-            if (CBManager.resolveClassMethod(NSSelectorFromString("authorization"))) {
-                CBManager.authorization == CBManagerAuthorizationNotDetermined
-            } else {
-                CBCentralManager().state == CBManagerStateUnknown
+        handlePermissionRequest(
+            onPermissionResult = onPermissionResult,
+            launchPermissionRequest = {
+                CBCentralManager(object : NSObject(), CBCentralManagerDelegateProtocol {
+                    override fun centralManagerDidUpdateState(central: CBCentralManager) {
+                        onPermissionResult(central.state == CBManagerStatePoweredOn)
+                    }
+                }, null)
             }
-
-        if (isNotDetermined) {
-            CBCentralManager(object : NSObject(), CBCentralManagerDelegateProtocol {
-                override fun centralManagerDidUpdateState(central: CBCentralManager) {
-                    handleBluetoothState(
-                        state = central.state,
-                        onPermissionResult = onPermissionResult
-                    )
-                }
-            }, null)
-        } else {
-            handleBluetoothState(
-                state = CBCentralManager().state,
-                onPermissionResult = onPermissionResult
-            )
-        }
-    }
-
-    private fun handleBluetoothState(
-        state: CBManagerState,
-        onPermissionResult: (Boolean) -> Unit
-    ) {
-        when (state) {
-            CBManagerStatePoweredOn -> onPermissionResult(true)
-            else -> onPermissionResult(false)
-        }
+        )
     }
 
     @OptIn(ExperimentalForeignApi::class)
@@ -59,15 +35,26 @@ internal class BluetoothPermissionHelper: PermissionHelper {
         if (CBManager.resolveClassMethod(NSSelectorFromString("authorization"))) {
             val state: CBManagerAuthorization = CBManager.authorization
             when (state) {
-                CBManagerAuthorizationAllowedAlways,
-                CBManagerAuthorizationRestricted -> onPermissionResult(PermissionStatus.Granted)
-                else -> onPermissionResult(PermissionStatus.Denied(false))
+                CBManagerAuthorizationAllowedAlways ->
+                    onPermissionResult(PermissionStatus.Granted)
+
+                CBManagerAuthorizationNotDetermined ->
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
+
+                else ->
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
             }
         } else {
-            val state: CBManagerState = CBCentralManager().state
+            val state = CBCentralManager().state
             when (state) {
-                CBManagerStatePoweredOn -> onPermissionResult(PermissionStatus.Granted)
-                else -> onPermissionResult(PermissionStatus.Denied(false))
+                CBManagerStatePoweredOn ->
+                    onPermissionResult(PermissionStatus.Granted)
+
+                CBManagerStateUnknown ->
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
+
+                else ->
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
             }
         }
     }

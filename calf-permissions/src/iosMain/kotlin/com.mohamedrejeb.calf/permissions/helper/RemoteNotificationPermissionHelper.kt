@@ -2,9 +2,6 @@ package com.mohamedrejeb.calf.permissions.helper
 
 import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
 import com.mohamedrejeb.calf.permissions.PermissionStatus
-import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
-import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
-import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionBadge
 import platform.UserNotifications.UNAuthorizationOptionSound
@@ -14,33 +11,26 @@ import platform.UserNotifications.UNAuthorizationStatusNotDetermined
 import platform.UserNotifications.UNAuthorizationStatusProvisional
 import platform.UserNotifications.UNUserNotificationCenter
 
-internal class RemoteNotificationPermissionHelper: PermissionHelper {
+internal class RemoteNotificationPermissionHelper : PermissionHelper {
 
+    @OptIn(ExperimentalPermissionsApi::class)
     override fun launchPermissionRequest(onPermissionResult: (Boolean) -> Unit) {
-        val notificationCenter = getCurrentNotificationCenter()
-
-        notificationCenter.getNotificationSettingsWithCompletionHandler { settings ->
-            when (settings?.authorizationStatus) {
-                UNAuthorizationStatusAuthorized,
-                UNAuthorizationStatusProvisional,
-                UNAuthorizationStatusEphemeral -> onPermissionResult(true)
-                UNAuthorizationStatusNotDetermined -> {
-                    getCurrentNotificationCenter()
-                        .requestAuthorizationWithOptions(
-                            UNAuthorizationOptionSound
-                                .or(UNAuthorizationOptionAlert)
-                                .or(UNAuthorizationOptionBadge)
-                        ) { isOk, error ->
-                            if (isOk && error == null) {
-                                onPermissionResult(true)
-                            } else {
-                                onPermissionResult(false)
-                            }
-                        }
-                }
-                else -> onPermissionResult(false)
+        handlePermissionRequest(
+            onPermissionResult = onPermissionResult,
+            launchPermissionRequest = {
+                getCurrentNotificationCenter()
+                    .requestAuthorizationWithOptions(
+                        UNAuthorizationOptionSound
+                            .or(UNAuthorizationOptionAlert)
+                            .or(UNAuthorizationOptionBadge)
+                    ) { isOk, error ->
+                        if (isOk && error == null)
+                            onPermissionResult(true)
+                        else
+                            onPermissionResult(false)
+                    }
             }
-        }
+        )
     }
 
     @ExperimentalPermissionsApi
@@ -50,8 +40,15 @@ internal class RemoteNotificationPermissionHelper: PermissionHelper {
             when (settings?.authorizationStatus) {
                 UNAuthorizationStatusAuthorized,
                 UNAuthorizationStatusProvisional,
-                UNAuthorizationStatusEphemeral -> onPermissionResult(PermissionStatus.Granted)
-                else -> onPermissionResult(PermissionStatus.Denied(false))
+                UNAuthorizationStatusEphemeral,
+                    ->
+                    onPermissionResult(PermissionStatus.Granted)
+
+                UNAuthorizationStatusNotDetermined ->
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
+
+                else ->
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
             }
         }
     }

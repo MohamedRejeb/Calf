@@ -61,7 +61,7 @@ internal class MutablePermissionStateImpl(
 
     private val permissionDelegate = permission.getPermissionDelegate()
 
-    override var status: PermissionStatus by mutableStateOf(PermissionStatus.Denied(false))
+    override var status: PermissionStatus by mutableStateOf(PermissionStatus.Denied(shouldShowRationale = false))
 
     init {
         refreshPermissionStatus()

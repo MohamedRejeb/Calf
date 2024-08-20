@@ -11,3 +11,22 @@ internal interface PermissionHelper {
         onPermissionResult: (PermissionStatus) -> Unit
     )
 }
+
+@OptIn(ExperimentalPermissionsApi::class)
+internal fun PermissionHelper.handlePermissionRequest(
+    onPermissionResult: (Boolean) -> Unit,
+    launchPermissionRequest: () -> Unit,
+) {
+    getPermissionStatus { status ->
+        when (status) {
+            is PermissionStatus.Granted ->
+                onPermissionResult(true)
+
+            is PermissionStatus.Denied ->
+                if (status.shouldShowRationale)
+                    launchPermissionRequest()
+                else
+                    onPermissionResult(false)
+        }
+    }
+}
