@@ -15,7 +15,7 @@ annotation class ExperimentalPermissionsApi
 sealed interface PermissionStatus {
     data object Granted : PermissionStatus
     data class Denied(
-        val shouldShowRationale: Boolean
+        val shouldShowRationale: Boolean,
     ) : PermissionStatus
 }
 
@@ -27,11 +27,28 @@ val PermissionStatus.isGranted: Boolean
     get() = this == PermissionStatus.Granted
 
 /**
+ * `true` if the permission is not granted.
+ */
+@ExperimentalPermissionsApi
+val PermissionStatus.isNotGranted: Boolean
+    get() = !isGranted
+
+/**
+ * `true` if the permission is denied.
+ */
+@ExperimentalPermissionsApi
+val PermissionStatus.isDenied: Boolean
+    get() = this is PermissionStatus.Denied
+
+/**
  * `true` if a rationale should be presented to the user.
  */
 @ExperimentalPermissionsApi
 val PermissionStatus.shouldShowRationale: Boolean
     get() = when (this) {
-        PermissionStatus.Granted -> false
-        is PermissionStatus.Denied -> shouldShowRationale
+        is PermissionStatus.Granted ->
+            false
+
+        is PermissionStatus.Denied ->
+            shouldShowRationale
     }
