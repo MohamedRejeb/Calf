@@ -13,40 +13,47 @@ import platform.UserNotifications.UNUserNotificationCenter
 
 internal class LocalNotificationPermissionHelper : PermissionHelper {
 
+    @OptIn(ExperimentalPermissionsApi::class)
     override fun launchPermissionRequest(onPermissionResult: (Boolean) -> Unit) {
-        val notificationCenter = UNUserNotificationCenter.currentNotificationCenter()
-
-        notificationCenter.getNotificationSettingsWithCompletionHandler { settings ->
-            when (settings?.authorizationStatus) {
-                UNAuthorizationStatusAuthorized,
-                UNAuthorizationStatusProvisional,
-                UNAuthorizationStatusEphemeral -> onPermissionResult(true)
-                UNAuthorizationStatusNotDetermined -> {
-                    notificationCenter.requestAuthorizationWithOptions(
-                        UNAuthorizationOptionSound.or(UNAuthorizationOptionAlert).or(UNAuthorizationOptionBadge)
+        handlePermissionRequest(
+            onPermissionResult = onPermissionResult,
+            launchPermissionRequest = {
+                getCurrentNotificationCenter()
+                    .requestAuthorizationWithOptions(
+                        UNAuthorizationOptionSound
+                            .or(UNAuthorizationOptionAlert)
+                            .or(UNAuthorizationOptionBadge)
                     ) { isOk, error ->
-                        if (isOk && error == null) {
+                        if (isOk && error == null)
                             onPermissionResult(true)
-                        } else {
+                        else
                             onPermissionResult(false)
-                        }
                     }
-                }
-                else -> onPermissionResult(false)
             }
-        }
+        )
     }
 
     @ExperimentalPermissionsApi
     override fun getPermissionStatus(onPermissionResult: (PermissionStatus) -> Unit) {
-        val notificationCenter = UNUserNotificationCenter.currentNotificationCenter()
+        val notificationCenter = getCurrentNotificationCenter()
         notificationCenter.getNotificationSettingsWithCompletionHandler { settings ->
             when (settings?.authorizationStatus) {
                 UNAuthorizationStatusAuthorized,
                 UNAuthorizationStatusProvisional,
-                UNAuthorizationStatusEphemeral -> onPermissionResult(PermissionStatus.Granted)
-                else -> onPermissionResult(PermissionStatus.Denied(false))
+                UNAuthorizationStatusEphemeral,
+                    ->
+                    onPermissionResult(PermissionStatus.Granted)
+
+                UNAuthorizationStatusNotDetermined ->
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
+
+                else ->
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
             }
         }
+    }
+
+    private fun getCurrentNotificationCenter(): UNUserNotificationCenter {
+        return UNUserNotificationCenter.currentNotificationCenter()
     }
 }

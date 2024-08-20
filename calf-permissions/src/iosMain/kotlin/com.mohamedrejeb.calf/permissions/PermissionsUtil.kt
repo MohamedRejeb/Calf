@@ -13,16 +13,37 @@ import platform.AVFoundation.AVMediaTypeVideo
 
 internal fun Permission.getPermissionDelegate(): PermissionHelper {
     return when (this) {
-        Permission.Camera -> AVCapturePermissionHelper(AVMediaTypeVideo)
-        Permission.Gallery -> GalleryPermissionHelper()
-        Permission.ReadStorage, Permission.WriteStorage, Permission.Call -> GrantedPermissionHelper()
-        Permission.FineLocation, Permission.CoarseLocation -> LocationPermissionHelper()
-        Permission.Notification -> LocalNotificationPermissionHelper()
-        Permission.RemoteNotification -> RemoteNotificationPermissionHelper()
-        Permission.RecordAudio -> AVCapturePermissionHelper(AVMediaTypeAudio)
-        Permission.BluetoothLe, Permission.BluetoothScan,
-        Permission.BluetoothConnect, Permission.BluetoothAdvertise,
-        -> BluetoothPermissionHelper()
+        Permission.Camera ->
+            AVCapturePermissionHelper(AVMediaTypeVideo)
 
+        Permission.Gallery ->
+            GalleryPermissionHelper()
+
+        Permission.ReadStorage,
+        Permission.WriteStorage,
+        Permission.Call,
+            ->
+            GrantedPermissionHelper()
+
+        Permission.FineLocation,
+        Permission.CoarseLocation,
+            ->
+            LocationPermissionHelper()
+
+        Permission.Notification ->
+            LocalNotificationPermissionHelper()
+
+        Permission.RemoteNotification ->
+            RemoteNotificationPermissionHelper()
+
+        Permission.RecordAudio ->
+            AVCapturePermissionHelper(AVMediaTypeAudio)
+
+        Permission.BluetoothLe,
+        Permission.BluetoothScan,
+        Permission.BluetoothConnect,
+        Permission.BluetoothAdvertise,
+            ->
+            BluetoothPermissionHelper()
     }
 }
