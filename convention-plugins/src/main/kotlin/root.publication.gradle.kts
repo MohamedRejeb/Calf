@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = "com.mohamedrejeb.calf"
-    version = System.getenv("VERSION") ?: "0.5.3"
+    version = System.getenv("VERSION") ?: "0.5.4"
 }
 
 nexusPublishing {
