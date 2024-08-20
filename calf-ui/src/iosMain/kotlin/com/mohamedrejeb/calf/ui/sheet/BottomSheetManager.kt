@@ -1,10 +1,11 @@
 package com.mohamedrejeb.calf.ui.sheet
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.ComposeUIViewController
 import com.mohamedrejeb.calf.ui.utils.applyTheme
+import com.mohamedrejeb.calf.ui.utils.toUIColor
 import platform.UIKit.UIAdaptivePresentationControllerDelegateProtocol
-import platform.UIKit.UIApplication
 import platform.UIKit.UIModalPresentationPageSheet
 import platform.UIKit.UIModalTransitionStyleCoverVertical
 import platform.UIKit.UIPresentationController
@@ -22,10 +23,13 @@ import platform.darwin.NSObject
  */
 internal class BottomSheetManager(
     private val parentUIViewController: UIViewController,
-    dark: Boolean,
-    private val onDismiss: () -> Unit,
+    private var isDark: Boolean,
+    private var containerColor: Color,
+    private var onDismiss: () -> Unit,
     private val content: @Composable () -> Unit
 ) {
+    private var isInitialized = false
+
     /**
      * Indicates whether the bottom sheet is currently presented.
      */
@@ -35,8 +39,6 @@ internal class BottomSheetManager(
      * Indicates whether the bottom sheet is currently animating.
      */
     private var isAnimating = false
-
-    private var isDark = dark
 
     /**
      * The presentation controller delegate that is used to detect when the bottom sheet is dismissed.
@@ -58,15 +60,22 @@ internal class BottomSheetManager(
             modalPresentationStyle = UIModalPresentationPageSheet
             modalTransitionStyle = UIModalTransitionStyleCoverVertical
             presentationController?.delegate = presentationControllerDelegate
-            applyTheme(isDark)
+            isInitialized = true
         }
     }
 
     fun applyTheme(dark: Boolean) {
         isDark = dark
 
-        if (isPresented)
+        if (isInitialized)
             bottomSheetUIViewController.applyTheme(dark)
+    }
+
+    fun applyContainerColor(color: Color) {
+        containerColor = color
+
+        if (isInitialized)
+            bottomSheetUIViewController.view.backgroundColor = color.toUIColor()
     }
 
     /**
@@ -75,8 +84,6 @@ internal class BottomSheetManager(
     fun show(
         skipPartiallyExpanded: Boolean,
     ) {
-        applyTheme(isDark)
-
         if (isPresented || isAnimating) return
         isAnimating = true
 
@@ -92,6 +99,9 @@ internal class BottomSheetManager(
                 )
         )
         bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = true
+
+        applyTheme(isDark)
+        applyContainerColor(containerColor)
 
         parentUIViewController.presentViewController(
             viewControllerToPresent = bottomSheetUIViewController,
