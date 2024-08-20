@@ -67,9 +67,9 @@ private fun rememberMutablePermissionsState(
     // Create list of MutablePermissionState for each permission
     val context = LocalContext.current
     val activity = context.findActivity()
-    val mutablePermissions: List<MutablePermissionState> = remember(permissions) {
+    val mutablePermissions = remember(permissions) {
         return@remember permissions.map {  permission ->
-            MutablePermissionState(
+            MutablePermissionStateImpl(
                 permission,
                 context,
                 activity,

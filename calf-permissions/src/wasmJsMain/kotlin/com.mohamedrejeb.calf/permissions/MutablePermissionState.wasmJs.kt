@@ -24,7 +24,7 @@ internal actual fun rememberMutablePermissionState(
     onPermissionResult: (Boolean) -> Unit,
 ): MutablePermissionState {
     return remember(permission) {
-        MutablePermissionState(permission)
+        MutablePermissionStateImpl(permission)
     }
 }
 
@@ -37,16 +37,16 @@ internal actual fun rememberMutablePermissionState(
  */
 @ExperimentalPermissionsApi
 @Stable
-internal actual class MutablePermissionState actual constructor(
-    actual override val permission: Permission,
-) : PermissionState {
-    actual override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
+internal class MutablePermissionStateImpl(
+    override val permission: Permission,
+) : MutablePermissionState {
+    override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
 
-    actual override fun launchPermissionRequest() {}
+    override fun launchPermissionRequest() {}
 
-    actual override fun openAppSettings() {}
+    override fun openAppSettings() {}
 
-    internal actual fun refreshPermissionStatus() {}
+    override fun refreshPermissionStatus() {}
 
     private fun getPermissionStatus(): PermissionStatus {
         return PermissionStatus.Denied(false)
