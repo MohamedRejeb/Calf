@@ -281,14 +281,10 @@ private fun createPHPickerViewController(
             filterList.add(PHPickerFilter.videosFilter())
         }
     }
-    val newFilter =
-        PHPickerFilter.anyFilterMatchingSubfilters(filterList.toList())
+    val newFilter = PHPickerFilter.anyFilterMatchingSubfilters(filterList.toList())
     configuration.filter = newFilter
-    configuration.preferredAssetRepresentationMode =
-        PHPickerConfigurationAssetRepresentationModeCurrent
-    configuration.selection = PHPickerConfigurationSelectionOrdered
+    configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCurrent
     configuration.selectionLimit = if (selectionMode == FilePickerSelectionMode.Multiple) 0 else 1
-    configuration.preselectedAssetIdentifiers = listOf<Nothing>()
     val picker = PHPickerViewController(configuration)
     picker.delegate = delegate
     return picker
