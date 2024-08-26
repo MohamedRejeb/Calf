@@ -1,7 +1,8 @@
 package com.mohamedrejeb.calf.ui.datepicker
 
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerFormatter
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -10,7 +11,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
-import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIDatePicker
@@ -46,23 +46,26 @@ actual fun AdaptiveDatePicker(
         datePickerManager.applyColors(colors)
     }
 
-    UIKitView(
-        factory = {
-            datePicker
-        },
-        background = colors.containerColor,
+    Box(
         modifier = modifier
-            .then(
-                if (datePickerManager.datePickerWidth.value > 0f)
-                    Modifier.width(datePickerManager.datePickerWidth.value.dp)
-                else
-                    Modifier
-            )
-            .then(
-                if (datePickerManager.datePickerHeight.value > 0f)
-                    Modifier.height(datePickerManager.datePickerHeight.value.dp)
-                else
-                    Modifier
-            )
-    )
+    ) {
+        UIKitView(
+            factory = {
+                datePicker
+            },
+            onResize = { _, size ->
+                datePicker.setFrame(size)
+            },
+            background = colors.containerColor,
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (datePickerManager.aspectRatio.isFinite() && datePickerManager.aspectRatio > 0f)
+                        Modifier
+                            .aspectRatio(datePickerManager.aspectRatio)
+                    else
+                        Modifier
+                )
+        )
+    }
 }
