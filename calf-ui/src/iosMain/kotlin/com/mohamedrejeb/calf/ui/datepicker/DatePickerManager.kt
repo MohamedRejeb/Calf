@@ -2,7 +2,9 @@ package com.mohamedrejeb.calf.ui.datepicker
 
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.setValue
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.applyTheme
 import com.mohamedrejeb.calf.ui.utils.datetime.KotlinxDatetimeCalendarModel
@@ -47,8 +49,8 @@ class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constru
         )
     }
 
-    internal val datePickerWidth = mutableStateOf(0f)
-    internal val datePickerHeight = mutableStateOf(0f)
+    internal var aspectRatio by mutableFloatStateOf(0f)
+        private set
 
     init {
         val date =
@@ -79,8 +81,7 @@ class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constru
             forControlEvents = UIControlEventValueChanged
         )
         datePicker.frame.useContents {
-            datePickerWidth.value = this.size.width.toFloat()
-            datePickerHeight.value = this.size.height.toFloat()
+            aspectRatio = this.size.width.toFloat() / this.size.height.toFloat()
         }
         applyColors(colors)
     }
