@@ -1,10 +1,9 @@
 package com.mohamedrejeb.calf.ui.datepicker
 
-import androidx.compose.material3.DatePickerColors
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.applyTheme
 import com.mohamedrejeb.calf.ui.utils.datetime.KotlinxDatetimeCalendarModel
@@ -16,18 +15,21 @@ import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toNSTimeZone
-import platform.Foundation.*
-import platform.UIKit.*
+import platform.Foundation.NSDate
+import platform.Foundation.dateWithTimeIntervalSince1970
+import platform.Foundation.timeIntervalSince1970
+import platform.UIKit.UIControlEventValueChanged
+import platform.UIKit.UIDatePicker
+import platform.UIKit.UIDatePickerMode
+import platform.UIKit.UIDatePickerStyle
 import platform.objc.sel_registerName
 
 @OptIn(
     ExperimentalForeignApi::class,
-    ExperimentalMaterial3Api::class
 )
 @InternalCalfApi
-class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constructor(
+class DatePickerManager internal constructor(
     initialSelectedDateMillis: Long?,
-    colors: DatePickerColors,
     private val datePicker: UIDatePicker,
     displayMode: UIKitDisplayMode,
     private val onSelectionChanged: (dateMillis: Long?) -> Unit,
@@ -83,13 +85,16 @@ class DatePickerManager @OptIn(ExperimentalMaterial3Api::class) internal constru
         datePicker.frame.useContents {
             aspectRatio = this.size.width.toFloat() / this.size.height.toFloat()
         }
-        applyColors(colors)
     }
 
-    internal fun applyColors(colors: DatePickerColors) {
-        applyTheme(isDark = !isDark(colors.dayContentColor))
-        datePicker.tintColor = colors.selectedDayContainerColor.toUIColor()
-        datePicker.backgroundColor = colors.containerColor.toUIColor()
+    internal fun applyColors(
+        containerColor: Color,
+        dayContentColor: Color,
+        selectedDayContainerColor: Color,
+    ) {
+        applyTheme(isDark = !isDark(dayContentColor))
+        datePicker.tintColor = selectedDayContainerColor.toUIColor()
+        datePicker.backgroundColor = containerColor.toUIColor()
     }
 
     internal fun applyTheme(isDark: Boolean) {

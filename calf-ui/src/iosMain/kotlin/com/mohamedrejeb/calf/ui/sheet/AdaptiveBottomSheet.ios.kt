@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalAbsoluteTonalElevation
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.interop.LocalUIViewController
 import androidx.compose.ui.unit.Dp
+import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,6 +54,14 @@ actual fun AdaptiveBottomSheet(
     val contentState = rememberUpdatedState(content)
 
     val isDark = isSystemInDarkTheme()
+
+    val absoluteElevation = LocalAbsoluteTonalElevation.current + tonalElevation
+
+    val containerColorAtElevation =
+        surfaceColorAtElevation(
+            color = containerColor,
+            elevation = absoluteElevation
+        )
 
     val sheetManager = remember(currentUIViewController) {
         BottomSheetManager(
@@ -108,8 +118,8 @@ actual fun AdaptiveBottomSheet(
         sheetManager.applyTheme(isDark)
     }
 
-    LaunchedEffect(containerColor) {
-        sheetManager.applyContainerColor(containerColor)
+    LaunchedEffect(containerColorAtElevation) {
+        sheetManager.applyContainerColor(containerColorAtElevation)
     }
 
     LaunchedEffect(adaptiveSheetState.sheetValue) {
