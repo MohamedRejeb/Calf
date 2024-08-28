@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.sample
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.platform.LocalContext
@@ -12,6 +13,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableEdgeToEdge()
+
         setContent {
             MaterialTheme {
                 LocalContext.current
