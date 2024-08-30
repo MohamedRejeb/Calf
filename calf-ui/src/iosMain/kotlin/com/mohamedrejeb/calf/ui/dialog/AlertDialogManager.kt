@@ -24,6 +24,7 @@ import platform.objc.sel_registerName
  */
 @InternalCalfApi
 class AlertDialogManager internal constructor(
+    private val parentUIViewController: UIViewController,
     internal var onConfirm: () -> Unit,
     internal var onDismiss: () -> Unit,
     internal var confirmText: String,
@@ -47,7 +48,7 @@ class AlertDialogManager internal constructor(
      * Lambda that dismisses the dialog.
      */
     private val onDismissLambda: (() -> Unit) = {
-        UIApplication.sharedApplication.keyWindow?.rootViewController?.dismissViewControllerAnimated(
+        parentUIViewController.dismissViewControllerAnimated(
             flag = true,
             completion = {
                 isPresented = false
@@ -106,7 +107,7 @@ class AlertDialogManager internal constructor(
         )
         alertController.addAction(cancelAction)
 
-        UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
+        parentUIViewController.presentViewController(
             viewControllerToPresent = alertController,
             animated = true,
             completion = {

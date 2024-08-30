@@ -71,6 +71,7 @@ actual fun AdaptiveBottomSheet(
             onDismiss = {
                 onDismissRequest()
             },
+            confirmValueChange = adaptiveSheetState.confirmValueChange,
             content = {
                 val sheetCompositionLocalContext = currentCompositionLocalContext
 

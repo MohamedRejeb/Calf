@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.interop.LocalUIViewController
 import androidx.compose.ui.window.DialogProperties
 import com.mohamedrejeb.calf.core.InternalCalfApi
 
@@ -18,8 +19,11 @@ actual fun AdaptiveAlertDialog(
     text: String,
     properties: DialogProperties
 ) {
-    val alertDialogManager = remember {
+    val currentUIViewController = LocalUIViewController.current
+
+    val alertDialogManager = remember(currentUIViewController) {
         AlertDialogManager(
+            parentUIViewController = currentUIViewController,
             onConfirm = onConfirm,
             onDismiss = onDismiss,
             confirmText = confirmText,
@@ -40,11 +44,9 @@ actual fun AdaptiveAlertDialog(
         alertDialogManager.properties = properties
     }
 
-    LaunchedEffect(Unit) {
-        alertDialogManager.showAlertDialog()
-    }
-
     DisposableEffect(Unit) {
+        alertDialogManager.showAlertDialog()
+
         onDispose {
             alertDialogManager.dismiss()
         }
