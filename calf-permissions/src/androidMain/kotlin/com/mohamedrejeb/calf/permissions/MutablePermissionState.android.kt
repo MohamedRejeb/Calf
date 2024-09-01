@@ -33,7 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 internal actual fun rememberMutablePermissionState(
     permission: Permission,
-    onPermissionResult: (Boolean) -> Unit
+    onPermissionResult: (Boolean) -> Unit,
 ): MutablePermissionState {
     val context = LocalContext.current
     val permissionState = remember(permission) {
@@ -81,8 +81,7 @@ internal class MutablePermissionStateImpl(
     override var status: PermissionStatus by mutableStateOf(getPermissionStatus())
 
     override fun launchPermissionRequest() {
-        if (androidPermission.isEmpty()) return
-        else if (permission.isAlwaysGranted()) {
+        if (androidPermission.isEmpty() || permission.isAlwaysGranted()) {
             refreshPermissionStatus()
             onPermissionResult(true)
             return
@@ -96,15 +95,12 @@ internal class MutablePermissionStateImpl(
     internal var launcher: ActivityResultLauncher<String>? = null
 
     override fun openAppSettings() {
-        val intent = when (permission) {
-            Permission.Notification -> if (supportsNotificationSettings()) {
+        val intent =
+            if (permission == Permission.Notification && supportsNotificationSettings())
                 createAppNotificationsIntent(context)
-            } else {
+            else
                 createAppSettingsIntent(context)
-            }
 
-            else -> createAppSettingsIntent(context)
-        }
         context.startActivity(intent)
     }
 
@@ -113,18 +109,14 @@ internal class MutablePermissionStateImpl(
     }
 
     private fun getPermissionStatus(): PermissionStatus {
-        if (androidPermission.isEmpty()) {
-            return PermissionStatus.Denied(false)
-        } else if (permission.isAlwaysGranted()) {
+        if (androidPermission.isEmpty() || permission.isAlwaysGranted())
             return PermissionStatus.Granted
-        }
 
         val hasPermission = context.checkPermission(androidPermission)
-        return if (hasPermission) {
+        return if (hasPermission)
             PermissionStatus.Granted
-        } else {
+        else
             PermissionStatus.Denied(activity.shouldShowRationale(androidPermission))
-        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
