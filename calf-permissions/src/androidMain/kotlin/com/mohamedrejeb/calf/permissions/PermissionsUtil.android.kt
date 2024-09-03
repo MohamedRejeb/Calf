@@ -169,11 +169,10 @@ internal fun Permission.isAlwaysGranted(): Boolean =
         this == Permission.WriteStorage &&
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ->
             true
-//        Permission.Gallery,
-//        Permission.ReadStorage,
-//        Permission.WriteStorage,
-//        Permission.RemoteNotification,
-//        -> true
+
+        this == Permission.RemoteNotification ->
+            true
+
         else -> false
     }
 
