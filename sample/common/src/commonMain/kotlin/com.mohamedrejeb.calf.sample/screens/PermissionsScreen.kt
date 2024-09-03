@@ -35,8 +35,7 @@ import com.mohamedrejeb.calf.permissions.shouldShowRationale
 @Composable
 fun PermissionScreen(navigateBack: () -> Unit) {
     Box(
-        modifier =
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
@@ -44,8 +43,7 @@ fun PermissionScreen(navigateBack: () -> Unit) {
     ) {
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier =
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
         ) {
@@ -58,13 +56,11 @@ fun PermissionScreen(navigateBack: () -> Unit) {
             onClick = {
                 navigateBack()
             },
-            colors =
-            IconButtonDefaults.iconButtonColors(
+            colors = IconButtonDefaults.iconButtonColors(
                 contentColor = MaterialTheme.colorScheme.onBackground,
                 containerColor = MaterialTheme.colorScheme.surface,
             ),
-            modifier =
-            Modifier
+            modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(16.dp),
         ) {
