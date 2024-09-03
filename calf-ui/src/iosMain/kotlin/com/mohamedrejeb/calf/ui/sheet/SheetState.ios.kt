@@ -19,7 +19,7 @@ actual constructor(
     internal val skipPartiallyExpanded: Boolean,
     density: Density,
     initialValue: SheetValue,
-    confirmValueChange: (SheetValue) -> Boolean,
+    internal val confirmValueChange: (SheetValue) -> Boolean,
     skipHiddenState: Boolean,
 ) {
     init {

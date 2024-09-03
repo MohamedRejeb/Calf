@@ -1,5 +1,7 @@
 package com.mohamedrejeb.calf.ui.sheet
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.ComposeUIViewController
@@ -21,11 +23,13 @@ import platform.darwin.NSObject
  * @param onDismiss The callback that is called when the bottom sheet is dismissed.
  * @param content The Compose content of the bottom sheet.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 internal class BottomSheetManager(
     private val parentUIViewController: UIViewController,
     private var isDark: Boolean,
     private var containerColor: Color,
     private var onDismiss: () -> Unit,
+    private val confirmValueChange: (SheetValue) -> Boolean,
     private val content: @Composable () -> Unit
 ) {
     private var isInitialized = false
@@ -48,7 +52,8 @@ internal class BottomSheetManager(
             onDismiss = {
                 isPresented = false
                 onDismiss()
-            }
+            },
+            confirmValueChange = confirmValueChange,
         )
     }
 
@@ -133,12 +138,14 @@ internal class BottomSheetManager(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 class BottomSheetControllerDelegate(
-    private val onDismiss: () -> Unit
+    private val onDismiss: () -> Unit,
+    private val confirmValueChange: (SheetValue) -> Boolean,
 ) : NSObject(), UIAdaptivePresentationControllerDelegateProtocol {
 
     override fun presentationControllerShouldDismiss(presentationController: UIPresentationController): Boolean {
-        return true
+        return confirmValueChange(SheetValue.Hidden)
     }
 
     override fun presentationControllerDidDismiss(presentationController: UIPresentationController) {

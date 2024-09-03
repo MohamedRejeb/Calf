@@ -18,12 +18,13 @@ import platform.objc.sel_registerName
  * @param title The title of the dialog.
  * @param text The text of the dialog.
  * @param properties The properties of the dialog.
- * @param uiViewController The [UIViewController] that will present the dialog.
+ * @param parentUIViewController The [UIViewController] that will present the dialog.
  * @constructor Creates an [AlertDialogManager] instance.
  * @see [UIAlertController]
  */
 @InternalCalfApi
 class AlertDialogManager internal constructor(
+    private val parentUIViewController: UIViewController,
     internal var onConfirm: () -> Unit,
     internal var onDismiss: () -> Unit,
     internal var confirmText: String,
@@ -44,10 +45,39 @@ class AlertDialogManager internal constructor(
     private var isAnimating = false
 
     /**
+     * The ui view controller that is used to present the dialog.
+     */
+    private val dialogUIViewController: UIViewController by lazy {
+        UIAlertController.alertControllerWithTitle(
+            title = title,
+            message = text,
+            preferredStyle = UIAlertControllerStyleAlert
+        ).apply {
+            val confirmAction = UIAlertAction.actionWithTitle(
+                title = confirmText,
+                style = UIAlertActionStyleDefault,
+                handler = {
+                    onConfirm()
+                }
+            )
+            addAction(confirmAction)
+
+            val cancelAction = UIAlertAction.actionWithTitle(
+                title = dismissText,
+                style = UIAlertActionStyleDestructive,
+                handler = {
+                    onDismiss()
+                }
+            )
+            addAction(cancelAction)
+        }
+    }
+
+    /**
      * Lambda that dismisses the dialog.
      */
     private val onDismissLambda: (() -> Unit) = {
-        UIApplication.sharedApplication.keyWindow?.rootViewController?.dismissViewControllerAnimated(
+        dialogUIViewController.dismissViewControllerAnimated(
             flag = true,
             completion = {
                 isPresented = false
@@ -82,40 +112,16 @@ class AlertDialogManager internal constructor(
         if (isPresented || isAnimating) return
         isAnimating = true
 
-        val alertController = UIAlertController.alertControllerWithTitle(
-            title = title,
-            message = text,
-            preferredStyle = UIAlertControllerStyleAlert
-        )
-
-        val confirmAction = UIAlertAction.actionWithTitle(
-            title = confirmText,
-            style = UIAlertActionStyleDefault,
-            handler = {
-                onConfirm()
-            }
-        )
-        alertController.addAction(confirmAction)
-
-        val cancelAction = UIAlertAction.actionWithTitle(
-            title = dismissText,
-            style = UIAlertActionStyleDestructive,
-            handler = {
-                onDismiss()
-            }
-        )
-        alertController.addAction(cancelAction)
-
-        UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
-            viewControllerToPresent = alertController,
+        parentUIViewController.presentViewController(
+            viewControllerToPresent = dialogUIViewController,
             animated = true,
             completion = {
                 isPresented = true
                 isAnimating = false
 
                 if (properties.dismissOnClickOutside) {
-                    alertController.view.superview?.setUserInteractionEnabled(true)
-                    alertController.view.superview?.addGestureRecognizer(
+                    dialogUIViewController.view.superview?.setUserInteractionEnabled(true)
+                    dialogUIViewController.view.superview?.addGestureRecognizer(
                         UITapGestureRecognizer(
                             target = this,
                             action = dismissPointer
