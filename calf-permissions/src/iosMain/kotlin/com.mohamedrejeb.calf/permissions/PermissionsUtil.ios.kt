@@ -16,11 +16,15 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
         Permission.Camera ->
             AVCapturePermissionHelper(AVMediaTypeVideo)
 
-        Permission.Gallery ->
+        Permission.Gallery,
+        Permission.ReadImage,
+        Permission.ReadVideo,
+             ->
             GalleryPermissionHelper()
 
         Permission.ReadStorage,
         Permission.WriteStorage,
+        Permission.ReadAudio,
         Permission.Call,
             ->
             GrantedPermissionHelper()
