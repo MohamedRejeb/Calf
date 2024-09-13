@@ -21,7 +21,7 @@ import androidx.compose.runtime.setValue
 @Composable
 internal actual fun rememberMutablePermissionState(
     permission: Permission,
-    onPermissionResult: (Boolean) -> Unit
+    onPermissionResult: (PermissionStatus) -> Unit
 ): MutablePermissionState {
     return remember(permission) {
         MutablePermissionStateImpl(permission)

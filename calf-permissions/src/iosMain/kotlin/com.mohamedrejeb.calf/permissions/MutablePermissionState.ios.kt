@@ -28,7 +28,7 @@ import platform.UIKit.UIApplicationOpenSettingsURLString
 @Composable
 internal actual fun rememberMutablePermissionState(
     permission: Permission,
-    onPermissionResult: (Boolean) -> Unit,
+    onPermissionResult: (PermissionStatus) -> Unit,
 ): MutablePermissionState {
     val scope = rememberCoroutineScope()
 
@@ -55,7 +55,7 @@ internal actual fun rememberMutablePermissionState(
 @Stable
 internal class MutablePermissionStateImpl(
     override val permission: Permission,
-    private val onPermissionResult: (Boolean) -> Unit,
+    private val onPermissionResult: (PermissionStatus) -> Unit,
     private val scope: CoroutineScope,
 ) : MutablePermissionState {
 

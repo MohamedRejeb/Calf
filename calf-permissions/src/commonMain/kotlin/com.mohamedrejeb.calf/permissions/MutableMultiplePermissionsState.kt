@@ -19,7 +19,7 @@ import androidx.compose.runtime.getValue
 @Composable
 internal expect fun rememberMutableMultiplePermissionsState(
     permissions: List<Permission>,
-    onPermissionsResult: (Map<Permission, Boolean>) -> Unit = {}
+    onPermissionsResult: (Map<Permission, PermissionStatus>) -> Unit = {}
 ): MultiplePermissionsState
 
 /**

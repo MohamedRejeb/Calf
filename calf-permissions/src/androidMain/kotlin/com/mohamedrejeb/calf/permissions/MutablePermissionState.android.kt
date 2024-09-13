@@ -33,7 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 internal actual fun rememberMutablePermissionState(
     permission: Permission,
-    onPermissionResult: (Boolean) -> Unit,
+    onPermissionResult: (PermissionStatus) -> Unit,
 ): MutablePermissionState {
     val context = LocalContext.current
     val permissionState = remember(permission) {
@@ -46,7 +46,7 @@ internal actual fun rememberMutablePermissionState(
     // Remember RequestPermission launcher and assign it to permissionState
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         permissionState.refreshPermissionStatus()
-        onPermissionResult(it)
+        onPermissionResult(permissionState.status)
     }
     DisposableEffect(permissionState, launcher) {
         permissionState.launcher = launcher
@@ -73,7 +73,7 @@ internal class MutablePermissionStateImpl(
     override val permission: Permission,
     private val context: Context,
     private val activity: Activity,
-    private val onPermissionResult: (Boolean) -> Unit,
+    private val onPermissionResult: (PermissionStatus) -> Unit,
 ) : MutablePermissionState {
 
     private val androidPermission = permission.toAndroidPermission()
@@ -83,7 +83,7 @@ internal class MutablePermissionStateImpl(
     override fun launchPermissionRequest() {
         if (androidPermission.isEmpty() || permission.isAlwaysGranted()) {
             refreshPermissionStatus()
-            onPermissionResult(true)
+            onPermissionResult(status)
             return
         }
 

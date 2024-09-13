@@ -20,13 +20,13 @@ import androidx.compose.runtime.remember
 @Composable
 internal actual fun rememberMutableMultiplePermissionsState(
     permissions: List<Permission>,
-    onPermissionsResult: (Map<Permission, Boolean>) -> Unit,
+    onPermissionsResult: (Map<Permission, PermissionStatus>) -> Unit,
 ): MultiplePermissionsState {
     // Create mutable permissions that can be requested individually
     val mutablePermissions =
         permissions.map { permission ->
-            rememberMutablePermissionState(permission) { granted ->
-                onPermissionsResult(mapOf(permission to granted))
+            rememberMutablePermissionState(permission) { permissionStatus ->
+                onPermissionsResult(mapOf(permission to permissionStatus))
             }
         }
 

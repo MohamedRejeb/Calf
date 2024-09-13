@@ -17,7 +17,7 @@ import androidx.compose.runtime.Stable
 @Composable
 fun rememberMultiplePermissionsState(
     permissions: List<Permission>,
-    onPermissionsResult: (Map<Permission, Boolean>) -> Unit = {}
+    onPermissionsResult: (Map<Permission, PermissionStatus>) -> Unit = {}
 ): MultiplePermissionsState {
     return rememberMutableMultiplePermissionsState(permissions, onPermissionsResult)
 }

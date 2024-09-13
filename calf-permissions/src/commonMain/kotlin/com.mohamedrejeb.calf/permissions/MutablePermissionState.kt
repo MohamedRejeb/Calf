@@ -17,7 +17,7 @@ import androidx.compose.runtime.Stable
 @Composable
 internal expect fun rememberMutablePermissionState(
     permission: Permission,
-    onPermissionResult: (Boolean) -> Unit = {}
+    onPermissionResult: (PermissionStatus) -> Unit = {}
 ): MutablePermissionState
 
 /**

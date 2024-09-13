@@ -26,7 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 internal actual fun rememberMutableMultiplePermissionsState(
     permissions: List<Permission>,
-    onPermissionsResult: (Map<Permission, Boolean>) -> Unit
+    onPermissionsResult: (Map<Permission, PermissionStatus>) -> Unit
 ): MultiplePermissionsState {
     // Create mutable permissions that can be requested individually
     val mutablePermissions = rememberMutablePermissionsState(permissions, onPermissionsResult)
@@ -46,7 +46,10 @@ internal actual fun rememberMutableMultiplePermissionsState(
             .filter { it.key != null }
             .mapKeys { it.key!! }
         multiplePermissionsState.updatePermissionsStatus(result)
-        onPermissionsResult(result)
+        val permissionWithStatus = multiplePermissionsState.permissions.associate  {
+             Pair(it.permission, it.status)
+        }
+        onPermissionsResult(permissionWithStatus)
     }
     DisposableEffect(multiplePermissionsState, launcher) {
         multiplePermissionsState.launcher = launcher
@@ -62,7 +65,7 @@ internal actual fun rememberMutableMultiplePermissionsState(
 @Composable
 private fun rememberMutablePermissionsState(
     permissions: List<Permission>,
-    onPermissionsResult: (Map<Permission, Boolean>) -> Unit
+    onPermissionsResult: (Map<Permission, PermissionStatus>) -> Unit
 ): List<MutablePermissionState> {
     // Create list of MutablePermissionState for each permission
     val context = LocalContext.current
@@ -73,8 +76,8 @@ private fun rememberMutablePermissionsState(
                 permission,
                 context,
                 activity,
-            ) { isGranted ->
-                onPermissionsResult(mapOf(permission to isGranted))
+            ) { permissionState ->
+                onPermissionsResult(mapOf(permission to permissionState))
             }
         }
     }

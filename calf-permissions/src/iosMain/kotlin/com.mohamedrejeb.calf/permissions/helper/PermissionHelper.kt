@@ -4,7 +4,7 @@ import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
 import com.mohamedrejeb.calf.permissions.PermissionStatus
 
 internal interface PermissionHelper {
-    fun launchPermissionRequest(onPermissionResult: (Boolean) -> Unit)
+    fun launchPermissionRequest(onPermissionResult: (PermissionStatus) -> Unit)
 
     @OptIn(ExperimentalPermissionsApi::class)
     fun getPermissionStatus(
