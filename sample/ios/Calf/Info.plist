@@ -18,5 +18,7 @@
 	<string>Just for tests</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Just for tests</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Just for tests</string>
 </dict>
 </plist>

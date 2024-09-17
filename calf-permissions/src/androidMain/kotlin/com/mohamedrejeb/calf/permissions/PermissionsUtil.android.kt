@@ -153,6 +153,8 @@ internal fun Permission.toAndroidPermission(): String {
                 Manifest.permission.POST_NOTIFICATIONS
             else
                 ""
+
+        Permission.ReadContacts -> Manifest.permission.READ_CONTACTS
     }
 }
 
@@ -194,6 +196,7 @@ internal fun getPermissionFromAndroidPermission(androidPermission: String): Perm
         Manifest.permission.BLUETOOTH_SCAN -> Permission.BluetoothScan
         Manifest.permission.BLUETOOTH_CONNECT -> Permission.BluetoothConnect
         Manifest.permission.BLUETOOTH_ADVERTISE -> Permission.BluetoothAdvertise
+        Manifest.permission.READ_CONTACTS -> Permission.ReadContacts
         else -> null
     }
 }
