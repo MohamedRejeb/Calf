@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.permissions
 
 import com.mohamedrejeb.calf.permissions.helper.AVCapturePermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.BluetoothPermissionHelper
+import com.mohamedrejeb.calf.permissions.helper.ContactPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.GalleryPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.GrantedPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.LocalNotificationPermissionHelper
@@ -49,5 +50,7 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
         Permission.BluetoothAdvertise,
             ->
             BluetoothPermissionHelper()
+
+        Permission.ReadContacts -> ContactPermissionHelper()
     }
 }
