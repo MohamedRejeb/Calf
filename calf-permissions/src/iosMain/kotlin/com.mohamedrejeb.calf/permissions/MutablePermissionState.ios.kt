@@ -78,7 +78,7 @@ internal class MutablePermissionStateImpl(
 
     override fun openAppSettings() {
         val settingsUrl = NSURL.URLWithString(UIApplicationOpenSettingsURLString) ?: return
-        UIApplication.sharedApplication.openURL(settingsUrl)
+        UIApplication.sharedApplication.openURL(settingsUrl, emptyMap<Any?, String>(), null)
     }
 
     override fun refreshPermissionStatus() {
