@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.datepicker
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,14 +11,19 @@ import androidx.compose.material3.LocalAbsoluteTonalElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.interop.UIKitView
+import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
+import androidx.compose.ui.viewinterop.UIKitInteropProperties
+import androidx.compose.ui.viewinterop.UIKitView
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIDatePicker
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class, InternalCalfApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class, InternalCalfApi::class,
+    ExperimentalComposeUiApi::class
+)
 @Composable
 actual fun AdaptiveDatePicker(
     state: AdaptiveDatePickerState,
@@ -66,11 +72,11 @@ actual fun AdaptiveDatePicker(
             factory = {
                 datePicker
             },
-            onResize = { _, size ->
-                datePicker.setFrame(size)
-            },
-            background = colors.containerColor,
+            properties = UIKitInteropProperties(
+                interactionMode = UIKitInteropInteractionMode.NonCooperative,
+            ),
             modifier = Modifier
+                .background(colors.containerColor)
                 .fillMaxWidth()
                 .then(
                     if (datePickerManager.aspectRatio.isFinite() && datePickerManager.aspectRatio > 0f)
