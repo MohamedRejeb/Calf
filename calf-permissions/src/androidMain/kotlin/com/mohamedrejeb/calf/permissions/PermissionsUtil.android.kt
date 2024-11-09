@@ -158,18 +158,6 @@ internal fun Permission.toAndroidPermission(): String {
 
 internal fun Permission.isAlwaysGranted(): Boolean =
     when {
-        this == Permission.Gallery &&
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ->
-            true
-
-        this == Permission.ReadStorage &&
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ->
-            true
-
-        this == Permission.WriteStorage &&
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ->
-            true
-
         this == Permission.RemoteNotification ->
             true
 
