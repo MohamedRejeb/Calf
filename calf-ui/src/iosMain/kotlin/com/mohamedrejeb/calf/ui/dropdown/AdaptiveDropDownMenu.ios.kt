@@ -2,15 +2,11 @@ package com.mohamedrejeb.calf.ui.dropdown
 
 
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.interop.UIKitView
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.UIKitView
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPoint
 import platform.UIKit.*
 import platform.darwin.NSObject
