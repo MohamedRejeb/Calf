@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -25,8 +25,4 @@ kotlin {
         implementation(compose.foundation)
         implementation(compose.ui)
     }
-}
-
-compose.experimental {
-    web.application {}
 }

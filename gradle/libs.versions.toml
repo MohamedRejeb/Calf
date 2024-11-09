@@ -7,7 +7,7 @@ kotlinx-datetime = "0.6.1"
 nexus-publish = "2.0.0"
 documentfile = "1.0.1"
 jna = "5.14.0"
-coil = "3.0.0-alpha10"
+coil = "3.0.1"
 
 calf = "0.5.5"
 
@@ -20,6 +20,8 @@ kotlinx-coroutines = "1.9.0"
 appcompat = "1.7.0"
 android-lifecycle = "2.2.0"
 play-services-location = "21.3.0"
+compose-navigation = "2.7.0-alpha07"
+ktor = "3.0.1"
 
 [libraries]
 gradlePlugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -39,6 +41,7 @@ kotlinx-coroutines-javafx = { module = "org.jetbrains.kotlinx:kotlinx-coroutines
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 nexus-publish = { module = "io.github.gradle-nexus.publish-plugin:io.github.gradle-nexus.publish-plugin.gradle.plugin", version.ref = "nexus-publish" }
+
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 
 # Android
@@ -49,10 +52,21 @@ jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 
 # For sample
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "compose-navigation" }
+
 calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
 calf-file-picker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
 calf-permissions = { module = "com.mohamedrejeb.calf:calf-permissions", version.ref = "calf" }
 calf-webview = { module = "com.mohamedrejeb.calf:calf-webview", version.ref = "calf" }
+
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
+ktor-client-wasm = { module = "io.ktor:ktor-client-js-wasm-js", version.ref = "ktor" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

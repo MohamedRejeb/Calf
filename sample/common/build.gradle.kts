@@ -29,8 +29,41 @@ kotlin {
         // Calf
         api(projects.calfUi)
         implementation(projects.calfFilePicker)
+        implementation(projects.calfFilePickerCoil)
         implementation(projects.calfPermissions)
         implementation(projects.calfWebview)
+        implementation(libs.compose.navigation)
         implementation(projects.calfNavigation)
+
+        // Coil
+        implementation(libs.coil.compose)
+        implementation(libs.coil.network.ktor)
+
+        // Ktor
+        implementation(libs.ktor.client.core)
+    }
+
+    sourceSets.androidMain.dependencies {
+        implementation(libs.kotlinx.coroutines.android)
+        implementation(libs.ktor.client.okhttp)
+    }
+
+    sourceSets.desktopMain.dependencies {
+        implementation(compose.desktop.currentOs)
+
+        implementation(libs.kotlinx.coroutines.swing)
+        implementation(libs.ktor.client.okhttp)
+    }
+
+    sourceSets.iosMain.dependencies {
+        implementation(libs.ktor.client.darwin)
+    }
+
+    sourceSets.jsMain.dependencies {
+        implementation(libs.ktor.client.js)
+    }
+
+    sourceSets.wasmJsMain.dependencies {
+        implementation(libs.ktor.client.wasm)
     }
 }

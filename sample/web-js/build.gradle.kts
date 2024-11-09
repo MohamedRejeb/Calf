@@ -23,7 +23,3 @@ kotlin {
         implementation(compose.ui)
     }
 }
-
-compose.experimental {
-    web.application {}
-}
