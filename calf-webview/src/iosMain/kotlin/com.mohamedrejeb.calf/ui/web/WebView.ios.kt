@@ -3,8 +3,11 @@ package com.mohamedrejeb.calf.ui.web
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.mapSaver
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.interop.UIKitView
+import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
+import androidx.compose.ui.viewinterop.UIKitInteropProperties
+import androidx.compose.ui.viewinterop.UIKitView
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCSignatureOverride
@@ -41,7 +44,7 @@ import platform.darwin.NSObject
  * @param onDispose Called when the WebView is destroyed. Provides a bundle which can be saved
  * if you need to save and restore state in this WebView.
  */
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
 @Composable
 actual fun WebView(
     state: WebViewState,
@@ -101,6 +104,9 @@ actual fun WebView(
                 navigationDelegate = state
             }
         },
+        properties = UIKitInteropProperties(
+            interactionMode = UIKitInteropInteractionMode.NonCooperative,
+        ),
         onRelease = {
             onDispose()
             state.webView = null
