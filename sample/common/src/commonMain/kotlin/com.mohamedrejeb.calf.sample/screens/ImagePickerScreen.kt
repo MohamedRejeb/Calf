@@ -1,6 +1,5 @@
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,29 +23,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.mohamedrejeb.calf.core.LocalPlatformContext
-import com.mohamedrejeb.calf.io.readByteArray
+import coil3.compose.AsyncImage
+import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
-import com.mohamedrejeb.calf.picker.toImageBitmap
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
-import kotlinx.coroutines.launch
 
 @Composable
 fun ImagePickerScreen(navigateBack: () -> Unit) {
-    val context = LocalPlatformContext.current
-    val scope = rememberCoroutineScope()
-
-    var imageBitmaps by remember {
-        mutableStateOf<List<ImageBitmap>>(emptyList())
+    var files by remember {
+        mutableStateOf<List<KmpFile>>(emptyList())
     }
     var isMultiple by remember { mutableStateOf(false) }
 
@@ -54,18 +46,8 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
         rememberFilePickerLauncher(
             type = FilePickerFileType.Image,
             selectionMode = FilePickerSelectionMode.Single,
-            onResult = { files ->
-                scope.launch {
-                    imageBitmaps =
-                        files.mapNotNull {
-                            try {
-                                it.readByteArray(context).toImageBitmap()
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                null
-                            }
-                        }
-                }
+            onResult = {
+                files = it
             },
         )
 
@@ -73,18 +55,8 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
         rememberFilePickerLauncher(
             type = FilePickerFileType.Image,
             selectionMode = FilePickerSelectionMode.Multiple,
-            onResult = { files ->
-                scope.launch {
-                    imageBitmaps =
-                        files.mapNotNull {
-                            try {
-                                it.readByteArray(context).toImageBitmap()
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                                null
-                            }
-                        }
-                }
+            onResult = {
+                files = it
             },
         )
 
@@ -149,9 +121,9 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
             modifier = Modifier.padding(16.dp),
         )
 
-        imageBitmaps.forEach {
-            Image(
-                bitmap = it,
+        files.forEach {
+            AsyncImage(
+                model = it,
                 contentDescription = "Image",
                 contentScale = ContentScale.FillWidth,
                 modifier =

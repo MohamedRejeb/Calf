@@ -6,6 +6,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.mohamedrejeb.calf.sample.coil.setSingletonImageLoaderFactory
 
 private val DarkColorScheme =
     darkColorScheme(
@@ -36,6 +37,8 @@ internal fun CalfTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
+    setSingletonImageLoaderFactory()
+
     val colorScheme =
         if (darkTheme)
             DarkColorScheme
