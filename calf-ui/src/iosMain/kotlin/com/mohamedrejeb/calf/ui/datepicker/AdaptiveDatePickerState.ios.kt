@@ -3,6 +3,7 @@ package com.mohamedrejeb.calf.ui.datepicker
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
+import com.mohamedrejeb.calf.ui.utils.datetime.KotlinxDatetimeCalendarModel
 import platform.Foundation.currentLocale
 
 /**
@@ -43,7 +44,9 @@ actual class AdaptiveDatePickerState actual constructor(
      *
      * @see [setSelection]
      */
-    actual var selectedDateMillis by mutableStateOf(initialSelectedDateMillis)
+    actual var selectedDateMillis by mutableStateOf(
+        initialSelectedDateMillis?.let { KotlinxDatetimeCalendarModel().getCanonicalDate(it) }?.utcTimeMillis
+    )
 
     /**
      * Sets the selected date.
