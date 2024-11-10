@@ -58,6 +58,9 @@ fun TimePickerScreen(
 
         AdaptiveTimePicker(
             state = state,
+            colors = TimePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
             modifier = Modifier
         )
     }

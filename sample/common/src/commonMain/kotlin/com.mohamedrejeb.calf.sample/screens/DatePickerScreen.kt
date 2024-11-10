@@ -65,6 +65,9 @@ fun DatePickerScreen(
 
         AdaptiveDatePicker(
             state = state,
+            colors = DatePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
             modifier = Modifier
         )
     }
