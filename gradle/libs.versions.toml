@@ -2,7 +2,6 @@
 agp = "8.5.2"
 kotlin = "2.0.21"
 compose = "1.7.0"
-kotlinx-serialization-json = "1.7.1"
 kotlinx-datetime = "0.6.1"
 nexus-publish = "2.0.0"
 documentfile = "1.0.1"
@@ -12,12 +11,13 @@ coil = "3.0.1"
 calf = "0.5.5"
 
 # For sample
-activity-compose = "1.9.1"
-navigation-compose = "2.7.7"
+activity-compose = "1.9.3"
+navigation-compose = "2.8.3"
 android-minSdk = "21"
 android-compileSdk = "34"
 kotlinx-coroutines = "1.9.0"
 appcompat = "1.7.0"
+compose-ui = "1.7.1"
 android-lifecycle = "2.2.0"
 play-services-location = "21.3.0"
 compose-navigation = "2.7.0-alpha07"
@@ -32,13 +32,14 @@ gradlePlugin-composeCompiler = { module = "org.jetbrains.kotlin:compose-compiler
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+compose-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-ui" }
+compose-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-ui" }
 lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "android-lifecycle" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-javafx = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-javafx", version.ref = "kotlinx-coroutines" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 nexus-publish = { module = "io.github.gradle-nexus.publish-plugin:io.github.gradle-nexus.publish-plugin.gradle.plugin", version.ref = "nexus-publish" }
 

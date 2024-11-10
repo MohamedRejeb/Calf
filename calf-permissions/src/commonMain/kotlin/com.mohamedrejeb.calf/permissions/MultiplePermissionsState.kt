@@ -2,6 +2,8 @@ package com.mohamedrejeb.calf.permissions
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalInspectionMode
 
 /**
  * Creates a [MultiplePermissionsState] that is remembered across compositions.
@@ -19,7 +21,24 @@ fun rememberMultiplePermissionsState(
     permissions: List<Permission>,
     onPermissionsResult: (Map<Permission, Boolean>) -> Unit = {}
 ): MultiplePermissionsState {
-    return rememberMutableMultiplePermissionsState(permissions, onPermissionsResult)
+    val isInspection = LocalInspectionMode.current
+
+    return if (isInspection)
+        rememberPreviewMultiplePermissionState()
+    else
+        rememberMutableMultiplePermissionsState(permissions, onPermissionsResult)
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun rememberPreviewMultiplePermissionState(): MultiplePermissionsState = remember {
+    object : MultiplePermissionsState {
+        override val permissions: List<PermissionState> = emptyList()
+        override val revokedPermissions: List<PermissionState> = emptyList()
+        override val allPermissionsGranted: Boolean = true
+        override val shouldShowRationale: Boolean = false
+        override fun launchMultiplePermissionRequest() {}
+    }
 }
 
 /**

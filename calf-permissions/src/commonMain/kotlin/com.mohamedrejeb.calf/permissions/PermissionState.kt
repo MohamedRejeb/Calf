@@ -2,6 +2,8 @@ package com.mohamedrejeb.calf.permissions
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalInspectionMode
 
 /**
  * Creates a [PermissionState] that is remembered across compositions.
@@ -19,7 +21,25 @@ fun rememberPermissionState(
     permission: Permission,
     onPermissionResult: (Boolean) -> Unit = {},
 ): PermissionState {
-    return rememberMutablePermissionState(permission, onPermissionResult)
+    val isInspection = LocalInspectionMode.current
+
+    return if (isInspection)
+        rememberPreviewPermissionState(permission)
+    else
+        rememberMutablePermissionState(permission, onPermissionResult)
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun rememberPreviewPermissionState(
+    permission: Permission
+): PermissionState = remember {
+    object : PermissionState {
+        override val permission: Permission = permission
+        override var status: PermissionStatus = PermissionStatus.Granted
+        override fun launchPermissionRequest() {}
+        override fun openAppSettings() {}
+    }
 }
 
 /**
