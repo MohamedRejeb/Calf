@@ -13,11 +13,16 @@ import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toNSTimeZone
+import platform.Foundation.NSCalendar
 import platform.Foundation.NSDate
+import platform.Foundation.NSDayCalendarUnit
+import platform.Foundation.NSMonthCalendarUnit
+import platform.Foundation.NSYearCalendarUnit
 import platform.Foundation.dateWithTimeIntervalSince1970
-import platform.Foundation.timeIntervalSince1970
 import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UIDatePicker
 import platform.UIKit.UIDatePickerMode
@@ -34,6 +39,8 @@ class DatePickerManager internal constructor(
     displayMode: UIKitDisplayMode,
     private val onSelectionChanged: (dateMillis: Long?) -> Unit,
 ) {
+    private val calendarModel = KotlinxDatetimeCalendarModel()
+
     /**
      * Pointer to the [dateSelection] method.
      */
@@ -46,8 +53,19 @@ class DatePickerManager internal constructor(
     @OptIn(BetaInteropApi::class)
     @ObjCAction
     fun dateSelection() {
+        val components = NSCalendar.currentCalendar.components(
+            NSYearCalendarUnit or NSMonthCalendarUnit or NSDayCalendarUnit,
+            datePicker.date
+        )
+
         onSelectionChanged(
-            datePicker.date.timeIntervalSince1970.toLong() * 1000
+            LocalDate(
+                year = components.year.toInt(),
+                monthNumber = components.month.toInt(),
+                dayOfMonth = components.day.toInt(),
+            )
+                .atStartOfDayIn(TimeZone.UTC)
+                .toEpochMilliseconds()
         )
     }
 
@@ -57,9 +75,17 @@ class DatePickerManager internal constructor(
     init {
         val date =
             if (initialSelectedDateMillis != null) {
-                val calendarModel = KotlinxDatetimeCalendarModel()
                 val canonicalDate = calendarModel.getCanonicalDate(initialSelectedDateMillis)
-                NSDate.dateWithTimeIntervalSince1970(canonicalDate.utcTimeMillis / 1000.0)
+                val currentTimeZoneTimeMillis =
+                    LocalDate(
+                        year = canonicalDate.year,
+                        monthNumber = canonicalDate.month,
+                        dayOfMonth = canonicalDate.dayOfMonth,
+                    )
+                        .atStartOfDayIn(TimeZone.currentSystemDefault())
+                        .toEpochMilliseconds()
+
+                NSDate.dateWithTimeIntervalSince1970(currentTimeZoneTimeMillis / 1000.0)
             } else {
                 NSDate()
             }
@@ -67,10 +93,10 @@ class DatePickerManager internal constructor(
         datePicker.setDate(date, animated = false)
 
         datePicker.locale = getCalendarLocalDefault()
-        datePicker.timeZone = TimeZone.UTC.toNSTimeZone()
+        datePicker.timeZone = TimeZone.currentSystemDefault().toNSTimeZone()
 
         datePicker.datePickerMode = UIDatePickerMode.UIDatePickerModeDate
-        datePicker.preferredDatePickerStyle = when(displayMode) {
+        datePicker.preferredDatePickerStyle = when (displayMode) {
             UIKitDisplayMode.Picker ->
                 UIDatePickerStyle.UIDatePickerStyleInline
 
