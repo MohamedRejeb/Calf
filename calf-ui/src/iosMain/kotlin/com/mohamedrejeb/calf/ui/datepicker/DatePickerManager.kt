@@ -58,7 +58,7 @@ class DatePickerManager internal constructor(
             datePicker.date
         )
 
-        onSelectionChanged(
+        val utcTimeMillis =
             LocalDate(
                 year = components.year.toInt(),
                 monthNumber = components.month.toInt(),
@@ -66,7 +66,8 @@ class DatePickerManager internal constructor(
             )
                 .atStartOfDayIn(TimeZone.UTC)
                 .toEpochMilliseconds()
-        )
+
+        onSelectionChanged(utcTimeMillis)
     }
 
     internal var aspectRatio by mutableFloatStateOf(0f)
