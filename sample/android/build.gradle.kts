@@ -37,6 +37,8 @@ android {
         implementation(projects.sample.common)
 
         implementation(libs.activity.compose)
+        implementation(libs.compose.tooling.preview)
         implementation(libs.appcompat)
+        debugImplementation(libs.compose.tooling)
     }
 }
