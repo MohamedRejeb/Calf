@@ -6,7 +6,7 @@
 
 | Kotlin version | Compose version | Calf version |
 |----------------|-----------------|--------------|
-| 2.0.21         | 1.7.0           | 0.6.0        |
+| 2.0.21         | 1.7.0           | 0.6.1        |
 | 2.0.10         | 1.6.11          | 0.5.5        |
 | 1.9.22         | 1.6.0           | 0.4.1        |
 | 1.9.21         | 1.5.11          | 0.3.1        |
@@ -16,7 +16,7 @@
 Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
-api("com.mohamedrejeb.calf:calf-ui:0.6.0")
+api("com.mohamedrejeb.calf:calf-ui:0.6.1")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -32,7 +32,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.6.05")
+                export("com.mohamedrejeb.calf:calf-ui:0.6.1")
             }
         }
     ...
@@ -49,7 +49,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.6.0")
+            export("com.mohamedrejeb.calf:calf-ui:0.6.1")
         }
     }
     ...
