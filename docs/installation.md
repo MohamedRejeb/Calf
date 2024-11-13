@@ -92,7 +92,7 @@ dependencyResolutionManagement {
 Use the snapshot version:
 
 ```kotlin
-api("com.mohamedrejeb.calf:calf-ui:0.5.0-SNAPSHOT")
+api("com.mohamedrejeb.calf:calf-ui:0.6.0-SNAPSHOT")
 ```
 
 >Note: Snapshots are deployed for each new commit on `main` that passes CI. They can potentially contain breaking changes or may be unstable. Use at your own risk.
