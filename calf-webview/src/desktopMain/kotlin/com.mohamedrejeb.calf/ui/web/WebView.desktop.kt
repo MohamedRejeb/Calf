@@ -13,22 +13,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.IntSize
 import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
-import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.web.WebView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.awt.BorderLayout
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
-import java.awt.event.WindowListener
-import javax.swing.JFrame
-import javax.swing.JPanel
-import javax.swing.WindowConstants
 
 /**
  * A wrapper around the Android View WebView to provide a basic WebView composable.
@@ -50,10 +40,6 @@ import javax.swing.WindowConstants
  * subsequently overwritten after this lambda is called.
  * @param onDispose Called when the WebView is destroyed. Provides a bundle which can be saved
  * if you need to save and restore state in this WebView.
- * @param client Provides access to WebViewClient via subclassing
- * @param chromeClient Provides access to WebChromeClient via subclassing
- * @param factory An optional WebView factory for using a custom subclass of WebView
- * @sample com.google.accompanist.sample.webview.BasicWebViewSample
  */
 @Composable
 actual fun WebView(
@@ -66,7 +52,8 @@ actual fun WebView(
 ) {
     val jfxPanel = remember { JFXPanel() }
 
-    LaunchedEffect(Unit) {
+    DisposableEffect(Unit) {
+        Platform.setImplicitExit(false)
         Platform.runLater {
             val wv = WebView().apply {
                 applySettings(state.settings)
@@ -75,9 +62,7 @@ actual fun WebView(
             state.webView = wv
             onCreated()
         }
-    }
 
-    DisposableEffect(Unit) {
         onDispose {
             onDispose()
         }
