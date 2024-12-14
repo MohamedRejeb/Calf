@@ -40,7 +40,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Setup gradle
-      uses: gradle/actions/setup-gradle@v3
+      uses: gradle/actions/setup-gradle@v4
 
     - name: Gradle test
       run: ./gradlew allTests
@@ -58,7 +58,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Deploy snapshot
         env:
