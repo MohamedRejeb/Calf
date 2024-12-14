@@ -21,7 +21,7 @@ compose-ui = "1.7.1"
 android-lifecycle = "2.2.0"
 play-services-location = "21.3.0"
 compose-navigation = "2.7.0-alpha07"
-ktor = "3.0.1"
+ktor = "3.0.2"
 
 [libraries]
 gradlePlugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
