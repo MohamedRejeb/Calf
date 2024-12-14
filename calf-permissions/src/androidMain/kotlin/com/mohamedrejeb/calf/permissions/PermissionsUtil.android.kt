@@ -155,6 +155,8 @@ internal fun Permission.toAndroidPermission(): String {
                 ""
 
         Permission.ReadContacts -> Manifest.permission.READ_CONTACTS
+        Permission.ReadCalendar -> Manifest.permission.READ_CALENDAR
+        Permission.WriteCalendar -> Manifest.permission.WRITE_CALENDAR
     }
 }
 
