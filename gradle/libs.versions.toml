@@ -8,7 +8,7 @@ documentfile = "1.0.1"
 jna = "5.14.0"
 coil = "3.0.1"
 
-calf = "0.5.5"
+calf = "0.6.1"
 
 # For sample
 activity-compose = "1.9.3"
