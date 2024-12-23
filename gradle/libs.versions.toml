@@ -5,7 +5,7 @@ compose = "1.7.0"
 kotlinx-datetime = "0.6.1"
 nexus-publish = "2.0.0"
 documentfile = "1.0.1"
-jna = "5.14.0"
+jna = "5.16.0"
 coil = "3.0.4"
 
 calf = "0.6.1"
