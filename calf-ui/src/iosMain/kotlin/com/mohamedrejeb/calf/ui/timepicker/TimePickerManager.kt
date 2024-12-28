@@ -8,10 +8,10 @@ import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
 import platform.Foundation.*
 import platform.UIKit.*
+import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 @OptIn(ExperimentalForeignApi::class)
-@InternalCalfApi
 class TimePickerManager internal constructor(
     private val datePicker: UIDatePicker,
     initialMinute: Int,
@@ -20,47 +20,49 @@ class TimePickerManager internal constructor(
     private val onHourChanged: (hour: Int) -> Unit,
     private val onMinuteChanged: (minute: Int) -> Unit,
 ) {
-    /**
-     * Pointer to the [dateSelection] method.
-     */
-    @OptIn(ExperimentalForeignApi::class)
-    private val dateSelectionPointer get() = sel_registerName("dateSelection")
+    private val datePickerDelegate = object : NSObject() {
+        @ObjCAction
+        fun onTimeChanged(sender: UIDatePicker) {
+            val components = NSCalendar.currentCalendar.components(
+                NSCalendarUnitHour or NSCalendarUnitMinute,
+                sender.date
+            )
 
-    /**
-     * Dismisses the dialog.
-     */
-    @OptIn(BetaInteropApi::class)
-    @ObjCAction
-    fun dateSelection() {
-        val components = NSCalendar.currentCalendar.components(
-            NSCalendarUnitHour or NSCalendarUnitMinute,
-            datePicker.date
-        )
-
-        onHourChanged(components.hour.toInt())
-        onMinuteChanged(components.minute.toInt())
+            onHourChanged(components.hour.toInt())
+            onMinuteChanged(components.minute.toInt())
+        }
     }
 
     val datePickerWidth = mutableStateOf(0f)
     val datePickerHeight = mutableStateOf(0f)
 
     init {
-        val dateComponents = NSDateComponents()
-        dateComponents.minute = initialMinute.toLong()
-        dateComponents.hour = initialHour.toLong()
+        val dateComponents = NSDateComponents().apply {
+            minute = initialMinute.toLong()
+            hour = initialHour.toLong()
+        }
+
         val date = NSCalendar.currentCalendar.dateFromComponents(dateComponents) ?: NSDate()
-        datePicker.date = date
-        datePicker.locale = NSLocale.currentLocale
-        datePicker.datePickerMode = UIDatePickerMode.UIDatePickerModeTime
-        datePicker.preferredDatePickerStyle = UIDatePickerStyle.UIDatePickerStyleWheels
-        datePicker.addTarget(
-            target = this,
-            action = dateSelectionPointer,
-            forControlEvents = UIControlEventValueChanged
-        )
+
+        datePicker.apply {
+            this.date = date
+            locale = NSLocale.currentLocale
+            datePickerMode = UIDatePickerMode.UIDatePickerModeTime
+            preferredDatePickerStyle = UIDatePickerStyle.UIDatePickerStyleWheels
+
+            // Add target using NSObject delegate
+            addTarget(
+                target = datePickerDelegate,
+                action = sel_registerName("onTimeChanged:"),
+                forControlEvents = UIControlEventValueChanged
+            )
+        }
+
         datePicker.frame.useContents {
             datePickerWidth.value = this.size.width.toFloat()
             datePickerHeight.value = this.size.height.toFloat()
         }
     }
+
+
 }
