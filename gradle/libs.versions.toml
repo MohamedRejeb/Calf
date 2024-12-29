@@ -3,6 +3,7 @@ agp = "8.7.3"
 kotlin = "2.1.0"
 compose = "1.7.3"
 kotlinx-datetime = "0.6.1"
+kotlinx-browser = "0.3"
 nexus-publish = "2.0.0"
 documentfile = "1.0.1"
 jna = "5.16.0"
@@ -50,6 +51,9 @@ documentfile = { module = "androidx.documentfile:documentfile", version.ref = "d
 
 # Desktop
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+
+# Wasm
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
 
 # For sample
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }

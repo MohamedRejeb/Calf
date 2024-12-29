@@ -11,4 +11,8 @@ kotlin {
     sourceSets.androidMain.dependencies {
         implementation(libs.documentfile)
     }
+
+    sourceSets.wasmJsMain.dependencies {
+        implementation(libs.kotlinx.browser)
+    }
 }
