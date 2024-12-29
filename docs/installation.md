@@ -4,6 +4,7 @@
 
 | Kotlin version | Compose version | Calf version |
 |----------------|-----------------|--------------|
+| 2.1.0          | 1.7.3           | 0.7.0        |
 | 2.0.21         | 1.7.0           | 0.6.1        |
 | 2.0.10         | 1.6.11          | 0.5.5        |
 | 1.9.22         | 1.6.0           | 0.4.1        |
@@ -15,16 +16,16 @@ Add the following dependencies to your module `build.gradle.kts` file:
 
 ```kotlin
 // For Adaptive UI components
-api("com.mohamedrejeb.calf:calf-ui:0.6.1")
+api("com.mohamedrejeb.calf:calf-ui:0.7.0")
 
 // For WebView
-implementation("com.mohamedrejeb.calf:calf-webview:0.6.1")
+implementation("com.mohamedrejeb.calf:calf-webview:0.7.0")
 
 // For FilePicker
-implementation("com.mohamedrejeb.calf:calf-file-picker:0.6.1")
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.7.0")
 
 // For Permissions
-implementation("com.mohamedrejeb.calf:calf-permissions:0.6.1")
+implementation("com.mohamedrejeb.calf:calf-permissions:0.7.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -40,7 +41,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.6.1")
+                export("com.mohamedrejeb.calf:calf-ui:0.7.0")
             }
         }
     ...
@@ -57,7 +58,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.6.1")
+            export("com.mohamedrejeb.calf:calf-ui:0.7.0")
         }
     }
     ...
