@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 
 /**
  * Creates a [MultiplePermissionsState] that is remembered across compositions.
@@ -21,7 +23,25 @@ internal actual fun rememberMutableMultiplePermissionsState(
     permissions: List<Permission>,
     onPermissionsResult: (Map<Permission, Boolean>) -> Unit
 ): MultiplePermissionsState {
-    TODO()
+    val scope = rememberCoroutineScope()
+
+    val permissionStates =
+        remember(permissions) {
+            MutableMultiplePermissionsState(
+                mutablePermissions = permissions.map {
+                    MutablePermissionStateImpl(
+                        permission = it,
+                        onPermissionResult = { isOk ->
+                            onPermissionsResult(mapOf(it to isOk))
+                        },
+                        scope = scope,
+                    )
+                }
+            )
+        }
+
+    return permissionStates
+
 }
 
 
