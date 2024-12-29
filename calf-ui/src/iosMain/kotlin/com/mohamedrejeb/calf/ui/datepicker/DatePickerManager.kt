@@ -27,6 +27,7 @@ import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UIDatePicker
 import platform.UIKit.UIDatePickerMode
 import platform.UIKit.UIDatePickerStyle
+import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 @OptIn(
@@ -41,33 +42,25 @@ class DatePickerManager internal constructor(
 ) {
     private val calendarModel = KotlinxDatetimeCalendarModel()
 
-    /**
-     * Pointer to the [dateSelection] method.
-     */
-    @OptIn(ExperimentalForeignApi::class)
-    private val dateSelectionPointer get() = sel_registerName("dateSelection")
-
-    /**
-     * Dismisses the dialog.
-     */
-    @OptIn(BetaInteropApi::class)
-    @ObjCAction
-    fun dateSelection() {
-        val components = NSCalendar.currentCalendar.components(
-            NSYearCalendarUnit or NSMonthCalendarUnit or NSDayCalendarUnit,
-            datePicker.date
-        )
-
-        val utcTimeMillis =
-            LocalDate(
-                year = components.year.toInt(),
-                monthNumber = components.month.toInt(),
-                dayOfMonth = components.day.toInt(),
+    private val datePickerDelegate = object : NSObject() {
+        @ObjCAction
+        fun onDateChanged(sender: UIDatePicker) {
+            val components = NSCalendar.currentCalendar.components(
+                NSYearCalendarUnit or NSMonthCalendarUnit or NSDayCalendarUnit,
+                sender.date
             )
-                .atStartOfDayIn(TimeZone.UTC)
-                .toEpochMilliseconds()
 
-        onSelectionChanged(utcTimeMillis)
+            val utcTimeMillis =
+                LocalDate(
+                    year = components.year.toInt(),
+                    monthNumber = components.month.toInt(),
+                    dayOfMonth = components.day.toInt(),
+                )
+                    .atStartOfDayIn(TimeZone.UTC)
+                    .toEpochMilliseconds()
+
+            onSelectionChanged(utcTimeMillis)
+        }
     }
 
     internal var aspectRatio by mutableFloatStateOf(0f)
@@ -92,23 +85,21 @@ class DatePickerManager internal constructor(
             }
 
         datePicker.setDate(date, animated = false)
-
         datePicker.locale = getCalendarLocalDefault()
         datePicker.timeZone = TimeZone.currentSystemDefault().toNSTimeZone()
-
         datePicker.datePickerMode = UIDatePickerMode.UIDatePickerModeDate
         datePicker.preferredDatePickerStyle = when (displayMode) {
-            UIKitDisplayMode.Picker ->
-                UIDatePickerStyle.UIDatePickerStyleInline
-
-            else ->
-                UIDatePickerStyle.UIDatePickerStyleWheels
+            UIKitDisplayMode.Picker -> UIDatePickerStyle.UIDatePickerStyleInline
+            else -> UIDatePickerStyle.UIDatePickerStyleWheels
         }
+
+        // Add target using NSObject delegate
         datePicker.addTarget(
-            target = this,
-            action = dateSelectionPointer,
+            target = datePickerDelegate,
+            action = sel_registerName("onDateChanged:"),
             forControlEvents = UIControlEventValueChanged
         )
+
         datePicker.frame.useContents {
             aspectRatio = this.size.width.toFloat() / this.size.height.toFloat()
         }
@@ -127,5 +118,4 @@ class DatePickerManager internal constructor(
     internal fun applyTheme(isDark: Boolean) {
         datePicker.applyTheme(isDark)
     }
-
 }
