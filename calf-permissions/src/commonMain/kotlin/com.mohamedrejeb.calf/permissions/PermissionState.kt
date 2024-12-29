@@ -106,5 +106,7 @@ enum class Permission {
     BluetoothScan,
     BluetoothConnect,
     BluetoothAdvertise,
-    ReadContacts
+    ReadContacts,
+    ReadCalendar,
+    WriteCalendar
 }

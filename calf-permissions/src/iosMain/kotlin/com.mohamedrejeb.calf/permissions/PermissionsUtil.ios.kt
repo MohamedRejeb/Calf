@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.permissions
 
 import com.mohamedrejeb.calf.permissions.helper.AVCapturePermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.BluetoothPermissionHelper
+import com.mohamedrejeb.calf.permissions.helper.CalendarPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.ContactPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.GalleryPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.GrantedPermissionHelper
@@ -20,7 +21,7 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
         Permission.Gallery,
         Permission.ReadImage,
         Permission.ReadVideo,
-             ->
+            ->
             GalleryPermissionHelper()
 
         Permission.ReadStorage,
@@ -52,5 +53,7 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
             BluetoothPermissionHelper()
 
         Permission.ReadContacts -> ContactPermissionHelper()
+        Permission.ReadCalendar -> CalendarPermissionHelper()
+        Permission.WriteCalendar -> CalendarPermissionHelper()
     }
 }
