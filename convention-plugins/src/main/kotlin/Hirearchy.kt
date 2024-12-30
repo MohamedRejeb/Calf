@@ -21,6 +21,11 @@ fun KotlinMultiplatformExtension.applyHierarchyTemplate() {
                 withJs()
                 withWasmJs()
             }
+
+            group("web") {
+                withJs()
+                withWasmJs()
+            }
         }
     }
 }
@@ -33,3 +38,6 @@ val NamedDomainObjectContainer<KotlinSourceSet>.materialMain: NamedDomainObjectP
 
 val NamedDomainObjectContainer<KotlinSourceSet>.nonAndroidMain: NamedDomainObjectProvider<KotlinSourceSet>
     get() = named("nonAndroidMain")
+
+val NamedDomainObjectContainer<KotlinSourceSet>.jsWasmMain: NamedDomainObjectProvider<KotlinSourceSet>
+    get() = named("jsWasmMain")
