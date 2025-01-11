@@ -6,6 +6,7 @@ import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionBadge
 import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNAuthorizationStatusAuthorized
+import platform.UserNotifications.UNAuthorizationStatusDenied
 import platform.UserNotifications.UNAuthorizationStatusEphemeral
 import platform.UserNotifications.UNAuthorizationStatusNotDetermined
 import platform.UserNotifications.UNAuthorizationStatusProvisional
@@ -45,10 +46,13 @@ internal class LocalNotificationPermissionHelper : PermissionHelper {
                     onPermissionResult(PermissionStatus.Granted)
 
                 UNAuthorizationStatusNotDetermined ->
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
+
+                UNAuthorizationStatusDenied ->
                     onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
 
                 else ->
-                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
             }
         }
     }

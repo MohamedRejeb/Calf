@@ -4,6 +4,7 @@ import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
 import com.mohamedrejeb.calf.permissions.PermissionStatus
 import platform.AVFoundation.AVAuthorizationStatus
 import platform.AVFoundation.AVAuthorizationStatusAuthorized
+import platform.AVFoundation.AVAuthorizationStatusDenied
 import platform.AVFoundation.AVAuthorizationStatusNotDetermined
 import platform.AVFoundation.AVCaptureDevice
 import platform.AVFoundation.AVMediaType
@@ -33,10 +34,13 @@ internal class AVCapturePermissionHelper(
                 PermissionStatus.Granted
 
             AVAuthorizationStatusNotDetermined ->
+                PermissionStatus.Denied(shouldShowRationale = false)
+
+            AVAuthorizationStatusDenied ->
                 PermissionStatus.Denied(shouldShowRationale = true)
 
             else ->
-                PermissionStatus.Denied(shouldShowRationale = false)
+                PermissionStatus.Denied(shouldShowRationale = true)
         }
 
         onPermissionResult(permissionStatus)
