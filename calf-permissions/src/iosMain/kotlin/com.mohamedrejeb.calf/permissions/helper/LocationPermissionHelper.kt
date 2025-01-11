@@ -8,6 +8,7 @@ import platform.CoreLocation.CLLocationManagerDelegateProtocol
 import platform.CoreLocation.kCLAuthorizationStatusAuthorized
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
+import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.darwin.NSObject
 
@@ -45,10 +46,13 @@ internal class LocationPermissionHelper : PermissionHelper {
                 PermissionStatus.Granted
 
             kCLAuthorizationStatusNotDetermined ->
+                PermissionStatus.Denied(shouldShowRationale = false)
+
+            kCLAuthorizationStatusDenied ->
                 PermissionStatus.Denied(shouldShowRationale = true)
 
             else ->
-                PermissionStatus.Denied(shouldShowRationale = false)
+                PermissionStatus.Denied(shouldShowRationale = true)
         }
         onPermissionResult(permissionStatus)
     }
