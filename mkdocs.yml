@@ -47,7 +47,14 @@ extra:
 nav:
   - 'Overview': index.md
   - 'Installation': installation.md
-  - 'Adaptive UI': ui.md
+  - 'Adaptive UI':
+    - 'Overview': ui.md
+    - 'AdaptiveAlertDialog': ui/adaptive-alert-dialog.md
+    - 'AdaptiveBottomSheet': ui/adaptive-bottom-sheet.md
+    - 'AdaptiveCircularProgressIndicator': ui/adaptive-circular-progress-indicator.md
+    - 'AdaptiveClickable': ui/adaptive-clickable.md
+    - 'AdaptiveDatePicker': ui/adaptive-date-picker.md
+    - 'AdaptiveTimePicker': ui/adaptive-time-picker.md
   - 'WebView': webview.md
   - 'File Picker': filepicker.md
   - 'Permissions': permissions.md
@@ -87,4 +94,4 @@ plugins:
 
 # Copyright
 copyright: |
-  &copy; 2024 <a href="https://github.com/MohamedRejeb"  target="_blank" rel="noopener">Mohamed Rejeb</a>
+  &copy; 2025 <a href="https://github.com/MohamedRejeb"  target="_blank" rel="noopener">Mohamed Rejeb</a>
