@@ -17,7 +17,10 @@ import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
 fun TimePickerScreen(
     navigateBack: () -> Unit
 ) {
-    val state = rememberAdaptiveTimePickerState()
+    val state = rememberAdaptiveTimePickerState(
+        initialHour = 19,
+        initialMinute = 20,
+    )
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
