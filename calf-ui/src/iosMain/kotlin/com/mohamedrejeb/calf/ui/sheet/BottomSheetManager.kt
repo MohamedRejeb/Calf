@@ -88,6 +88,7 @@ internal class BottomSheetManager(
      */
     fun show(
         skipPartiallyExpanded: Boolean,
+        showDragHandle: Boolean = true,
     ) {
         if (isPresented || isAnimating) return
         isAnimating = true
@@ -103,7 +104,7 @@ internal class BottomSheetManager(
                     UISheetPresentationControllerDetent.mediumDetent(),
                 )
         )
-        bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = true
+        bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = showDragHandle
 
         applyTheme(isDark)
         applyContainerColor(containerColor)

@@ -114,7 +114,10 @@ actual fun AdaptiveBottomSheet(
                 }
             )
         } else {
-            sheetManager.show(adaptiveSheetState.skipPartiallyExpanded)
+            sheetManager.show(
+                skipPartiallyExpanded = adaptiveSheetState.skipPartiallyExpanded,
+                showDragHandle = dragHandle != null,
+            )
         }
     }
 
