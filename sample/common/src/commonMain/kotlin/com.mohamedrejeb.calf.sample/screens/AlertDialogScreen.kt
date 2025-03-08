@@ -9,7 +9,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
+import com.mohamedrejeb.calf.ui.dialog.AdaptiveBasicAlertDialog
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosAction
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosSeverity
@@ -18,6 +20,7 @@ import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosTextField
 import com.mohamedrejeb.calf.ui.dialog.uikit.rememberAlertDialogIosProperties
 import com.mohamedrejeb.calf.ui.uikit.IosKeyboardType
 
+@OptIn(ExperimentalCalfUiApi::class)
 @Composable
 fun AlertDialogScreen(
     navigateBack: () -> Unit
@@ -149,11 +152,12 @@ fun AlertDialogScreen(
         )
 
         if (showComplexDialog) {
-            AdaptiveAlertDialog(
+            AdaptiveBasicAlertDialog(
                 onDismissRequest = {
                     showComplexDialog = false
                 },
-                materialConfirmButton = {
+                iosProperties = complexDialogIosProperties,
+                materialContent = {
                     Button(
                         onClick = {
                             showComplexDialog = false
@@ -162,16 +166,6 @@ fun AlertDialogScreen(
                         Text("Confirm")
                     }
                 },
-                materialDismissButton = {
-                    Button(
-                        onClick = {
-                            showComplexDialog = false
-                        }
-                    ) {
-                        Text("Dismiss")
-                    }
-                },
-                iosProperties = complexDialogIosProperties,
             )
         }
 
@@ -208,11 +202,12 @@ fun AlertDialogScreen(
         )
 
         if (showActionSheetDialog) {
-            AdaptiveAlertDialog(
+            AdaptiveBasicAlertDialog(
                 onDismissRequest = {
                     showActionSheetDialog = false
                 },
-                materialConfirmButton = {
+                iosProperties = actionSheetDialogIosProperties,
+                materialContent = {
                     Button(
                         onClick = {
                             showActionSheetDialog = false
@@ -221,16 +216,6 @@ fun AlertDialogScreen(
                         Text("Confirm")
                     }
                 },
-                materialDismissButton = {
-                    Button(
-                        onClick = {
-                            showActionSheetDialog = false
-                        }
-                    ) {
-                        Text("Dismiss")
-                    }
-                },
-                iosProperties = actionSheetDialogIosProperties,
             )
         }
     }

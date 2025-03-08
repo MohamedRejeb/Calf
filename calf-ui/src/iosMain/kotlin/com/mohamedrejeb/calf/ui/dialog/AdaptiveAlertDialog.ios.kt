@@ -101,22 +101,12 @@ actual fun AdaptiveAlertDialog(
 
 @OptIn(InternalCalfApi::class)
 @Composable
-actual fun AdaptiveAlertDialog(
+actual fun AdaptiveBasicAlertDialog(
     onDismissRequest: () -> Unit,
-    materialConfirmButton: @Composable () -> Unit,
-    materialDismissButton: @Composable (() -> Unit)?,
-    materialIcon: @Composable (() -> Unit)?,
-    materialTitle: @Composable (() -> Unit)?,
-    materialText: @Composable (() -> Unit)?,
-    shape: Shape,
-    containerColor: Color,
-    iconContentColor: Color,
-    titleContentColor: Color,
-    textContentColor: Color,
-    tonalElevation: Dp,
+    modifier: Modifier,
     iosProperties: AlertDialogIosProperties,
     properties: DialogProperties,
-    modifier: Modifier,
+    materialContent: @Composable () -> Unit,
 ) {
     val currentUIViewController = LocalUIViewController.current
 

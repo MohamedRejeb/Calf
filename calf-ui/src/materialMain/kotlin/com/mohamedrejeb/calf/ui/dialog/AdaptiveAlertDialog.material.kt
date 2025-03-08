@@ -2,7 +2,9 @@ package com.mohamedrejeb.calf.ui.dialog
 
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +40,7 @@ actual fun AdaptiveAlertDialog(
     properties: DialogProperties,
     modifier: Modifier,
 ) {
-    AlertDialogImpl(
+    AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = materialConfirmButton ?: {
             Button(
@@ -72,72 +74,19 @@ actual fun AdaptiveAlertDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-actual fun AdaptiveAlertDialog(
+actual fun AdaptiveBasicAlertDialog(
     onDismissRequest: () -> Unit,
-    materialConfirmButton: @Composable () -> Unit,
-    materialDismissButton: @Composable (() -> Unit)?,
-    materialIcon: @Composable (() -> Unit)?,
-    materialTitle: @Composable (() -> Unit)?,
-    materialText: @Composable (() -> Unit)?,
-    shape: Shape,
-    containerColor: Color,
-    iconContentColor: Color,
-    titleContentColor: Color,
-    textContentColor: Color,
-    tonalElevation: Dp,
+    modifier: Modifier,
     iosProperties: AlertDialogIosProperties,
     properties: DialogProperties,
-    modifier: Modifier,
+    materialContent: @Composable () -> Unit,
 ) {
-    AlertDialogImpl(
+    BasicAlertDialog(
         onDismissRequest = onDismissRequest,
-        confirmButton = materialConfirmButton,
-        dismissButton = materialDismissButton,
-        icon = materialIcon,
-        title = materialTitle,
-        text = materialText,
-        shape = shape,
-        containerColor = containerColor,
-        iconContentColor = iconContentColor,
-        titleContentColor = titleContentColor,
-        textContentColor = textContentColor,
-        tonalElevation = tonalElevation,
-        properties = properties,
         modifier = modifier,
-    )
-}
-
-@Composable
-private fun AlertDialogImpl(
-    onDismissRequest: () -> Unit,
-    confirmButton: @Composable () -> Unit,
-    dismissButton: @Composable (() -> Unit)?,
-    icon: @Composable (() -> Unit)?,
-    title: @Composable (() -> Unit)?,
-    text: @Composable (() -> Unit)?,
-    shape: Shape,
-    containerColor: Color,
-    iconContentColor: Color,
-    titleContentColor: Color,
-    textContentColor: Color,
-    tonalElevation: Dp,
-    properties: DialogProperties,
-    modifier: Modifier,
-) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = confirmButton,
-        dismissButton = dismissButton,
-        icon = icon,
-        title = title,
-        text = text,
-        shape = shape,
-        containerColor = containerColor,
-        iconContentColor = iconContentColor,
-        titleContentColor = titleContentColor,
-        textContentColor = textContentColor,
-        tonalElevation = tonalElevation,
         properties = properties,
+        content = materialContent,
     )
 }

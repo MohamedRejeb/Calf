@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogProperties
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosProperties
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosStyle
@@ -86,47 +87,29 @@ expect fun AdaptiveAlertDialog(
 /**
  * Displays an adaptive alert dialog, which is a dialog that adapts to the platform it is running on.
  *
- * On iOS, it uses a native `UIAlertController` and on other platforms, it uses a material3 `AlertDialog`.
+ * On iOS, it uses a native `UIAlertController` and on other platforms, it uses a material3 `BasicAlertDialog`.
  *
  * Non-iOS platforms is a shortcut for Android, Desktop, and Web.
  *
  * The styling parameters are only used for non-iOS platforms.
  *
  * @param onDismissRequest Lambda that is invoked when the dialog is dismissed.
- * @param materialConfirmButton The composable that represents the confirm button for non-iOS platforms.
- * @param materialDismissButton The composable that represents the dismiss button for non-iOS platforms.
- * @param materialIcon The composable that represents the icon of the dialog for non-iOS platforms.
- * @param materialTitle The composable that represents the title of the dialog for non-iOS platforms.
- * @param materialText The composable that represents the text of the dialog for non-iOS platforms.
- * @param shape The shape of the dialog.
- * @param containerColor The color of the dialog container.
- * @param iconContentColor The color of the icon content.
- * @param titleContentColor The color of the title content.
- * @param textContentColor The color of the text content.
- * @param tonalElevation The tonal elevation of the dialog.
+ * @param modifier The modifier of the dialog.
  * @param iosProperties The iOS properties of the dialog.
  * This is used to configure the iOS dialog.
  * @param properties The properties of the dialog.
- * @param modifier The modifier of the dialog.
+ * @param materialContent The composable that represents the confirm button for non-iOS platforms.
  * @see [AlertDialogIosProperties]
  */
+@ExperimentalCalfUiApi
 @Composable
-expect fun AdaptiveAlertDialog(
+expect fun AdaptiveBasicAlertDialog(
     onDismissRequest: () -> Unit,
-    materialConfirmButton: @Composable () -> Unit,
-    materialDismissButton: @Composable (() -> Unit)? = null,
-    materialIcon: @Composable (() -> Unit)? = null,
-    materialTitle: @Composable (() -> Unit)? = null,
-    materialText: @Composable (() -> Unit)? = null,
-    shape: Shape = AlertDialogDefaults.shape,
-    containerColor: Color = AlertDialogDefaults.containerColor,
-    iconContentColor: Color = AlertDialogDefaults.iconContentColor,
-    titleContentColor: Color = AlertDialogDefaults.titleContentColor,
-    textContentColor: Color = AlertDialogDefaults.textContentColor,
-    tonalElevation: Dp = AlertDialogDefaults.TonalElevation,
+    modifier: Modifier = Modifier,
 
     iosProperties: AlertDialogIosProperties = rememberAlertDialogIosProperties(),
 
     properties: DialogProperties = DialogProperties(),
-    modifier: Modifier = Modifier,
+
+    materialContent: @Composable () -> Unit,
 )
