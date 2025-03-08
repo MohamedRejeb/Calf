@@ -35,12 +35,12 @@ actual class AdaptiveTimePickerState actual constructor(
         require(initialHour in 0..59) { "initialMinute should be in [0..59] range" }
     }
 
-    internal var minuteState by mutableStateOf(initialHour)
-    internal var hourState by mutableStateOf(initialMinute)
+    internal var hourState by mutableStateOf(initialHour)
+    internal var minuteState by mutableStateOf(initialMinute)
     internal var is24hourState by mutableStateOf(is24Hour)
 
-    actual val minute: Int get() = minuteState
     actual val hour: Int get() = hourState
+    actual val minute: Int get() = minuteState
     actual val is24hour: Boolean get() = is24hourState
 
     actual companion object {
