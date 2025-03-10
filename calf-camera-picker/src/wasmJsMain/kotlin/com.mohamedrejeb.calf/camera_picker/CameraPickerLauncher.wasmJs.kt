@@ -5,5 +5,5 @@ import com.mohamedrejeb.calf.io.KmpFile
 
 @Composable
 actual fun rememberCameraPickerLauncher(onResult: (KmpFile) -> Unit): CameraPickerLauncher {
-    TODO("Not yet implemented")
+    throw UnsupportedOperationException("Not yet implemented")
 }
