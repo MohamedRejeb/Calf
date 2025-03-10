@@ -6,6 +6,7 @@ import com.mohamedrejeb.calf.navigation.AdaptiveNavHostController
 import com.mohamedrejeb.calf.sample.screens.AdaptiveClickableScreen
 import com.mohamedrejeb.calf.sample.screens.AlertDialogScreen
 import com.mohamedrejeb.calf.sample.screens.BottomSheetScreen
+import com.mohamedrejeb.calf.sample.screens.CameraPickerScreen
 import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
 import com.mohamedrejeb.calf.sample.screens.DropDownMenuScreen
 import com.mohamedrejeb.calf.sample.screens.FilePickerScreen
@@ -103,6 +104,15 @@ fun AppNavGraph(
                 }
             )
         }
+        composable(Screen.CameraPickerScreen.name) {
+            CameraPickerScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+
+        }
+
         composable(Screen.WebView.name) {
             WebViewScreen(
                 navigateBack = {
