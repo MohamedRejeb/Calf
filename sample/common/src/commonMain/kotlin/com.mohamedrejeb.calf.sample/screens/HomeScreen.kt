@@ -18,10 +18,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.AdsClick
-import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Camera
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.PunchClock
@@ -148,6 +148,11 @@ fun HomeScreen(
                 ListItem(
                     onClick = { navigate(Screen.ImagePicker.name) },
                     title = "Adaptive Image Picker",
+                    icon = Icons.Outlined.Image,
+                )
+                ListItem(
+                    onClick = { navigate(Screen.CameraPickerScreen.name) },
+                    title = "Camera Picker",
                     icon = Icons.Outlined.Camera,
                 )
                 ListItem(

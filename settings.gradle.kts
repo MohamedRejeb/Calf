@@ -44,6 +44,7 @@ include(
     ":sample:web-js",
     ":sample:web-wasm",
     ":sample:common",
+    "calf-camera-picker",
 )
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

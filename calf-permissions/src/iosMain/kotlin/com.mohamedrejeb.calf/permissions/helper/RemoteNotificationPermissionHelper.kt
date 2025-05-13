@@ -8,7 +8,6 @@ import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNAuthorizationStatusAuthorized
 import platform.UserNotifications.UNAuthorizationStatusEphemeral
 import platform.UserNotifications.UNAuthorizationStatusNotDetermined
-import platform.UserNotifications.UNAuthorizationStatusDenied
 import platform.UserNotifications.UNAuthorizationStatusProvisional
 import platform.UserNotifications.UNUserNotificationCenter
 
@@ -46,13 +45,10 @@ internal class RemoteNotificationPermissionHelper : PermissionHelper {
                     onPermissionResult(PermissionStatus.Granted)
 
                 UNAuthorizationStatusNotDetermined ->
-                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
-
-                UNAuthorizationStatusDenied ->
                     onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
 
                 else ->
-                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
             }
         }
     }

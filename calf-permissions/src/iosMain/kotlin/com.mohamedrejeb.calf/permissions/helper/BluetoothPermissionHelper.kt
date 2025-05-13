@@ -8,7 +8,6 @@ import platform.CoreBluetooth.CBCentralManagerDelegateProtocol
 import platform.CoreBluetooth.CBManager
 import platform.CoreBluetooth.CBManagerAuthorization
 import platform.CoreBluetooth.CBManagerAuthorizationAllowedAlways
-import platform.CoreBluetooth.CBManagerAuthorizationDenied
 import platform.CoreBluetooth.CBManagerAuthorizationNotDetermined
 import platform.CoreBluetooth.CBManagerStatePoweredOn
 import platform.CoreBluetooth.CBManagerStateUnknown
@@ -40,13 +39,10 @@ internal class BluetoothPermissionHelper : PermissionHelper {
                     onPermissionResult(PermissionStatus.Granted)
 
                 CBManagerAuthorizationNotDetermined ->
-                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
-
-                CBManagerAuthorizationDenied ->
                     onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
 
                 else ->
-                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
             }
         } else {
             val state = CBCentralManager().state
@@ -55,10 +51,10 @@ internal class BluetoothPermissionHelper : PermissionHelper {
                     onPermissionResult(PermissionStatus.Granted)
 
                 CBManagerStateUnknown ->
-                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
 
                 else ->
-                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = true))
+                    onPermissionResult(PermissionStatus.Denied(shouldShowRationale = false))
             }
         }
     }
