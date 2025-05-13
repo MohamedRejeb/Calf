@@ -6,7 +6,7 @@ plugins {
 
 kotlin {
     js {
-        moduleName = "web"
+        outputModuleName = "web"
         browser {
             commonWebpackConfig {
                 outputFileName = "web.js"
