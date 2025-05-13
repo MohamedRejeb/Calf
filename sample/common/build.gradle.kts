@@ -34,6 +34,7 @@ kotlin {
         implementation(projects.calfWebview)
         implementation(libs.compose.navigation)
         implementation(projects.calfNavigation)
+        implementation(projects.calfCameraPicker)
 
         // Coil
         implementation(libs.coil.compose)

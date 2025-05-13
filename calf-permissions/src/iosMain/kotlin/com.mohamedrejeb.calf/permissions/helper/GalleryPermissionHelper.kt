@@ -4,7 +4,6 @@ import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
 import com.mohamedrejeb.calf.permissions.PermissionStatus
 import platform.Photos.PHAuthorizationStatus
 import platform.Photos.PHAuthorizationStatusAuthorized
-import platform.Photos.PHAuthorizationStatusDenied
 import platform.Photos.PHAuthorizationStatusNotDetermined
 import platform.Photos.PHPhotoLibrary
 
@@ -29,13 +28,10 @@ internal class GalleryPermissionHelper : PermissionHelper {
                 PermissionStatus.Granted
 
             PHAuthorizationStatusNotDetermined ->
-                PermissionStatus.Denied(shouldShowRationale = false)
-
-            PHAuthorizationStatusDenied ->
                 PermissionStatus.Denied(shouldShowRationale = true)
 
             else ->
-                PermissionStatus.Denied(shouldShowRationale = true)
+                PermissionStatus.Denied(shouldShowRationale = false)
         }
         onPermissionResult(permissionStatus)
     }

@@ -2,8 +2,6 @@ package com.mohamedrejeb.calf.permissions
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 
 /**
  * Creates a [MultiplePermissionsState] that is remembered across compositions.

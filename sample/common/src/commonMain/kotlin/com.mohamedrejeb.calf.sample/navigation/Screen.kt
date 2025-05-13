@@ -11,6 +11,7 @@ enum class Screen {
     Switch,
     FilePicker,
     ImagePicker,
+    CameraPickerScreen,
     WebView,
     Permission,
     Map,
