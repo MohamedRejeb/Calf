@@ -7,7 +7,7 @@ kotlinx-browser = "0.3"
 nexus-publish = "2.0.0"
 documentfile = "1.0.1"
 jna = "5.16.0"
-coil = "3.1.0"
+coil = "3.2.0"
 
 calf = "0.7.1"
 
