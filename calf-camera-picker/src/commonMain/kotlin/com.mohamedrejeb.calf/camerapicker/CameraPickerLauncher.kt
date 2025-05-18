@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.camera_picker
+package com.mohamedrejeb.calf.camerapicker
 
 import androidx.compose.runtime.Composable
 import com.mohamedrejeb.calf.io.KmpFile

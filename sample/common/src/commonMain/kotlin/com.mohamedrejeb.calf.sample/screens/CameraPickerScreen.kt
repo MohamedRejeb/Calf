@@ -28,7 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.mohamedrejeb.calf.camera_picker.rememberCameraPickerLauncher
+import com.mohamedrejeb.calf.camerapicker.rememberCameraPickerLauncher
 import com.mohamedrejeb.calf.core.LocalPlatformContext
 import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
@@ -39,7 +39,7 @@ import com.mohamedrejeb.calf.permissions.rememberPermissionState
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CameraPickerScreen(
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
 ) {
     val context = LocalPlatformContext.current
     var isCameraPermissionGranted by remember { mutableStateOf(false) }
@@ -54,13 +54,11 @@ fun CameraPickerScreen(
     var fileName by remember {
         mutableStateOf("")
     }
-    val cameraPickerLauncher =
-        rememberCameraPickerLauncher(
-
-            onResult = { file ->
-                fileName = file.getName(context).orEmpty()
-            },
-        )
+    val cameraPickerLauncher = rememberCameraPickerLauncher(
+        onResult = { file ->
+            fileName = file.getName(context).orEmpty()
+        },
+    )
 
     Box(
         modifier = Modifier
