@@ -24,9 +24,9 @@ internal fun PermissionHelper.handlePermissionRequest(
 
             is PermissionStatus.Denied ->
                 if (status.shouldShowRationale)
-                    launchPermissionRequest()
-                else
                     onPermissionResult(false)
+                else
+                    launchPermissionRequest()
         }
     }
 }
