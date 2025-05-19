@@ -135,6 +135,7 @@ internal fun Permission.toAndroidPermission(): String {
                 ""
         Permission.FineLocation -> Manifest.permission.ACCESS_FINE_LOCATION
         Permission.CoarseLocation -> Manifest.permission.ACCESS_COARSE_LOCATION
+        Permission.BackgroundLocation -> Manifest.permission.ACCESS_BACKGROUND_LOCATION
         Permission.RemoteNotification -> Manifest.permission.RECEIVE_BOOT_COMPLETED
         Permission.RecordAudio -> Manifest.permission.RECORD_AUDIO
         Permission.BluetoothLe -> Manifest.permission.BLUETOOTH
