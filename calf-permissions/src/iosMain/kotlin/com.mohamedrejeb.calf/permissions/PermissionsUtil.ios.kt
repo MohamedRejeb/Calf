@@ -33,6 +33,7 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
 
         Permission.FineLocation,
         Permission.CoarseLocation,
+        Permission.BackgroundLocation,
             ->
             LocationPermissionHelper()
 
