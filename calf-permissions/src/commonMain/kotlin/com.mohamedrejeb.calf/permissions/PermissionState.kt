@@ -99,6 +99,7 @@ enum class Permission {
     ReadAudio,
     FineLocation,
     CoarseLocation,
+    BackgroundLocation,
     Notification,
     RemoteNotification,
     RecordAudio,
