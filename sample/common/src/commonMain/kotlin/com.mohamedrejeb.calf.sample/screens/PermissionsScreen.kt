@@ -97,7 +97,6 @@ private fun PermissionItem(permission: Permission) {
 
     Button(
         onClick = {
-            println("Click")
             permissionState.launchPermissionRequest()
         },
     ) {

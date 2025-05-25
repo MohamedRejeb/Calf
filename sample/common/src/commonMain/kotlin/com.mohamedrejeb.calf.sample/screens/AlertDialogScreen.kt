@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.currentPlatform
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveBasicAlertDialog
@@ -34,7 +35,6 @@ fun AlertDialogScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
     ) {
         IconButton(
             onClick = {
@@ -62,24 +62,26 @@ fun AlertDialogScreen(
                 Text("Show Alert Dialog")
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            if (currentPlatform.isIOS) {
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    showComplexDialog = true
-                },
-            ) {
-                Text("Show iOS Complex Alert Dialog")
-            }
+                Button(
+                    onClick = {
+                        showComplexDialog = true
+                    },
+                ) {
+                    Text("Show iOS Complex Alert Dialog")
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    showActionSheetDialog = true
-                },
-            ) {
-                Text("Show iOS ActionSheet Dialog")
+                Button(
+                    onClick = {
+                        showActionSheetDialog = true
+                    },
+                ) {
+                    Text("Show iOS ActionSheet Dialog")
+                }
             }
         }
 

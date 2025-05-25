@@ -5,7 +5,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
-import jodd.net.MimeTypes
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -63,6 +62,3 @@ actual class FilePickerLauncher actual constructor(
         onLaunch()
     }
 }
-
-val File.extension: String
-    get() = name.substringAfterLast(".")

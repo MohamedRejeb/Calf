@@ -1,11 +1,14 @@
-package com.mohamedrejeb.calf.camera_picker
+package com.mohamedrejeb.calf.camerapicker
 
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -15,10 +18,10 @@ import androidx.core.content.FileProvider
 import com.mohamedrejeb.calf.io.KmpFile
 import java.io.File
 
-
-class CameraPickerLauncherImp(
+@Stable
+internal class CameraPickerLauncherAndroidImpl(
     private val context: Context,
-    private val launcher: androidx.activity.result.ActivityResultLauncher<Uri>,
+    private val launcher: ActivityResultLauncher<Uri>,
     private val onResult: (KmpFile) -> Unit
 ) : CameraPickerLauncher {
 
@@ -26,11 +29,11 @@ class CameraPickerLauncherImp(
 
     override fun launch() {
         if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
-            return // لا يوجد كاميرا على الجهاز
+            return // No camera on this device
         }
 
         val file = File(context.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
-        val uri = if (android.os.Build.VERSION.SDK_INT >= 24) {
+        val uri = if (Build.VERSION.SDK_INT >= 24) {
             FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
         } else {
             Uri.fromFile(file)
@@ -54,7 +57,7 @@ actual fun rememberCameraPickerLauncher(
     val context = LocalContext.current
 
     val cameraPickerLauncher = remember {
-        mutableStateOf<CameraPickerLauncherImp?>(null)
+        mutableStateOf<CameraPickerLauncherAndroidImpl?>(null)
     }
 
     val launcher = rememberLauncherForActivityResult(
@@ -64,7 +67,7 @@ actual fun rememberCameraPickerLauncher(
     }
 
     return remember {
-        CameraPickerLauncherImp(context, launcher, onResult).also {
+        CameraPickerLauncherAndroidImpl(context, launcher, onResult).also {
             cameraPickerLauncher.value = it
         }
     }
