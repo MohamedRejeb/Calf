@@ -6,6 +6,7 @@
 
 | Kotlin version | Compose version | Calf version |
 |----------------|-----------------|--------------|
+| 2.1.21         | 1.8.0           | 0.8.0        |
 | 2.1.10         | 1.7.3           | 0.7.1        |
 | 2.1.0          | 1.7.3           | 0.7.0        |
 | 2.0.21         | 1.7.0           | 0.6.1        |
@@ -18,7 +19,7 @@
 Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
-api("com.mohamedrejeb.calf:calf-ui:0.7.1")
+api("com.mohamedrejeb.calf:calf-ui:0.8.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -31,7 +32,7 @@ kotlin {
         .filter { it.konanTarget.family == Family.IOS }
         .forEach {
             it.binaries.framework {
-                export("com.mohamedrejeb.calf:calf-ui:0.7.1")
+                export("com.mohamedrejeb.calf:calf-ui:0.8.0")
             }
         }
 }
@@ -42,7 +43,7 @@ kotlin {
 kotlin {
     cocoapods {
         framework {
-            export("com.mohamedrejeb.calf:calf-ui:0.7.1")
+            export("com.mohamedrejeb.calf:calf-ui:0.8.0")
         }
     }
 }
