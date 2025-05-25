@@ -33,6 +33,7 @@ import com.mohamedrejeb.calf.core.LocalPlatformContext
 import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
 import com.mohamedrejeb.calf.permissions.Permission
+import com.mohamedrejeb.calf.permissions.isGranted
 import com.mohamedrejeb.calf.permissions.rememberPermissionState
 
 
@@ -42,22 +43,21 @@ fun CameraPickerScreen(
     navigateBack: () -> Unit,
 ) {
     val context = LocalPlatformContext.current
-    var isCameraPermissionGranted by remember { mutableStateOf(false) }
 
-    val cameraPermissionState = rememberPermissionState(
-        permission = Permission.Camera,
-        onPermissionResult = {
-            isCameraPermissionGranted = it
-        }
-    )
+    var fileName by remember { mutableStateOf("") }
 
-    var fileName by remember {
-        mutableStateOf("")
-    }
     val cameraPickerLauncher = rememberCameraPickerLauncher(
         onResult = { file ->
             fileName = file.getName(context).orEmpty()
         },
+    )
+
+    val cameraPermissionState = rememberPermissionState(
+        permission = Permission.Camera,
+        onPermissionResult = { isGranted ->
+            if (isGranted)
+                cameraPickerLauncher.launch()
+        }
     )
 
     Box(
@@ -89,7 +89,7 @@ fun CameraPickerScreen(
         ) {
             ElevatedButton(
                 onClick = {
-                    if (isCameraPermissionGranted) {
+                    if (cameraPermissionState.status.isGranted) {
                         cameraPickerLauncher.launch()
                     } else {
                         cameraPermissionState.launchPermissionRequest()
