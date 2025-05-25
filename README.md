@@ -40,6 +40,7 @@ You can try the web demo [here](https://calf-library.netlify.app/)
 
 | Kotlin version | Compose version | Calf version |
 |----------------|-----------------|--------------|
+| 2.1.21         | 1.8.0           | 0.8.0        |
 | 2.1.10         | 1.7.3           | 0.7.1        |
 | 2.1.0          | 1.7.3           | 0.7.0        |
 | 2.0.21         | 1.7.0           | 0.6.1        |
