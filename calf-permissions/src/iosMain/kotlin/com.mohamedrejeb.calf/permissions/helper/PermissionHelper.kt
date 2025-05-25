@@ -13,7 +13,7 @@ internal interface PermissionHelper {
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
-internal fun PermissionHelper.handlePermissionRequest(
+internal fun PermissionHelper.handleLaunchPermissionRequest(
     onPermissionResult: (Boolean) -> Unit,
     launchPermissionRequest: () -> Unit,
 ) {

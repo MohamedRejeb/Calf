@@ -6,7 +6,7 @@ import platform.EventKit.EKEventStore
 
 internal class CalendarPermissionHelper : PermissionHelper {
     override fun launchPermissionRequest(onPermissionResult: (Boolean) -> Unit) {
-        handlePermissionRequest(
+        handleLaunchPermissionRequest(
             onPermissionResult = onPermissionResult,
             launchPermissionRequest = {
                 EKEventStore().requestFullAccessToEventsWithCompletion { isOk, error ->
