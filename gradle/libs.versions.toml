@@ -6,7 +6,7 @@ kotlinx-datetime = "0.6.2"
 kotlinx-browser = "0.3"
 nexus-publish = "2.0.0"
 documentfile = "1.1.0"
-jna = "5.16.0"
+jna = "5.17.0"
 coil = "3.2.0"
 
 calf = "0.8.0"
