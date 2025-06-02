@@ -5,10 +5,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.uikit.LocalUIViewController
 import com.mohamedrejeb.calf.io.KmpFile
 import platform.Foundation.NSURL
-import platform.UIKit.UIApplication
 import platform.UIKit.UIImagePickerController
 import platform.UIKit.UIImagePickerControllerDelegateProtocol
-import platform.UIKit.UIImagePickerControllerMediaURL
+import platform.UIKit.UIImagePickerControllerImageURL
 import platform.UIKit.UIImagePickerControllerSourceType
 import platform.UIKit.UINavigationControllerDelegateProtocol
 import platform.UIKit.UIViewController
@@ -19,6 +18,12 @@ internal class CameraPickerLauncherIosImpl(
     private val onResult: (KmpFile) -> Unit,
 ) : CameraPickerLauncher {
     override fun launch() {
+        if (!UIImagePickerController.isSourceTypeAvailable(
+                UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
+            )
+        ) {
+            throw IllegalStateException("Camera is not available on this device")
+        }
         val pickerController = UIImagePickerController()
         pickerController.sourceType =
             UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
@@ -30,7 +35,8 @@ internal class CameraPickerLauncherIosImpl(
                     didFinishPickingMediaWithInfo: Map<Any?, Any?>
                 ) {
                     val imageUrl =
-                        didFinishPickingMediaWithInfo[UIImagePickerControllerMediaURL] as? NSURL
+                        didFinishPickingMediaWithInfo[UIImagePickerControllerImageURL] as? NSURL
+
                     if (imageUrl != null) {
                         val kmpFile = KmpFile(imageUrl) // Use file path accordingly
                         onResult(kmpFile)
