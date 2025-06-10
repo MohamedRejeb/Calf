@@ -176,6 +176,14 @@ internal fun Permission.toAndroidPermission(): String {
         Permission.ReadContacts -> Manifest.permission.READ_CONTACTS
         Permission.ReadCalendar -> Manifest.permission.READ_CALENDAR
         Permission.WriteCalendar -> Manifest.permission.WRITE_CALENDAR
+        Permission.WifiAccessState -> Manifest.permission.ACCESS_WIFI_STATE
+        Permission.WifiChangeState -> Manifest.permission.CHANGE_WIFI_STATE
+
+        Permission.WifiNearbyDevices ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                Manifest.permission.NEARBY_WIFI_DEVICES
+            else
+                ""
     }
 
 }
@@ -207,6 +215,9 @@ internal fun getPermissionFromAndroidPermission(androidPermission: String): Perm
         Manifest.permission.BLUETOOTH_CONNECT -> Permission.BluetoothConnect
         Manifest.permission.BLUETOOTH_ADVERTISE -> Permission.BluetoothAdvertise
         Manifest.permission.READ_CONTACTS -> Permission.ReadContacts
+        Manifest.permission.ACCESS_WIFI_STATE -> Permission.WifiAccessState
+        Manifest.permission.CHANGE_WIFI_STATE -> Permission.WifiChangeState
+        Manifest.permission.NEARBY_WIFI_DEVICES -> Permission.WifiNearbyDevices
         else -> null
     }
 }
