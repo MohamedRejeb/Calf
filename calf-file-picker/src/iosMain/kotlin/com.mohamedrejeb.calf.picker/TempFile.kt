@@ -14,7 +14,7 @@ internal fun NSURL.createTempFile(): NSURL? {
     val data = NSData.dataWithContentsOfURL(this)
         ?: absoluteURL?.dataRepresentation()
         ?: return null
-    return NSURL.fileURLWithPath("${NSTemporaryDirectory()}/${NSUUID().UUIDString}.$extension").apply {
+    return NSURL.fileURLWithPath("${NSTemporaryDirectory().removeSuffix("/")}/${NSUUID().UUIDString}.$extension").apply {
         data.writeToURL(this, true)
     }
 }
