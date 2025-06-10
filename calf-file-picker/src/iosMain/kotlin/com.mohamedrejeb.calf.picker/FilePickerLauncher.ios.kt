@@ -280,8 +280,10 @@ private fun createPHPickerViewController(
         FilePickerFileType.Image ->
             filterList.add(PHPickerFilter.imagesFilter())
 
-        FilePickerFileType.Video ->
+        FilePickerFileType.Video -> {
             filterList.add(PHPickerFilter.videosFilter())
+            filterList.add(PHPickerFilter.livePhotosFilter())
+        }
 
         else -> {
             filterList.add(PHPickerFilter.imagesFilter())
