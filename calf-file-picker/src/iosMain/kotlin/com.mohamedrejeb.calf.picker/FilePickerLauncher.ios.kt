@@ -37,6 +37,7 @@ import platform.UniformTypeIdentifiers.UTTypeText
 import platform.UniformTypeIdentifiers.UTTypeVideo
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
+import platform.UniformTypeIdentifiers.UTTypeMovie
 
 @OptIn(BetaInteropApi::class)
 @Composable
@@ -161,7 +162,7 @@ private fun rememberImageVideoPickerLauncher(
                             val result = it as? PHPickerResult ?: return@mapNotNull null
 
                             async {
-                                result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend()
+                                result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend(type)
                             }
                         }
                         .awaitAll()
@@ -200,10 +201,16 @@ private fun rememberImageVideoPickerLauncher(
 }
 
 @OptIn(InternalCalfApi::class)
-private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(): KmpFile? =
+private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(type: FilePickerFileType): KmpFile? =
     suspendCancellableCoroutine { continuation ->
+        val identifier = when(type) {
+            FilePickerFileType.Image -> UTTypeImage.identifier
+            FilePickerFileType.Video -> UTTypeMovie.identifier
+            else -> registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier
+        }
+
         val progress = loadFileRepresentationForTypeIdentifier(
-            typeIdentifier = registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier
+            typeIdentifier = identifier
         ) { url, error ->
             if (error != null) {
                 continuation.resume(null)
@@ -273,8 +280,10 @@ private fun createPHPickerViewController(
         FilePickerFileType.Image ->
             filterList.add(PHPickerFilter.imagesFilter())
 
-        FilePickerFileType.Video ->
+        FilePickerFileType.Video -> {
             filterList.add(PHPickerFilter.videosFilter())
+            filterList.add(PHPickerFilter.livePhotosFilter())
+        }
 
         else -> {
             filterList.add(PHPickerFilter.imagesFilter())
