@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.camerapicker.rememberCameraPickerLauncher
 import com.mohamedrejeb.calf.core.LocalPlatformContext
 import com.mohamedrejeb.calf.io.getName
+import com.mohamedrejeb.calf.io.getPath
 import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
 import com.mohamedrejeb.calf.permissions.Permission
 import com.mohamedrejeb.calf.permissions.isGranted
@@ -45,10 +46,12 @@ fun CameraPickerScreen(
     val context = LocalPlatformContext.current
 
     var fileName by remember { mutableStateOf("") }
+    var path by remember { mutableStateOf("") }
 
     val cameraPickerLauncher = rememberCameraPickerLauncher(
         onResult = { file ->
             fileName = file.getName(context).orEmpty()
+            path = file.getPath(context).orEmpty()
         },
     )
 
@@ -110,6 +113,14 @@ fun CameraPickerScreen(
                 text = "- $fileName",
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
             )
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = "- $path",
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+            )
+
 
         }
     }
