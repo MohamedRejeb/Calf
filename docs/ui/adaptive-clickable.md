@@ -10,6 +10,10 @@ Use `.adaptiveClickable` when you want to provide a platform-specific click inte
 
 ## Example
 
+| Material (Android, Desktop, Web)                                | Cupertino (iOS)                                         |
+|-----------------------------------------------------------------|---------------------------------------------------------|
+| ![Android Adaptive Clickable](../images/gif/android_adaptive_click.gif) | ![iOs Adaptive Clickable](../images/gif/ios_adaptive_click.gif) |
+
 ```kotlin
 Box(
     modifier = Modifier
