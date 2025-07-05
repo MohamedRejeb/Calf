@@ -41,6 +41,9 @@ internal actual fun rememberMutablePermissionState(
             )
         }
 
+    // Refresh the permission status when the lifecycle is resumed
+    PermissionLifecycleCheckerEffect(permissionState)
+
     return permissionState
 }
 
