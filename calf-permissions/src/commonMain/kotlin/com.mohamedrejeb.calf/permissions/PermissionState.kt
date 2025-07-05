@@ -109,5 +109,8 @@ enum class Permission {
     BluetoothAdvertise,
     ReadContacts,
     ReadCalendar,
-    WriteCalendar
+    WriteCalendar,
+    WifiAccessState,
+    WifiChangeState,
+    WifiNearbyDevices
 }
