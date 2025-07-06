@@ -10,6 +10,7 @@ import com.mohamedrejeb.calf.permissions.helper.LocalNotificationPermissionHelpe
 import com.mohamedrejeb.calf.permissions.helper.LocationPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.PermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.RemoteNotificationPermissionHelper
+import com.mohamedrejeb.calf.permissions.helper.WifiPermissionHelper
 import platform.AVFoundation.AVMediaTypeAudio
 import platform.AVFoundation.AVMediaTypeVideo
 
@@ -56,5 +57,11 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
         Permission.ReadContacts -> ContactPermissionHelper()
         Permission.ReadCalendar -> CalendarPermissionHelper()
         Permission.WriteCalendar -> CalendarPermissionHelper()
+
+        Permission.WifiAccessState,
+        Permission.WifiChangeState,
+        Permission.WifiNearbyDevices,
+            ->
+            WifiPermissionHelper()
     }
 }
