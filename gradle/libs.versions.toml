@@ -2,7 +2,7 @@
 agp = "8.10.1"
 kotlin = "2.1.21"
 compose = "1.8.2"
-kotlinx-datetime = "0.6.2"
+kotlinx-datetime = "0.7.0-0.6.x-compat"
 kotlinx-browser = "0.3"
 nexus-publish = "2.0.0"
 documentfile = "1.1.0"
