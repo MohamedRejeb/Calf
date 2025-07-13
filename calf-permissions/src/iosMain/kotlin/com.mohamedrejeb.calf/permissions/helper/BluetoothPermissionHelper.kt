@@ -12,18 +12,43 @@ import platform.CoreBluetooth.CBManagerAuthorizationDenied
 import platform.CoreBluetooth.CBManagerAuthorizationNotDetermined
 import platform.CoreBluetooth.CBManagerStatePoweredOn
 import platform.CoreBluetooth.CBManagerStateUnknown
-import platform.Foundation.NSSelectorFromString
+import platform.UIKit.UIDevice
 import platform.darwin.NSObject
 
 internal class BluetoothPermissionHelper : PermissionHelper {
+    private val iOS13AndHigher: Boolean
+        get() = UIDevice.currentDevice.systemVersion.toDoubleOrNull()?.let { it >= 13.0 } == true
+
     @OptIn(ExperimentalForeignApi::class, ExperimentalPermissionsApi::class)
     override fun launchPermissionRequest(onPermissionResult: (Boolean) -> Unit) {
         handleLaunchPermissionRequest(
             onPermissionResult = onPermissionResult,
             launchPermissionRequest = {
+                if (iOS13AndHigher) {
+                    val initialAuth = CBManager.authorization
+
+                    // If permission already determined, return immediately
+                    if (initialAuth != CBManagerAuthorizationNotDetermined) {
+                        onPermissionResult(initialAuth == CBManagerAuthorizationAllowedAlways)
+
+                        return@handleLaunchPermissionRequest
+                    }
+                }
+
+                var callbackFired = false
+
+                // CBCentralManager needed to trigger permission dialog
                 CBCentralManager(object : NSObject(), CBCentralManagerDelegateProtocol {
                     override fun centralManagerDidUpdateState(central: CBCentralManager) {
-                        onPermissionResult(central.state == CBManagerStatePoweredOn)
+                        if (!callbackFired) {
+                            callbackFired = true
+
+                            if (iOS13AndHigher) {
+                                onPermissionResult(CBManager.authorization == CBManagerAuthorizationAllowedAlways)
+                            } else {
+                                onPermissionResult(central.state == CBManagerStatePoweredOn)
+                            }
+                        }
                     }
                 }, null)
             }
@@ -33,7 +58,7 @@ internal class BluetoothPermissionHelper : PermissionHelper {
     @OptIn(ExperimentalForeignApi::class)
     @ExperimentalPermissionsApi
     override fun getPermissionStatus(onPermissionResult: (PermissionStatus) -> Unit) {
-        if (CBManager.resolveClassMethod(NSSelectorFromString("authorization"))) {
+        if (iOS13AndHigher) {
             val state: CBManagerAuthorization = CBManager.authorization
             when (state) {
                 CBManagerAuthorizationAllowedAlways ->
