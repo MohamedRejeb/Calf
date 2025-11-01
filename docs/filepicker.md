@@ -57,7 +57,7 @@ Button(
 
 * `FilePickerFileType.Image` - Allows you to pick images only
 * `FilePickerFileType.Video` - Allows you to pick videos only
-* `FilePickerFileType.ImageView` - Allows you to pick images and videos only
+* `FilePickerFileType.ImageVideo` - Allows you to pick images and videos only
 * `FilePickerFileType.Audio` - Allows you to pick audio files only
 * `FilePickerFileType.Document` - Allows you to pick documents only
 * `FilePickerFileType.Text` - Allows you to pick text files only
