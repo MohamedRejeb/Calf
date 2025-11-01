@@ -28,7 +28,7 @@ jobs:
       OSSRH_GPG_SECRET_KEY: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Validate Gradle Wrapper
       uses: gradle/wrapper-validation-action@v3
