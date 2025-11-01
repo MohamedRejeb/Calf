@@ -21,7 +21,7 @@ appcompat = "1.7.1"
 compose-ui = "1.8.3"
 android-lifecycle = "2.2.0"
 play-services-location = "21.3.0"
-compose-navigation = "2.9.0-beta03"
+compose-navigation = "2.9.1"
 ktor = "3.2.2"
 
 [libraries]
