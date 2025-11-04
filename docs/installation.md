@@ -4,6 +4,7 @@
 
 | Kotlin version | Compose version | Calf version |
 |----------------|-----------------|--------------|
+| 2.2.21         | 1.9.2           | 0.9.0        |
 | 2.1.21         | 1.8.0           | 0.8.0        |
 | 2.1.10         | 1.7.3           | 0.7.1        |
 | 2.1.0          | 1.7.3           | 0.7.0        |
@@ -18,16 +19,16 @@ Add the following dependencies to your module `build.gradle.kts` file:
 
 ```kotlin
 // For Adaptive UI components
-api("com.mohamedrejeb.calf:calf-ui:0.8.0")
+api("com.mohamedrejeb.calf:calf-ui:0.9.0")
 
 // For WebView
-implementation("com.mohamedrejeb.calf:calf-webview:0.8.0")
+implementation("com.mohamedrejeb.calf:calf-webview:0.9.0")
 
 // For FilePicker
-implementation("com.mohamedrejeb.calf:calf-file-picker:0.8.0")
+implementation("com.mohamedrejeb.calf:calf-file-picker:0.9.0")
 
 // For Permissions
-implementation("com.mohamedrejeb.calf:calf-permissions:0.8.0")
+implementation("com.mohamedrejeb.calf:calf-permissions:0.9.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -43,7 +44,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.8.0")
+                export("com.mohamedrejeb.calf:calf-ui:0.9.0")
             }
         }
     ...
@@ -60,7 +61,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.8.0")
+            export("com.mohamedrejeb.calf:calf-ui:0.9.0")
         }
     }
     ...
@@ -95,7 +96,7 @@ dependencyResolutionManagement {
 Use the snapshot version:
 
 ```kotlin
-api("com.mohamedrejeb.calf:calf-ui:0.8.0-SNAPSHOT")
+api("com.mohamedrejeb.calf:calf-ui:0.9.0-SNAPSHOT")
 ```
 
 >Note: Snapshots are deployed for each new commit on `main` that passes CI. They can potentially contain breaking changes or may be unstable. Use at your own risk.

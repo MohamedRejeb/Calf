@@ -7,7 +7,7 @@
 Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
-implementation("com.mohamedrejeb.calf:calf-webview:0.8.0")
+implementation("com.mohamedrejeb.calf:calf-webview:0.9.0")
 ```
 
 ## Usage
