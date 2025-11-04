@@ -45,6 +45,7 @@ actual fun AdaptiveBottomSheet(
     val currentUIViewController = LocalUIViewController.current
 
     val modifierState = rememberUpdatedState(modifier)
+    val shapeState = rememberUpdatedState(shape)
     val containerColorState = rememberUpdatedState(containerColor)
     val contentColorState = rememberUpdatedState(contentColor)
     val tonalElevationState = rememberUpdatedState(tonalElevation)
@@ -79,6 +80,7 @@ actual fun AdaptiveBottomSheet(
                 CompositionLocalProvider(compositionLocalContext.value) {
                     CompositionLocalProvider(sheetCompositionLocalContext) {
                         Surface(
+                            shape = shapeState.value,
                             color = containerColorState.value,
                             contentColor = contentColorState.value,
                             tonalElevation = tonalElevationState.value,
