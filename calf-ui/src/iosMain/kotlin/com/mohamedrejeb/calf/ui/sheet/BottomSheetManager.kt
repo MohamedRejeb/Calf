@@ -89,8 +89,9 @@ internal class BottomSheetManager(
     fun show(
         skipPartiallyExpanded: Boolean,
         showDragHandle: Boolean = true,
-    ) {
-        if (isPresented || isAnimating) return
+        completion: (() -> Unit)? = null
+    ): Boolean {
+        if (isPresented || isAnimating) return false
         isAnimating = true
 
         bottomSheetUIViewController.sheetPresentationController?.setDetents(
@@ -115,8 +116,11 @@ internal class BottomSheetManager(
             completion = {
                 isPresented = true
                 isAnimating = false
+                completion?.invoke()
             }
         )
+
+        return true
     }
 
     /**
@@ -124,8 +128,9 @@ internal class BottomSheetManager(
      */
     fun hide(
         completion: (() -> Unit)? = null
-    ) {
-        if (!isPresented || isAnimating) return
+    ): Boolean {
+        if (!isPresented || isAnimating) return false
+
         isAnimating = true
 
         bottomSheetUIViewController.dismissViewControllerAnimated(
@@ -136,6 +141,8 @@ internal class BottomSheetManager(
                 completion?.invoke()
             }
         )
+
+        return true
     }
 }
 
