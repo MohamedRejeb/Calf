@@ -1,9 +1,12 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.mohamedrejeb.calf.ui.utils.datetime
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
 
 internal class KotlinxDatetimeCalendarModel {
     fun getCanonicalDate(timeInMillis: Long): CalendarDate {

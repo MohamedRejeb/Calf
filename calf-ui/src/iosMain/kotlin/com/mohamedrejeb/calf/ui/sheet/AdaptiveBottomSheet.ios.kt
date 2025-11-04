@@ -44,13 +44,13 @@ actual fun AdaptiveBottomSheet(
     val compositionLocalContext = rememberUpdatedState(currentCompositionLocalContext)
     val currentUIViewController = LocalUIViewController.current
 
-    val skipPartiallyExpandedState = rememberUpdatedState(adaptiveSheetState.skipPartiallyExpanded)
     val modifierState = rememberUpdatedState(modifier)
-    val shapeState = rememberUpdatedState(shape)
     val containerColorState = rememberUpdatedState(containerColor)
     val contentColorState = rememberUpdatedState(contentColor)
     val tonalElevationState = rememberUpdatedState(tonalElevation)
     val contentState = rememberUpdatedState(content)
+    val onDismissRequestState = rememberUpdatedState(onDismissRequest)
+    val confirmValueChangeState = rememberUpdatedState(adaptiveSheetState.confirmValueChange)
 
     val isDark = isSystemInDarkTheme()
 
@@ -66,18 +66,19 @@ actual fun AdaptiveBottomSheet(
         BottomSheetManager(
             parentUIViewController = currentUIViewController,
             isDark = isDark,
-            containerColor = containerColor,
+            containerColor = containerColorAtElevation,
             onDismiss = {
-                onDismissRequest()
+                onDismissRequestState.value.invoke()
             },
-            confirmValueChange = adaptiveSheetState.confirmValueChange,
+            confirmValueChange = {
+                confirmValueChangeState.value.invoke(it)
+            },
             content = {
                 val sheetCompositionLocalContext = currentCompositionLocalContext
 
                 CompositionLocalProvider(compositionLocalContext.value) {
                     CompositionLocalProvider(sheetCompositionLocalContext) {
                         Surface(
-                            shape = shapeState.value,
                             color = containerColorState.value,
                             contentColor = contentColorState.value,
                             tonalElevation = tonalElevationState.value,
@@ -94,37 +95,47 @@ actual fun AdaptiveBottomSheet(
         )
     }
 
-    LaunchedEffect(Unit) {
-        adaptiveSheetState.show()
+    /**
+     * Update adaptive sheet state properties
+     */
+
+    LaunchedEffect(adaptiveSheetState, sheetManager) {
+        adaptiveSheetState.iosSheetManager = sheetManager
     }
 
-    LaunchedEffect(isDark) {
+    LaunchedEffect(adaptiveSheetState, dragHandle) {
+        adaptiveSheetState.showDragHandle = dragHandle != null
+    }
+
+    /**
+     * Update ios sheet manager properties
+     */
+
+    LaunchedEffect(sheetManager, isDark) {
         sheetManager.applyTheme(isDark)
     }
 
-    LaunchedEffect(containerColorAtElevation) {
+    LaunchedEffect(sheetManager, containerColorAtElevation) {
         sheetManager.applyContainerColor(containerColorAtElevation)
     }
 
-    LaunchedEffect(adaptiveSheetState.sheetValue) {
-        if (adaptiveSheetState.sheetValue == SheetValue.Hidden) {
-            sheetManager.hide(
-                completion = {
-                    adaptiveSheetState.deferredUntilHidden.complete(Unit)
-                }
-            )
-        } else {
-            sheetManager.show(
-                skipPartiallyExpanded = adaptiveSheetState.skipPartiallyExpanded,
-                showDragHandle = dragHandle != null,
-            )
-        }
+    /**
+     * Show sheet on init
+     */
+
+    LaunchedEffect(adaptiveSheetState) {
+        adaptiveSheetState.show()
     }
+
+    /**
+     * Hide sheet on dispose
+     */
 
     DisposableEffect(Unit) {
         onDispose {
             sheetManager.hide()
-            adaptiveSheetState.sheetValue = SheetValue.Hidden
+            adaptiveSheetState.iosCurrentValue = SheetValue.Hidden
+            adaptiveSheetState.iosTargetValue = SheetValue.Hidden
         }
     }
 }
