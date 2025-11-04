@@ -3,7 +3,7 @@ package com.mohamedrejeb.calf.picker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.interop.LocalUIViewController
+import androidx.compose.ui.uikit.LocalUIViewController
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi

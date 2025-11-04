@@ -7,7 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.interop.LocalUIViewController
+import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogProperties
 import com.mohamedrejeb.calf.core.InternalCalfApi

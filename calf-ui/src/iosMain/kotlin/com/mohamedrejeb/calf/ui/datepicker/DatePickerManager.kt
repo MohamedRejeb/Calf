@@ -29,9 +29,10 @@ import platform.UIKit.UIDatePickerMode
 import platform.UIKit.UIDatePickerStyle
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
+import kotlin.time.ExperimentalTime
 
 @OptIn(
-    ExperimentalForeignApi::class,
+    ExperimentalForeignApi::class, ExperimentalTime::class,
 )
 @InternalCalfApi
 class DatePickerManager internal constructor(
@@ -42,6 +43,7 @@ class DatePickerManager internal constructor(
 ) {
     private val calendarModel = KotlinxDatetimeCalendarModel()
 
+    @OptIn(ExperimentalTime::class)
     private val datePickerDelegate = object : NSObject() {
         @ObjCAction
         fun onDateChanged(sender: UIDatePicker) {
@@ -53,8 +55,8 @@ class DatePickerManager internal constructor(
             val utcTimeMillis =
                 LocalDate(
                     year = components.year.toInt(),
-                    monthNumber = components.month.toInt(),
-                    dayOfMonth = components.day.toInt(),
+                    month = components.month.toInt(),
+                    day = components.day.toInt()
                 )
                     .atStartOfDayIn(TimeZone.UTC)
                     .toEpochMilliseconds()
@@ -73,8 +75,8 @@ class DatePickerManager internal constructor(
                 val currentTimeZoneTimeMillis =
                     LocalDate(
                         year = canonicalDate.year,
-                        monthNumber = canonicalDate.month,
-                        dayOfMonth = canonicalDate.dayOfMonth,
+                        month = canonicalDate.month,
+                        day = canonicalDate.dayOfMonth
                     )
                         .atStartOfDayIn(TimeZone.currentSystemDefault())
                         .toEpochMilliseconds()

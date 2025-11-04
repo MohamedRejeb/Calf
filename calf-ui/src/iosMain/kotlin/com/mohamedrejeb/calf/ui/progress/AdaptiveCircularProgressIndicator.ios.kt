@@ -14,6 +14,7 @@ actual fun AdaptiveCircularProgressIndicator(
     strokeWidth: Dp,
     trackColor: Color,
     strokeCap: StrokeCap,
+    gapSize: Dp,
 ) {
     CupertinoActivityIndicator(
         modifier = modifier,

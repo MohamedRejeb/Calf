@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.Density
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.concurrent.Volatile
@@ -17,10 +16,11 @@ import kotlin.concurrent.Volatile
 actual class AdaptiveSheetState @OptIn(ExperimentalMaterial3Api::class)
 actual constructor(
     internal val skipPartiallyExpanded: Boolean,
-    density: Density,
-    initialValue: SheetValue,
     internal val confirmValueChange: (SheetValue) -> Boolean,
+    initialValue: SheetValue,
     skipHiddenState: Boolean,
+    positionalThreshold: () -> Float,
+    velocityThreshold: () -> Float,
 ) {
     init {
         if (skipPartiallyExpanded) {
@@ -36,12 +36,22 @@ actual constructor(
         }
     }
 
-    var sheetValue by mutableStateOf(initialValue)
-    actual val currentValue: SheetValue get() = sheetValue
+    internal var iosCurrentValue by mutableStateOf(initialValue)
+    internal var iosTargetValue by mutableStateOf(initialValue)
+
+    actual val currentValue: SheetValue get() = iosCurrentValue
+    actual val targetValue: SheetValue get() = iosTargetValue
     actual val isVisible get() = currentValue != SheetValue.Hidden
 
+    internal var iosSheetManager: BottomSheetManager? = null
+
+    internal var showDragHandle: Boolean = true
+
     @Volatile
-    internal var deferredUntilHidden = CompletableDeferred<Unit>()
+    private var deferredUntilShown = CompletableDeferred<Unit>()
+
+    @Volatile
+    private var deferredUntilHidden = CompletableDeferred<Unit>()
 
     /**
      * Expand the bottom sheet with animation and suspend until it is [PartiallyExpanded] if defined
@@ -49,7 +59,22 @@ actual constructor(
      * @throws [CancellationException] if the animation is interrupted
      */
     actual suspend fun show() {
-        sheetValue = SheetValue.Expanded
+        val isShowingSheet = iosSheetManager?.show(
+            skipPartiallyExpanded = skipPartiallyExpanded,
+            showDragHandle = showDragHandle,
+            completion = {
+                deferredUntilShown.complete(Unit)
+            }
+        ) ?: false
+
+        if (!isShowingSheet) return
+
+        iosTargetValue = SheetValue.Expanded
+
+        deferredUntilShown.await()
+        deferredUntilShown = CompletableDeferred()
+
+        iosCurrentValue = SheetValue.Expanded
     }
 
     /**
@@ -58,9 +83,20 @@ actual constructor(
      * @throws [CancellationException] if the animation is interrupted
      */
     actual suspend fun hide() {
-        sheetValue = SheetValue.Hidden
+        val isHidingSheet = iosSheetManager?.hide(
+            completion = {
+                deferredUntilHidden.complete(Unit)
+            }
+        ) ?: false
+
+        if (!isHidingSheet) return
+
+        iosTargetValue = SheetValue.Hidden
+
         deferredUntilHidden.await()
         deferredUntilHidden = CompletableDeferred()
+
+        iosCurrentValue = SheetValue.Hidden
     }
 
     actual companion object {
@@ -69,13 +105,23 @@ actual constructor(
          */
         actual fun Saver(
             skipPartiallyExpanded: Boolean,
+            positionalThreshold: () -> Float,
+            velocityThreshold: () -> Float,
             confirmValueChange: (SheetValue) -> Boolean,
-            density: Density
-        ) = Saver<AdaptiveSheetState, SheetValue>(
-            save = { it.currentValue },
-            restore = { savedValue ->
-                AdaptiveSheetState(skipPartiallyExpanded, density, savedValue, confirmValueChange, false)
-            }
-        )
+            skipHiddenState: Boolean,
+        ) =
+            Saver<AdaptiveSheetState, SheetValue>(
+                save = { it.currentValue },
+                restore = { savedValue ->
+                    AdaptiveSheetState(
+                        skipPartiallyExpanded,
+                        confirmValueChange,
+                        savedValue,
+                        skipHiddenState,
+                        positionalThreshold,
+                        velocityThreshold,
+                    )
+                },
+            )
     }
 }

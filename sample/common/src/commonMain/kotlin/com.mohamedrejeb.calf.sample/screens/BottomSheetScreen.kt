@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sample.screens
+    package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -95,7 +95,6 @@ fun BottomSheetScreen(
 
                 LazyColumn(
                     modifier = Modifier
-                        .background(color = MaterialTheme.colorScheme.surface)
                 ) {
                     item {
                         Text("Bottom Sheet")

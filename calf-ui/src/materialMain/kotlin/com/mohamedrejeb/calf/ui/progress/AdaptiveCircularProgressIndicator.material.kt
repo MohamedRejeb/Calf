@@ -14,6 +14,7 @@ actual fun AdaptiveCircularProgressIndicator(
     strokeWidth: Dp,
     trackColor: Color,
     strokeCap: StrokeCap,
+    gapSize: Dp,
 ) {
     CircularProgressIndicator(
         modifier = modifier,
@@ -21,5 +22,6 @@ actual fun AdaptiveCircularProgressIndicator(
         strokeWidth = strokeWidth,
         trackColor = trackColor,
         strokeCap = strokeCap,
+        gapSize = gapSize,
     )
 }

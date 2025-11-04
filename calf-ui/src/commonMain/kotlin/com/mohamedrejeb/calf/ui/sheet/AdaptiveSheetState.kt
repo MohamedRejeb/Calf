@@ -3,19 +3,13 @@ package com.mohamedrejeb.calf.ui.sheet
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.ui.sheet.AdaptiveSheetState.Companion.Saver
 import kotlinx.coroutines.CancellationException
-
-private class SheetValueHolder @OptIn(ExperimentalMaterial3Api::class) constructor(
-    var value: SheetValue
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,48 +19,50 @@ fun rememberAdaptiveSheetState(
 ): AdaptiveSheetState {
     val density = LocalDensity.current
 
-    val sheetValueHolder = remember {
-        SheetValueHolder(SheetValue.Hidden)
-    }
+    val initialValue = SheetValue.Hidden
+    val skipHiddenState = false
+    val positionalThreshold = PositionalThreshold
+    val velocityThreshold = VelocityThreshold
 
-    val state = rememberSaveable(
+
+    val positionalThresholdToPx = { with(density) { positionalThreshold.toPx() } }
+    val velocityThresholdToPx = { with(density) { velocityThreshold.toPx() } }
+    return rememberSaveable(
         skipPartiallyExpanded,
         confirmValueChange,
-        density,
-        sheetValueHolder,
-        saver = AdaptiveSheetState.Saver(
+        skipHiddenState,
+        saver =
+            Saver(
+                skipPartiallyExpanded = skipPartiallyExpanded,
+                positionalThreshold = positionalThresholdToPx,
+                velocityThreshold = velocityThresholdToPx,
+                confirmValueChange = confirmValueChange,
+                skipHiddenState = skipHiddenState,
+            ),
+    ) {
+        AdaptiveSheetState(
             skipPartiallyExpanded = skipPartiallyExpanded,
             confirmValueChange = confirmValueChange,
-            density = density,
+            initialValue = initialValue,
+            skipHiddenState = skipHiddenState,
+            positionalThreshold = positionalThresholdToPx,
+            velocityThreshold = velocityThresholdToPx,
         )
-    ) {
-        if (skipPartiallyExpanded && sheetValueHolder.value == SheetValue.PartiallyExpanded)
-            sheetValueHolder.value = SheetValue.Expanded
-
-        AdaptiveSheetState(skipPartiallyExpanded, density, sheetValueHolder.value, confirmValueChange)
     }
-
-
-    LaunchedEffect(state) {
-        snapshotFlow { state.currentValue }
-            .collect {
-                sheetValueHolder.value = it
-            }
-    }
-
-    return state
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Stable
 expect class AdaptiveSheetState(
-    skipPartiallyExpanded: Boolean,
-    density: Density,
-    initialValue: SheetValue = SheetValue.Hidden,
+    skipPartiallyExpanded: Boolean = false,
     confirmValueChange: (SheetValue) -> Boolean = { true },
+    initialValue: SheetValue = SheetValue.Hidden,
     skipHiddenState: Boolean = false,
+    positionalThreshold: () -> Float,
+    velocityThreshold: () -> Float,
 ) {
     val currentValue: SheetValue
+    val targetValue: SheetValue
     val isVisible: Boolean
 
     /**
@@ -89,8 +85,14 @@ expect class AdaptiveSheetState(
          */
         fun Saver(
             skipPartiallyExpanded: Boolean,
+            positionalThreshold: () -> Float,
+            velocityThreshold: () -> Float,
             confirmValueChange: (SheetValue) -> Boolean,
-            density: Density
+            skipHiddenState: Boolean,
         ): Saver<AdaptiveSheetState, SheetValue>
     }
 }
+
+internal val PositionalThreshold = 56.dp
+
+internal val VelocityThreshold = 125.dp

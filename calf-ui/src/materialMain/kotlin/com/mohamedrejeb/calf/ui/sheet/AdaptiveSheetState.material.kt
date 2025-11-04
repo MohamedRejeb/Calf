@@ -3,20 +3,20 @@ package com.mohamedrejeb.calf.ui.sheet
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
-
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.ui.unit.Density
+import com.mohamedrejeb.calf.ui.sheet.AdaptiveSheetState.Companion.Saver
 import kotlinx.coroutines.CancellationException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Stable
 actual class AdaptiveSheetState actual constructor(
     skipPartiallyExpanded: Boolean,
-    density: Density,
-    initialValue: SheetValue,
     confirmValueChange: (SheetValue) -> Boolean,
+    initialValue: SheetValue,
     skipHiddenState: Boolean,
+    positionalThreshold: () -> Float,
+    velocityThreshold: () -> Float,
 ) {
     init {
         if (skipPartiallyExpanded) {
@@ -34,11 +34,14 @@ actual class AdaptiveSheetState actual constructor(
 
     val materialSheetState = SheetState(
         skipPartiallyExpanded = skipPartiallyExpanded,
-        density = density,
+        positionalThreshold = positionalThreshold,
+        velocityThreshold = velocityThreshold,
         initialValue = initialValue,
-        confirmValueChange = { confirmValueChange(it) }
+        confirmValueChange = confirmValueChange,
+        skipHiddenState = skipHiddenState,
     )
     actual val currentValue: SheetValue get() = materialSheetState.currentValue
+    actual val targetValue: SheetValue get() = materialSheetState.targetValue
     actual val isVisible get() = materialSheetState.isVisible
 
     /**
@@ -65,13 +68,23 @@ actual class AdaptiveSheetState actual constructor(
          */
         actual fun Saver(
             skipPartiallyExpanded: Boolean,
+            positionalThreshold: () -> Float,
+            velocityThreshold: () -> Float,
             confirmValueChange: (SheetValue) -> Boolean,
-            density: Density
-        ) = Saver<AdaptiveSheetState, SheetValue>(
-            save = { it.currentValue },
-            restore = { savedValue ->
-                AdaptiveSheetState(skipPartiallyExpanded, density, savedValue, confirmValueChange, false)
-            }
-        )
+            skipHiddenState: Boolean,
+        ) =
+            Saver<AdaptiveSheetState, SheetValue>(
+                save = { it.currentValue },
+                restore = { savedValue ->
+                    AdaptiveSheetState(
+                        skipPartiallyExpanded,
+                        confirmValueChange,
+                        savedValue,
+                        skipHiddenState,
+                        positionalThreshold,
+                        velocityThreshold,
+                    )
+                },
+            )
     }
 }
