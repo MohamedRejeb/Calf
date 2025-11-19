@@ -124,6 +124,7 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
             BluetoothPermissionHelper()
 
         Permission.ReadContacts -> ContactPermissionHelper()
+        Permission.WriteContacts -> ContactPermissionHelper()
         Permission.ReadCalendar -> CalendarPermissionHelper()
         Permission.WriteCalendar -> CalendarPermissionHelper()
 
