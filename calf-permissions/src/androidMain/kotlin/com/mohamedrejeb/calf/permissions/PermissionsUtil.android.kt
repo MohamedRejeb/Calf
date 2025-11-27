@@ -174,6 +174,7 @@ internal fun Permission.toAndroidPermission(): String {
                 ""
 
         Permission.ReadContacts -> Manifest.permission.READ_CONTACTS
+        Permission.WriteContacts -> Manifest.permission.WRITE_CONTACTS
         Permission.ReadCalendar -> Manifest.permission.READ_CALENDAR
         Permission.WriteCalendar -> Manifest.permission.WRITE_CALENDAR
         Permission.WifiAccessState -> Manifest.permission.ACCESS_WIFI_STATE
@@ -215,6 +216,7 @@ internal fun getPermissionFromAndroidPermission(androidPermission: String): Perm
         Manifest.permission.BLUETOOTH_CONNECT -> Permission.BluetoothConnect
         Manifest.permission.BLUETOOTH_ADVERTISE -> Permission.BluetoothAdvertise
         Manifest.permission.READ_CONTACTS -> Permission.ReadContacts
+        Manifest.permission.WRITE_CONTACTS -> Permission.WriteContacts
         Manifest.permission.ACCESS_WIFI_STATE -> Permission.WifiAccessState
         Manifest.permission.CHANGE_WIFI_STATE -> Permission.WifiChangeState
         Manifest.permission.NEARBY_WIFI_DEVICES -> Permission.WifiNearbyDevices
