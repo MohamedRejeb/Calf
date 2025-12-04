@@ -12,7 +12,7 @@ coil = "3.3.0"
 calf = "0.9.0"
 
 # For sample
-activity-compose = "1.11.0"
+activity-compose = "1.12.1"
 navigation-compose = "2.9.6"
 android-minSdk = "21"
 android-compileSdk = "36"
