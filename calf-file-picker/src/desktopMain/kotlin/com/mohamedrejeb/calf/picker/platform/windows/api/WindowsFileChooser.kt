@@ -67,13 +67,20 @@ import java.util.Collections
  * [://winrun4j.sourceforge.net/][http]
  */
 internal class WindowsFileChooser {
-	/**
-	 * returns the file selected by the user
-	 *
-	 * @return the selected file; null if the dialog was canceled or never shown
-	 */
-	var selectedFile: File? = null
+    /**
+     * returns the files selected by the user
+     *
+     * @return the selected files; empty array if the dialog was canceled or never shown
+     */
+	var selectedFiles: Array<File> = emptyArray()
 		protected set
+
+    /**
+     * sets whether to enable multiselection
+     *
+     * @param enabled true to enable multiselection, false to disable it
+     */
+	var isMultiSelectionEnabled: Boolean = false
 
 	/**
 	 * returns the current directory
@@ -194,6 +201,10 @@ internal class WindowsFileChooser {
 				or Comdlg32.OFN_HIDEREADONLY // enable resizing of the dialog
 				or Comdlg32.OFN_ENABLESIZING)
 
+		if (isMultiSelectionEnabled) {
+			params.Flags = params.Flags or Comdlg32.OFN_ALLOWMULTISELECT
+		}
+
 		params.hwndOwner = if (parent == null) null else Native.getWindowPointer(parent)
 
 		// lpstrFile contains the selection path after the dialog
@@ -201,7 +212,7 @@ internal class WindowsFileChooser {
 		// GetOpenFileName returns an error (FNERR_BUFFERTOOSMALL).
 		// MAX_PATH is 260 so 4*260+1 bytes should be big enough (I hope...)
 		// http://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath
-		val bufferLength = 260
+		val bufferLength = if (isMultiSelectionEnabled) 32 * 1024 else 260
 		// 4 bytes per char + 1 null byte
 		val bufferSize = 4 * bufferLength + 1
 		params.lpstrFile = Memory(bufferSize.toLong())
@@ -239,10 +250,32 @@ internal class WindowsFileChooser {
 		val approved = if (open) GetOpenFileNameW(params) else GetSaveFileNameW(params)
 
 		if (approved) {
-			val filePath = params.lpstrFile?.getWideString(0)
-			selectedFile = File(filePath)
-			val dir = selectedFile!!.parentFile
-			currentDirectory = dir
+			val ptr = params.lpstrFile!!
+			if (isMultiSelectionEnabled) {
+				val strings = ArrayList<String>()
+				var offset = 0L
+				while (true) {
+					val str = ptr.getWideString(offset)
+					if (str.isEmpty()) break
+					strings.add(str)
+					offset += (str.length + 1) * 2
+				}
+
+				if (strings.size == 1) {
+					val f = File(strings[0])
+					selectedFiles = arrayOf(f)
+					currentDirectory = f.parentFile
+				} else {
+					val dir = File(strings[0])
+					currentDirectory = dir
+					selectedFiles = strings.drop(1).map { File(dir, it) }.toTypedArray()
+				}
+			} else {
+				val filePath = ptr.getWideString(0)
+				val file = File(filePath)
+				selectedFiles = arrayOf(file)
+				currentDirectory = file.parentFile
+			}
 		} else {
 			val errCode = CommDlgExtendedError()
 			// if the code is 0 the user clicked cancel
