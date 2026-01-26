@@ -53,6 +53,9 @@ import com.mohamedrejeb.calf.ui.dialog.uikit.rememberAlertDialogIosProperties
  * @param iosDialogStyle The style of the iOS dialog.
  * @param iosConfirmButtonStyle The style of the iOS confirm button.
  * @param iosDismissButtonStyle The style of the iOS dismiss button.
+ * @param iosConfirmButtonIsPreferred Whether the confirm button is the preferred action on iOS.
+ * When true, the confirm button will be bold and triggered by the Enter key on a hardware keyboard.
+ * Only works with [AlertDialogIosStyle.Alert] style.
  * @param properties The properties of the dialog.
  */
 @Composable
@@ -79,6 +82,7 @@ expect fun AdaptiveAlertDialog(
     iosDialogStyle: AlertDialogIosStyle = AlertDialogIosStyle.Alert,
     iosConfirmButtonStyle: AlertDialogIosActionStyle = AlertDialogIosActionStyle.Default,
     iosDismissButtonStyle: AlertDialogIosActionStyle = AlertDialogIosActionStyle.Destructive,
+    iosConfirmButtonIsPreferred: Boolean = false,
 
     properties: DialogProperties = DialogProperties(),
     modifier: Modifier = Modifier,

@@ -39,6 +39,7 @@ actual fun AdaptiveAlertDialog(
     iosDialogStyle: AlertDialogIosStyle,
     iosConfirmButtonStyle: AlertDialogIosActionStyle,
     iosDismissButtonStyle: AlertDialogIosActionStyle,
+    iosConfirmButtonIsPreferred: Boolean,
     properties: DialogProperties,
     modifier: Modifier,
 ) {
@@ -54,6 +55,7 @@ actual fun AdaptiveAlertDialog(
                     title = confirmText,
                     style = iosConfirmButtonStyle,
                     onClick = onConfirm,
+                    isPreferred = iosConfirmButtonIsPreferred,
                 ),
                 AlertDialogIosAction(
                     title = dismissText,
@@ -83,6 +85,7 @@ actual fun AdaptiveAlertDialog(
         iosDialogStyle,
         iosConfirmButtonStyle,
         iosDismissButtonStyle,
+        iosConfirmButtonIsPreferred,
         properties,
     ) {
         alertDialogManager.onDismissRequest = onDismiss

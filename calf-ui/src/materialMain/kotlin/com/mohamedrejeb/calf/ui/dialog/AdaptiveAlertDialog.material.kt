@@ -15,6 +15,7 @@ import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosProperties
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosStyle
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 actual fun AdaptiveAlertDialog(
     onConfirm: () -> Unit,
@@ -37,6 +38,7 @@ actual fun AdaptiveAlertDialog(
     iosDialogStyle: AlertDialogIosStyle,
     iosConfirmButtonStyle: AlertDialogIosActionStyle,
     iosDismissButtonStyle: AlertDialogIosActionStyle,
+    iosConfirmButtonIsPreferred: Boolean,
     properties: DialogProperties,
     modifier: Modifier,
 ) {
