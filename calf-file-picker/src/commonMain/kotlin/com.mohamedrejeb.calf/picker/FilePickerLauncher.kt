@@ -11,7 +11,7 @@ expect fun rememberFilePickerLauncher(
 ): FilePickerLauncher
 
 sealed class FilePickerFileType(vararg val value: String) {
-    data object Image: FilePickerFileType(ImageContentType)
+    data class Image(val isCompat: Boolean = false): FilePickerFileType(ImageContentType)
     data object Video: FilePickerFileType(VideoContentType)
     data object ImageVideo: FilePickerFileType(ImageContentType, VideoContentType)
     data object Audio: FilePickerFileType(AudioContentType)
