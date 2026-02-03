@@ -13,6 +13,7 @@ import com.mohamedrejeb.calf.permissions.helper.GalleryPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.GrantedPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.LocalNotificationPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.LocationPermissionHelper
+import com.mohamedrejeb.calf.permissions.helper.NotGrantedPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.PermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.RemoteNotificationPermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.WifiPermissionHelper
@@ -98,6 +99,7 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
         Permission.WriteStorage,
         Permission.ReadAudio,
         Permission.Call,
+        Permission.SendSms
             ->
             GrantedPermissionHelper()
 
@@ -133,5 +135,8 @@ internal fun Permission.getPermissionDelegate(): PermissionHelper {
         Permission.WifiNearbyDevices,
             ->
             WifiPermissionHelper()
+
+        Permission.ReadSms,
+        Permission.ReceiveSms -> NotGrantedPermissionHelper()
     }
 }

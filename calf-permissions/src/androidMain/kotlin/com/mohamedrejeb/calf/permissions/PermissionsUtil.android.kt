@@ -185,6 +185,10 @@ internal fun Permission.toAndroidPermission(): String {
                 Manifest.permission.NEARBY_WIFI_DEVICES
             else
                 ""
+
+        Permission.ReadSms -> Manifest.permission.READ_SMS
+        Permission.SendSms -> Manifest.permission.SEND_SMS
+        Permission.ReceiveSms -> Manifest.permission.RECEIVE_SMS
     }
 
 }
@@ -220,6 +224,9 @@ internal fun getPermissionFromAndroidPermission(androidPermission: String): Perm
         Manifest.permission.ACCESS_WIFI_STATE -> Permission.WifiAccessState
         Manifest.permission.CHANGE_WIFI_STATE -> Permission.WifiChangeState
         Manifest.permission.NEARBY_WIFI_DEVICES -> Permission.WifiNearbyDevices
+        Manifest.permission.SEND_SMS -> Permission.SendSms
+        Manifest.permission.RECEIVE_SMS -> Permission.ReceiveSms
+        Manifest.permission.READ_SMS -> Permission.ReadSms
         else -> null
     }
 }
