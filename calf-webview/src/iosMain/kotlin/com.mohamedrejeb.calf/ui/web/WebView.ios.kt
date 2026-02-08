@@ -185,6 +185,8 @@ actual class WebViewState actual constructor(
     @ObjCSignatureOverride
     override fun webView(webView: WKWebView, didCommitNavigation: WKNavigation?) {
         loadingState = LoadingState.Loading(webView.estimatedProgress.toFloat())
+        lastLoadedUrl = webView.URL?.absoluteString
+        pageTitle = webView.title
     }
 }
 
