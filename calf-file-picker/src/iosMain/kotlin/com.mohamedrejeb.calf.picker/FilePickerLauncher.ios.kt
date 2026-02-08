@@ -17,6 +17,7 @@ import platform.Foundation.NSItemProvider
 import platform.Foundation.NSURL
 import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
+import platform.PhotosUI.PHPickerConfigurationAssetRepresentationModeCompatible
 import platform.PhotosUI.PHPickerConfigurationAssetRepresentationModeCurrent
 import platform.PhotosUI.PHPickerConfigurationSelectionOrdered
 import platform.PhotosUI.PHPickerFilter
@@ -46,7 +47,7 @@ actual fun rememberFilePickerLauncher(
     selectionMode: FilePickerSelectionMode,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher =
-    if (type == FilePickerFileType.Image || type == FilePickerFileType.Video || type == FilePickerFileType.ImageVideo) {
+    if (type is FilePickerFileType.Image || type == FilePickerFileType.Video || type == FilePickerFileType.ImageVideo) {
         rememberImageVideoPickerLauncher(type, selectionMode, onResult)
     } else {
         rememberDocumentPickerLauncher(type, selectionMode, onResult)
@@ -204,7 +205,7 @@ private fun rememberImageVideoPickerLauncher(
 private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(type: FilePickerFileType): KmpFile? =
     suspendCancellableCoroutine { continuation ->
         val identifier = when(type) {
-            FilePickerFileType.Image -> UTTypeImage.identifier
+            is FilePickerFileType.Image -> UTTypeImage.identifier
             FilePickerFileType.Video -> UTTypeMovie.identifier
             else -> registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier
         }
@@ -275,10 +276,16 @@ private fun createPHPickerViewController(
     selectionMode: FilePickerSelectionMode,
 ): PHPickerViewController {
     val configuration = PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary())
+    configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCurrent
     val filterList = mutableListOf<PHPickerFilter>()
     when (type) {
-        FilePickerFileType.Image ->
+        is FilePickerFileType.Image -> {
+            if(type.isCompat) {
+                configuration.preferredAssetRepresentationMode =
+                    PHPickerConfigurationAssetRepresentationModeCompatible
+            }
             filterList.add(PHPickerFilter.imagesFilter())
+        }
 
         FilePickerFileType.Video -> {
             filterList.add(PHPickerFilter.videosFilter())
@@ -292,7 +299,6 @@ private fun createPHPickerViewController(
     }
     val newFilter = PHPickerFilter.anyFilterMatchingSubfilters(filterList.toList())
     configuration.filter = newFilter
-    configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCurrent
     configuration.selectionLimit = if (selectionMode == FilePickerSelectionMode.Multiple) 0 else 1
     val picker = PHPickerViewController(configuration)
     picker.delegate = delegate

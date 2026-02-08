@@ -17,7 +17,7 @@ actual fun rememberFilePickerLauncher(
     return when (selectionMode) {
         FilePickerSelectionMode.Single -> {
             when (type) {
-                FilePickerFileType.Image, FilePickerFileType.Video, FilePickerFileType.ImageVideo ->
+                is FilePickerFileType.Image, FilePickerFileType.Video, FilePickerFileType.ImageVideo ->
                     pickSingleVisualMedia(
                         type = type,
                         onResult = onResult,
@@ -36,7 +36,7 @@ actual fun rememberFilePickerLauncher(
         }
         FilePickerSelectionMode.Multiple -> {
             when (type) {
-                FilePickerFileType.Image, FilePickerFileType.Video, FilePickerFileType.ImageVideo ->
+                is FilePickerFileType.Image, FilePickerFileType.Video, FilePickerFileType.ImageVideo ->
                     pickMultipleVisualMedia(
                         type = type,
                         onResult = onResult,
@@ -204,7 +204,7 @@ private fun pickFolder(
 
 internal fun FilePickerFileType.toPickVisualMediaRequest(): PickVisualMediaRequest {
     return when (this) {
-        FilePickerFileType.Image -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+        is FilePickerFileType.Image -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
         FilePickerFileType.Video -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
         else -> PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
     }
@@ -212,7 +212,7 @@ internal fun FilePickerFileType.toPickVisualMediaRequest(): PickVisualMediaReque
 
 internal fun FilePickerFileType.isVisualMedia(): Boolean {
     return when (this) {
-        FilePickerFileType.Image -> true
+        is FilePickerFileType.Image-> true
         FilePickerFileType.Video -> true
         FilePickerFileType.ImageVideo -> true
         else -> false
