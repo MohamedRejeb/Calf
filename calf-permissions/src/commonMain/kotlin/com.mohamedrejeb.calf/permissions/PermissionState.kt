@@ -113,5 +113,8 @@ enum class Permission {
     WriteCalendar,
     WifiAccessState,
     WifiChangeState,
-    WifiNearbyDevices
+    WifiNearbyDevices,
+    SendSms,
+    ReceiveSms,
+    ReadSms
 }
