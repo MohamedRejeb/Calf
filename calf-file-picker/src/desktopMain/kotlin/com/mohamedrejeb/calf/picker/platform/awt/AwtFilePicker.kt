@@ -79,7 +79,7 @@ internal class AwtFilePicker: PlatformFilePicker {
         }
 
         // Set multiple mode
-        dialog.isMultipleMode = selectionMode == FilePickerSelectionMode.Multiple
+        dialog?.isMultipleMode = selectionMode == FilePickerSelectionMode.Multiple
 
         // Set mime types / extensions
         val mimeType =
@@ -98,7 +98,7 @@ internal class AwtFilePicker: PlatformFilePicker {
                         }
             }
 
-        dialog.filenameFilter = FilenameFilter { _, name ->
+        dialog?.filenameFilter = FilenameFilter { _, name ->
             when (type) {
                 is FilePickerFileType.All ->
                     true
@@ -114,13 +114,13 @@ internal class AwtFilePicker: PlatformFilePicker {
         }
 
         // Set initial directory
-        dialog.directory = initialDirectory
+        dialog?.directory = initialDirectory
 
         // Show the dialog
-        dialog.isVisible = true
+        dialog?.isVisible = true
 
         // Dispose the dialog when the continuation is cancelled
-        continuation.invokeOnCancellation { dialog.dispose() }
+        continuation.invokeOnCancellation { dialog?.dispose() }
     }
 
     private suspend fun callAwtDirectoryPicker(
@@ -158,20 +158,20 @@ internal class AwtFilePicker: PlatformFilePicker {
         }
 
         // Set multiple mode
-        dialog.isMultipleMode = false
+        dialog?.isMultipleMode = false
 
         // Set mime types
-        dialog.filenameFilter = FilenameFilter { file, _ ->
+        dialog?.filenameFilter = FilenameFilter { file, _ ->
             file.isDirectory
         }
 
         // Set initial directory
-        dialog.directory = initialDirectory
+        dialog?.directory = initialDirectory
 
         // Show the dialog
-        dialog.isVisible = true
+        dialog?.isVisible = true
 
         // Dispose the dialog when the continuation is cancelled
-        continuation.invokeOnCancellation { dialog.dispose() }
+        continuation.invokeOnCancellation { dialog?.dispose() }
     }
 }

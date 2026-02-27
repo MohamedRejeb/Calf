@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 fun KotlinMultiplatformExtension.applyTargets() {
@@ -17,7 +16,9 @@ fun KotlinMultiplatformExtension.applyTargets() {
 
     js().browser()
 
-    @OptIn(ExperimentalWasmDsl::class)
+    // Deprecated: ExperimentalWasmDsl annotation class is removed in Kotlin 2.3
+    // See: https://kotlinlang.org/docs/compatibility-guide-23.html#deprecate-experimentalwasmdsl-annotation-class
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs().browser()
 
     iosX64()
