@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.Navigation
 import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.PunchClock
 import androidx.compose.material.icons.outlined.Refresh
@@ -169,6 +170,11 @@ fun HomeScreen(
                     onClick = { navigate(Screen.Map.name) },
                     title = "Adaptive Map",
                     icon = Icons.Outlined.Map,
+                )
+                ListItem(
+                    onClick = { navigate(Screen.NavigationBar.name) },
+                    title = "Adaptive Navigation Bar",
+                    icon = Icons.Outlined.Navigation,
                 )
 //                ListItem(
 //                    onClick = {  },

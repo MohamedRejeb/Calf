@@ -1,0 +1,952 @@
+package com.mohamedrejeb.calf.sample.screens
+
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.ui.draw.rotate
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
+import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
+import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
+import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
+
+@Composable
+private fun HomeTabContent() {
+    // iOS-like colors
+    val iosBlue = Color(0xFF007AFF)
+    val iosGray = Color(0xFFEFEFF4)
+    val iosSecondaryText = Color(0xFF8E8E93)
+    val iosShadow = Color(0x1A000000)
+
+    var isMaterialDialogVisible by remember { mutableStateOf(false) }
+    var isAdaptiveDialogVisible by remember { mutableStateOf(false) }
+
+    if (isMaterialDialogVisible) {
+        AlertDialog(
+            onDismissRequest = {
+                isMaterialDialogVisible = false
+            },
+            title = {
+                Text(text = "Material Dialog")
+            },
+            text = {
+                Text(text = "This is a Material 3 AlertDialog.")
+            },
+            confirmButton = {}
+        )
+    }
+
+    if (isAdaptiveDialogVisible) {
+        AdaptiveAlertDialog(
+            onConfirm = {
+                isAdaptiveDialogVisible = false
+            },
+            onDismiss = {
+                isAdaptiveDialogVisible = false
+            },
+            confirmText = "Confirm",
+            dismissText = "Close",
+            title = "Adaptive Dialog",
+            text = "This is an Adaptive AlertDialog."
+        )
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+//            .background(Color(0xFFF2F2F7))
+        , // iOS background color
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)
+    ) {
+        item {
+            // iOS-style header
+            Text(
+                text = "Home",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        item {
+            // iOS-style card with rounded corners and subtle shadow
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                shadowElevation = 2.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Welcome",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = Color.Black
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "This is a modern iOS-style UI demo for the Adaptive Navigation Bar",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = iosSecondaryText
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // iOS-style button
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        color = iosBlue
+                    ) {
+                        Text(
+                            text = "Get Started",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color.White,
+                            modifier = Modifier
+                                .padding(vertical = 12.dp, horizontal = 16.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            // Section title in iOS style
+            Text(
+                text = "QUICK ACTIONS",
+                style = MaterialTheme.typography.bodySmall,
+                color = iosSecondaryText,
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+            )
+        }
+
+        item {
+            // iOS-style grouped list
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                shadowElevation = 2.dp
+            ) {
+                Column {
+                    // First item
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                isMaterialDialogVisible = true
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(iosGray),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.Home,
+                                contentDescription = null,
+                                tint = iosBlue,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Dashboard",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Black
+                            )
+                            Text(
+                                text = "View your activity",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = iosSecondaryText
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBackIosNew,
+                            contentDescription = null,
+                            tint = iosSecondaryText,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .rotate(180f) // Rotate to point right
+                        )
+                    }
+
+                    // Divider in iOS style
+                    HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = Color(0xFFD1D1D6),
+                        modifier = Modifier.padding(start = 68.dp) // Inset divider
+                    )
+
+                    // Second item
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                isAdaptiveDialogVisible = true
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(iosGray),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.Favorite,
+                                contentDescription = null,
+                                tint = Color(0xFFFF2D55), // iOS red
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Favorites",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Black
+                            )
+                            Text(
+                                text = "Your saved items",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = iosSecondaryText
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBackIosNew,
+                            contentDescription = null,
+                            tint = iosSecondaryText,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .rotate(180f) // Rotate to point right
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FavoriteTabContent() {
+    // iOS-like colors
+    val iosRed = Color(0xFFFF2D55)
+    val iosGray = Color(0xFFEFEFF4)
+    val iosSecondaryText = Color(0xFF8E8E93)
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+//            .background(Color(0xFFF2F2F7))
+        , // iOS background color
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)
+    ) {
+        item {
+            // iOS-style header
+            Text(
+                text = "Favorites",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        item {
+            // iOS-style search bar
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = iosGray
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = null,
+                        tint = iosSecondaryText,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Search Favorites",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = iosSecondaryText
+                    )
+                }
+            }
+        }
+
+        item {
+            // Section title in iOS style
+            Text(
+                text = "FAVORITES",
+                style = MaterialTheme.typography.bodySmall,
+                color = iosSecondaryText,
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+            )
+        }
+
+        item {
+            // iOS-style grouped list
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                shadowElevation = 2.dp
+            ) {
+                Column {
+                    // First favorite item
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(iosGray),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.Favorite,
+                                contentDescription = null,
+                                tint = iosRed,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Favorite Item 1",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Black
+                            )
+                            Text(
+                                text = "Added on May 10, 2023",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = iosSecondaryText
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBackIosNew,
+                            contentDescription = null,
+                            tint = iosSecondaryText,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .rotate(180f)
+                        )
+                    }
+
+                    // Divider in iOS style
+                    HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = Color(0xFFD1D1D6),
+                        modifier = Modifier.padding(start = 72.dp) // Inset divider
+                    )
+
+                    // Second favorite item
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(iosGray),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.Favorite,
+                                contentDescription = null,
+                                tint = iosRed,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Favorite Item 2",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Black
+                            )
+                            Text(
+                                text = "Added on June 15, 2023",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = iosSecondaryText
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBackIosNew,
+                            contentDescription = null,
+                            tint = iosSecondaryText,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .rotate(180f)
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            // iOS-style button
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                shadowElevation = 2.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Filled.Favorite,
+                        contentDescription = null,
+                        tint = iosRed,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Add to Favorites",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = iosRed
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileTabContent() {
+    // iOS-like colors
+    val iosBlue = Color(0xFF007AFF)
+    val iosGray = Color(0xFFEFEFF4)
+    val iosSecondaryText = Color(0xFF8E8E93)
+    val iosGreen = Color(0xFF34C759)
+    val iosRed = Color(0xFFFF2D55)
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+//            .background(Color(0xFFF2F2F7))
+        , // iOS background color
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)
+    ) {
+        item {
+            // iOS-style header
+            Text(
+                text = "Profile",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        item {
+            // iOS-style profile card
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                shadowElevation = 2.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Profile picture
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(iosGray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.Person,
+                            contentDescription = null,
+                            tint = iosBlue,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Name
+                    Text(
+                        text = "John Doe",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = Color.Black
+                    )
+
+                    // Email
+                    Text(
+                        text = "john.doe@example.com",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = iosSecondaryText
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Edit Profile button
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        color = iosBlue
+                    ) {
+                        Text(
+                            text = "Edit Profile",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color.White,
+                            modifier = Modifier
+                                .padding(vertical = 12.dp, horizontal = 16.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            // Section title in iOS style
+            Text(
+                text = "SETTINGS",
+                style = MaterialTheme.typography.bodySmall,
+                color = iosSecondaryText,
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+            )
+        }
+
+        item {
+            // iOS-style settings list
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                shadowElevation = 2.dp
+            ) {
+                Column {
+                    // Dark Mode setting
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Icon container
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF1A1A1A)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Settings,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "Dark Mode",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Black
+                            )
+                        }
+
+                        // iOS-style switch
+                        AdaptiveSwitch(
+                            checked = true,
+                            onCheckedChange = { }
+                        )
+                    }
+
+                    // Divider in iOS style
+                    HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = Color(0xFFD1D1D6),
+                        modifier = Modifier.padding(start = 64.dp) // Inset divider
+                    )
+
+                    // Notifications setting
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Icon container
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(iosRed),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Favorite,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "Notifications",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Black
+                            )
+                        }
+
+                        // iOS-style switch
+                        AdaptiveSwitch(
+                            checked = false,
+                            onCheckedChange = { }
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            // Section title in iOS style
+            Text(
+                text = "ACCOUNT",
+                style = MaterialTheme.typography.bodySmall,
+                color = iosSecondaryText,
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+            )
+        }
+
+        item {
+            // iOS-style logout button
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                shadowElevation = 2.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Log Out",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = Color(0xFFFF3B30) // iOS red for destructive actions
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalCalfUiApi::class, ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@Composable
+fun NavigationBarScreen(
+    navigateBack: () -> Unit
+) {
+    var selectedItem by remember { mutableStateOf("Favorite") }
+    val items = listOf("Home", "Favorite", "Profile")
+    val icons = listOf(
+        Icons.Outlined.Home,
+        Icons.Outlined.Favorite,
+        Icons.Outlined.Person
+    )
+    val selectedIcons = listOf(
+        Icons.Filled.Home,
+        Icons.Filled.Favorite,
+        Icons.Filled.Person
+    )
+
+    // iOS-like color scheme
+    val iosBlue = Color(0xFF007AFF)
+    val iosBackground = Color(0xFFF2F2F7)
+    val iosCardBackground = Color.White
+    val iosSecondaryText = Color(0xFF8E8E93)
+
+    var iosPaddingValues by remember {
+        mutableStateOf(PaddingValues())
+    }
+
+    Scaffold(
+        topBar = {
+            // iOS-style navigation bar
+            TopAppBar(
+                navigationIcon = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+//                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        IconButton(
+                            onClick = { navigateBack() }
+                        ) {
+                            Icon(
+                                Icons.Filled.ArrowBackIosNew,
+                                contentDescription = "Back",
+                                tint = iosBlue,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Text(
+                            text = "Back",
+                            color = iosBlue,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                },
+                title = {
+                    // Center-aligned title (iOS style)
+//                    Text(
+//                        text = "Adaptive Navigation Bar",
+//                        style = MaterialTheme.typography.titleMedium.copy(
+//                            fontWeight = FontWeight.SemiBold
+//                        ),
+////                        modifier = Modifier.align(Alignment.Center)
+//                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = iosCardBackground
+                )
+            )
+//            Surface(
+//                color = iosCardBackground,
+//                shadowElevation = 0.dp
+//            ) {
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(56.dp)
+//                        .padding(horizontal = 16.dp)
+//                ) {
+//                    // Back button in iOS style
+//                    Row(
+//                        verticalAlignment = Alignment.CenterVertically,
+//                        modifier = Modifier.align(Alignment.CenterStart)
+//                    ) {
+//                        IconButton(
+//                            onClick = { navigateBack() }
+//                        ) {
+//                            Icon(
+//                                Icons.Filled.ArrowBackIosNew,
+//                                contentDescription = "Back",
+//                                tint = iosBlue,
+//                                modifier = Modifier.size(18.dp)
+//                            )
+//                        }
+//                        Text(
+//                            text = "Back",
+//                            color = iosBlue,
+//                            style = MaterialTheme.typography.bodyMedium
+//                        )
+//                    }
+//
+//                    // Center-aligned title (iOS style)
+//                    Text(
+//                        text = "Adaptive Navigation Bar",
+//                        style = MaterialTheme.typography.titleMedium.copy(
+//                            fontWeight = FontWeight.SemiBold
+//                        ),
+//                        modifier = Modifier.align(Alignment.Center)
+//                    )
+//                }
+//            }
+            // iOS-style divider
+            HorizontalDivider(
+                thickness = 0.5.dp,
+                color = Color(0xFFD1D1D6)
+            )
+        },
+        containerColor = iosBackground, // iOS-like background color
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(iosPaddingValues)
+        ) {
+            // Main content area that changes based on selected tab
+            AnimatedContent(
+                targetState = selectedItem,
+                transitionSpec = {
+                    // iOS-style cross-fade animation
+                    fadeIn(animationSpec = tween(300)) togetherWith
+                            fadeOut(animationSpec = tween(300))
+                },
+                modifier = Modifier.fillMaxSize()
+            ) { currentTab ->
+                when (currentTab) {
+                    "Home" -> HomeTabContent()
+                    "Favorite" -> FavoriteTabContent()
+                    "Profile" -> ProfileTabContent()
+                }
+            }
+
+            // Navigation bar at the bottom with iOS styling
+//            Surface(
+//                color = iosCardBackground,
+//                modifier = Modifier
+//                    .align(Alignment.BottomCenter)
+//                    .fillMaxWidth()
+//            ) {
+//                Column {
+            // iOS-style divider above tab bar
+//                    HorizontalDivider(
+//                        thickness = 0.5.dp,
+//                        color = Color(0xFFD1D1D6)
+//                    )
+
+            // Custom iOS-style tab bar
+            AdaptiveNavigationBar(
+                onItemChanged = {
+                    selectedItem = it
+                },
+                iosPaddingValues = {
+                    iosPaddingValues = it
+                },
+                iosItems = listOf(
+                    UIKitUITabBarItem(
+                        title = "Home",
+                        image = "house.fill",
+                    ),
+                    UIKitUITabBarItem(
+                        title = "Favorite",
+                        image = "heart.fill",
+                    ),
+                    UIKitUITabBarItem(
+                        title = "Profile",
+                        image = "person.circle.fill",
+                    )
+                ),
+                iosSelectedIndex = 1,
+                modifier = Modifier
+                    .fillMaxWidth(),
+//                        containerColor = iosCardBackground,
+//                        contentColor = iosBlue
+            ) {
+
+            }
+//                }
+//            }
+        }
+    }
+}

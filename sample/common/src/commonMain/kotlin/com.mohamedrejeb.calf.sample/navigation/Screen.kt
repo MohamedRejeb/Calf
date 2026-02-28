@@ -16,4 +16,5 @@ enum class Screen {
     Permission,
     Map,
     DropDownMenu,
+    NavigationBar,
 }
