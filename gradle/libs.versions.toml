@@ -1,7 +1,7 @@
 [versions]
-agp = "8.12.3"
-kotlin = "2.2.21"
-compose = "1.9.2"
+agp = "8.13.2"
+kotlin = "2.3.10"
+compose = "1.10.1"
 kotlinx-datetime = "0.7.1"
 kotlinx-browser = "0.5.0"
 nexus-publish = "2.0.0"
@@ -9,20 +9,20 @@ documentfile = "1.1.0"
 jna = "5.18.1"
 coil = "3.3.0"
 
-calf = "0.8.0"
+calf = "0.9.0"
 
 # For sample
-activity-compose = "1.11.0"
-navigation-compose = "2.9.5"
+activity-compose = "1.12.1"
+navigation-compose = "2.9.6"
 android-minSdk = "21"
 android-compileSdk = "36"
 kotlinx-coroutines = "1.10.2"
 appcompat = "1.7.1"
-compose-ui = "1.9.4"
+compose-ui = "1.10.0"
 android-lifecycle = "2.2.0"
 play-services-location = "21.3.0"
 compose-navigation = "2.9.1"
-ktor = "3.3.1"
+ktor = "3.3.3"
 
 [libraries]
 gradlePlugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }

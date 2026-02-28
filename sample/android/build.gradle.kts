@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
@@ -25,8 +27,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
+    // Migrated from kotlinOptions to compilerOptions DSL (required in Kotlin 2.3+)
+    // See: https://kotlinlang.org/docs/gradle-compiler-options.html
+    kotlin {
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_1_8)
     }
     packaging {
         resources {
