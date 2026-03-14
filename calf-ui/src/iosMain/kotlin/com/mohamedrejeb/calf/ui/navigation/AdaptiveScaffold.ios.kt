@@ -30,8 +30,12 @@ actual fun AdaptiveScaffold(
     content: @Composable ((PaddingValues) -> Unit)
 ) {
     val iosTabBarPaddingState = remember { mutableStateOf(PaddingValues()) }
+    val iosTopBarPaddingState = remember { mutableStateOf(PaddingValues()) }
 
-    CompositionLocalProvider(LocalIosTabBarPadding provides iosTabBarPaddingState) {
+    CompositionLocalProvider(
+        LocalIosTabBarPadding provides iosTabBarPaddingState,
+        LocalIosTopBarPadding provides iosTopBarPaddingState,
+    ) {
         Scaffold(
             modifier = modifier,
             topBar = topBar,
@@ -46,14 +50,19 @@ actual fun AdaptiveScaffold(
             val iosTabBarPadding = iosTabBarPaddingState.value
             val layoutDirection = LocalLayoutDirection.current
 
-            // Merge scaffold padding with the native iOS tab bar padding.
-            // The native UITabBar height replaces scaffold's bottom padding
-            // when present, since the tab bar is added as a native UIKit subview
-            // and is not measured by the Compose Scaffold layout.
+            // Merge scaffold padding with the native iOS bar padding.
+            // The native UITabBar/UINavigationBar heights replace scaffold's
+            // bottom/top padding when present, since the bars are added as
+            // native UIKit subviews and are not measured by the Compose Scaffold layout.
+            val iosTopBarPadding = iosTopBarPaddingState.value
             val iosBottomPadding = iosTabBarPadding.calculateBottomPadding()
+            val iosTopPadding = iosTopBarPadding.calculateTopPadding()
             val mergedPadding = PaddingValues(
                 start = scaffoldPadding.calculateStartPadding(layoutDirection),
-                top = scaffoldPadding.calculateTopPadding(),
+                top = maxOf(
+                    scaffoldPadding.calculateTopPadding(),
+                    iosTopPadding,
+                ),
                 end = scaffoldPadding.calculateEndPadding(layoutDirection),
                 bottom = maxOf(
                     scaffoldPadding.calculateBottomPadding(),

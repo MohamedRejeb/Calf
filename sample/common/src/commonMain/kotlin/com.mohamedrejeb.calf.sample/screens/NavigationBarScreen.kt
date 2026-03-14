@@ -63,6 +63,8 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveScaffold
+import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
+import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
@@ -836,7 +838,7 @@ fun NavigationBarScreen(
 
     AdaptiveScaffold(
         topBar = {
-            TopAppBar(
+            AdaptiveTopBar(
                 navigationIcon = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -861,7 +863,21 @@ fun NavigationBarScreen(
                 title = {},
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
-                )
+                ),
+                iosTitle = items[selectedIndex],
+                iosLeadingItems = listOf(
+                    UIKitUIBarButtonItem(
+                        title = "Back",
+                        image = UIKitImage.SystemName("chevron.left"),
+                        onClick = { navigateBack() },
+                    ),
+                ),
+                iosTrailingItems = listOf(
+                    UIKitUIBarButtonItem(
+                        image = UIKitImage.SystemName("magnifyingglass"),
+                        onClick = { /* search */ },
+                    ),
+                ),
             )
             HorizontalDivider(
                 thickness = 0.5.dp,
