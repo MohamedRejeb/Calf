@@ -25,7 +25,7 @@ class AlertDialogManager internal constructor(
     internal var onDismissRequest: () -> Unit,
     internal var iosProperties: AlertDialogIosProperties,
     internal var properties: DialogProperties,
-) {
+) : NSObject() {
 
     /**
      * Indicates whether the dialog is presented or not.
