@@ -10,6 +10,7 @@ import platform.UIKit.UIBarButtonItem
 import platform.UIKit.UIBarButtonItemStyle
 import platform.UIKit.UIBarButtonSystemItem
 import platform.UIKit.UINavigationBar
+import platform.UIKit.UINavigationBarAppearance
 import platform.UIKit.UINavigationBarDelegateProtocol
 import platform.UIKit.UINavigationItem
 import platform.UIKit.UIBarPositionTopAttached
@@ -46,6 +47,7 @@ internal class TopBarManager(
         leadingItems: List<UIKitUIBarButtonItem>,
         trailingItems: List<UIKitUIBarButtonItem>,
         configuration: UIKitNavigationBarConfiguration,
+        isLiquidGlassEnabled: Boolean,
     ) {
         val needsItemUpdate = title != currentTitle ||
             leadingItems != currentLeadingItems ||
@@ -80,6 +82,16 @@ internal class TopBarManager(
         if (configuration != currentConfiguration) {
             navBar.prefersLargeTitles = configuration.prefersLargeTitles
             navBar.translucent = configuration.isTranslucent
+
+            if (!isLiquidGlassEnabled) {
+                val appearance = UINavigationBarAppearance().apply {
+                    configureWithDefaultBackground()
+                }
+                navBar.standardAppearance = appearance
+                navBar.scrollEdgeAppearance = appearance
+                navBar.compactAppearance = appearance
+            }
+
             currentConfiguration = configuration
         }
     }

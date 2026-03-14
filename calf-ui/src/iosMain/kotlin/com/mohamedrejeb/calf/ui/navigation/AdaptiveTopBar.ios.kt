@@ -82,6 +82,7 @@ actual fun AdaptiveTopBar(
             leadingItems = iosLeadingItems,
             trailingItems = iosTrailingItems,
             configuration = iosConfiguration,
+            isLiquidGlassEnabled = isLiquidGlassEnabled,
         )
     }
 
@@ -98,10 +99,7 @@ actual fun AdaptiveTopBar(
                 navBarView.leadingAnchor.constraintEqualToAnchor(viewController.view.leadingAnchor),
                 navBarView.trailingAnchor.constraintEqualToAnchor(viewController.view.trailingAnchor),
                 navBarView.topAnchor.constraintEqualToAnchor(
-                    if (isLiquidGlassEnabled)
-                        viewController.view.safeAreaLayoutGuide.topAnchor
-                    else
-                        viewController.view.topAnchor
+                    viewController.view.safeAreaLayoutGuide.topAnchor
                 ),
             )
         )
@@ -127,11 +125,7 @@ actual fun AdaptiveTopBar(
                     y = origin.y.dp,
                 )
                 navBarWidth = size.width.dp
-                val safeAreaTop =
-                    if (isLiquidGlassEnabled)
-                        viewController.view.safeAreaInsets.useContents { top.dp }
-                    else
-                        0.dp // Already included in frame when pinned to view.topAnchor
+                val safeAreaTop = viewController.view.safeAreaInsets.useContents { top.dp }
                 val newNavBarHeight = size.height.dp + safeAreaTop
                 if (navBarHeight != newNavBarHeight) {
                     navBarHeight = newNavBarHeight
