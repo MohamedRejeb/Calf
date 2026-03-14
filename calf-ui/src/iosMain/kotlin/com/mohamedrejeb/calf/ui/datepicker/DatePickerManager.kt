@@ -1,3 +1,5 @@
+@file:OptIn(BetaInteropApi::class)
+
 package com.mohamedrejeb.calf.ui.datepicker
 
 import androidx.compose.runtime.getValue
@@ -45,6 +47,7 @@ class DatePickerManager internal constructor(
 
     @OptIn(ExperimentalTime::class)
     private val datePickerDelegate = object : NSObject() {
+        @Suppress("unused")
         @ObjCAction
         fun onDateChanged(sender: UIDatePicker) {
             val components = NSCalendar.currentCalendar.components(
