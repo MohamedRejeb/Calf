@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -41,7 +42,11 @@ import platform.UIKit.UINavigationBar
  * The Material3 parameters ([title], [navigationIcon], [actions]) are ignored on iOS —
  * the bar is built from [iosTitle], [iosLeadingItems], and [iosTrailingItems].
  */
-@OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalForeignApi::class,
+    ExperimentalComposeUiApi::class,
+    ExperimentalMaterial3Api::class
+)
 @ExperimentalCalfUiApi
 @Composable
 actual fun AdaptiveTopBar(
@@ -60,6 +65,11 @@ actual fun AdaptiveTopBar(
 ) {
     val density = LocalDensity.current
     val viewController = LocalUIViewController.current
+
+    // Write the measured navigation bar height to the CompositionLocal so AdaptiveScaffold
+    // can automatically adjust content padding on iOS.
+    val iosTopBarPaddingState = LocalIosTopBarPadding.current
+
     val navBarView = remember {
         UINavigationBar().apply {
             translatesAutoresizingMaskIntoConstraints = false
@@ -86,10 +96,21 @@ actual fun AdaptiveTopBar(
         )
     }
 
+    val initialSafeAreaTop = remember {
+        viewController.view.safeAreaInsets.useContents { top.dp }
+    }
+    val cachedNavBarHeight = remember { IosBarHeightCache.lastNavBarHeight }
+
     var topLeft by remember { mutableStateOf(DpOffset.Zero) }
     var positionInRoot by remember { mutableStateOf(DpOffset.Zero) }
     var navBarWidth by remember { mutableStateOf(0.dp) }
-    var navBarHeight by remember { mutableStateOf(0.dp) }
+    var navBarHeight by remember {
+        val navBarHeight = initialSafeAreaTop + cachedNavBarHeight
+        if (navBarHeight.value > 0f) {
+            iosTopBarPaddingState.value = PaddingValues(top = navBarHeight)
+        }
+        mutableStateOf(navBarHeight)
+    }
 
     DisposableEffect(navBarView, viewController) {
         viewController.view.addSubview(navBarView)
@@ -109,10 +130,6 @@ actual fun AdaptiveTopBar(
         }
     }
 
-    // Write the measured navigation bar height to the CompositionLocal so AdaptiveScaffold
-    // can automatically adjust content padding on iOS.
-    val iosTopBarPaddingState = LocalIosTopBarPadding.current
-
     LaunchedEffect(Unit) {
         var navBarHeightConsistencyCounter = 0
 
@@ -127,22 +144,23 @@ actual fun AdaptiveTopBar(
                 navBarWidth = size.width.dp
                 val safeAreaTop = viewController.view.safeAreaInsets.useContents { top.dp }
                 val newNavBarHeight = size.height.dp + safeAreaTop
+
+                IosBarHeightCache.updateNavBarHeight(size.height.dp)
+
                 if (navBarHeight != newNavBarHeight) {
                     navBarHeight = newNavBarHeight
+                    navBarHeightConsistencyCounter = 0
+
+                    if (newNavBarHeight.value > 0f) {
+                        iosTopBarPaddingState.value = PaddingValues(top = newNavBarHeight)
+                    }
                 } else {
                     navBarHeightConsistencyCounter++
                 }
             }
 
-            if (navBarHeight.value > 0f && navBarHeightConsistencyCounter > 10)
+            if (navBarHeight.value > 0f && navBarHeightConsistencyCounter > 6)
                 break
-        }
-    }
-
-    // Update the CompositionLocal whenever the navigation bar height changes
-    LaunchedEffect(navBarHeight) {
-        if (navBarHeight.value > 0f) {
-            iosTopBarPaddingState.value = PaddingValues(top = navBarHeight)
         }
     }
 

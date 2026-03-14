@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -59,6 +60,11 @@ actual fun AdaptiveNavigationBar(
 ) {
     val density = LocalDensity.current
     val viewController = LocalUIViewController.current
+
+    // Write the measured tab bar height to the CompositionLocal so AdaptiveScaffold
+    // can automatically adjust content padding on iOS.
+    val iosTabBarPaddingState = LocalIosTabBarPadding.current
+
     val tabBarView = remember {
         UITabBar().apply {
             translatesAutoresizingMaskIntoConstraints = false
@@ -82,10 +88,22 @@ actual fun AdaptiveNavigationBar(
         tabBarManager.setItems(iosItems, iosSelectedIndex)
     }
 
+    val initialSafeAreaBottom = remember {
+        if (isLiquidGlassEnabled) 0.dp
+        else viewController.view.safeAreaInsets.useContents { bottom.dp }
+    }
+    val cachedTabBarHeight = remember { IosBarHeightCache.lastTabBarHeight }
+
     var topLeft by remember { mutableStateOf(DpOffset.Zero) }
     var positionInRoot by remember { mutableStateOf(DpOffset.Zero) }
     var tabBarWidth by remember { mutableStateOf(0.dp) }
-    var tabBarHeight by remember { mutableStateOf(0.dp) }
+    var tabBarHeight by remember {
+        val tabBarHeight = initialSafeAreaBottom + cachedTabBarHeight
+        if (tabBarHeight.value > 0f) {
+            iosTabBarPaddingState.value = PaddingValues(bottom = tabBarHeight)
+        }
+        mutableStateOf(tabBarHeight)
+    }
 
     DisposableEffect(tabBarView, viewController) {
         viewController.view.addSubview(tabBarView)
@@ -108,10 +126,6 @@ actual fun AdaptiveNavigationBar(
         }
     }
 
-    // Write the measured tab bar height to the CompositionLocal so AdaptiveScaffold
-    // can automatically adjust content padding on iOS.
-    val iosTabBarPaddingState = LocalIosTabBarPadding.current
-
     LaunchedEffect(Unit) {
         var tabBarHeightConsistencyCounter = 0
 
@@ -130,22 +144,23 @@ actual fun AdaptiveNavigationBar(
                     else
                         viewController.view.safeAreaInsets.useContents { bottom.dp }
                 val newTabBarHeight = size.height.dp + safeAreaBottom
+
+                IosBarHeightCache.updateTabBarHeight(size.height.dp)
+
                 if (tabBarHeight != newTabBarHeight) {
                     tabBarHeight = newTabBarHeight
+                    tabBarHeightConsistencyCounter = 0
+
+                    if (newTabBarHeight.value > 0f) {
+                        iosTabBarPaddingState.value = PaddingValues(bottom = newTabBarHeight)
+                    }
                 } else {
                     tabBarHeightConsistencyCounter++
                 }
             }
 
-            if (tabBarHeight.value > 0f && tabBarHeightConsistencyCounter > 10)
+            if (tabBarHeight.value > 0f && tabBarHeightConsistencyCounter > 6)
                 break
-        }
-    }
-
-    // Update the CompositionLocal whenever the tab bar height changes
-    LaunchedEffect(tabBarHeight) {
-        if (tabBarHeight.value > 0f) {
-            iosTabBarPaddingState.value = PaddingValues(bottom = tabBarHeight)
         }
     }
 
