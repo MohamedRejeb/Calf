@@ -27,7 +27,6 @@ internal class TabBarManager(
 
     init {
         tabBar.delegate = uiTabBarDelegate
-        tabBar.translatesAutoresizingMaskIntoConstraints = false
     }
 
     fun setItems(

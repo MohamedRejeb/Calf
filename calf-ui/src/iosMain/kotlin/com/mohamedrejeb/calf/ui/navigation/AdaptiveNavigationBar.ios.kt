@@ -34,6 +34,7 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.UIKit.NSLayoutConstraint
+import platform.UIKit.UIDevice
 import platform.UIKit.UITabBar
 
 /**
@@ -58,7 +59,15 @@ actual fun AdaptiveNavigationBar(
 ) {
     val density = LocalDensity.current
     val viewController = LocalUIViewController.current
-    val tabBarView = remember { UITabBar() }
+    val tabBarView = remember {
+        UITabBar().apply {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+    }
+    val isLiquidGlassEnabled = remember {
+        val systemVersion = UIDevice.currentDevice.systemVersion.toDouble()
+        systemVersion >= 26.0
+    }
 
     val onItemSelectedState by rememberUpdatedState(iosOnItemSelected)
 
@@ -85,7 +94,12 @@ actual fun AdaptiveNavigationBar(
             listOf(
                 tabBarView.leadingAnchor.constraintEqualToAnchor(viewController.view.leadingAnchor),
                 tabBarView.trailingAnchor.constraintEqualToAnchor(viewController.view.trailingAnchor),
-                tabBarView.bottomAnchor.constraintEqualToAnchor(viewController.view.bottomAnchor),
+                tabBarView.bottomAnchor.constraintEqualToAnchor(
+                    if (isLiquidGlassEnabled)
+                        viewController.view.bottomAnchor
+                    else
+                        viewController.view.safeAreaLayoutGuide.bottomAnchor
+                ),
             )
         )
 
@@ -110,11 +124,12 @@ actual fun AdaptiveNavigationBar(
                     y = origin.y.dp,
                 )
                 tabBarWidth = size.width.dp
-                val newTabBarHeight = size.height.dp
-                println("topLeft: $topLeft, tabBarWidth: $tabBarWidth,")
-                // topLeft: (0.0.dp, 803.0.dp), tabBarWidth: 393.0.dp,
-                println("newTabBarHeight: $newTabBarHeight")
-                // newTabBarHeight: 49.0.dp
+                val safeAreaBottom =
+                    if (isLiquidGlassEnabled)
+                        0.dp
+                    else
+                        viewController.view.safeAreaInsets.useContents { bottom.dp }
+                val newTabBarHeight = size.height.dp + safeAreaBottom
                 if (tabBarHeight != newTabBarHeight) {
                     tabBarHeight = newTabBarHeight
                 } else {
