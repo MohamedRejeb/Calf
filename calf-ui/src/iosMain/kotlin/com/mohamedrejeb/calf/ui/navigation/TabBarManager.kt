@@ -2,7 +2,6 @@ package com.mohamedrejeb.calf.ui.navigation
 
 import com.mohamedrejeb.calf.ui.utils.toUIImage
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.UIKit.UIImage
 import platform.UIKit.UITabBar
 import platform.UIKit.UITabBarDelegateProtocol
 import platform.UIKit.UITabBarItem
@@ -60,13 +59,6 @@ private fun UIKitUITabBarItem.toUITabBarItem(tag: Long): UITabBarItem {
     selectedImage?.toUIImage()?.let { item.selectedImage = it }
     return item
 }
-
-private fun UIKitUITabBarItemImage.toUIImage(): UIImage? =
-    when (this) {
-        is UIKitUITabBarItemImage.SystemName -> UIImage.systemImageNamed(name)
-        is UIKitUITabBarItemImage.Vector -> imageVector.toUIImage(width, height)
-        is UIKitUITabBarItemImage.Bitmap -> imageBitmap.toUIImage()
-    }
 
 internal class UITabBarDelegate(
     private val onItemSelected: (Int) -> Unit,

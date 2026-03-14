@@ -173,6 +173,5 @@ actual fun AdaptiveNavigationBar(
             }
             .width(tabBarWidth)
             .height(tabBarHeight)
-            .background(containerColor)
     )
 }

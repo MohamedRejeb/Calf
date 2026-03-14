@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.vector.VectorGroup
 import androidx.compose.ui.graphics.vector.VectorNode
 import androidx.compose.ui.graphics.vector.VectorPath
 import androidx.compose.ui.graphics.vector.toPath
+import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import platform.UIKit.UIImage
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.convert
@@ -23,6 +24,18 @@ import platform.CoreGraphics.CGColorSpaceRelease
 import platform.CoreGraphics.CGContextRelease
 import platform.CoreGraphics.CGImageAlphaInfo
 import platform.CoreGraphics.CGImageRelease
+
+/**
+ * Converts a [UIKitImage] to a native iOS [UIImage].
+ *
+ * @return The converted [UIImage], or null if the conversion fails.
+ */
+fun UIKitImage.toUIImage(): UIImage? =
+    when (this) {
+        is UIKitImage.SystemName -> UIImage.systemImageNamed(name)
+        is UIKitImage.Vector -> imageVector.toUIImage(width, height)
+        is UIKitImage.Bitmap -> imageBitmap.toUIImage()
+    }
 
 fun ImageVector.toUIImage(width: Int, height: Int): UIImage? =
     this.toImageBitmap(width, height).toUIImage()
