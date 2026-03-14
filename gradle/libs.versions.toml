@@ -13,7 +13,7 @@ calf = "0.9.0"
 
 # For sample
 activity-compose = "1.12.1"
-navigation-compose = "2.9.6"
+navigation-compose = "2.9.7"
 android-minSdk = "21"
 android-compileSdk = "36"
 kotlinx-coroutines = "1.10.2"
