@@ -54,6 +54,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -75,7 +76,9 @@ import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
+import com.mohamedrejeb.calf.ui.navigation.AdaptiveScaffold
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
+import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItemImage
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 
 @Composable
@@ -303,6 +306,60 @@ private fun HomeTabContent() {
                             modifier = Modifier
                                 .size(16.dp)
                                 .rotate(180f) // Rotate to point right
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            Text(
+                text = "ITEMS LIST",
+                style = MaterialTheme.typography.bodySmall,
+                color = iosSecondaryText,
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+            )
+        }
+
+        items(30) { index ->
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                shadowElevation = 2.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(iosGray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${index + 1}",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = iosBlue
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Item ${index + 1}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = "This is item number ${index + 1} for testing padding",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = iosSecondaryText
                         )
                     }
                 }
@@ -765,7 +822,7 @@ private fun ProfileTabContent() {
 fun NavigationBarScreen(
     navigateBack: () -> Unit
 ) {
-    var selectedItem by remember { mutableStateOf("Favorite") }
+    var selectedIndex by remember { mutableStateOf(1) }
     val items = listOf("Home", "Favorite", "Profile")
     val icons = listOf(
         Icons.Outlined.Home,
@@ -784,18 +841,12 @@ fun NavigationBarScreen(
     val iosCardBackground = Color.White
     val iosSecondaryText = Color(0xFF8E8E93)
 
-    var iosPaddingValues by remember {
-        mutableStateOf(PaddingValues())
-    }
-
-    Scaffold(
+    AdaptiveScaffold(
         topBar = {
-            // iOS-style navigation bar
             TopAppBar(
                 navigationIcon = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-//                        modifier = Modifier.align(Alignment.CenterStart)
                     ) {
                         IconButton(
                             onClick = { navigateBack() }
@@ -814,139 +865,69 @@ fun NavigationBarScreen(
                         )
                     }
                 },
-                title = {
-                    // Center-aligned title (iOS style)
-//                    Text(
-//                        text = "Adaptive Navigation Bar",
-//                        style = MaterialTheme.typography.titleMedium.copy(
-//                            fontWeight = FontWeight.SemiBold
-//                        ),
-////                        modifier = Modifier.align(Alignment.Center)
-//                    )
-                },
+                title = {},
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = iosCardBackground
                 )
             )
-//            Surface(
-//                color = iosCardBackground,
-//                shadowElevation = 0.dp
-//            ) {
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(56.dp)
-//                        .padding(horizontal = 16.dp)
-//                ) {
-//                    // Back button in iOS style
-//                    Row(
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        modifier = Modifier.align(Alignment.CenterStart)
-//                    ) {
-//                        IconButton(
-//                            onClick = { navigateBack() }
-//                        ) {
-//                            Icon(
-//                                Icons.Filled.ArrowBackIosNew,
-//                                contentDescription = "Back",
-//                                tint = iosBlue,
-//                                modifier = Modifier.size(18.dp)
-//                            )
-//                        }
-//                        Text(
-//                            text = "Back",
-//                            color = iosBlue,
-//                            style = MaterialTheme.typography.bodyMedium
-//                        )
-//                    }
-//
-//                    // Center-aligned title (iOS style)
-//                    Text(
-//                        text = "Adaptive Navigation Bar",
-//                        style = MaterialTheme.typography.titleMedium.copy(
-//                            fontWeight = FontWeight.SemiBold
-//                        ),
-//                        modifier = Modifier.align(Alignment.Center)
-//                    )
-//                }
-//            }
-            // iOS-style divider
             HorizontalDivider(
                 thickness = 0.5.dp,
                 color = Color(0xFFD1D1D6)
             )
         },
-        containerColor = iosBackground, // iOS-like background color
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(iosPaddingValues)
-        ) {
-            // Main content area that changes based on selected tab
-            AnimatedContent(
-                targetState = selectedItem,
-                transitionSpec = {
-                    // iOS-style cross-fade animation
-                    fadeIn(animationSpec = tween(300)) togetherWith
-                            fadeOut(animationSpec = tween(300))
-                },
-                modifier = Modifier.fillMaxSize()
-            ) { currentTab ->
-                when (currentTab) {
-                    "Home" -> HomeTabContent()
-                    "Favorite" -> FavoriteTabContent()
-                    "Profile" -> ProfileTabContent()
-                }
-            }
-
-            // Navigation bar at the bottom with iOS styling
-//            Surface(
-//                color = iosCardBackground,
-//                modifier = Modifier
-//                    .align(Alignment.BottomCenter)
-//                    .fillMaxWidth()
-//            ) {
-//                Column {
-            // iOS-style divider above tab bar
-//                    HorizontalDivider(
-//                        thickness = 0.5.dp,
-//                        color = Color(0xFFD1D1D6)
-//                    )
-
-            // Custom iOS-style tab bar
+        bottomBar = {
             AdaptiveNavigationBar(
-                onItemChanged = {
-                    selectedItem = it
-                },
-                iosPaddingValues = {
-                    iosPaddingValues = it
-                },
                 iosItems = listOf(
                     UIKitUITabBarItem(
                         title = "Home",
-                        image = "house.fill",
+                        image = UIKitUITabBarItemImage.SystemName("house.fill"),
                     ),
                     UIKitUITabBarItem(
                         title = "Favorite",
-                        image = "heart.fill",
+                        image = UIKitUITabBarItemImage.SystemName("heart.fill"),
                     ),
                     UIKitUITabBarItem(
                         title = "Profile",
-                        image = "person.circle.fill",
-                    )
+                        image = UIKitUITabBarItemImage.SystemName("person.circle.fill"),
+                    ),
                 ),
-                iosSelectedIndex = 1,
-                modifier = Modifier
-                    .fillMaxWidth(),
-//                        containerColor = iosCardBackground,
-//                        contentColor = iosBlue
+                iosSelectedIndex = selectedIndex,
+                iosOnItemSelected = { selectedIndex = it },
+                modifier = Modifier.fillMaxWidth(),
             ) {
-
+                items.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        selected = selectedIndex == index,
+                        onClick = { selectedIndex = index },
+                        icon = {
+                            Icon(
+                                if (selectedIndex == index) selectedIcons[index] else icons[index],
+                                contentDescription = item,
+                            )
+                        },
+                        label = { Text(item) },
+                    )
+                }
             }
-//                }
-//            }
+        },
+        containerColor = iosBackground,
+    ) { paddingValues ->
+        // Content — padding is automatically correct on both platforms
+        AnimatedContent(
+            targetState = items[selectedIndex],
+            transitionSpec = {
+                fadeIn(animationSpec = tween(300)) togetherWith
+                        fadeOut(animationSpec = tween(300))
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) { currentTab ->
+            when (currentTab) {
+                "Home" -> HomeTabContent()
+                "Favorite" -> FavoriteTabContent()
+                "Profile" -> ProfileTabContent()
+            }
         }
     }
 }

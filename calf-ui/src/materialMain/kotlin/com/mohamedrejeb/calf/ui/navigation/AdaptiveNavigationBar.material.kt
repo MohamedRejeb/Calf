@@ -1,6 +1,5 @@
 package com.mohamedrejeb.calf.ui.navigation
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.NavigationBar
@@ -13,19 +12,20 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 
 /**
  * Material3 implementation of [AdaptiveNavigationBar] using Material3 NavigationBar.
+ *
+ * The `ios*` parameters are ignored on Material platforms.
  */
 @ExperimentalCalfUiApi
 @Composable
 actual fun AdaptiveNavigationBar(
-    onItemChanged: (String) -> Unit,
-    iosPaddingValues: (PaddingValues) -> Unit,
-    iosItems: List<UIKitUITabBarItem>,
-    iosSelectedIndex: Int,
     modifier: Modifier,
     containerColor: Color,
     contentColor: Color,
     tonalElevation: Dp,
     windowInsets: WindowInsets,
+    iosItems: List<UIKitUITabBarItem>,
+    iosSelectedIndex: Int,
+    iosOnItemSelected: (Int) -> Unit,
     content: @Composable RowScope.() -> Unit
 ) {
     NavigationBar(
