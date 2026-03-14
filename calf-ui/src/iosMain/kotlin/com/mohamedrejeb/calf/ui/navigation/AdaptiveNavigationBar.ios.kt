@@ -130,8 +130,6 @@ actual fun AdaptiveNavigationBar(
         var tabBarHeightConsistencyCounter = 0
 
         while (true) {
-            withFrameMillis { }
-
             tabBarView.frame.useContents {
                 topLeft = DpOffset(
                     x = origin.x.dp,
@@ -161,6 +159,8 @@ actual fun AdaptiveNavigationBar(
 
             if (tabBarHeight.value > 0f && tabBarHeightConsistencyCounter > 6)
                 break
+
+            withFrameMillis { }
         }
     }
 

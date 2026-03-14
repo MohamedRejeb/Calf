@@ -134,8 +134,6 @@ actual fun AdaptiveTopBar(
         var navBarHeightConsistencyCounter = 0
 
         while (true) {
-            withFrameMillis { }
-
             navBarView.frame.useContents {
                 topLeft = DpOffset(
                     x = origin.x.dp,
@@ -161,6 +159,8 @@ actual fun AdaptiveTopBar(
 
             if (navBarHeight.value > 0f && navBarHeightConsistencyCounter > 6)
                 break
+
+            withFrameMillis { }
         }
     }
 
