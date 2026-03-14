@@ -1,7 +1,9 @@
 package com.mohamedrejeb.calf.ui.navigation
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import platform.UIKit.UIDevice
 
 /**
  * Simple in-memory cache for the last measured iOS native bar heights.
@@ -12,8 +14,17 @@ import androidx.compose.ui.unit.dp
  * reducing the chance of a visible layout jump.
  */
 internal object IosBarHeightCache {
-    private val DEFAULT_NAV_BAR_HEIGHT = 44.dp
-    private val DEFAULT_TAB_BAR_HEIGHT = 49.dp
+    private val isLiquidGlassEnabled = UIDevice.currentDevice.systemVersion.toDouble() >= 26.0
+    private val DEFAULT_NAV_BAR_HEIGHT =
+        if (isLiquidGlassEnabled)
+            54.dp
+        else
+            44.dp
+    private val DEFAULT_TAB_BAR_HEIGHT =
+        if (isLiquidGlassEnabled)
+            83.dp
+        else
+            49.dp
 
     var lastNavBarHeight: Dp = DEFAULT_NAV_BAR_HEIGHT
         private set
