@@ -68,7 +68,7 @@ private fun rememberMutablePermissionsState(
     val context = LocalContext.current
     val activity = context.findActivity()
     val mutablePermissions = remember(permissions) {
-        return@remember permissions.map {  permission ->
+        return@remember permissions.map { permission ->
             MutablePermissionStateImpl(
                 permission,
                 context,
@@ -128,9 +128,15 @@ internal actual class MutableMultiplePermissionsState actual constructor(
     }
 
     actual override fun launchMultiplePermissionRequest() {
-        launcher?.launch(
-            permissions.map { it.permission.toAndroidPermission() }.toTypedArray()
-        ) ?: throw IllegalStateException("ActivityResultLauncher cannot be null")
+        // added empty string and empty array safeguards
+        val safePermissions = permissions
+            .map { it.permission.toAndroidPermission() }
+            .filter { it.isNotBlank() }
+
+        if (safePermissions.isNotEmpty()) {
+            launcher?.launch(safePermissions.toTypedArray())
+                ?: throw IllegalStateException("ActivityResultLauncher cannot be null")
+        }
     }
 
     internal var launcher: ActivityResultLauncher<Array<String>>? = null
