@@ -37,16 +37,23 @@ internal actual fun rememberMutablePermissionState(
 ): MutablePermissionState {
     val context = LocalContext.current
     val permissionState = remember(permission) {
-        MutablePermissionStateImpl(permission, context, context.findActivity(), onPermissionResult)
+        MutablePermissionStateImpl(
+            permission = permission,
+            context = context,
+            activity = context.findActivity(),
+            onPermissionResult = onPermissionResult
+        )
     }
 
     // Refresh the permission status when the lifecycle is resumed
     PermissionLifecycleCheckerEffect(permissionState)
 
     // Remember RequestPermission launcher and assign it to permissionState
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { result ->
         permissionState.refreshPermissionStatus()
-        onPermissionResult(it)
+        onPermissionResult(result)
     }
     DisposableEffect(permissionState, launcher) {
         permissionState.launcher = launcher

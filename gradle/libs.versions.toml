@@ -1,28 +1,28 @@
 [versions]
 agp = "8.13.2"
 kotlin = "2.3.10"
-compose = "1.10.1"
+compose = "1.10.2"
 kotlinx-datetime = "0.7.1"
 kotlinx-browser = "0.5.0"
 nexus-publish = "2.0.0"
 documentfile = "1.1.0"
 jna = "5.18.1"
-coil = "3.3.0"
+coil = "3.4.0"
 
 calf = "0.9.0"
 
 # For sample
-activity-compose = "1.12.4"
-navigation-compose = "2.9.6"
+activity-compose = "1.13.0"
+android-navigation-compose = "2.9.7"
 android-minSdk = "21"
 android-compileSdk = "36"
 kotlinx-coroutines = "1.10.2"
 appcompat = "1.7.1"
-compose-ui = "1.10.0"
+compose-ui = "1.10.4"
 android-lifecycle = "2.2.0"
 play-services-location = "21.3.0"
-compose-navigation = "2.9.1"
-ktor = "3.4.0"
+jetbrains-navigation-compose = "2.9.2"
+ktor = "3.4.1"
 
 [libraries]
 gradlePlugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -56,8 +56,8 @@ jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
 
 # For sample
-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
-compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "compose-navigation" }
+android-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "android-navigation-compose" }
+jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-navigation-compose" }
 
 calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
 calf-file-picker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }

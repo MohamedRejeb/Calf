@@ -32,7 +32,7 @@ kotlin {
         implementation(projects.calfFilePickerCoil)
         implementation(projects.calfPermissions)
         implementation(projects.calfWebview)
-        implementation(libs.compose.navigation)
+        implementation(libs.jetbrains.navigation.compose)
         implementation(projects.calfNavigation)
         implementation(projects.calfCameraPicker)
 

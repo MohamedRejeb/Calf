@@ -10,6 +10,6 @@ kotlin {
     }
 
     sourceSets.androidMain.dependencies {
-        implementation(libs.navigation.compose)
+        implementation(libs.android.navigation.compose)
     }
 }
