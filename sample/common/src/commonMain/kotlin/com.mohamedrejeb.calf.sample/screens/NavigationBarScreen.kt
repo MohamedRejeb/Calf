@@ -71,10 +71,9 @@ import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 private fun HomeTabContent(
     paddingValues: PaddingValues
 ) {
-    // iOS-like colors
-    val iosBlue = Color(0xFF007AFF)
-    val iosGray = Color(0xFFEFEFF4)
-    val iosSecondaryText = Color(0xFF8E8E93)
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val surfaceVariantColor = MaterialTheme.colorScheme.surfaceVariant
+    val onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     var isMaterialDialogVisible by remember { mutableStateOf(false) }
     var isAdaptiveDialogVisible by remember { mutableStateOf(false) }
@@ -127,7 +126,7 @@ private fun HomeTabContent(
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
@@ -137,7 +136,7 @@ private fun HomeTabContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
                 Column(
@@ -148,13 +147,13 @@ private fun HomeTabContent(
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "This is a modern iOS-style UI demo for the Adaptive Navigation Bar",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = iosSecondaryText
+                        color = onSurfaceVariantColor
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -162,14 +161,14 @@ private fun HomeTabContent(
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
-                        color = iosBlue
+                        color = primaryColor
                     ) {
                         Text(
                             text = "Get Started",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium
                             ),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier
                                 .padding(vertical = 12.dp, horizontal = 16.dp)
                                 .align(Alignment.CenterHorizontally)
@@ -184,7 +183,7 @@ private fun HomeTabContent(
             Text(
                 text = "QUICK ACTIONS",
                 style = MaterialTheme.typography.bodySmall,
-                color = iosSecondaryText,
+                color = onSurfaceVariantColor,
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
             )
         }
@@ -194,7 +193,7 @@ private fun HomeTabContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
                 Column {
@@ -212,13 +211,13 @@ private fun HomeTabContent(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(iosGray),
+                                .background(surfaceVariantColor),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Filled.Home,
                                 contentDescription = null,
-                                tint = iosBlue,
+                                tint = primaryColor,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -227,18 +226,18 @@ private fun HomeTabContent(
                             Text(
                                 text = "Dashboard",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "View your activity",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = iosSecondaryText
+                                color = onSurfaceVariantColor
                             )
                         }
                         Icon(
                             imageVector = Icons.Filled.ArrowBackIosNew,
                             contentDescription = null,
-                            tint = iosSecondaryText,
+                            tint = onSurfaceVariantColor,
                             modifier = Modifier
                                 .size(16.dp)
                                 .rotate(180f) // Rotate to point right
@@ -248,7 +247,7 @@ private fun HomeTabContent(
                     // Divider in iOS style
                     HorizontalDivider(
                         thickness = 0.5.dp,
-                        color = Color(0xFFD1D1D6),
+                        color = MaterialTheme.colorScheme.outlineVariant,
                         modifier = Modifier.padding(start = 68.dp) // Inset divider
                     )
 
@@ -266,7 +265,7 @@ private fun HomeTabContent(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(iosGray),
+                                .background(surfaceVariantColor),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -281,18 +280,18 @@ private fun HomeTabContent(
                             Text(
                                 text = "Favorites",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Your saved items",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = iosSecondaryText
+                                color = onSurfaceVariantColor
                             )
                         }
                         Icon(
                             imageVector = Icons.Filled.ArrowBackIosNew,
                             contentDescription = null,
-                            tint = iosSecondaryText,
+                            tint = onSurfaceVariantColor,
                             modifier = Modifier
                                 .size(16.dp)
                                 .rotate(180f) // Rotate to point right
@@ -306,7 +305,7 @@ private fun HomeTabContent(
             Text(
                 text = "ITEMS LIST",
                 style = MaterialTheme.typography.bodySmall,
-                color = iosSecondaryText,
+                color = onSurfaceVariantColor,
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
             )
         }
@@ -316,7 +315,7 @@ private fun HomeTabContent(
                 onClick = {},
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
                 Row(
@@ -329,7 +328,7 @@ private fun HomeTabContent(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(iosGray),
+                            .background(surfaceVariantColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -337,7 +336,7 @@ private fun HomeTabContent(
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = iosBlue
+                            color = primaryColor
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
@@ -345,12 +344,12 @@ private fun HomeTabContent(
                         Text(
                             text = "Item ${index + 1}",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "This is item number ${index + 1} for testing padding",
                             style = MaterialTheme.typography.bodySmall,
-                            color = iosSecondaryText
+                            color = onSurfaceVariantColor
                         )
                     }
                 }
@@ -363,15 +362,13 @@ private fun HomeTabContent(
 private fun FavoriteTabContent(
     paddingValues: PaddingValues,
 ) {
-    // iOS-like colors
     val iosRed = Color(0xFFFF2D55)
-    val iosGray = Color(0xFFEFEFF4)
-    val iosSecondaryText = Color(0xFF8E8E93)
+    val surfaceVariantColor = MaterialTheme.colorScheme.surfaceVariant
+    val onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-//            .background(Color(0xFFF2F2F7))
         , // iOS background color
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(
@@ -388,7 +385,7 @@ private fun FavoriteTabContent(
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
@@ -398,7 +395,7 @@ private fun FavoriteTabContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                color = iosGray
+                color = surfaceVariantColor
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -407,14 +404,14 @@ private fun FavoriteTabContent(
                     Icon(
                         Icons.Filled.Search,
                         contentDescription = null,
-                        tint = iosSecondaryText,
+                        tint = onSurfaceVariantColor,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Search Favorites",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = iosSecondaryText
+                        color = onSurfaceVariantColor
                     )
                 }
             }
@@ -425,7 +422,7 @@ private fun FavoriteTabContent(
             Text(
                 text = "FAVORITES",
                 style = MaterialTheme.typography.bodySmall,
-                color = iosSecondaryText,
+                color = onSurfaceVariantColor,
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
             )
         }
@@ -435,7 +432,7 @@ private fun FavoriteTabContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
                 Column {
@@ -450,7 +447,7 @@ private fun FavoriteTabContent(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(iosGray),
+                                .background(surfaceVariantColor),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -465,18 +462,18 @@ private fun FavoriteTabContent(
                             Text(
                                 text = "Favorite Item 1",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Added on May 10, 2023",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = iosSecondaryText
+                                color = onSurfaceVariantColor
                             )
                         }
                         Icon(
                             imageVector = Icons.Filled.ArrowBackIosNew,
                             contentDescription = null,
-                            tint = iosSecondaryText,
+                            tint = onSurfaceVariantColor,
                             modifier = Modifier
                                 .size(16.dp)
                                 .rotate(180f)
@@ -486,7 +483,7 @@ private fun FavoriteTabContent(
                     // Divider in iOS style
                     HorizontalDivider(
                         thickness = 0.5.dp,
-                        color = Color(0xFFD1D1D6),
+                        color = MaterialTheme.colorScheme.outlineVariant,
                         modifier = Modifier.padding(start = 72.dp) // Inset divider
                     )
 
@@ -501,7 +498,7 @@ private fun FavoriteTabContent(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(iosGray),
+                                .background(surfaceVariantColor),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -516,18 +513,18 @@ private fun FavoriteTabContent(
                             Text(
                                 text = "Favorite Item 2",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Added on June 15, 2023",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = iosSecondaryText
+                                color = onSurfaceVariantColor
                             )
                         }
                         Icon(
                             imageVector = Icons.Filled.ArrowBackIosNew,
                             contentDescription = null,
-                            tint = iosSecondaryText,
+                            tint = onSurfaceVariantColor,
                             modifier = Modifier
                                 .size(16.dp)
                                 .rotate(180f)
@@ -542,7 +539,7 @@ private fun FavoriteTabContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
                 Row(
@@ -576,10 +573,9 @@ private fun FavoriteTabContent(
 private fun ProfileTabContent(
     paddingValues: PaddingValues
 ) {
-    // iOS-like colors
-    val iosBlue = Color(0xFF007AFF)
-    val iosGray = Color(0xFFEFEFF4)
-    val iosSecondaryText = Color(0xFF8E8E93)
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val surfaceVariantColor = MaterialTheme.colorScheme.surfaceVariant
+    val onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant
     val iosGreen = Color(0xFF34C759)
     val iosRed = Color(0xFFFF2D55)
 
@@ -601,7 +597,7 @@ private fun ProfileTabContent(
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
@@ -611,7 +607,7 @@ private fun ProfileTabContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
                 Column(
@@ -623,13 +619,13 @@ private fun ProfileTabContent(
                         modifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
-                            .background(iosGray),
+                            .background(surfaceVariantColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Filled.Person,
                             contentDescription = null,
-                            tint = iosBlue,
+                            tint = primaryColor,
                             modifier = Modifier.size(40.dp)
                         )
                     }
@@ -641,14 +637,14 @@ private fun ProfileTabContent(
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     // Email
                     Text(
                         text = "john.doe@example.com",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = iosSecondaryText
+                        color = onSurfaceVariantColor
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -657,14 +653,14 @@ private fun ProfileTabContent(
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
-                        color = iosBlue
+                        color = primaryColor
                     ) {
                         Text(
                             text = "Edit Profile",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium
                             ),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier
                                 .padding(vertical = 12.dp, horizontal = 16.dp)
                                 .align(Alignment.CenterHorizontally)
@@ -679,7 +675,7 @@ private fun ProfileTabContent(
             Text(
                 text = "SETTINGS",
                 style = MaterialTheme.typography.bodySmall,
-                color = iosSecondaryText,
+                color = onSurfaceVariantColor,
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
             )
         }
@@ -689,7 +685,7 @@ private fun ProfileTabContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
                 Column {
@@ -707,13 +703,13 @@ private fun ProfileTabContent(
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0xFF1A1A1A)),
+                                    .background(MaterialTheme.colorScheme.inverseSurface),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Settings,
                                     contentDescription = null,
-                                    tint = Color.White,
+                                    tint = MaterialTheme.colorScheme.inverseOnSurface,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -721,7 +717,7 @@ private fun ProfileTabContent(
                             Text(
                                 text = "Dark Mode",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -735,7 +731,7 @@ private fun ProfileTabContent(
                     // Divider in iOS style
                     HorizontalDivider(
                         thickness = 0.5.dp,
-                        color = Color(0xFFD1D1D6),
+                        color = MaterialTheme.colorScheme.outlineVariant,
                         modifier = Modifier.padding(start = 64.dp) // Inset divider
                     )
 
@@ -759,7 +755,7 @@ private fun ProfileTabContent(
                                 Icon(
                                     imageVector = Icons.Filled.Favorite,
                                     contentDescription = null,
-                                    tint = Color.White,
+                                    tint = MaterialTheme.colorScheme.onError,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -767,7 +763,7 @@ private fun ProfileTabContent(
                             Text(
                                 text = "Notifications",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -786,7 +782,7 @@ private fun ProfileTabContent(
             Text(
                 text = "ACCOUNT",
                 style = MaterialTheme.typography.bodySmall,
-                color = iosSecondaryText,
+                color = onSurfaceVariantColor,
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
             )
         }
@@ -796,7 +792,7 @@ private fun ProfileTabContent(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
                 Row(
@@ -811,7 +807,7 @@ private fun ProfileTabContent(
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Medium
                         ),
-                        color = Color(0xFFFF3B30) // iOS red for destructive actions
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
             }
@@ -838,11 +834,6 @@ fun NavigationBarScreen(
         Icons.Filled.Person
     )
 
-    // iOS-like color scheme
-    val iosBlue = Color(0xFF007AFF)
-    val iosBackground = Color(0xFFF2F2F7)
-    val iosCardBackground = Color.White
-
     AdaptiveScaffold(
         topBar = {
             TopAppBar(
@@ -856,25 +847,25 @@ fun NavigationBarScreen(
                             Icon(
                                 Icons.Filled.ArrowBackIosNew,
                                 contentDescription = "Back",
-                                tint = iosBlue,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
                         Text(
                             text = "Back",
-                            color = iosBlue,
+                            color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 },
                 title = {},
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = iosCardBackground
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
             HorizontalDivider(
                 thickness = 0.5.dp,
-                color = Color(0xFFD1D1D6)
+                color = MaterialTheme.colorScheme.outlineVariant
             )
         },
         bottomBar = {
@@ -912,7 +903,7 @@ fun NavigationBarScreen(
                 }
             }
         },
-        containerColor = iosBackground,
+        containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
         // Content — padding is automatically correct on both platforms
         AnimatedContent(
