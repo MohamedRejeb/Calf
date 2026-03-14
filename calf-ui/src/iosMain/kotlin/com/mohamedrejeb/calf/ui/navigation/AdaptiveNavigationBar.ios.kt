@@ -111,6 +111,10 @@ actual fun AdaptiveNavigationBar(
                 )
                 tabBarWidth = size.width.dp
                 val newTabBarHeight = size.height.dp
+                println("topLeft: $topLeft, tabBarWidth: $tabBarWidth,")
+                // topLeft: (0.0.dp, 803.0.dp), tabBarWidth: 393.0.dp,
+                println("newTabBarHeight: $newTabBarHeight")
+                // newTabBarHeight: 49.0.dp
                 if (tabBarHeight != newTabBarHeight) {
                     tabBarHeight = newTabBarHeight
                 } else {
@@ -150,7 +154,7 @@ actual fun AdaptiveNavigationBar(
             }
             .graphicsLayer {
                 translationX = (topLeft.x - positionInRoot.x).toPx()
-                translationY = (topLeft.y - positionInRoot.y - tabBarHeight).toPx()
+                translationY = (topLeft.y - positionInRoot.y).toPx()
             }
             .width(tabBarWidth)
             .height(tabBarHeight)
