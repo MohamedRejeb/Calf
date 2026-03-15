@@ -15,6 +15,6 @@ enum class Screen {
     WebView,
     Permission,
     Map,
-    DropDownMenu,
+    DropDown,
     NavigationBar,
 }
