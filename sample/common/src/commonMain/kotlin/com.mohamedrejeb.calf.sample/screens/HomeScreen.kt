@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Navigation
 import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.PunchClock
@@ -126,11 +127,11 @@ fun HomeScreen(
                     title = "Adaptive Clickable",
                     icon = Icons.Outlined.AdsClick,
                 )
-//                ListItem(
-//                    onClick = { navigate(Screen.DropDownMenu.name) },
-//                    title = "Adaptive Drop Down Menu",
-//                    icon = Icons.Outlined.Menu,
-//                )
+                ListItem(
+                    onClick = { navigate(Screen.DropDown.name) },
+                    title = "Adaptive Drop Down",
+                    icon = Icons.Outlined.Menu,
+                )
                 ListItem(
                     onClick = { navigate(Screen.DatePicker.name) },
                     title = "Adaptive Date Picker",

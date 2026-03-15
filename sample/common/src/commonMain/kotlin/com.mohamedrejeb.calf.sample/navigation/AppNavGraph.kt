@@ -7,8 +7,8 @@ import com.mohamedrejeb.calf.sample.screens.AdaptiveClickableScreen
 import com.mohamedrejeb.calf.sample.screens.AlertDialogScreen
 import com.mohamedrejeb.calf.sample.screens.BottomSheetScreen
 import com.mohamedrejeb.calf.sample.screens.CameraPickerScreen
+import com.mohamedrejeb.calf.sample.screens.DropDownScreen
 import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
-import com.mohamedrejeb.calf.sample.screens.DropDownMenuScreen
 import com.mohamedrejeb.calf.sample.screens.FilePickerScreen
 import com.mohamedrejeb.calf.sample.screens.HomeScreen
 import com.mohamedrejeb.calf.sample.screens.ImagePickerScreen
@@ -63,8 +63,8 @@ fun AppNavGraph(
                 }
             )
         }
-        composable(Screen.DropDownMenu.name) {
-            DropDownMenuScreen(
+        composable(Screen.DropDown.name) {
+            DropDownScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }
