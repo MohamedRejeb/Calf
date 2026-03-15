@@ -27,8 +27,11 @@ implementation("com.mohamedrejeb.calf:calf-webview:0.9.0")
 // For FilePicker
 implementation("com.mohamedrejeb.calf:calf-file-picker:0.9.0")
 
-// For Permissions
-implementation("com.mohamedrejeb.calf:calf-permissions:0.9.0")
+// For Permissions (pick only the modules you need — see Permissions docs)
+implementation("com.mohamedrejeb.calf:calf-permissions-core:0.9.0")
+implementation("com.mohamedrejeb.calf:calf-permissions-camera:0.9.0")
+// Or use the umbrella module for all permissions:
+// implementation("com.mohamedrejeb.calf:calf-permissions:0.9.0")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
