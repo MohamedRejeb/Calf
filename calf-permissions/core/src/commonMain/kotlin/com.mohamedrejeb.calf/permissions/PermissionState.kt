@@ -86,32 +86,25 @@ interface PermissionState {
 }
 
 /**
- * Enum representing the different supported permissions.
+ * Base class representing a permission.
+ *
+ * Each permission module defines its own permission objects that extend this class
+ * and registers them as extension properties on [Permission.Companion].
+ *
+ * @param name the unique name identifying this permission.
  */
-enum class Permission {
-    Call,
-    Camera,
-    Gallery,
-    ReadStorage,
-    WriteStorage,
-    ReadImage,
-    ReadVideo,
-    ReadAudio,
-    FineLocation,
-    CoarseLocation,
-    BackgroundLocation,
-    Notification,
-    RemoteNotification,
-    RecordAudio,
-    BluetoothLe,
-    BluetoothScan,
-    BluetoothConnect,
-    BluetoothAdvertise,
-    ReadContacts,
-    WriteContacts,
-    ReadCalendar,
-    WriteCalendar,
-    WifiAccessState,
-    WifiChangeState,
-    WifiNearbyDevices
+open class Permission(val name: String) {
+    override fun equals(other: Any?): Boolean {
+        return this === other || (other is Permission && name == other.name)
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+
+    override fun toString(): String {
+        return name
+    }
+
+    companion object;
 }

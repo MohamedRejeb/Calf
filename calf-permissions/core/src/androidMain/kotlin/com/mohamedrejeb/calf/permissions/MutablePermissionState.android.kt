@@ -103,7 +103,7 @@ internal class MutablePermissionStateImpl(
 
     override fun openAppSettings() {
         val intent =
-            if (permission == Permission.Notification && supportsNotificationSettings())
+            if (permission.name == "Notification" && supportsNotificationSettings())
                 createAppNotificationsIntent(context)
             else
                 createAppSettingsIntent(context)
