@@ -265,14 +265,7 @@ On Android API version 33 and up, add the following permission to your `AndroidM
 
 ##### iOS
 
-Add the following key to your `Info.plist` file:
-
-```xml
-<key>NSUserNotificationsUsageDescription</key>
-<string>Notifications permission is required to show notifications</string>
-```
-
-The string value is the message that will be displayed to the user when the permission is requested.
+No `Info.plist` entry is required. iOS notifications are requested at runtime via the `UNUserNotificationCenter` API.
 
 #### Remote Notification Permission
 
@@ -284,13 +277,15 @@ This permission is always granted on Android.
 
 ##### iOS
 
-There is no need to add anything to your `Info.plist` file to request this permission.
+No `Info.plist` entry is required.
 
-#### Record Audio Permission
+### Record Audio Permission
+
+**Module:** `calf-permissions-camera`
 
 To request the record audio permission, use `Permission.RecordAudio`.
 
-##### Android
+#### Android
 
 Add the following permission to your `AndroidManifest.xml` file:
 
@@ -298,7 +293,7 @@ Add the following permission to your `AndroidManifest.xml` file:
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
 
-##### iOS
+#### iOS
 
 Add the following key to your `Info.plist` file:
 
@@ -322,11 +317,11 @@ Add the following permissions to your `AndroidManifest.xml` file:
 ```xml
 <!-- For Bluetooth LE -->
 <uses-permission android:name="android.permission.BLUETOOTH" />
-<!-- For Bluetooth Scan -->
-<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-<!-- For Bluetooth Connect -->
+<!-- For Bluetooth Scan (Android 12+) -->
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+<!-- For Bluetooth Connect (Android 12+) -->
 <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-<!-- For Bluetooth Advertise -->
+<!-- For Bluetooth Advertise (Android 12+) -->
 <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
 ```
 
