@@ -24,13 +24,11 @@ android {
         compose = true
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
-    // Migrated from kotlinOptions to compilerOptions DSL (required in Kotlin 2.3+)
-    // See: https://kotlinlang.org/docs/gradle-compiler-options.html
     kotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.JVM_1_8)
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_11)
     }
     packaging {
         resources {
