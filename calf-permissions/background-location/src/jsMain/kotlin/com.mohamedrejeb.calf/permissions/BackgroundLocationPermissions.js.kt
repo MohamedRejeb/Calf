@@ -1,3 +1,3 @@
 package com.mohamedrejeb.calf.permissions
 
-internal actual fun registerBackgroundLocationPermission(permission: Permission) {}
+internal actual fun registerBackgroundLocationPermission(permission: Permission) = Unit
