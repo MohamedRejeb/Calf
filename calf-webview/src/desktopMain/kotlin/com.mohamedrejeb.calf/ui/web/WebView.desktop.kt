@@ -16,6 +16,8 @@ import androidx.compose.ui.awt.SwingPanel
 import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
 import javafx.scene.Scene
+import javafx.beans.value.ChangeListener
+import javafx.concurrent.Worker
 import javafx.scene.web.WebView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -58,6 +60,34 @@ actual fun WebView(
             val wv = WebView().apply {
                 applySettings(state.settings)
             }
+            val engine = wv.engine
+
+            engine.loadWorker.stateProperty().addListener(ChangeListener { _, _, newState ->
+                when (newState) {
+                    Worker.State.RUNNING -> {
+                        state.loadingState = LoadingState.Loading(0f)
+                        state.pageTitle = null
+                        state.lastLoadedUrl = engine.location
+                    }
+                    Worker.State.SUCCEEDED -> {
+                        state.loadingState = LoadingState.Finished
+                        state.pageTitle = engine.title
+                        state.lastLoadedUrl = engine.location
+                    }
+                    Worker.State.FAILED, Worker.State.CANCELLED -> {
+                        state.loadingState = LoadingState.Finished
+                    }
+                    else -> {}
+                }
+            })
+
+            engine.loadWorker.progressProperty().addListener(ChangeListener { _, _, newValue ->
+                if (state.loadingState is LoadingState.Loading) {
+                    val progress = newValue.toFloat().coerceIn(0f, 1f)
+                    state.loadingState = LoadingState.Loading(progress)
+                }
+            })
+
             jfxPanel.scene = Scene(wv)
             state.webView = wv
             onCreated()
@@ -172,7 +202,9 @@ actual class WebViewState actual constructor(webContent: WebContent) {
 }
 
 private fun WebView.applySettings(webSettings: WebSettings) {
-    engine.isJavaScriptEnabled = webSettings.javaScriptEnabled
+    Platform.runLater {
+        engine.isJavaScriptEnabled = webSettings.javaScriptEnabled
+    }
 }
 
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread
