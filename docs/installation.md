@@ -19,19 +19,19 @@ Add the following dependencies to your module `build.gradle.kts` file:
 
 ```kotlin
 // For Adaptive UI components
-api("com.mohamedrejeb.calf:calf-ui:0.9.0")
+api("com.mohamedrejeb.calf:calf-ui:{{ calf_version }}")
 
 // For WebView
-implementation("com.mohamedrejeb.calf:calf-webview:0.9.0")
+implementation("com.mohamedrejeb.calf:calf-webview:{{ calf_version }}")
 
 // For FilePicker
-implementation("com.mohamedrejeb.calf:calf-file-picker:0.9.0")
+implementation("com.mohamedrejeb.calf:calf-file-picker:{{ calf_version }}")
 
 // For Permissions (pick only the modules you need — see Permissions docs)
-implementation("com.mohamedrejeb.calf:calf-permissions-core:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-camera:0.9.0")
+implementation("com.mohamedrejeb.calf:calf-permissions-core:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-camera:{{ calf_version }}")
 // Or use the umbrella module for all permissions:
-// implementation("com.mohamedrejeb.calf:calf-permissions:0.9.0")
+// implementation("com.mohamedrejeb.calf:calf-permissions:{{ calf_version }}")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -47,7 +47,7 @@ kotlin {
         .forEach {
             it.binaries.framework {
                 ...
-                export("com.mohamedrejeb.calf:calf-ui:0.9.0")
+                export("com.mohamedrejeb.calf:calf-ui:{{ calf_version }}")
             }
         }
     ...
@@ -64,7 +64,7 @@ kotlin {
         ...
         framework {
             ...
-            export("com.mohamedrejeb.calf:calf-ui:0.9.0")
+            export("com.mohamedrejeb.calf:calf-ui:{{ calf_version }}")
         }
     }
     ...
@@ -99,7 +99,7 @@ dependencyResolutionManagement {
 Use the snapshot version:
 
 ```kotlin
-api("com.mohamedrejeb.calf:calf-ui:0.9.0-SNAPSHOT")
+api("com.mohamedrejeb.calf:calf-ui:{{ calf_version }}-SNAPSHOT")
 ```
 
 >Note: Snapshots are deployed for each new commit on `main` that passes CI. They can potentially contain breaking changes or may be unstable. Use at your own risk.

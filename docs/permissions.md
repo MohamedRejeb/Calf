@@ -27,26 +27,26 @@ Add only the permission modules your app actually needs to your module `build.gr
 
 ```kotlin
 // Core (required — provides the base API)
-implementation("com.mohamedrejeb.calf:calf-permissions-core:0.9.0")
+implementation("com.mohamedrejeb.calf:calf-permissions-core:{{ calf_version }}")
 
 // Add only the permissions you need:
-implementation("com.mohamedrejeb.calf:calf-permissions-camera:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-microphone:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-gallery:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-location:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-bluetooth:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-contacts:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-calendar:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-notifications:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-wifi:0.9.0")
+implementation("com.mohamedrejeb.calf:calf-permissions-camera:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-microphone:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-gallery:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-location:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-bluetooth:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-contacts:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-calendar:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-notifications:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-wifi:{{ calf_version }}")
 ```
 
 For example, if your app only needs camera and location permissions:
 
 ```kotlin
-implementation("com.mohamedrejeb.calf:calf-permissions-core:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-camera:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-location:0.9.0")
+implementation("com.mohamedrejeb.calf:calf-permissions-core:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-camera:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-location:{{ calf_version }}")
 ```
 
 ### Option 2: Umbrella Module
@@ -54,7 +54,7 @@ implementation("com.mohamedrejeb.calf:calf-permissions-location:0.9.0")
 If you want all permissions at once (not recommended for iOS App Store submissions):
 
 ```kotlin
-implementation("com.mohamedrejeb.calf:calf-permissions:0.9.0")
+implementation("com.mohamedrejeb.calf:calf-permissions:{{ calf_version }}")
 ```
 
 !!! warning

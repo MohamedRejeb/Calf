@@ -35,6 +35,7 @@ theme:
 
 # Social
 extra:
+  calf_version: '0.9.0'
   social:
     - icon: fontawesome/brands/github-alt
       link: https://github.com/MohamedRejeb
@@ -89,6 +90,7 @@ markdown_extensions:
       # Plugins
 plugins:
   - search
+  - macros
   - minify:
       minify_html: true
 
