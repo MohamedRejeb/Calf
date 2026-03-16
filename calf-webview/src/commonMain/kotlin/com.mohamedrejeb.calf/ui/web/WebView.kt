@@ -123,6 +123,11 @@ expect class WebViewState(webContent: WebContent) {
 
     public val settings: WebSettings
 
+    /**
+     * The cookie manager for managing cookies in the WebView.
+     */
+    public val cookieManager: CookieManager
+
     public fun evaluateJavascript(script: String, callback: ((String?) -> Unit)? = null)
 }
 
