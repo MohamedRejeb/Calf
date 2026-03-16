@@ -12,7 +12,7 @@ implementation("com.mohamedrejeb.calf:calf-webview:{{ calf_version }}")
 
 ## Usage
 
-`WebView` is a view that adapts to the platform it is running on. It is a wrapper around `WebView` on Android, `WKWebView` on iOS and JavaFX `WebView` on Desktop.
+`WebView` is a view that adapts to the platform it is running on. It is a wrapper around `WebView` on Android, `WKWebView` on iOS, JavaFX `WebView` on Desktop, and an `iframe` on Web (JS/WasmJS).
 
 | Android                                         | iOS                                     |
 |-------------------------------------------------|-----------------------------------------|
@@ -143,4 +143,4 @@ The `Cookie` data class supports the following properties:
 | `isSecure`    | `Boolean` | Whether the cookie should only be sent over HTTPS.           |
 | `isHttpOnly`  | `Boolean` | Whether the cookie is HTTP-only (not accessible via JavaScript). |
 
-> **Note:** Cookie management is supported on Android, iOS, and Desktop. JS and WasmJS platforms are not yet implemented.
+> **Note:** Cookie management is supported on Android, iOS, and Desktop. Web (JS/WasmJS) platforms are not yet supported for cookie management.
