@@ -23,22 +23,14 @@ internal actual fun rememberMutableMultiplePermissionsState(
     val mutablePermissions = rememberMutablePermissionsState(permissions, scope, onPermissionsResult)
     // Refresh permissions when the lifecycle is resumed.
     PermissionsLifecycleCheckerEffect(mutablePermissions)
-    val permissionStates =
+    val multiplePermissionsState =
         remember(permissions) {
             MutableMultiplePermissionsState(
-                mutablePermissions = permissions.map {
-                    MutablePermissionStateImpl(
-                        permission = it,
-                        onPermissionResult = { isOk ->
-                            onPermissionsResult(mapOf(it to isOk))
-                        },
-                        scope = scope,
-                    )
-                }
+                mutablePermissions = mutablePermissions
             )
         }
 
-    return permissionStates
+    return multiplePermissionsState
 
 }
 
@@ -94,7 +86,9 @@ internal actual class MutableMultiplePermissionsState actual constructor(
     }
 
     actual override fun launchMultiplePermissionRequest() {
-        // Launch the permission request
+        for (permissionState in mutablePermissions) {
+            permissionState.launchPermissionRequest()
+        }
     }
 
     internal actual fun updatePermissionsStatus(permissionsStatus: Map<Permission, Boolean>) {

@@ -55,6 +55,7 @@ import com.mohamedrejeb.calf.permissions.WriteCalendar
 import com.mohamedrejeb.calf.permissions.WriteContacts
 import com.mohamedrejeb.calf.permissions.WriteStorage
 import com.mohamedrejeb.calf.permissions.isGranted
+import com.mohamedrejeb.calf.permissions.rememberMultiplePermissionsState
 import com.mohamedrejeb.calf.permissions.rememberPermissionState
 import com.mohamedrejeb.calf.permissions.shouldShowRationale
 
@@ -103,6 +104,12 @@ fun PermissionScreen(navigateBack: () -> Unit) {
                 .fillMaxSize()
                 .padding(16.dp),
         ) {
+            item {
+                MultiplePermissionsItem(
+                    permissions = listOf(Permission.Camera, Permission.RecordAudio),
+                )
+            }
+
             items(permissions) { permission ->
                 PermissionItem(permission = permission)
             }
@@ -127,6 +134,44 @@ fun PermissionScreen(navigateBack: () -> Unit) {
             )
         }
     }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun MultiplePermissionsItem(permissions: List<Permission>) {
+    val multiplePermissionsState = rememberMultiplePermissionsState(permissions = permissions)
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text(
+        text = "Multiple: ${permissions.joinToString { it.name }}",
+    )
+
+    Text(
+        text = "All permissions granted: ${multiplePermissionsState.allPermissionsGranted}",
+    )
+
+    Text(
+        text = "Should show rationale: ${multiplePermissionsState.shouldShowRationale}",
+    )
+
+    Text(
+        text = "Revoked permissions: ${multiplePermissionsState.revokedPermissions.joinToString { it.permission.name }}",
+    )
+
+    Button(
+        onClick = {
+            multiplePermissionsState.launchMultiplePermissionRequest()
+        },
+    ) {
+        Text(
+            text = "Request permissions",
+        )
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    HorizontalDivider()
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
