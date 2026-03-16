@@ -12,29 +12,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * A wrapper around the Android View WebView to provide a basic WebView composable.
+ * WebView composable for WasmJS target.
  *
- * If you require more customisation you are most likely better rolling your own and using this
- * wrapper as an example.
- *
- * The WebView attempts to set the layoutParams based on the Compose modifier passed in. If it
- * is incorrectly sizing, use the layoutParams composable function instead.
+ * Note: This is currently a no-op implementation. WebView is not yet supported on the WasmJS target.
  *
  * @param state The webview state holder where the Uri to load is defined.
  * @param modifier A compose modifier
- * @param captureBackPresses Set to true to have this Composable capture back presses and navigate
- * the WebView back.
+ * @param captureBackPresses Not applicable on WasmJS. Reserved for API consistency.
  * @param navigator An optional navigator object that can be used to control the WebView's
  * navigation from outside the composable.
- * @param onCreated Called when the WebView is first created, this can be used to set additional
- * settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will be
- * subsequently overwritten after this lambda is called.
- * @param onDispose Called when the WebView is destroyed. Provides a bundle which can be saved
- * if you need to save and restore state in this WebView.
- * @param client Provides access to WebViewClient via subclassing
- * @param chromeClient Provides access to WebChromeClient via subclassing
- * @param factory An optional WebView factory for using a custom subclass of WebView
- * @sample com.google.accompanist.sample.webview.BasicWebViewSample
+ * @param onCreated Not called on WasmJS as no native WebView is created.
+ * @param onDispose Not called on WasmJS as no native WebView is created.
  */
 @Composable
 actual fun WebView(
@@ -85,6 +73,9 @@ actual class WebViewState actual constructor(webContent: WebContent) {
     )
 
     actual val cookieManager: CookieManager = CookieManager()
+
+    actual var errorsForCurrentRequest: List<WebViewError> by mutableStateOf(emptyList())
+        internal set
 
     actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {}
 }
