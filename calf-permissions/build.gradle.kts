@@ -15,7 +15,6 @@ kotlin {
         api(projects.calfPermissions.calfPermissionsCalendar)
         api(projects.calfPermissions.calfPermissionsNotifications)
         api(projects.calfPermissions.calfPermissionsWifi)
-        api(projects.calfPermissions.calfPermissionsStorage)
         api(projects.calfPermissions.calfPermissionsMicrophone)
     }
 }
