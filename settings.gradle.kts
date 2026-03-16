@@ -46,7 +46,6 @@ include(
     ":calf-permissions:calendar",
     ":calf-permissions:notifications",
     ":calf-permissions:wifi",
-    ":calf-permissions:storage",
     ":calf-permissions:microphone",
     ":calf-geo",
     ":calf-maps",
@@ -70,7 +69,6 @@ project(":calf-permissions:contacts").name = "calf-permissions-contacts"
 project(":calf-permissions:calendar").name = "calf-permissions-calendar"
 project(":calf-permissions:notifications").name = "calf-permissions-notifications"
 project(":calf-permissions:wifi").name = "calf-permissions-wifi"
-project(":calf-permissions:storage").name = "calf-permissions-storage"
 project(":calf-permissions:microphone").name = "calf-permissions-microphone"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

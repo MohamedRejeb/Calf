@@ -11,11 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.currentPlatform
 import com.mohamedrejeb.calf.ui.web.WebView
 import com.mohamedrejeb.calf.ui.web.rememberWebViewNavigator
 import com.mohamedrejeb.calf.ui.web.rememberWebViewState
 
-private const val INITIAL_URL = "https://github.com/MohamedRejeb"
+private val INITIAL_URL =
+    if (currentPlatform.isWeb)
+        "https://en.wikipedia.org/wiki/Main_Page/"
+    else
+        "https://github.com/MohamedRejeb"
 
 private val DUMMY_HTML = """
     <!DOCTYPE html>
