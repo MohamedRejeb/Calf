@@ -88,7 +88,7 @@ actual fun WebView(
 
                 addEventListener("error", { _: Event ->
                     state.loadingState = LoadingState.Finished
-                    state.errorsForCurrentRequest = state.errorsForCurrentRequest + WebViewError(
+                    state.errorsForCurrentRequest += WebViewError(
                         code = -1,
                         description = "Failed to load content in iframe"
                     )
