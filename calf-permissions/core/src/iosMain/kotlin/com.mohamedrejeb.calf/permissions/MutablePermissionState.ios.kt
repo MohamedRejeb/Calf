@@ -13,7 +13,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenDefaultApplicationsSettingsURLString
+import platform.UIKit.UIApplicationOpenNotificationSettingsURLString
 import platform.UIKit.UIApplicationOpenSettingsURLString
+import platform.UIKit.UIDevice
 
 /**
  * Creates a [MutablePermissionState] that is remembered across compositions.
@@ -81,8 +84,23 @@ internal class MutablePermissionStateImpl(
     }
 
     override fun openAppSettings() {
-        val settingsUrl = NSURL.URLWithString(UIApplicationOpenSettingsURLString) ?: return
-        UIApplication.sharedApplication.openURL(settingsUrl, emptyMap<Any?, String>(), null)
+        val isNotificationPermission = permission.name == "Notification" || permission.name == "RemoteNotification"
+        val urlString = if (isNotificationPermission && isIOS16OrAbove()) {
+            UIApplicationOpenNotificationSettingsURLString
+        } else {
+            UIApplicationOpenSettingsURLString
+        }
+        val settingsUrl = NSURL.URLWithString(urlString) ?: return
+
+        if (UIApplication.sharedApplication.canOpenURL(settingsUrl)) {
+            UIApplication.sharedApplication.openURL(settingsUrl, emptyMap<Any?, String>(), null)
+        }
+    }
+
+    private fun isIOS16OrAbove(): Boolean {
+        val systemVersion = UIDevice.currentDevice.systemVersion
+        val major = systemVersion.split(".").firstOrNull()?.toIntOrNull() ?: 0
+        return major >= 16
     }
 
     override fun refreshPermissionStatus() {
