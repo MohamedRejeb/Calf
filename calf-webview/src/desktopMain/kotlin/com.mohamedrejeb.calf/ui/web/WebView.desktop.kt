@@ -73,6 +73,8 @@ actual fun WebView(
                         state.loadingState = LoadingState.Finished
                         state.pageTitle = engine.title
                         state.lastLoadedUrl = engine.location
+                        navigator.canGoBack = engine.history.currentIndex > 0
+                        navigator.canGoForward = engine.history.currentIndex < engine.history.entries.size - 1
                     }
                     Worker.State.FAILED, Worker.State.CANCELLED -> {
                         state.loadingState = LoadingState.Finished
@@ -131,17 +133,17 @@ actual fun WebView(
                 }
             }
         }
-
-        SwingPanel(
-            factory = {
-                jfxPanel
-            },
-            update = {
-
-            },
-            modifier = modifier
-        )
     }
+
+    SwingPanel(
+        factory = {
+            jfxPanel
+        },
+        update = {
+
+        },
+        modifier = modifier
+    )
 }
 
 /**
@@ -191,9 +193,8 @@ actual class WebViewState actual constructor(webContent: WebContent) {
 
     actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {
         Platform.runLater {
-            webView?.engine?.executeScript(script).let {
-                callback?.invoke(it?.toString())
-            }
+            val result = webView?.engine?.executeScript(script)
+            callback?.invoke(result?.toString())
         }
     }
 
@@ -210,22 +211,25 @@ private fun WebView.applySettings(webSettings: WebSettings) {
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread
 internal suspend fun WebViewNavigator.handleNavigationEvents(
     webView: WebView
-): Nothing = withContext(Dispatchers.Main) {
+) {
     navigationEvents.collect { event ->
-        with(webView.engine) {
-            when (event) {
-                is WebViewNavigator.NavigationEvent.Back ->
-                    if (history.currentIndex > 0) history.go(-1)
-                is WebViewNavigator.NavigationEvent.Forward ->
-                    if (history.currentIndex < history.maxSize - 1) history.go(1)
-                is WebViewNavigator.NavigationEvent.Reload ->
-                    reload()
-                is WebViewNavigator.NavigationEvent.StopLoading ->
-                    stopLoading()
-                is WebViewNavigator.NavigationEvent.LoadHtml ->
-                    loadContent(event.html, event.mimeType)
-                is WebViewNavigator.NavigationEvent.LoadUrl ->
-                    loadUrl(event.url, event.additionalHttpHeaders)
+        Platform.runLater {
+            with(webView.engine) {
+                when (event) {
+                    is WebViewNavigator.NavigationEvent.Back ->
+                        if (history.currentIndex > 0) history.go(-1)
+                    is WebViewNavigator.NavigationEvent.Forward ->
+                        if (history.currentIndex < history.entries.size - 1) history.go(1)
+                    is WebViewNavigator.NavigationEvent.Reload ->
+                        reload()
+                    is WebViewNavigator.NavigationEvent.StopLoading ->
+                        stopLoading()
+                    is WebViewNavigator.NavigationEvent.LoadHtml ->
+                        loadContent(event.html, event.mimeType)
+                    is WebViewNavigator.NavigationEvent.LoadUrl -> {
+                        this.load(event.url)
+                    }
+                }
             }
         }
     }

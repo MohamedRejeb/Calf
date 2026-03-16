@@ -82,7 +82,6 @@ private fun buildCookieString(cookie: Cookie): String = buildString {
  * The cookie string format is "name1=value1; name2=value2; ...".
  */
 private fun parseCookies(cookieString: String): List<Cookie> {
-    println("cookieString: $cookieString")
     return cookieString.split(";")
         .mapNotNull { part ->
             val trimmed = part.trim()

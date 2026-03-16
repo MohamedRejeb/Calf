@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.ui.web
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -253,22 +254,25 @@ public fun rememberWebViewNavigator(
 public fun rememberWebViewState(
     url: String,
     additionalHttpHeaders: Map<String, String> = emptyMap()
-): WebViewState =
-// Rather than using .apply {} here we will recreate the state, this prevents
-    // a recomposition loop when the webview updates the url itself.
-    remember {
+): WebViewState {
+    val state = remember {
         WebViewState(
             WebContent.Url(
                 url = url,
                 additionalHttpHeaders = additionalHttpHeaders
             )
         )
-    }.apply {
-        this.content = WebContent.Url(
+    }
+
+    LaunchedEffect(url, additionalHttpHeaders) {
+        state.content = WebContent.Url(
             url = url,
             additionalHttpHeaders = additionalHttpHeaders
         )
     }
+
+    return state
+}
 
 /**
  * Creates a WebView state that is remembered across Compositions.
@@ -282,14 +286,19 @@ public fun rememberWebViewStateWithHTMLData(
     encoding: String = "utf-8",
     mimeType: String? = null,
     historyUrl: String? = null
-): WebViewState =
-    remember {
+): WebViewState {
+    val state = remember {
         WebViewState(WebContent.Data(data, baseUrl, encoding, mimeType, historyUrl))
-    }.apply {
-        this.content = WebContent.Data(
+    }
+
+    LaunchedEffect(data, baseUrl, encoding, mimeType, historyUrl) {
+        state.content = WebContent.Data(
             data, baseUrl, encoding, mimeType, historyUrl
         )
     }
+
+    return state
+}
 
 /**
  * Creates a WebView state that is remembered across Compositions and saved

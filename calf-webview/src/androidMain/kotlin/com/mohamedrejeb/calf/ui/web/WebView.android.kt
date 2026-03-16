@@ -437,7 +437,7 @@ internal suspend fun WebViewNavigator.handleNavigationEvents(
             )
 
             is WebViewNavigator.NavigationEvent.LoadUrl -> {
-                loadUrl(event.url, event.additionalHttpHeaders)
+                webView.loadUrl(event.url, event.additionalHttpHeaders)
             }
         }
     }

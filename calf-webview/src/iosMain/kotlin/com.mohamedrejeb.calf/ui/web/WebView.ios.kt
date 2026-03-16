@@ -58,6 +58,7 @@ actual fun WebView(
 
     webView?.let { wv ->
         LaunchedEffect(wv, navigator) {
+            state.navigator = navigator
             navigator.handleNavigationEvents(wv)
         }
 
@@ -98,8 +99,10 @@ actual fun WebView(
         factory = {
             WKWebView().apply {
                 onCreated()
-                setUserInteractionEnabled(captureBackPresses)
+                setUserInteractionEnabled(true)
+                allowsBackForwardNavigationGestures = captureBackPresses
                 applySettings(state.settings)
+                state.navigator = navigator
                 state.webView = this
                 navigationDelegate = state
             }
@@ -177,10 +180,16 @@ actual class WebViewState actual constructor(
     var webView by mutableStateOf<WKWebView?>(null)
         internal set
 
+    // Navigator reference for updating canGoBack/canGoForward
+    internal var navigator: WebViewNavigator? = null
+
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     @ObjCSignatureOverride
     override fun webView(webView: WKWebView, didFinishNavigation: WKNavigation?) {
         loadingState = LoadingState.Finished
+        pageTitle = webView.title
+        navigator?.canGoBack = webView.canGoBack
+        navigator?.canGoForward = webView.canGoForward
     }
 
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
@@ -189,6 +198,8 @@ actual class WebViewState actual constructor(
         loadingState = LoadingState.Loading(webView.estimatedProgress.toFloat())
         lastLoadedUrl = webView.URL?.absoluteString
         pageTitle = webView.title
+        navigator?.canGoBack = webView.canGoBack
+        navigator?.canGoForward = webView.canGoForward
     }
 }
 
@@ -213,20 +224,32 @@ internal suspend fun WebViewNavigator.handleNavigationEvents(
                 val data = NSString
                     .create(string = event.html)
                     .dataUsingEncoding(NSUTF8StringEncoding) ?: return@collect
-                val baseUrl =
-                    if (event.baseUrl != null) NSURL(string = event.baseUrl)
-                    else return@collect
+                val baseUrl = event.baseUrl?.let { NSURL(string = it) }
 
-                webView.loadData(
-                    data,
-                    event.mimeType ?: "text/html",
-                    event.encoding ?: "utf-8",
-                    baseUrl
-                )
+                if (baseUrl != null) {
+                    webView.loadData(
+                        data,
+                        event.mimeType ?: "text/html",
+                        event.encoding ?: "utf-8",
+                        baseUrl
+                    )
+                } else {
+                    webView.loadHTMLString(
+                        event.html,
+                        null
+                    )
+                }
             }
 
             is WebViewNavigator.NavigationEvent.LoadUrl -> {
-                loadUrl(event.url, event.additionalHttpHeaders)
+                val url = NSURL(string = event.url)
+                val urlRequest = NSMutableURLRequest().apply {
+                    setURL(url)
+                    event.additionalHttpHeaders.forEach { (key, value) ->
+                        setValue(value = value, forHTTPHeaderField = key)
+                    }
+                }
+                webView.loadRequest(urlRequest)
             }
         }
     }
