@@ -20,7 +20,7 @@
 Add the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin
-api("com.mohamedrejeb.calf:calf-ui:0.9.0")
+api("com.mohamedrejeb.calf:calf-ui:{{ calf_version }}")
 ```
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
@@ -33,7 +33,7 @@ kotlin {
         .filter { it.konanTarget.family == Family.IOS }
         .forEach {
             it.binaries.framework {
-                export("com.mohamedrejeb.calf:calf-ui:0.9.0")
+                export("com.mohamedrejeb.calf:calf-ui:{{ calf_version }}")
             }
         }
 }
@@ -44,7 +44,7 @@ kotlin {
 kotlin {
     cocoapods {
         framework {
-            export("com.mohamedrejeb.calf:calf-ui:0.9.0")
+            export("com.mohamedrejeb.calf:calf-ui:{{ calf_version }}")
         }
     }
 }
