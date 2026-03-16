@@ -380,6 +380,8 @@ actual class WebViewState actual constructor(webContent: WebContent) {
         }
     )
 
+    actual val cookieManager: CookieManager = CookieManager()
+
     private fun applySettings() {
         webView?.applySettings(settings)
     }

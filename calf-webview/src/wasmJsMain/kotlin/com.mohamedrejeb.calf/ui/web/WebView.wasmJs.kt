@@ -84,6 +84,8 @@ actual class WebViewState actual constructor(webContent: WebContent) {
         onSettingsChanged = {}
     )
 
+    actual val cookieManager: CookieManager = CookieManager()
+
     actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {}
 }
 

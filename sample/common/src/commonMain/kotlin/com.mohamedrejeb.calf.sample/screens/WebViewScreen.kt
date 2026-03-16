@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.ui.web.Cookie
 import com.mohamedrejeb.calf.ui.web.WebView
 import com.mohamedrejeb.calf.ui.web.rememberWebViewState
 
@@ -68,6 +69,24 @@ fun WebViewScreen(
                     androidSettings.supportZoom = true
                 }
 
+                // Access the cookie manager from the WebView state
+                val cookieManager = state.cookieManager
+                val testUrl = "https://github.com"
+
+                // Set a test cookie
+                cookieManager.setCookie(
+                    url = testUrl,
+                    cookie = Cookie(
+                        name = "test_session",
+                        value = "abc123",
+                    )
+                )
+
+                // Read cookies back to verify they were set
+                val cookiesAfterSet = cookieManager.getCookies(testUrl)
+                println("Cookies after setCookie: $cookiesAfterSet")
+
+                // Evaluate JavaScript
                 state.evaluateJavascript(
                     """
                         "Hello World!";
