@@ -207,38 +207,17 @@ Add the following permission to your `AndroidManifest.xml` file:
 
 This permission is always granted on iOS.
 
-### Camera Permission
-
-**Module:** `calf-permissions-camera`
-
-To request the camera permission, use `Permission.Camera`.
-
-#### Android
-
-Add the following permission to your `AndroidManifest.xml` file:
-
-```xml
-<uses-permission android:name="android.permission.CAMERA" />
-```
-
-#### iOS
-
-Add the following key to your `Info.plist` file:
-
-```xml
-<key>NSCameraUsageDescription</key>
-<string>Camera permission is required to take pictures</string>
-```
-
-The string value is the message that will be displayed to the user when the permission is requested.
-
-### Gallery Permission
+### Gallery Permissions
 
 **Module:** `calf-permissions-gallery`
 
+To request gallery permissions, use `Permission.Gallery`, `Permission.ReadImage`, or `Permission.ReadVideo`.
+
+#### Gallery Permission
+
 To request the gallery permission, use `Permission.Gallery`.
 
-#### Android
+##### Android
 
 Add the following permission to your `AndroidManifest.xml` file:
 
@@ -246,13 +225,59 @@ Add the following permission to your `AndroidManifest.xml` file:
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 ```
 
-#### iOS
+##### iOS
 
 Add the following key to your `Info.plist` file:
 
 ```xml
 <key>NSPhotoLibraryUsageDescription</key>
 <string>Gallery permission is required to pick images</string>
+```
+
+The string value is the message that will be displayed to the user when the permission is requested.
+
+#### Read Image Permission
+
+To request the read image permission, use `Permission.ReadImage`.
+
+##### Android
+
+Add the following permission to your `AndroidManifest.xml` file (Android 13+):
+
+```xml
+<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+```
+
+##### iOS
+
+Add the following key to your `Info.plist` file:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Photo library permission is required to read images</string>
+```
+
+The string value is the message that will be displayed to the user when the permission is requested.
+
+#### Read Video Permission
+
+To request the read video permission, use `Permission.ReadVideo`.
+
+##### Android
+
+Add the following permission to your `AndroidManifest.xml` file (Android 13+):
+
+```xml
+<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+```
+
+##### iOS
+
+Add the following key to your `Info.plist` file:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Photo library permission is required to read videos</string>
 ```
 
 The string value is the message that will be displayed to the user when the permission is requested.
@@ -318,6 +343,31 @@ This permission is always granted on Android.
 ##### iOS
 
 No `Info.plist` entry is required.
+
+### Camera Permission
+
+**Module:** `calf-permissions-camera`
+
+To request the camera permission, use `Permission.Camera`.
+
+#### Android
+
+Add the following permission to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+```
+
+#### iOS
+
+Add the following key to your `Info.plist` file:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Camera permission is required to take pictures</string>
+```
+
+The string value is the message that will be displayed to the user when the permission is requested.
 
 ### Record Audio Permission
 
