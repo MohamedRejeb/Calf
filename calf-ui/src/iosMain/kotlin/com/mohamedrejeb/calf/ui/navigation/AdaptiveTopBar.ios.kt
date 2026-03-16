@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.UIKit.NSLayoutConstraint
@@ -75,10 +76,7 @@ actual fun AdaptiveTopBar(
             translatesAutoresizingMaskIntoConstraints = false
         }
     }
-    val isLiquidGlassEnabled = remember {
-        val systemVersion = UIDevice.currentDevice.systemVersion.toDouble()
-        systemVersion >= 26.0
-    }
+    val isLiquidGlassEnabled = remember { isIOS26OrAbove() }
 
     val topBarManager = remember(navBarView) {
         TopBarManager(

@@ -3,6 +3,7 @@ package com.mohamedrejeb.calf.ui.navigation
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import platform.UIKit.UIDevice
 
 /**
@@ -14,7 +15,7 @@ import platform.UIKit.UIDevice
  * reducing the chance of a visible layout jump.
  */
 internal object IosBarHeightCache {
-    private val isLiquidGlassEnabled = UIDevice.currentDevice.systemVersion.toDouble() >= 26.0
+    private val isLiquidGlassEnabled = isIOS26OrAbove()
     private val DEFAULT_NAV_BAR_HEIGHT =
         if (isLiquidGlassEnabled)
             54.dp
