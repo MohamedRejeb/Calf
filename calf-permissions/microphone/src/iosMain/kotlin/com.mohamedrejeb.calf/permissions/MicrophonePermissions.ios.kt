@@ -2,10 +2,10 @@ package com.mohamedrejeb.calf.permissions
 
 import com.mohamedrejeb.calf.permissions.helper.AVCapturePermissionHelper
 import com.mohamedrejeb.calf.permissions.helper.PermissionDelegateRegistry
-import platform.AVFoundation.AVMediaTypeVideo
+import platform.AVFoundation.AVMediaTypeAudio
 
-internal actual fun registerCameraPermission(permission: Permission) {
+internal actual fun registerRecordAudioPermission(permission: Permission) {
     PermissionDelegateRegistry.register(permission) {
-        AVCapturePermissionHelper(AVMediaTypeVideo)
+        AVCapturePermissionHelper(AVMediaTypeAudio)
     }
 }

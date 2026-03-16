@@ -31,6 +31,7 @@ implementation("com.mohamedrejeb.calf:calf-permissions-core:0.9.0")
 
 // Add only the permissions you need:
 implementation("com.mohamedrejeb.calf:calf-permissions-camera:0.9.0")
+implementation("com.mohamedrejeb.calf:calf-permissions-microphone:0.9.0")
 implementation("com.mohamedrejeb.calf:calf-permissions-gallery:0.9.0")
 implementation("com.mohamedrejeb.calf:calf-permissions-location:0.9.0")
 implementation("com.mohamedrejeb.calf:calf-permissions-bluetooth:0.9.0")
@@ -38,7 +39,6 @@ implementation("com.mohamedrejeb.calf:calf-permissions-contacts:0.9.0")
 implementation("com.mohamedrejeb.calf:calf-permissions-calendar:0.9.0")
 implementation("com.mohamedrejeb.calf:calf-permissions-notifications:0.9.0")
 implementation("com.mohamedrejeb.calf:calf-permissions-wifi:0.9.0")
-implementation("com.mohamedrejeb.calf:calf-permissions-storage:0.9.0")
 ```
 
 For example, if your app only needs camera and location permissions:
@@ -67,19 +67,21 @@ The permissions library is organized as follows:
 ```
 calf-permissions/
 ├── build.gradle.kts          ← umbrella module (includes all)
-├── core/                     ← calf-permissions-core (base API)
+├── core/                     ← calf-permissions-core (base API + permissions that don't require adding keys to `Info.plist`)
 ├── camera/                   ← calf-permissions-camera
+├── microphone/               ← calf-permissions-microphone
 ├── gallery/                  ← calf-permissions-gallery
 ├── location/                 ← calf-permissions-location
 ├── bluetooth/                ← calf-permissions-bluetooth
 ├── contacts/                 ← calf-permissions-contacts
 ├── calendar/                 ← calf-permissions-calendar
 ├── notifications/            ← calf-permissions-notifications
-├── wifi/                     ← calf-permissions-wifi
-└── storage/                  ← calf-permissions-storage
+└── wifi/                     ← calf-permissions-wifi
 ```
 
 Each module depends on `calf-permissions-core`, which provides the shared API (`Permission`, `PermissionState`, `rememberPermissionState`, etc.). The platform-specific permission handling is implemented in each individual module.
+
+Permissions that don't require adding a reason in the iOS `Info.plist` (because they are always granted on iOS) are included directly in the **core** module. This includes storage permissions (`ReadStorage`, `WriteStorage`), `ReadAudio`, and `Call`.
 
 ## Usage
 
@@ -133,6 +135,78 @@ if (multiplePermissionsState.allPermissionsGranted) {
 
 ## Permissions Reference
 
+### Core Permissions
+
+The following permissions are included in the **core** module (`calf-permissions-core`) because they are always granted on iOS and don't require an `Info.plist` entry.
+
+#### Storage Permissions
+
+##### Read Storage Permission
+
+To request the read storage permission, use `Permission.ReadStorage`.
+
+###### Android
+
+Add the following permission to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+```
+
+###### iOS
+
+This permission is always granted on iOS.
+
+##### Write Storage Permission
+
+To request the write storage permission, use `Permission.WriteStorage`.
+
+###### Android
+
+Add the following permission to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+    tools:ignore="ScopedStorage" />
+```
+
+###### iOS
+
+This permission is always granted on iOS.
+
+#### Read Audio Permission
+
+To request the read audio permission, use `Permission.ReadAudio`.
+
+##### Android
+
+Add the following permission to your `AndroidManifest.xml` file (Android 13+):
+
+```xml
+<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+```
+
+##### iOS
+
+This permission is always granted on iOS.
+
+#### Call Permission
+
+To request the call permission, use `Permission.Call`.
+
+##### Android
+
+Add the following permission to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.CALL_PHONE" />
+```
+
+##### iOS
+
+This permission is always granted on iOS.
+
 ### Camera Permission
 
 **Module:** `calf-permissions-camera`
@@ -178,44 +252,6 @@ Add the following key to your `Info.plist` file:
 ```
 
 The string value is the message that will be displayed to the user when the permission is requested.
-
-### Storage Permissions
-
-**Module:** `calf-permissions-storage`
-
-#### Read Storage Permission
-
-To request the read storage permission, use `Permission.ReadStorage`.
-
-##### Android
-
-Add the following permission to your `AndroidManifest.xml` file:
-
-```xml
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-```
-
-##### iOS
-
-This permission is always granted on iOS.
-
-#### Write Storage Permission
-
-To request the write storage permission, use `Permission.WriteStorage`.
-
-##### Android
-
-Add the following permission to your `AndroidManifest.xml` file:
-
-```xml
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-    tools:ignore="ScopedStorage" />
-```
-
-##### iOS
-
-This permission is always granted on iOS.
 
 ### Location Permissions
 
@@ -281,7 +317,7 @@ No `Info.plist` entry is required.
 
 ### Record Audio Permission
 
-**Module:** `calf-permissions-camera`
+**Module:** `calf-permissions-microphone`
 
 To request the record audio permission, use `Permission.RecordAudio`.
 
