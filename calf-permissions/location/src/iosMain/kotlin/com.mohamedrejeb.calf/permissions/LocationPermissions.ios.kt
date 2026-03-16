@@ -15,8 +15,3 @@ internal actual fun registerCoarseLocationPermission(permission: Permission) {
     }
 }
 
-internal actual fun registerBackgroundLocationPermission(permission: Permission) {
-    PermissionDelegateRegistry.register(permission) {
-        LocationPermissionHelper()
-    }
-}

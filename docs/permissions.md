@@ -34,6 +34,7 @@ implementation("com.mohamedrejeb.calf:calf-permissions-camera:{{ calf_version }}
 implementation("com.mohamedrejeb.calf:calf-permissions-microphone:{{ calf_version }}")
 implementation("com.mohamedrejeb.calf:calf-permissions-gallery:{{ calf_version }}")
 implementation("com.mohamedrejeb.calf:calf-permissions-location:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-permissions-background-location:{{ calf_version }}")
 implementation("com.mohamedrejeb.calf:calf-permissions-bluetooth:{{ calf_version }}")
 implementation("com.mohamedrejeb.calf:calf-permissions-contacts:{{ calf_version }}")
 implementation("com.mohamedrejeb.calf:calf-permissions-calendar:{{ calf_version }}")
@@ -72,6 +73,7 @@ calf-permissions/
 ├── microphone/               ← calf-permissions-microphone
 ├── gallery/                  ← calf-permissions-gallery
 ├── location/                 ← calf-permissions-location
+├── background-location/      ← calf-permissions-background-location
 ├── bluetooth/                ← calf-permissions-bluetooth
 ├── contacts/                 ← calf-permissions-contacts
 ├── calendar/                 ← calf-permissions-calendar
@@ -286,7 +288,7 @@ The string value is the message that will be displayed to the user when the perm
 
 **Module:** `calf-permissions-location`
 
-To request the location permission, use `Permission.FineLocation`, `Permission.CoarseLocation`, or `Permission.BackgroundLocation`.
+To request the location permission, use `Permission.FineLocation` or `Permission.CoarseLocation`.
 
 #### Android
 
@@ -297,8 +299,6 @@ Add the following permissions to your `AndroidManifest.xml` file:
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <!-- For coarse location -->
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-<!-- For background location -->
-<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 ```
 
 #### iOS
@@ -311,6 +311,43 @@ Add the following key to your `Info.plist` file:
 ```
 
 The string value is the message that will be displayed to the user when the permission is requested.
+
+### Background Location Permission
+
+**Module:** `calf-permissions-background-location`
+
+To request the background location permission, use `Permission.BackgroundLocation`.
+
+!!! note
+    This is a separate module from `calf-permissions-location` to avoid requiring `NSLocationAlwaysAndWhenInUseUsageDescription` in your iOS `Info.plist` when you only need foreground location.
+
+#### Android
+
+Add the following permission to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+```
+
+#### iOS
+
+Add the following keys to your `Info.plist` file:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Location permission is required to get your location</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>Background location permission is required to track your location in the background</string>
+```
+
+You also need to enable the **Location updates** background mode in your Xcode project under **Signing & Capabilities → Background Modes**, or add the following to your `Info.plist`:
+
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>location</string>
+</array>
+```
 
 ### Notification Permissions
 

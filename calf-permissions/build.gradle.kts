@@ -9,6 +9,7 @@ kotlin {
         api(projects.calfPermissions.calfPermissionsCamera)
         api(projects.calfPermissions.calfPermissionsGallery)
         api(projects.calfPermissions.calfPermissionsLocation)
+        api(projects.calfPermissions.calfPermissionsBackgroundLocation)
         api(projects.calfPermissions.calfPermissionsBluetooth)
         api(projects.calfPermissions.calfPermissionsContacts)
         api(projects.calfPermissions.calfPermissionsCalendar)

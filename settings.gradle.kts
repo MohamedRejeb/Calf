@@ -40,6 +40,7 @@ include(
     ":calf-permissions:camera",
     ":calf-permissions:gallery",
     ":calf-permissions:location",
+    ":calf-permissions:background-location",
     ":calf-permissions:bluetooth",
     ":calf-permissions:contacts",
     ":calf-permissions:calendar",
@@ -63,6 +64,7 @@ project(":calf-permissions:core").name = "calf-permissions-core"
 project(":calf-permissions:camera").name = "calf-permissions-camera"
 project(":calf-permissions:gallery").name = "calf-permissions-gallery"
 project(":calf-permissions:location").name = "calf-permissions-location"
+project(":calf-permissions:background-location").name = "calf-permissions-background-location"
 project(":calf-permissions:bluetooth").name = "calf-permissions-bluetooth"
 project(":calf-permissions:contacts").name = "calf-permissions-contacts"
 project(":calf-permissions:calendar").name = "calf-permissions-calendar"
