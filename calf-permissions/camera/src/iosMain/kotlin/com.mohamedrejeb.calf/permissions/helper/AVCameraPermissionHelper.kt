@@ -11,7 +11,7 @@ import platform.AVFoundation.AVMediaType
 import platform.AVFoundation.authorizationStatusForMediaType
 import platform.AVFoundation.requestAccessForMediaType
 
-internal class AVCapturePermissionHelper(
+internal class AVCameraPermissionHelper(
     private val type: AVMediaType,
 ) : PermissionHelper {
     @OptIn(ExperimentalPermissionsApi::class)
