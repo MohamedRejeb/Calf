@@ -17,9 +17,9 @@ class WebSettings internal constructor(
 
     val androidSettings = AndroidSettings(onSettingsChanged)
 
-    val iosSettings = IosSettings()
+    val iosSettings = IosSettings(onSettingsChanged)
 
-    val desktopSettings = DesktopSettings()
+    val desktopSettings = DesktopSettings(onSettingsChanged)
 
     class AndroidSettings internal constructor(
         private val onSettingsChanged: () -> Unit
@@ -134,7 +134,38 @@ class WebSettings internal constructor(
 
     }
 
-    class IosSettings
+    class IosSettings internal constructor(
+        private val onSettingsChanged: () -> Unit
+    ) {
+        /**
+         * Whether the WKWebView allows back/forward navigation gestures.
+         */
+        var allowsBackForwardNavigationGestures = true
+            set(value) {
+                field = value
+                onSettingsChanged()
+            }
 
-    class DesktopSettings
+        /**
+         * Whether inline media playback is allowed (instead of fullscreen).
+         */
+        var allowsInlineMediaPlayback = true
+            set(value) {
+                field = value
+                onSettingsChanged()
+            }
+    }
+
+    class DesktopSettings internal constructor(
+        private val onSettingsChanged: () -> Unit
+    ) {
+        /**
+         * A custom user agent string. If null, the default user agent is used.
+         */
+        var customUserAgent: String? = null
+            set(value) {
+                field = value
+                onSettingsChanged()
+            }
+    }
 }

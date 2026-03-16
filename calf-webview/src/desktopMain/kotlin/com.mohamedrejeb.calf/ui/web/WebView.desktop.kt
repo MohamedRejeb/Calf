@@ -23,25 +23,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * A wrapper around the Android View WebView to provide a basic WebView composable.
+ * A wrapper around the JavaFX [javafx.scene.web.WebView] to provide a basic WebView composable
+ * for Desktop (JVM).
  *
  * If you require more customisation you are most likely better rolling your own and using this
  * wrapper as an example.
  *
- * The WebView attempts to set the layoutParams based on the Compose modifier passed in. If it
- * is incorrectly sizing, use the layoutParams composable function instead.
- *
  * @param state The webview state holder where the Uri to load is defined.
  * @param modifier A compose modifier
- * @param captureBackPresses Set to true to have this Composable capture back presses and navigate
- * the WebView back.
+ * @param captureBackPresses Not applicable on Desktop. Reserved for API consistency.
  * @param navigator An optional navigator object that can be used to control the WebView's
  * navigation from outside the composable.
- * @param onCreated Called when the WebView is first created, this can be used to set additional
- * settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will be
- * subsequently overwritten after this lambda is called.
- * @param onDispose Called when the WebView is destroyed. Provides a bundle which can be saved
- * if you need to save and restore state in this WebView.
+ * @param onCreated Called when the WebView is first created. The underlying JavaFX WebView
+ * can be accessed via [WebViewState.webView] for additional configuration.
+ * @param onDispose Called when the WebView is destroyed.
  */
 @Composable
 actual fun WebView(
@@ -73,8 +68,22 @@ actual fun WebView(
                         state.loadingState = LoadingState.Finished
                         state.pageTitle = engine.title
                         state.lastLoadedUrl = engine.location
+                        navigator.canGoBack = engine.history.currentIndex > 0
+                        navigator.canGoForward = engine.history.currentIndex < engine.history.entries.size - 1
                     }
-                    Worker.State.FAILED, Worker.State.CANCELLED -> {
+                    Worker.State.FAILED -> {
+                        state.loadingState = LoadingState.Finished
+                        val exception = engine.loadWorker.exception
+                        if (exception != null) {
+                            state.errorsForCurrentRequest = listOf(
+                                WebViewError(
+                                    code = -1,
+                                    description = exception.message ?: "Unknown error"
+                                )
+                            )
+                        }
+                    }
+                    Worker.State.CANCELLED -> {
                         state.loadingState = LoadingState.Finished
                     }
                     else -> {}
@@ -126,22 +135,20 @@ actual fun WebView(
                     is WebContent.NavigatorOnly -> {
                         // NO-OP
                     }
-
-                    else -> {}
                 }
             }
         }
-
-        SwingPanel(
-            factory = {
-                jfxPanel
-            },
-            update = {
-
-            },
-            modifier = modifier
-        )
     }
+
+    SwingPanel(
+        factory = {
+            jfxPanel
+        },
+        update = {
+
+        },
+        modifier = modifier
+    )
 }
 
 /**
@@ -183,7 +190,12 @@ actual class WebViewState actual constructor(webContent: WebContent) {
         }
     )
 
+    // TODO: Cookie manager is not working properly on Desktop, we need to check it
+    // https://stackoverflow.com/questions/14385233/setting-a-cookie-using-javafxs-webengine-webview
     actual val cookieManager: CookieManager = CookieManager()
+
+    actual var errorsForCurrentRequest: List<WebViewError> by mutableStateOf(emptyList())
+        internal set
 
     private fun applySetting() {
         webView?.applySettings(settings)
@@ -191,9 +203,8 @@ actual class WebViewState actual constructor(webContent: WebContent) {
 
     actual fun evaluateJavascript(script: String, callback: ((String?) -> Unit)?) {
         Platform.runLater {
-            webView?.engine?.executeScript(script).let {
-                callback?.invoke(it?.toString())
-            }
+            val result = webView?.engine?.executeScript(script)
+            callback?.invoke(result?.toString())
         }
     }
 
@@ -204,28 +215,34 @@ actual class WebViewState actual constructor(webContent: WebContent) {
 private fun WebView.applySettings(webSettings: WebSettings) {
     Platform.runLater {
         engine.isJavaScriptEnabled = webSettings.javaScriptEnabled
+        webSettings.desktopSettings.customUserAgent?.let {
+            engine.userAgent = it
+        }
     }
 }
 
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread
 internal suspend fun WebViewNavigator.handleNavigationEvents(
     webView: WebView
-): Nothing = withContext(Dispatchers.Main) {
+) {
     navigationEvents.collect { event ->
-        with(webView.engine) {
-            when (event) {
-                is WebViewNavigator.NavigationEvent.Back ->
-                    if (history.currentIndex > 0) history.go(-1)
-                is WebViewNavigator.NavigationEvent.Forward ->
-                    if (history.currentIndex < history.maxSize - 1) history.go(1)
-                is WebViewNavigator.NavigationEvent.Reload ->
-                    reload()
-                is WebViewNavigator.NavigationEvent.StopLoading ->
-                    stopLoading()
-                is WebViewNavigator.NavigationEvent.LoadHtml ->
-                    loadContent(event.html, event.mimeType)
-                is WebViewNavigator.NavigationEvent.LoadUrl ->
-                    loadUrl(event.url, event.additionalHttpHeaders)
+        Platform.runLater {
+            with(webView.engine) {
+                when (event) {
+                    is WebViewNavigator.NavigationEvent.Back ->
+                        if (history.currentIndex > 0) history.go(-1)
+                    is WebViewNavigator.NavigationEvent.Forward ->
+                        if (history.currentIndex < history.entries.size - 1) history.go(1)
+                    is WebViewNavigator.NavigationEvent.Reload ->
+                        reload()
+                    is WebViewNavigator.NavigationEvent.StopLoading ->
+                        stopLoading()
+                    is WebViewNavigator.NavigationEvent.LoadHtml ->
+                        loadContent(event.html, event.mimeType)
+                    is WebViewNavigator.NavigationEvent.LoadUrl -> {
+                        this.load(event.url)
+                    }
+                }
             }
         }
     }

@@ -20,29 +20,29 @@ import platform.Foundation.dataUsingEncoding
 import platform.Foundation.NSURL
 import platform.Foundation.NSMutableURLRequest
 import platform.Foundation.NSUTF8StringEncoding
+import platform.Foundation.NSError
 import platform.WebKit.*
 import platform.darwin.NSObject
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.isActive
 
 /**
- * A wrapper around the Android View WebView to provide a basic WebView composable.
+ * A wrapper around WKWebView to provide a basic WebView composable for iOS.
  *
  * If you require more customisation you are most likely better rolling your own and using this
  * wrapper as an example.
  *
- * The WebView attempts to set the layoutParams based on the Compose modifier passed in. If it
- * is incorrectly sizing, use the layoutParams composable function instead.
- *
  * @param state The webview state holder where the Uri to load is defined.
  * @param modifier A compose modifier
  * @param captureBackPresses Set to true to have this Composable capture back presses and navigate
- * the WebView back.
+ * the WebView back. On iOS this controls the back/forward navigation swipe gesture.
  * @param navigator An optional navigator object that can be used to control the WebView's
  * navigation from outside the composable.
- * @param onCreated Called when the WebView is first created, this can be used to set additional
- * settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will be
- * subsequently overwritten after this lambda is called.
- * @param onDispose Called when the WebView is destroyed. Provides a bundle which can be saved
- * if you need to save and restore state in this WebView.
+ * @param onCreated Called when the WebView is first created. The underlying WKWebView can be
+ * accessed via [WebViewState.webView] for additional configuration.
+ * @param onDispose Called when the WebView is destroyed.
  */
 @OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -58,7 +58,22 @@ actual fun WebView(
 
     webView?.let { wv ->
         LaunchedEffect(wv, navigator) {
+            state.navigator = navigator
             navigator.handleNavigationEvents(wv)
+        }
+
+        // Poll estimatedProgress for granular loading progress updates
+        LaunchedEffect(wv) {
+            snapshotFlow { state.isLoading }.distinctUntilChanged().collectLatest { isLoading ->
+                if (isLoading) {
+                    while (isActive && state.isLoading) {
+                        val progress = wv.estimatedProgress.toFloat()
+                        state.loadingState = LoadingState.Loading(progress)
+                        state.pageTitle = wv.title
+                        delay(100)
+                    }
+                }
+            }
         }
 
         LaunchedEffect(wv, state) {
@@ -87,8 +102,6 @@ actual fun WebView(
                     is WebContent.NavigatorOnly -> {
                         // NO-OP
                     }
-
-                    else -> {}
                 }
             }
         }
@@ -98,8 +111,10 @@ actual fun WebView(
         factory = {
             WKWebView().apply {
                 onCreated()
-                setUserInteractionEnabled(captureBackPresses)
+                setUserInteractionEnabled(true)
+                allowsBackForwardNavigationGestures = captureBackPresses
                 applySettings(state.settings)
+                state.navigator = navigator
                 state.webView = this
                 navigationDelegate = state
             }
@@ -122,7 +137,7 @@ actual fun WebView(
 @Stable
 actual class WebViewState actual constructor(
     webContent: WebContent
-): NSObject(), WKNavigationDelegateProtocol {
+) : NSObject(), WKNavigationDelegateProtocol {
     actual var lastLoadedUrl: String? by mutableStateOf(null)
         internal set
 
@@ -158,6 +173,9 @@ actual class WebViewState actual constructor(
 
     actual val cookieManager: CookieManager = CookieManager()
 
+    actual var errorsForCurrentRequest: List<WebViewError> by mutableStateOf(emptyList())
+        internal set
+
     private fun applySetting() {
         webView?.applySettings(settings)
     }
@@ -177,10 +195,16 @@ actual class WebViewState actual constructor(
     var webView by mutableStateOf<WKWebView?>(null)
         internal set
 
+    // Navigator reference for updating canGoBack/canGoForward
+    internal var navigator: WebViewNavigator? = null
+
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     @ObjCSignatureOverride
     override fun webView(webView: WKWebView, didFinishNavigation: WKNavigation?) {
         loadingState = LoadingState.Finished
+        pageTitle = webView.title
+        navigator?.canGoBack = webView.canGoBack
+        navigator?.canGoForward = webView.canGoForward
     }
 
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
@@ -188,14 +212,45 @@ actual class WebViewState actual constructor(
     override fun webView(webView: WKWebView, didCommitNavigation: WKNavigation?) {
         loadingState = LoadingState.Loading(webView.estimatedProgress.toFloat())
         lastLoadedUrl = webView.URL?.absoluteString
+        errorsForCurrentRequest = emptyList()
         pageTitle = webView.title
+        navigator?.canGoBack = webView.canGoBack
+        navigator?.canGoForward = webView.canGoForward
+    }
+
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+    @ObjCSignatureOverride
+    override fun webView(webView: WKWebView, didFailNavigation: WKNavigation?, withError: NSError) {
+        loadingState = LoadingState.Finished
+        errorsForCurrentRequest = errorsForCurrentRequest + WebViewError(
+            code = withError.code.toInt(),
+            description = withError.localizedDescription
+        )
+    }
+
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+    @ObjCSignatureOverride
+    override fun webView(
+        webView: WKWebView,
+        didFailProvisionalNavigation: WKNavigation?,
+        withError: NSError
+    ) {
+        loadingState = LoadingState.Finished
+        errorsForCurrentRequest = errorsForCurrentRequest + WebViewError(
+            code = withError.code.toInt(),
+            description = withError.localizedDescription
+        )
     }
 }
 
 private fun WKWebView.applySettings(webSettings: WebSettings) {
     configuration.defaultWebpagePreferences.allowsContentJavaScript = webSettings.javaScriptEnabled
     configuration.preferences.javaScriptEnabled = webSettings.javaScriptEnabled
-    configuration.preferences.javaScriptCanOpenWindowsAutomatically = webSettings.javaScriptCanOpenWindowsAutomatically
+    configuration.preferences.javaScriptCanOpenWindowsAutomatically =
+        webSettings.javaScriptCanOpenWindowsAutomatically
+    allowsBackForwardNavigationGestures =
+        webSettings.iosSettings.allowsBackForwardNavigationGestures
+    configuration.allowsInlineMediaPlayback = webSettings.iosSettings.allowsInlineMediaPlayback
 }
 
 // Use Dispatchers.Main to ensure that the webview methods are called on UI thread
@@ -213,20 +268,32 @@ internal suspend fun WebViewNavigator.handleNavigationEvents(
                 val data = NSString
                     .create(string = event.html)
                     .dataUsingEncoding(NSUTF8StringEncoding) ?: return@collect
-                val baseUrl =
-                    if (event.baseUrl != null) NSURL(string = event.baseUrl)
-                    else return@collect
+                val baseUrl = event.baseUrl?.let { NSURL(string = it) }
 
-                webView.loadData(
-                    data,
-                    event.mimeType ?: "text/html",
-                    event.encoding ?: "utf-8",
-                    baseUrl
-                )
+                if (baseUrl != null) {
+                    webView.loadData(
+                        data,
+                        event.mimeType ?: "text/html",
+                        event.encoding ?: "utf-8",
+                        baseUrl
+                    )
+                } else {
+                    webView.loadHTMLString(
+                        event.html,
+                        null
+                    )
+                }
             }
 
             is WebViewNavigator.NavigationEvent.LoadUrl -> {
-                loadUrl(event.url, event.additionalHttpHeaders)
+                val url = NSURL(string = event.url)
+                val urlRequest = NSMutableURLRequest().apply {
+                    setURL(url)
+                    event.additionalHttpHeaders.forEach { (key, value) ->
+                        setValue(value = value, forHTTPHeaderField = key)
+                    }
+                }
+                webView.loadRequest(urlRequest)
             }
         }
     }
