@@ -38,4 +38,8 @@ kotlin {
         implementation("org.openjfx:javafx-swing:19:$platform")
         implementation(libs.kotlinx.coroutines.swing)
     }
+
+    sourceSets.webMain.dependencies {
+        implementation(libs.kotlinx.browser)
+    }
 }

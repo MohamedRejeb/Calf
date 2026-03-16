@@ -77,6 +77,10 @@ fun WebViewScreen(
     val state = rememberWebViewState(url = INITIAL_URL)
     val navigator = rememberWebViewNavigator()
 
+    LaunchedEffect(Unit) {
+        state.settings.javaScriptEnabled = true
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
