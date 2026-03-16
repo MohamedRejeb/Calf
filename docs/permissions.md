@@ -240,7 +240,11 @@ To request the gallery permission, use `Permission.Gallery`.
 
 #### Android
 
-This permission is always granted on Android.
+Add the following permission to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+```
 
 #### iOS
 
