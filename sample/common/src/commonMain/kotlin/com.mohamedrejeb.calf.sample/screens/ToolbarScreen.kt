@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.sample.currentPlatform
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.toolbar.AdaptiveToolbar
@@ -128,29 +129,31 @@ fun ToolbarScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = "Spacing Pattern",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                if (currentPlatform.isIOS) {
+                    Text(
+                        text = "Spacing Pattern",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    SpacingPattern.entries.forEach { pattern ->
-                        FilterChip(
-                            selected = selectedPattern == pattern,
-                            onClick = { selectedPattern = pattern },
-                            label = { Text(pattern.label) },
-                        )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        SpacingPattern.entries.forEach { pattern ->
+                            FilterChip(
+                                selected = selectedPattern == pattern,
+                                onClick = { selectedPattern = pattern },
+                                label = { Text(pattern.label) },
+                            )
+                        }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
 
                 Text(
                     text = lastAction,
