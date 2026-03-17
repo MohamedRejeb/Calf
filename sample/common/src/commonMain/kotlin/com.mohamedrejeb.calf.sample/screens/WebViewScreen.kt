@@ -88,6 +88,42 @@ fun WebViewScreen(
     val state = rememberWebViewState(url = INITIAL_URL)
     val navigator = rememberWebViewNavigator()
 
+    val iosItems by remember(navigator.canGoBack, navigator.canGoForward) {
+        mutableStateOf(
+            listOf(
+                UIKitUIBarButtonItem.image(
+                    image = UIKitImage.SystemName("chevron.left"),
+                    enabled = navigator.canGoBack,
+                    onClick = { navigator.navigateBack() },
+                ),
+                UIKitUIBarButtonItem.image(
+                    image = UIKitImage.SystemName("chevron.right"),
+                    enabled = navigator.canGoForward,
+                    onClick = { navigator.navigateForward() },
+                ),
+                UIKitUIBarButtonItem.flexibleSpace(),
+                UIKitUIBarButtonItem.image(
+                    image = UIKitImage.SystemName("arrow.clockwise"),
+                    onClick = { navigator.reload() },
+                ),
+                UIKitUIBarButtonItem.flexibleSpace(),
+                UIKitUIBarButtonItem.image(
+                    image = UIKitImage.SystemName("xmark"),
+                    onClick = { navigator.stopLoading() },
+                ),
+                UIKitUIBarButtonItem.flexibleSpace(),
+                UIKitUIBarButtonItem.image(
+                    image = UIKitImage.SystemName("globe"),
+                    onClick = { navigator.loadUrl(INITIAL_URL) },
+                ),
+                UIKitUIBarButtonItem.image(
+                    image = UIKitImage.SystemName("chevron.left.forwardslash.chevron.right"),
+                    onClick = { navigator.loadHtml(DUMMY_HTML) },
+                ),
+            )
+        )
+    }
+
     LaunchedEffect(Unit) {
         state.settings.javaScriptEnabled = true
     }
@@ -156,10 +192,16 @@ fun WebViewScreen(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 16.dp),
                 content = {
-                    IconButton(onClick = { navigator.navigateBack() }) {
+                    IconButton(
+                        onClick = { navigator.navigateBack() },
+                        enabled = navigator.canGoBack,
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate Back")
                     }
-                    IconButton(onClick = { navigator.navigateForward() }) {
+                    IconButton(
+                        onClick = { navigator.navigateForward() },
+                        enabled = navigator.canGoForward,
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Navigate Forward")
                     }
                     IconButton(onClick = { navigator.reload() }) {
@@ -175,32 +217,7 @@ fun WebViewScreen(
                         Icon(Icons.Filled.Code, contentDescription = "Load HTML")
                     }
                 },
-                iosItems = listOf(
-                    UIKitUIBarButtonItem(
-                        image = UIKitImage.SystemName("chevron.left"),
-                        onClick = { navigator.navigateBack() },
-                    ),
-                    UIKitUIBarButtonItem(
-                        image = UIKitImage.SystemName("chevron.right"),
-                        onClick = { navigator.navigateForward() },
-                    ),
-                    UIKitUIBarButtonItem(
-                        image = UIKitImage.SystemName("arrow.clockwise"),
-                        onClick = { navigator.reload() },
-                    ),
-                    UIKitUIBarButtonItem(
-                        image = UIKitImage.SystemName("xmark"),
-                        onClick = { navigator.stopLoading() },
-                    ),
-                    UIKitUIBarButtonItem(
-                        image = UIKitImage.SystemName("globe"),
-                        onClick = { navigator.loadUrl(INITIAL_URL) },
-                    ),
-                    UIKitUIBarButtonItem(
-                        image = UIKitImage.SystemName("chevron.left.forwardslash.chevron.right"),
-                        onClick = { navigator.loadHtml(DUMMY_HTML) },
-                    ),
-                ),
+                iosItems = iosItems,
             )
         }
     }
