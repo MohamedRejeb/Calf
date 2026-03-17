@@ -7,8 +7,6 @@ import com.mohamedrejeb.calf.ui.navigation.BarButtonActionHandler
 import com.mohamedrejeb.calf.ui.navigation.toUIBarButtonItem
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.UIKit.UIBarButtonItem
-import platform.UIKit.UIBarButtonSystemItem
 import platform.UIKit.UIToolbar
 import platform.UIKit.UIView
 import platform.UIKit.NSLayoutConstraint
@@ -63,26 +61,12 @@ internal class ToolbarManager {
             BarButtonActionHandler(item.onClick)
         }
 
-        // Convert to UIBarButtonItems and interleave with flexible spaces
+        // Convert to UIBarButtonItems — no automatic spacing added
         val barItems = items.mapIndexed { index, item ->
             item.toUIBarButtonItem(actionHandlers[index])
         }
 
-        val spacedItems = mutableListOf<UIBarButtonItem>()
-        barItems.forEachIndexed { index, barItem ->
-            spacedItems.add(barItem)
-            if (index < barItems.lastIndex) {
-                spacedItems.add(
-                    UIBarButtonItem(
-                        barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace,
-                        target = null,
-                        action = null,
-                    )
-                )
-            }
-        }
-
-        toolbar.setItems(spacedItems, animated = false)
+        toolbar.setItems(barItems, animated = false)
         currentItems = items
     }
 }
