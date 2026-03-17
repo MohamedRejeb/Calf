@@ -66,7 +66,7 @@ internal class ToolbarManager {
             item.toUIBarButtonItem(actionHandlers[index])
         }
 
-        toolbar.setItems(barItems, animated = false)
+        toolbar.setItems(barItems, animated = currentItems.isNotEmpty())
         currentItems = items
     }
 }
