@@ -26,7 +26,6 @@ jobs:
         uses: nwtgck/actions-netlify@v2
         with:
           publish-dir: ./sample/web-wasm/build/dist/wasmJs/productionExecutable
-          #updating the production branch for testing if Netlify automatically deploys the web app
           production-branch: feat/netlify-release-deploy
           github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
