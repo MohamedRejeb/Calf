@@ -1,9 +1,9 @@
 name: Deploy Sample Compose Web App to Netlify
 
 on:
-  push:
-    branches:
-      - feat/netlify-release-deploy
+  release:
+    types:
+      [ published ]
 
 jobs:
   build-and-deploy:
