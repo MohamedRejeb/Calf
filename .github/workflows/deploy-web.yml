@@ -1,4 +1,4 @@
-name: Deploy Compose Web Sample to Netlify
+name: Deploy Sample Compose Web App to Netlify
 
 on:
   push:
