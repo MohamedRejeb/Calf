@@ -20,4 +20,14 @@ kotlin {
     sourceSets.desktopMain.dependencies {
         implementation(libs.kotlinx.coroutines.swing)
     }
+
+    sourceSets.iosArm64Main.dependencies {
+        implementation("io.github.kyant0:shapes:1.2.0")
+        implementation("io.github.kyant0:backdrop:2.0.0-alpha03")
+    }
+
+    sourceSets.iosSimulatorArm64Main.dependencies {
+        implementation("io.github.kyant0:shapes:1.2.0")
+        implementation("io.github.kyant0:backdrop:2.0.0-alpha03")
+    }
 }
