@@ -141,4 +141,10 @@ enum class Screen(
         icon = Icons.Outlined.WebAsset,
         category = ScreenCategory.Navigation,
     ),
+    Toolbar(
+        title = "Adaptive Toolbar",
+        description = "Floating toolbar with Liquid Glass on iOS and Material3 Expressive HorizontalFloatingToolbar",
+        icon = Icons.Outlined.Menu,
+        category = ScreenCategory.UIComponents,
+    ),
 }

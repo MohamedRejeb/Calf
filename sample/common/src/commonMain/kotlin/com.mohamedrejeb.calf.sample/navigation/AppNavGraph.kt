@@ -156,5 +156,12 @@ fun AppNavGraph(
                 }
             )
         }
+        composable(Screen.Toolbar.name) {
+            ToolbarScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }

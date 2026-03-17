@@ -112,7 +112,7 @@ internal class BarButtonActionHandler(
 }
 
 @OptIn(ExperimentalForeignApi::class)
-private fun UIKitUIBarButtonItem.toUIBarButtonItem(
+internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
     actionHandler: BarButtonActionHandler,
 ): UIBarButtonItem {
     val selector = sel_registerName("handleAction")
@@ -146,7 +146,7 @@ private fun UIKitUIBarButtonItem.toUIBarButtonItem(
     )
 }
 
-private fun UIKitUIBarButtonSystemItem.toUIBarButtonSystemItem(): UIBarButtonSystemItem =
+internal fun UIKitUIBarButtonSystemItem.toUIBarButtonSystemItem(): UIBarButtonSystemItem =
     when (this) {
         UIKitUIBarButtonSystemItem.Done -> UIBarButtonSystemItem.UIBarButtonSystemItemDone
         UIKitUIBarButtonSystemItem.Cancel -> UIBarButtonSystemItem.UIBarButtonSystemItemCancel
