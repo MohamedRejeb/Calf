@@ -6,10 +6,9 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         implementation(projects.calfCore)
-
         implementation(compose.runtime)
         implementation(compose.foundation)
-        implementation(compose.material3)
+        implementation("org.jetbrains.compose.material3:material3:1.10.0-alpha05")
         implementation(libs.kotlinx.coroutines.core)
     }
 

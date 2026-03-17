@@ -21,7 +21,7 @@ kotlin {
         api(compose.runtime)
         api(compose.foundation)
         api(compose.material)
-        api(compose.material3)
+        api("org.jetbrains.compose.material3:material3:1.10.0-alpha05")
         implementation(compose.materialIconsExtended)
 
         implementation(libs.kotlinx.datetime)
