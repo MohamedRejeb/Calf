@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.sample.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -140,6 +141,12 @@ enum class Screen(
         description = "Top app bar with native iOS UINavigationBar and Material3 TopAppBar",
         icon = Icons.Outlined.WebAsset,
         category = ScreenCategory.Navigation,
+    ),
+    ExpandableFAB(
+        title = "Adaptive Expandable FAB",
+        description = "Expandable floating action button with Liquid Glass on iOS and Material3 animation",
+        icon = Icons.Outlined.Add,
+        category = ScreenCategory.UIComponents,
     ),
     Toolbar(
         title = "Adaptive Toolbar",
