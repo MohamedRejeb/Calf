@@ -8,6 +8,7 @@ import com.mohamedrejeb.calf.sample.screens.AlertDialogScreen
 import com.mohamedrejeb.calf.sample.screens.BottomSheetScreen
 import com.mohamedrejeb.calf.sample.screens.CameraPickerScreen
 import com.mohamedrejeb.calf.sample.screens.DropDownScreen
+import com.mohamedrejeb.calf.sample.screens.ExpandableFABScreen
 import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
 import com.mohamedrejeb.calf.sample.screens.FilePickerScreen
 import com.mohamedrejeb.calf.sample.screens.HomeScreen
@@ -19,6 +20,7 @@ import com.mohamedrejeb.calf.sample.screens.ProgressBarScreen
 import com.mohamedrejeb.calf.sample.screens.ScaffoldDemoScreen
 import com.mohamedrejeb.calf.sample.screens.SwitchScreen
 import com.mohamedrejeb.calf.sample.screens.TimePickerScreen
+import com.mohamedrejeb.calf.sample.screens.ToolbarScreen
 import com.mohamedrejeb.calf.sample.screens.TopBarDemoScreen
 import com.mohamedrejeb.calf.sample.screens.WebViewScreen
 
@@ -151,6 +153,13 @@ fun AppNavGraph(
         }
         composable(Screen.TopBarDemo.name) {
             TopBarDemoScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.ExpandableFAB.name) {
+            ExpandableFABScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }
