@@ -1,23 +1,12 @@
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +26,7 @@ import com.mohamedrejeb.calf.permissions.Camera
 import com.mohamedrejeb.calf.permissions.Permission
 import com.mohamedrejeb.calf.permissions.isGranted
 import com.mohamedrejeb.calf.permissions.rememberPermissionState
-
+import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -64,33 +53,25 @@ fun CameraPickerScreen(
         }
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
-    ) {
-        IconButton(
-            onClick = {
-                navigateBack()
-            },
+    SampleScreenScaffold(
+        title = "Camera Picker",
+        navigateBack = navigateBack,
+    ) { padding ->
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .fillMaxSize()
+                .padding(padding)
                 .padding(16.dp)
         ) {
-            Icon(
-                Icons.Filled.ArrowBackIosNew,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground,
+            Text(
+                text = "Camera capture using native platform camera APIs. Requires camera permission.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
 
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+            Spacer(modifier = Modifier.height(24.dp))
+
             ElevatedButton(
                 onClick = {
                     if (cameraPermissionState.status.isGranted) {
@@ -100,29 +81,39 @@ fun CameraPickerScreen(
                     }
                 }
             ) {
-                Text("Open Camera Picker")
+                Text("Open Camera")
             }
-            Text(
-                text = "Files picked:",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(16.dp),
-            )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "- $fileName",
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                text = "Captured file:",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "- $path",
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-            )
-
-
+            if (fileName.isEmpty()) {
+                Text(
+                    text = "No photo captured",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Text(
+                    text = "Name: $fileName",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Path: $path",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }

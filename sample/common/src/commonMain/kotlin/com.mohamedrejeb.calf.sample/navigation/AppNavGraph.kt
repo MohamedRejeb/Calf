@@ -16,8 +16,10 @@ import com.mohamedrejeb.calf.sample.screens.MapScreen
 import com.mohamedrejeb.calf.sample.screens.NavigationBarScreen
 import com.mohamedrejeb.calf.sample.screens.PermissionScreen
 import com.mohamedrejeb.calf.sample.screens.ProgressBarScreen
+import com.mohamedrejeb.calf.sample.screens.ScaffoldDemoScreen
 import com.mohamedrejeb.calf.sample.screens.SwitchScreen
 import com.mohamedrejeb.calf.sample.screens.TimePickerScreen
+import com.mohamedrejeb.calf.sample.screens.TopBarDemoScreen
 import com.mohamedrejeb.calf.sample.screens.WebViewScreen
 
 @Composable
@@ -111,9 +113,7 @@ fun AppNavGraph(
                     navController.popBackStack()
                 }
             )
-
         }
-
         composable(Screen.WebView.name) {
             WebViewScreen(
                 navigateBack = {
@@ -137,6 +137,20 @@ fun AppNavGraph(
         }
         composable(Screen.NavigationBar.name) {
             NavigationBarScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.ScaffoldDemo.name) {
+            ScaffoldDemoScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.TopBarDemo.name) {
+            TopBarDemoScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }
