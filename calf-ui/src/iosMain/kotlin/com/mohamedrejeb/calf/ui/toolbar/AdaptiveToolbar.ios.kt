@@ -33,25 +33,9 @@ actual fun AdaptiveToolbar(
     content: @Composable RowScope.() -> Unit,
     iosItems: List<UIKitUIBarButtonItem>,
 ) {
-    val isLiquidGlassAvailable = remember { isIOS26OrAbove() }
+    if (iosItems.isEmpty())
+        return
 
-    if (isLiquidGlassAvailable && iosItems.isNotEmpty()) {
-        NativeLiquidGlassToolbar(iosItems = iosItems)
-    } else {
-        HorizontalFloatingToolbar(
-            expanded = expanded,
-            modifier = modifier,
-            colors = FloatingToolbarDefaults.standardFloatingToolbarColors(),
-            leadingContent = leadingContent,
-            trailingContent = trailingContent,
-            content = content,
-        )
-    }
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-private fun NativeLiquidGlassToolbar(iosItems: List<UIKitUIBarButtonItem>) {
     val viewController = LocalUIViewController.current
 
     val toolbarManager = remember {

@@ -117,13 +117,34 @@ internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
 ): UIBarButtonItem {
     val selector = sel_registerName("handleAction")
 
+    // Handle spacing items — no target/action needed
+    if (systemItem == UIKitUIBarButtonSystemItem.FlexibleSpace) {
+        return UIBarButtonItem(
+            barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace,
+            target = null,
+            action = null,
+        )
+    }
+    if (systemItem == UIKitUIBarButtonSystemItem.FixedSpace) {
+        return UIBarButtonItem(
+            barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFixedSpace,
+            target = null,
+            action = null,
+        ).also {
+            it.width = width ?: 16.0
+        }
+    }
+
     // If systemItem is specified, use system item constructor
     if (systemItem != null) {
         return UIBarButtonItem(
             barButtonSystemItem = systemItem.toUIBarButtonSystemItem(),
             target = actionHandler,
             action = selector,
-        )
+        ).also {
+            it.enabled = enabled
+            it.selected = selected
+        }
     }
 
     // If image is specified, use image constructor
@@ -134,7 +155,10 @@ internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
             style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
             target = actionHandler,
             action = selector,
-        )
+        ).also {
+            it.enabled = enabled
+            it.selected = selected
+        }
     }
 
     // Otherwise, use title constructor
@@ -143,7 +167,10 @@ internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
         style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
         target = actionHandler,
         action = selector,
-    )
+    ).also {
+        it.enabled = enabled
+        it.selected = selected
+    }
 }
 
 internal fun UIKitUIBarButtonSystemItem.toUIBarButtonSystemItem(): UIBarButtonSystemItem =
@@ -160,6 +187,8 @@ internal fun UIKitUIBarButtonSystemItem.toUIBarButtonSystemItem(): UIBarButtonSy
         UIKitUIBarButtonSystemItem.Trash -> UIBarButtonSystemItem.UIBarButtonSystemItemTrash
         UIKitUIBarButtonSystemItem.Search -> UIBarButtonSystemItem.UIBarButtonSystemItemSearch
         UIKitUIBarButtonSystemItem.Close -> UIBarButtonSystemItem.UIBarButtonSystemItemClose
+        UIKitUIBarButtonSystemItem.FlexibleSpace -> UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace
+        UIKitUIBarButtonSystemItem.FixedSpace -> UIBarButtonSystemItem.UIBarButtonSystemItemFixedSpace
     }
 
 /**

@@ -6,6 +6,7 @@ import com.mohamedrejeb.calf.navigation.AdaptiveNavHostController
 import com.mohamedrejeb.calf.sample.screens.AdaptiveClickableScreen
 import com.mohamedrejeb.calf.sample.screens.AlertDialogScreen
 import com.mohamedrejeb.calf.sample.screens.BottomSheetScreen
+import com.mohamedrejeb.calf.sample.screens.ButtonScreen
 import com.mohamedrejeb.calf.sample.screens.CameraPickerScreen
 import com.mohamedrejeb.calf.sample.screens.DropDownScreen
 import com.mohamedrejeb.calf.sample.screens.ExpandableFABScreen
@@ -62,6 +63,13 @@ fun AppNavGraph(
         }
         composable(Screen.Switch.name) {
             SwitchScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.Button.name) {
+            ButtonScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }

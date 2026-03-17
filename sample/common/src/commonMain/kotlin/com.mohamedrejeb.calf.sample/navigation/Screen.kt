@@ -3,6 +3,7 @@ package com.mohamedrejeb.calf.sample.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AdsClick
+import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Camera
@@ -62,6 +63,12 @@ enum class Screen(
         title = "Adaptive Switch",
         description = "Toggle switches with native iOS UISwitch and Material3 Switch",
         icon = Icons.Outlined.ToggleOn,
+        category = ScreenCategory.UIComponents,
+    ),
+    Button(
+        title = "Adaptive Buttons",
+        description = "Buttons with Cupertino style on iOS and Material3 on other platforms",
+        icon = Icons.Outlined.CheckBox,
         category = ScreenCategory.UIComponents,
     ),
     AdaptiveClickable(
