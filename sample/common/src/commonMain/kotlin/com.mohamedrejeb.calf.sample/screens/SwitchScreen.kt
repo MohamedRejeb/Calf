@@ -1,62 +1,111 @@
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwitchScreen(
     navigateBack: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
-    ) {
-        IconButton(
-            onClick = {
-                navigateBack()
-            },
+    SampleScreenScaffold(
+        title = "Adaptive Switch",
+        navigateBack = navigateBack,
+    ) { padding ->
+        Column(
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .fillMaxSize()
+                .padding(padding)
                 .padding(16.dp)
         ) {
-            Icon(
-                Icons.Filled.ArrowBackIosNew,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground,
+            Text(
+                text = "Toggle switches using native iOS UISwitch on iOS and Material3 Switch on other platforms.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            var wifiEnabled by remember { mutableStateOf(false) }
+            var notificationsEnabled by remember { mutableStateOf(true) }
+            var darkModeEnabled by remember { mutableStateOf(false) }
+
+            SwitchSettingItem(
+                title = "Wi-Fi",
+                description = "Enable wireless networking",
+                checked = wifiEnabled,
+                onCheckedChange = { wifiEnabled = it },
+            )
+            SwitchSettingItem(
+                title = "Notifications",
+                description = "Allow push notifications",
+                checked = notificationsEnabled,
+                onCheckedChange = { notificationsEnabled = it },
+            )
+            SwitchSettingItem(
+                title = "Dark Mode",
+                description = "Use dark appearance",
+                checked = darkModeEnabled,
+                onCheckedChange = { darkModeEnabled = it },
             )
         }
+    }
+}
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .align(Alignment.Center)
+@Composable
+private fun SwitchSettingItem(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+        shape = MaterialTheme.shapes.medium,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            val firstSwitchState = remember { mutableStateOf(false) }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             AdaptiveSwitch(
-                checked = firstSwitchState.value,
-                onCheckedChange = { firstSwitchState.value = it },
-                modifier = Modifier
-                    .padding(16.dp)
-            )
-            val secondSwitchState = remember { mutableStateOf(true) }
-            AdaptiveSwitch(
-                checked = secondSwitchState.value,
-                onCheckedChange = { secondSwitchState.value = it },
-                modifier = Modifier
-                    .padding(16.dp)
+                checked = checked,
+                onCheckedChange = onCheckedChange,
             )
         }
     }

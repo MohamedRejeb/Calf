@@ -1,11 +1,14 @@
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -14,60 +17,48 @@ import com.mohamedrejeb.calf.permissions.Camera
 import com.mohamedrejeb.calf.permissions.Permission
 import com.mohamedrejeb.calf.permissions.isGranted
 import com.mohamedrejeb.calf.permissions.rememberPermissionState
+import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun MapScreen(
     navigateBack: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
-    ) {
-        IconButton(
-            onClick = {
-                navigateBack()
-            },
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.onBackground,
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp)
-        ) {
-            Icon(
-                Icons.Filled.ArrowBackIosNew,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onBackground,
-            )
-        }
+    val cameraPermissionState = rememberPermissionState(
+        permission = Permission.Camera,
+    ) { isGranted ->
+        // Handle permission state change
+    }
 
-        val cameraPermissionState = rememberPermissionState(
-            permission = Permission.Camera,
-        ) { isGranted ->
-            // Handle permission state change
-        }
-
+    SampleScreenScaffold(
+        title = "Adaptive Map",
+        navigateBack = navigateBack,
+    ) { padding ->
         Column(
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .align(Alignment.Center)
-                .padding(16.dp),
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
         ) {
             Text(
-                text = "Is permission granted: ${cameraPermissionState.status.isGranted}",
-                modifier = Modifier
-                    .padding(16.dp)
+                text = "Map views using Apple Maps on iOS and Google Maps on Android.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Is permission granted: ${cameraPermissionState.status.isGranted}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
-                onClick = {
-                    cameraPermissionState.launchPermissionRequest()
-                },
+                onClick = { cameraPermissionState.launchPermissionRequest() },
             ) {
                 Text("Request permission")
             }

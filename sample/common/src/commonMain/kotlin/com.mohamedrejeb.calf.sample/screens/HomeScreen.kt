@@ -8,36 +8,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
-import androidx.compose.material.icons.outlined.AdsClick
-import androidx.compose.material.icons.outlined.AttachFile
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Camera
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.Map
-import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.Navigation
-import androidx.compose.material.icons.outlined.Pages
-import androidx.compose.material.icons.outlined.PunchClock
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material.icons.outlined.ToggleOn
-import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material.icons.outlined.Web
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -45,11 +34,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.sample.navigation.ScreenCategory
 
 @Composable
 fun HomeScreen(
     navigate: (String) -> Unit,
 ) {
+    val screensByCategory = Screen.entries
+        .filter { it != Screen.Home }
+        .groupBy { it.category }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -65,7 +59,7 @@ fun HomeScreen(
             ),
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
-                .padding(16.dp)
+                .padding(top = 16.dp, bottom = 4.dp)
         )
 
         val colorScheme = MaterialTheme.colorScheme
@@ -73,161 +67,121 @@ fun HomeScreen(
         Text(
             text = buildAnnotatedString {
                 val spanStyle = SpanStyle(fontWeight = FontWeight.Bold, color = colorScheme.primary)
-                withStyle(spanStyle) {
-                    append("C")
-                }
+                withStyle(spanStyle) { append("C") }
                 append("ompose ")
-                withStyle(spanStyle) {
-                    append("A")
-                }
+                withStyle(spanStyle) { append("A") }
                 append("daptive ")
-                withStyle(spanStyle) {
-                    append("L")
-                }
+                withStyle(spanStyle) { append("L") }
                 append("ook & ")
-                withStyle(spanStyle) {
-                    append("F")
-                }
+                withStyle(spanStyle) { append("F") }
                 append("eel")
             },
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
-                .padding(16.dp)
+                .padding(bottom = 16.dp)
         )
 
         LazyColumn(
-            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            item {
-                ListItem(
-                    onClick = { navigate(Screen.Dialog.name) },
-                    title = "Adaptive Alert Dialog",
-                    icon = Icons.Outlined.Warning,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.BottomSheet.name) },
-                    title = "Adaptive Bottom Sheet",
-                    icon = Icons.Outlined.Pages,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.ProgressBar.name) },
-                    title = "Adaptive Progress Bar",
-                    icon = Icons.Outlined.Refresh,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.Switch.name) },
-                    title = "Adaptive Switch",
-                    icon = Icons.Outlined.ToggleOn,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.AdaptiveClickable.name) },
-                    title = "Adaptive Clickable",
-                    icon = Icons.Outlined.AdsClick,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.DropDown.name) },
-                    title = "Adaptive Drop Down",
-                    icon = Icons.Outlined.Menu,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.DatePicker.name) },
-                    title = "Adaptive Date Picker",
-                    icon = Icons.Outlined.CalendarMonth,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.TimePicker.name) },
-                    title = "Adaptive Time Picker",
-                    icon = Icons.Outlined.PunchClock,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.FilePicker.name) },
-                    title = "Adaptive File Picker",
-                    icon = Icons.Outlined.AttachFile,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.ImagePicker.name) },
-                    title = "Adaptive Image Picker",
-                    icon = Icons.Outlined.Image,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.CameraPickerScreen.name) },
-                    title = "Camera Picker",
-                    icon = Icons.Outlined.Camera,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.WebView.name) },
-                    title = "Adaptive Web View",
-                    icon = Icons.Outlined.Web,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.Permission.name) },
-                    title = "Permissions Controls",
-                    icon = Icons.Outlined.Map,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.Map.name) },
-                    title = "Adaptive Map",
-                    icon = Icons.Outlined.Map,
-                )
-                ListItem(
-                    onClick = { navigate(Screen.NavigationBar.name) },
-                    title = "Adaptive Navigation Bar",
-                    icon = Icons.Outlined.Navigation,
-                )
-//                ListItem(
-//                    onClick = {  },
-//                    title = "Adaptive Notification",
-//                    icon = Icons.Outlined.Notifications,
-//                )
-//                ListItem(
-//                    onClick = {  },
-//                    title = "Adaptive Permission",
-//                    icon = Icons.Outlined.PermIdentity,
-//                )
+            ScreenCategory.entries.forEach { category ->
+                val screens = screensByCategory[category] ?: return@forEach
+
+                item(key = category.name) {
+                    SectionHeader(title = category.title)
+                }
+
+                items(
+                    items = screens,
+                    key = { it.name },
+                ) { screen ->
+                    FeatureListItem(
+                        onClick = { navigate(screen.name) },
+                        title = screen.title,
+                        description = screen.description,
+                        icon = screen.icon,
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }
 }
 
 @Composable
-fun ListItem(
+private fun SectionHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        fontWeight = FontWeight.SemiBold,
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+}
+
+@Composable
+private fun FeatureListItem(
     onClick: () -> Unit,
     title: String,
+    description: String,
     icon: ImageVector,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier
-            .padding(8.dp)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
             .fillMaxWidth()
-            .clip(CircleShape)
-            .background(
-                color = MaterialTheme.colorScheme.primary.copy(.2f)
-            )
-            .clickable {
-                onClick()
-            }
-            .padding(16.dp)
+            .clickable { onClick() },
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = title,
-            tint = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = title,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Icon(
-            Icons.AutoMirrored.Outlined.ArrowForwardIos,
-            contentDescription = "Navigate",
-            tint = MaterialTheme.colorScheme.onBackground
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp),
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                if (description.isNotEmpty()) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                Icons.AutoMirrored.Outlined.ArrowForwardIos,
+                contentDescription = "Navigate",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp),
+            )
+        }
     }
 }
