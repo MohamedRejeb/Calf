@@ -16,7 +16,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.utils.LocalBackdrop
 
 @ExperimentalCalfUiApi
 @Composable
@@ -32,12 +34,14 @@ actual fun AdaptiveScaffold(
     contentWindowInsets: WindowInsets,
     content: @Composable ((PaddingValues) -> Unit)
 ) {
+    val backdrop = LocalBackdrop.current ?: rememberLayerBackdrop()
     val iosTabBarPaddingState = remember { mutableStateOf(PaddingValues()) }
     val iosTopBarPaddingState = remember { mutableStateOf(PaddingValues()) }
 
     CompositionLocalProvider(
         LocalIosTabBarPadding provides iosTabBarPaddingState,
         LocalIosTopBarPadding provides iosTopBarPaddingState,
+        LocalBackdrop provides backdrop
     ) {
         Scaffold(
             modifier = modifier,
@@ -63,11 +67,9 @@ actual fun AdaptiveScaffold(
 
             val animatedTopPadding by animateDpAsState(
                 targetValue = maxOf(scaffoldPadding.calculateTopPadding(), iosTopPadding),
-//                animationSpec = tween(durationMillis = 150),
             )
             val animatedBottomPadding by animateDpAsState(
                 targetValue = maxOf(scaffoldPadding.calculateBottomPadding(), iosBottomPadding),
-//                animationSpec = tween(durationMillis = 150),
             )
 
             val mergedPadding = PaddingValues(

@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.ui.button
+package com.mohamedrejeb.calf.ui.utils
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
