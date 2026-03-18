@@ -32,8 +32,6 @@ import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
-import com.mohamedrejeb.calf.ui.button.AdaptiveOutlinedButton
-import com.mohamedrejeb.calf.ui.button.AdaptiveTextButton
 
 @Composable
 fun ButtonScreen(
@@ -75,46 +73,6 @@ fun ButtonScreen(
                     enabled = false,
                 ) {
                     Text("Disabled")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Outlined Button
-            SectionCard(title = "Outlined Button") {
-                AdaptiveOutlinedButton(
-                    onClick = {},
-                ) {
-                    Text("Outlined")
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                AdaptiveOutlinedButton(
-                    onClick = {},
-                    enabled = false,
-                ) {
-                    Text("Disabled Outlined")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Text Button
-            SectionCard(title = "Text Button") {
-                AdaptiveTextButton(
-                    onClick = {},
-                ) {
-                    Text("Text Button")
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                AdaptiveTextButton(
-                    onClick = {},
-                    enabled = false,
-                ) {
-                    Text("Disabled Text")
                 }
             }
 
@@ -183,7 +141,7 @@ fun ButtonScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                AdaptiveOutlinedButton(
+                AdaptiveButton(
                     onClick = {},
                 ) {
                     Icon(
