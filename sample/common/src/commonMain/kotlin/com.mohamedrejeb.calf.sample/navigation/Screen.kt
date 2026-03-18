@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.PunchClock
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.ToggleOn
 import androidx.compose.material.icons.outlined.ViewCompact
 import androidx.compose.material.icons.outlined.Warning
@@ -63,6 +64,12 @@ enum class Screen(
         title = "Adaptive Switch",
         description = "Toggle switches with native iOS UISwitch and Material3 Switch",
         icon = Icons.Outlined.ToggleOn,
+        category = ScreenCategory.UIComponents,
+    ),
+    Slider(
+        title = "Adaptive Slider",
+        description = "Sliders with Liquid Glass on iOS 26+ and Material3 Slider on other platforms",
+        icon = Icons.Outlined.Tune,
         category = ScreenCategory.UIComponents,
     ),
     Button(
