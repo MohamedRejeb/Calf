@@ -4,6 +4,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.SwitchColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 
 @Composable
 actual fun AdaptiveSwitch(
@@ -15,13 +16,25 @@ actual fun AdaptiveSwitch(
     colors: SwitchColors,
     interactionSource: MutableInteractionSource,
 ) {
-    CupertinoSwitch(
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        modifier = modifier,
-        thumbContent = thumbContent,
-        enabled = enabled,
-        colors = colors,
-        interactionSource = interactionSource,
-    )
+    if (isIOS26OrAbove()) {
+        LiquidGlassSwitch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = modifier,
+            thumbContent = thumbContent,
+            enabled = enabled,
+            colors = LiquidGlassSwitchDefaults.colors(),
+            interactionSource = interactionSource,
+        )
+    } else {
+        CupertinoSwitch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = modifier,
+            thumbContent = thumbContent,
+            enabled = enabled,
+            colors = colors,
+            interactionSource = interactionSource,
+        )
+    }
 }
