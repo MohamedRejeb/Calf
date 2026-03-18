@@ -19,6 +19,7 @@ import com.mohamedrejeb.calf.sample.screens.NavigationBarScreen
 import com.mohamedrejeb.calf.sample.screens.PermissionScreen
 import com.mohamedrejeb.calf.sample.screens.ProgressBarScreen
 import com.mohamedrejeb.calf.sample.screens.ScaffoldDemoScreen
+import com.mohamedrejeb.calf.sample.screens.SliderScreen
 import com.mohamedrejeb.calf.sample.screens.SwitchScreen
 import com.mohamedrejeb.calf.sample.screens.TimePickerScreen
 import com.mohamedrejeb.calf.sample.screens.ToolbarScreen
@@ -63,6 +64,13 @@ fun AppNavGraph(
         }
         composable(Screen.Switch.name) {
             SwitchScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.Slider.name) {
+            SliderScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }
