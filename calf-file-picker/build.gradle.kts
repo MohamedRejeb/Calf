@@ -7,8 +7,7 @@ kotlin {
     sourceSets.commonMain.dependencies {
         api(projects.calfIo)
 
-        implementation(compose.runtime)
-        implementation(compose.foundation)
+        implementation(libs.compose.foundation)
     }
 
     sourceSets.commonTest.dependencies {

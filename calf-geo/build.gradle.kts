@@ -4,8 +4,7 @@ plugins {
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        implementation(compose.runtime)
-        implementation(compose.foundation)
+        implementation(libs.compose.foundation)
     }
     sourceSets.androidMain.dependencies {
         implementation(libs.appcompat)

@@ -18,11 +18,9 @@ kotlin {
     }
 
     sourceSets.commonMain.dependencies {
-        api(compose.runtime)
-        api(compose.foundation)
-        api(compose.material)
-        api("org.jetbrains.compose.material3:material3:1.10.0-alpha05")
-        implementation(compose.materialIconsExtended)
+        api(libs.compose.foundation)
+        api(libs.compose.material3)
+        implementation(libs.compose.material.icons.extended)
 
         implementation(libs.kotlinx.datetime)
 
