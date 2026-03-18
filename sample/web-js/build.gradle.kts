@@ -18,8 +18,7 @@ kotlin {
     sourceSets.jsMain.dependencies {
         implementation(projects.sample.common)
 
-        implementation(compose.runtime)
-        implementation(compose.foundation)
-        implementation(compose.ui)
+        implementation(libs.compose.foundation)
+        implementation(libs.compose.ui)
     }
 }

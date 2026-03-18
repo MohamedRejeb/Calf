@@ -26,9 +26,8 @@ kotlin {
     iosSimulatorArm64()
 
     sourceSets.commonMain.dependencies {
-        implementation(compose.runtime)
-        implementation(compose.foundation)
-        implementation(compose.material)
+        implementation(libs.compose.foundation)
+        implementation(libs.compose.material3)
     }
     sourceSets.commonTest.dependencies {
         implementation(libs.kotlin.test)

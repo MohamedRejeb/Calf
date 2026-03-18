@@ -4,9 +4,8 @@ plugins {
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        implementation(compose.runtime)
-        implementation(compose.foundation)
-        implementation(compose.material)
+        implementation(libs.compose.foundation)
+        implementation(libs.compose.material3)
     }
 
     sourceSets.androidMain.dependencies {

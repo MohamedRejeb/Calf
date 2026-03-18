@@ -49,13 +49,15 @@ include(
     ":calf-permissions:microphone",
     ":calf-geo",
     ":calf-maps",
+    ":calf-camera-picker",
+    ":external:backdrop",
+    ":external:shapes",
     // Sample modules
     ":sample:android",
     ":sample:desktop",
     ":sample:web-js",
     ":sample:web-wasm",
     ":sample:common",
-    "calf-camera-picker",
 )
 
 // Rename projects to keep published artifact names unchanged
