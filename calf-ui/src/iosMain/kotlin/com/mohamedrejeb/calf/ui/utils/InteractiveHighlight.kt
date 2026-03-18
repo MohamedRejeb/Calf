@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.ui.button
+package com.mohamedrejeb.calf.ui.utils
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.util.fastCoerceIn
 import com.kyant.backdrop.RuntimeShader
+import com.kyant.backdrop.asComposeShader
 import com.kyant.backdrop.asSkikoRuntimeShader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -79,7 +80,7 @@ half4 main(float2 coord) {
                         )
                     }
                     drawRect(
-                        ShaderBrush(shader.asSkikoRuntimeShader().makeShader()),
+                        ShaderBrush(shader.asComposeShader()),
                         blendMode = BlendMode.Plus
                     )
                 } else {
