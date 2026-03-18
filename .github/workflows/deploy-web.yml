@@ -26,7 +26,7 @@ jobs:
         uses: nwtgck/actions-netlify@v2
         with:
           publish-dir: ./sample/web-wasm/build/dist/wasmJs/productionExecutable
-          production-branch: feat/netlify-release-deploy
+          production-deploy: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
