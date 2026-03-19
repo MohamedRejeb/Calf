@@ -32,8 +32,6 @@ actual fun AdaptiveButton(
                 tintColor = colors.containerColor,
                 contentColor = colors.contentColor,
                 disabledContentColor = colors.disabledContentColor,
-                fallbackContainerColor = colors.containerColor,
-                fallbackDisabledContainerColor = colors.disabledContainerColor,
             ),
             shape = LiquidGlassButtonDefaults.Shape,
             contentPadding = LiquidGlassButtonDefaults.ContentPadding,
