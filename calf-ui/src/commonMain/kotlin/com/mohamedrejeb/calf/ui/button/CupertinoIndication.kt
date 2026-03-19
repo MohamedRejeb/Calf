@@ -13,7 +13,14 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.invalidateDraw
+import kotlin.time.TimeSource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+/**
+ * Minimum duration (ms) the pressed alpha is held so that quick taps remain visible.
+ */
+private const val MinPressedDurationMillis = 100L
 
 internal val DefaultCupertinoIndication = CupertinoIndication()
 
@@ -52,6 +59,7 @@ private class CupertinoIndicationNode(
     private var alpha = 1f
     private val animatable = Animatable(1f)
     private val layerPaint = Paint()
+    private var lastPressMark = TimeSource.Monotonic.markNow()
 
     override fun onAttach() {
         coroutineScope.launch {
@@ -60,6 +68,7 @@ private class CupertinoIndicationNode(
                 when (interaction) {
                     is PressInteraction.Press -> {
                         activePress.add(interaction)
+                        lastPressMark = TimeSource.Monotonic.markNow()
                         launch {
                             animatable.snapTo(pressedAlpha)
                             alpha = pressedAlpha
@@ -70,6 +79,12 @@ private class CupertinoIndicationNode(
                         activePress.remove(interaction.press)
                         if (activePress.isEmpty()) {
                             launch {
+                                // Ensure pressed state is visible for at least MinPressedDurationMillis
+                                val elapsed = lastPressMark.elapsedNow().inWholeMilliseconds
+                                val remaining = MinPressedDurationMillis - elapsed
+                                if (remaining > 0) {
+                                    delay(remaining)
+                                }
                                 animatable.animateTo(1f, tween(250)) {
                                     alpha = value
                                     invalidateDraw()
@@ -81,6 +96,11 @@ private class CupertinoIndicationNode(
                         activePress.remove(interaction.press)
                         if (activePress.isEmpty()) {
                             launch {
+                                val elapsed = lastPressMark.elapsedNow().inWholeMilliseconds
+                                val remaining = MinPressedDurationMillis - elapsed
+                                if (remaining > 0) {
+                                    delay(remaining)
+                                }
                                 animatable.animateTo(1f, tween(250)) {
                                     alpha = value
                                     invalidateDraw()
