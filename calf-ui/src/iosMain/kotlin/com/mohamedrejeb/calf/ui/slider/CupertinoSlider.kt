@@ -13,6 +13,8 @@ import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.hoverable
@@ -484,20 +486,59 @@ private fun CupertinoSliderImpl(
         enabled,
     )
 
-    val drag = Modifier.draggable(
-        orientation = Orientation.Horizontal,
-        reverseDirection = isRtl,
-        enabled = enabled,
-        interactionSource = interactionSource,
-        onDragStopped = { _ -> gestureEndAction.value.invoke() },
-        startDragImmediately = draggableState.isDragging,
-        state = draggableState,
-    )
+    val drag = Modifier.pointerInput(enabled, isRtl) {
+        if (!enabled) return@pointerInput
+        var dragInteraction: DragInteraction.Start? = null
+        detectHorizontalDragGestures(
+            onDragStart = {
+                val interaction = DragInteraction.Start()
+                dragInteraction = interaction
+                interactionSource.tryEmit(interaction)
+            },
+            onDragEnd = {
+                dragInteraction?.let {
+                    interactionSource.tryEmit(DragInteraction.Stop(it))
+                }
+                dragInteraction = null
+                gestureEndAction.value.invoke()
+            },
+            onDragCancel = {
+                dragInteraction?.let {
+                    interactionSource.tryEmit(DragInteraction.Cancel(it))
+                }
+                dragInteraction = null
+                gestureEndAction.value.invoke()
+            },
+            onHorizontalDrag = { change, _ ->
+                val halfThumb = thumbWidth.value / 2f
+                val trackWidthPx = (totalWidth.value.toFloat() - thumbWidth.value).coerceAtLeast(1f)
+                val positionOnTrack = change.position.x - halfThumb
+                val fraction = (positionOnTrack / trackWidthPx).coerceIn(0f, 1f)
+                val adjustedFraction = if (isRtl) 1f - fraction else fraction
+
+                val snappedFraction = if (tickFractions.isNotEmpty()) {
+                    tickFractions.minByOrNull { abs(it - adjustedFraction) } ?: adjustedFraction
+                } else {
+                    adjustedFraction
+                }
+
+                val newValue = lerp(valueRange.start, valueRange.endInclusive, snappedFraction)
+                onValueChangeState.value.invoke(newValue.coerceIn(valueRange.start, valueRange.endInclusive))
+
+                // Update rawOffset for tap animation compatibility
+                val maxPx = max(totalWidth.value - thumbWidth.value / 2, 0f)
+                val minPx = min(thumbWidth.value / 2, maxPx)
+                rawOffset.value.value = scale(valueRange.start, valueRange.endInclusive, newValue, minPx, maxPx)
+
+                change.consume()
+            }
+        )
+    }
 
     Layout(
         {
             Box(modifier = Modifier.layoutId(CupertinoSliderComponents.THUMB)) {
-                Box(drag) { thumb(sliderPositions) }
+                thumb(sliderPositions)
             }
             Box(modifier = Modifier.layoutId(CupertinoSliderComponents.TRACK)) {
                 track(sliderPositions)
@@ -517,7 +558,8 @@ private fun CupertinoSliderImpl(
                 steps = steps,
             )
             .focusable(enabled, interactionSource)
-            .then(press),
+            .then(press)
+            .then(drag),
     ) { measurables, constraints ->
         val thumbPlaceable = measurables.first {
             it.layoutId == CupertinoSliderComponents.THUMB
