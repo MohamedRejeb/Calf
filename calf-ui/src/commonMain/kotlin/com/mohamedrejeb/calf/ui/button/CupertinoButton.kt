@@ -1,12 +1,8 @@
 package com.mohamedrejeb.calf.ui.button
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Indication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,11 +13,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -60,21 +54,8 @@ fun CupertinoButton(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     content: @Composable RowScope.() -> Unit,
 ) {
-    val isPressed by interactionSource.collectIsPressedAsState()
-
     val containerColor = if (enabled) colors.containerColor else colors.disabledContainerColor
     val contentColor = if (enabled) colors.contentColor else colors.disabledContentColor
-
-    val targetAlpha = when {
-        !enabled -> CupertinoButtonDefaults.DisabledAlpha
-        isPressed -> CupertinoButtonDefaults.PressedAlpha
-        else -> 1f
-    }
-
-    val alpha by animateFloatAsState(
-        targetValue = targetAlpha,
-        animationSpec = tween(durationMillis = if (isPressed) 10 else 250),
-    )
 
     ProvideTextStyle(
         value = TextStyle(
@@ -85,16 +66,15 @@ fun CupertinoButton(
         CompositionLocalProvider(LocalContentColor provides contentColor) {
             Row(
                 modifier = modifier
-                    .alpha(alpha)
                     .semantics { role = Role.Button }
                     .clip(shape)
-                    .background(color = containerColor, shape = shape)
                     .clickable(
                         interactionSource = interactionSource,
-                        indication = null,
+                        indication = DefaultCupertinoIndication,
                         enabled = enabled,
                         onClick = onClick,
                     )
+                    .background(color = containerColor, shape = shape)
                     .defaultMinSize(
                         minWidth = CupertinoButtonDefaults.MinWidth,
                         minHeight = CupertinoButtonDefaults.MinHeight,
