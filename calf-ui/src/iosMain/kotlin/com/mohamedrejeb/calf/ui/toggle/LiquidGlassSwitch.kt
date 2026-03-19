@@ -1,12 +1,10 @@
 package com.mohamedrejeb.calf.ui.toggle
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -19,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
@@ -28,8 +27,12 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
@@ -74,21 +77,20 @@ fun LiquidGlassSwitch(
 ) {
     val backdrop = LocalBackdrop.current ?: rememberLayerBackdrop()
 
-    val isLightTheme = !isSystemInDarkTheme()
-    val accentColor =
-        if (isLightTheme) Color(0xFF34C759)
-        else Color(0xFF30D158)
-    val trackColor =
-        if (isLightTheme) Color(0xFF787878).copy(0.2f)
-        else Color(0xFF787880).copy(0.36f)
+    val accentColor = colors.trackColor(enabled = true, checked = true)
+    val trackColor = colors.trackColor(enabled = true, checked = false)
 
     val density = LocalDensity.current
-    val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
-    val dragWidth = with(density) { 20f.dp.toPx() }
+    val dragWidth = with(density) { LiquidGlassSwitchDefaults.DragWidth.toPx() }
     val animationScope = rememberCoroutineScope()
     var didDrag by remember { mutableStateOf(false) }
     val fraction = remember { mutableFloatStateOf(if (checked) 1f else 0f) }
     val currentChecked by rememberUpdatedState(checked)
+    val currentOnCheckedChange by rememberUpdatedState(onCheckedChange)
+    val currentEnabled by rememberUpdatedState(enabled)
+    val currentIsLtr by rememberUpdatedState(
+        LocalLayoutDirection.current == LayoutDirection.Ltr
+    )
     val dampedDragAnimation = remember(animationScope) {
         DampedDragAnimation(
             animationScope = animationScope,
@@ -99,24 +101,25 @@ fun LiquidGlassSwitch(
             pressedScale = 1.5f,
             onDragStarted = {},
             onDragStopped = {
+                if (!currentEnabled) return@DampedDragAnimation
                 if (didDrag) {
                     fraction.value = if (targetValue >= 0.5f) 1f else 0f
-                    onCheckedChange?.invoke(fraction.value == 1f)
+                    currentOnCheckedChange?.invoke(fraction.value == 1f)
                     didDrag = false
                 } else {
                     fraction.value = if (currentChecked) 0f else 1f
-                    onCheckedChange?.invoke(fraction.value == 1f)
+                    currentOnCheckedChange?.invoke(fraction.value == 1f)
                 }
             },
             onDrag = { change, dragAmount ->
-                if (!enabled) return@DampedDragAnimation
+                if (!currentEnabled) return@DampedDragAnimation
                 if (!didDrag) {
                     didDrag = dragAmount.x != 0f
                 }
                 val delta = dragAmount.x / dragWidth
                 change.consume()
                 fraction.value =
-                    if (isLtr) (fraction.value + delta).fastCoerceIn(0f, 1f)
+                    if (currentIsLtr) (fraction.value + delta).fastCoerceIn(0f, 1f)
                     else (fraction.value - delta).fastCoerceIn(0f, 1f)
             }
         )
@@ -137,9 +140,12 @@ fun LiquidGlassSwitch(
 
     val trackBackdrop = rememberLayerBackdrop()
 
+    val disabledAlpha = if (enabled) 1f else LiquidGlassSwitchDefaults.DisabledAlpha
+
     Box(
         contentAlignment = Alignment.CenterStart,
         modifier = modifier
+            .alpha(disabledAlpha)
     ) {
         Box(
             Modifier
@@ -149,20 +155,25 @@ fun LiquidGlassSwitch(
                     val fraction = dampedDragAnimation.value
                     drawRect(lerp(trackColor, accentColor, fraction))
                 }
-                .size(64f.dp, 28f.dp)
+                .size(LiquidGlassSwitchDefaults.TrackWidth, LiquidGlassSwitchDefaults.TrackHeight)
         )
 
         Box(
             Modifier
                 .graphicsLayer {
                     val fraction = dampedDragAnimation.value
-                    val padding = 2f.dp.toPx()
+                    val padding = LiquidGlassSwitchDefaults.TrackPadding.toPx()
                     translationX =
-                        if (isLtr) lerp(padding, padding + dragWidth, fraction)
+                        if (currentIsLtr) lerp(padding, padding + dragWidth, fraction)
                         else lerp(-padding, -(padding + dragWidth), fraction)
                 }
                 .semantics {
                     role = Role.Switch
+                    toggleableState = ToggleableState(checked)
+                    stateDescription = if (checked) "On" else "Off"
+                    if (!enabled) {
+                        disabled()
+                    }
                 }
                 .then(dampedDragAnimation.modifier)
                 .drawBackdrop(
@@ -220,7 +231,7 @@ fun LiquidGlassSwitch(
                         drawRect(Color.White.copy(alpha = 1f - progress))
                     }
                 )
-                .size(40f.dp, 24f.dp)
+                .size(LiquidGlassSwitchDefaults.ThumbWidth, LiquidGlassSwitchDefaults.ThumbHeight)
         )
     }
 }
@@ -228,8 +239,7 @@ fun LiquidGlassSwitch(
 /**
  * Colors for [LiquidGlassSwitch].
  */
-@Immutable
-class LiquidGlassSwitchColors internal constructor(
+data class LiquidGlassSwitchColors(
     val checkedTrackColor: Color,
     val uncheckedTrackColor: Color,
     val checkedThumbColor: Color,
@@ -242,41 +252,7 @@ class LiquidGlassSwitchColors internal constructor(
     val disabledUncheckedTrackColor: Color,
     val disabledCheckedThumbColor: Color,
     val disabledUncheckedThumbColor: Color,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is LiquidGlassSwitchColors) return false
-        if (checkedTrackColor != other.checkedTrackColor) return false
-        if (uncheckedTrackColor != other.uncheckedTrackColor) return false
-        if (checkedThumbColor != other.checkedThumbColor) return false
-        if (uncheckedThumbColor != other.uncheckedThumbColor) return false
-        if (checkedTrackBorderColor != other.checkedTrackBorderColor) return false
-        if (uncheckedTrackBorderColor != other.uncheckedTrackBorderColor) return false
-        if (checkedThumbBorderColor != other.checkedThumbBorderColor) return false
-        if (uncheckedThumbBorderColor != other.uncheckedThumbBorderColor) return false
-        if (disabledCheckedTrackColor != other.disabledCheckedTrackColor) return false
-        if (disabledUncheckedTrackColor != other.disabledUncheckedTrackColor) return false
-        if (disabledCheckedThumbColor != other.disabledCheckedThumbColor) return false
-        if (disabledUncheckedThumbColor != other.disabledUncheckedThumbColor) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = checkedTrackColor.hashCode()
-        result = 31 * result + uncheckedTrackColor.hashCode()
-        result = 31 * result + checkedThumbColor.hashCode()
-        result = 31 * result + uncheckedThumbColor.hashCode()
-        result = 31 * result + checkedTrackBorderColor.hashCode()
-        result = 31 * result + uncheckedTrackBorderColor.hashCode()
-        result = 31 * result + checkedThumbBorderColor.hashCode()
-        result = 31 * result + uncheckedThumbBorderColor.hashCode()
-        result = 31 * result + disabledCheckedTrackColor.hashCode()
-        result = 31 * result + disabledUncheckedTrackColor.hashCode()
-        result = 31 * result + disabledCheckedThumbColor.hashCode()
-        result = 31 * result + disabledUncheckedThumbColor.hashCode()
-        return result
-    }
-}
+)
 
 @Stable
 internal fun LiquidGlassSwitchColors.trackColor(enabled: Boolean, checked: Boolean): Color =
