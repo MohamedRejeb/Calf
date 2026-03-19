@@ -18,6 +18,7 @@ actual fun AdaptiveButton(
     enabled: Boolean,
     shape: Shape,
     colors: ButtonColors,
+    liquidGlassColors: LiquidGlassButtonColors?,
     contentPadding: PaddingValues,
     interactionSource: MutableInteractionSource,
     content: @Composable RowScope.() -> Unit,
@@ -27,12 +28,10 @@ actual fun AdaptiveButton(
             onClick = onClick,
             modifier = modifier,
             enabled = enabled,
-            colors = LiquidGlassButtonDefaults.filledButtonColors(
+            colors = liquidGlassColors ?: LiquidGlassButtonDefaults.filledButtonColors(
                 tintColor = colors.containerColor,
                 contentColor = colors.contentColor,
                 disabledContentColor = colors.disabledContentColor,
-                fallbackContainerColor = colors.containerColor,
-                fallbackDisabledContainerColor = colors.disabledContainerColor,
             ),
             shape = LiquidGlassButtonDefaults.Shape,
             contentPadding = LiquidGlassButtonDefaults.ContentPadding,

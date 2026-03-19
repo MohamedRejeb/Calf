@@ -28,10 +28,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.sample.isLiquidGlassAvailable
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
+import com.mohamedrejeb.calf.ui.button.LiquidGlassButtonColors
 
 @Composable
 fun ButtonScreen(
@@ -60,19 +63,56 @@ fun ButtonScreen(
             SectionCard(title = "Filled Button") {
                 var clickCount by remember { mutableIntStateOf(0) }
 
-                AdaptiveButton(
-                    onClick = { clickCount++ },
-                ) {
-                    Text("Clicked $clickCount times")
+                Row {
+                    AdaptiveButton(
+                        onClick = { clickCount++ },
+                    ) {
+                        Text("Clicked $clickCount times")
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    AdaptiveButton(
+                        onClick = {},
+                        enabled = false,
+                    ) {
+                        Text("Disabled")
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                if (isLiquidGlassAvailable) {
+                    val onSurface = MaterialTheme.colorScheme.onSurface
 
-                AdaptiveButton(
-                    onClick = {},
-                    enabled = false,
-                ) {
-                    Text("Disabled")
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row {
+                        AdaptiveButton(
+                            onClick = {},
+                            liquidGlassColors = LiquidGlassButtonColors(
+                                tintColor = Color.Unspecified,
+                                surfaceColor = Color.Unspecified,
+                                contentColor = onSurface,
+                                disabledContentColor = onSurface.copy(alpha = 0.4f),
+                            ),
+                        ) {
+                            Text("Filled Glass")
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        AdaptiveButton(
+                            onClick = {},
+                            enabled = false,
+                            liquidGlassColors = LiquidGlassButtonColors(
+                                tintColor = Color.Unspecified,
+                                surfaceColor = Color.Unspecified,
+                                contentColor = onSurface,
+                                disabledContentColor = onSurface.copy(alpha = 0.4f),
+                            ),
+                        ) {
+                            Text("Filled Disabled")
+                        }
+                    }
                 }
             }
 
@@ -127,30 +167,32 @@ fun ButtonScreen(
 
             // Buttons with icons
             SectionCard(title = "Buttons with Icons") {
-                AdaptiveButton(
-                    onClick = {},
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Create New")
-                }
+                Row {
+                    AdaptiveButton(
+                        onClick = {},
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Create New")
+                    }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                AdaptiveButton(
-                    onClick = {},
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Share,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Share")
+
+                    AdaptiveButton(
+                        onClick = {},
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Share,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Share")
+                    }
                 }
             }
 

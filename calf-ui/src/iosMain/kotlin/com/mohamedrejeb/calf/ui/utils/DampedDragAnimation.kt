@@ -104,6 +104,9 @@ class DampedDragAnimation(
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(initialScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(initialScale, scaleYAnimationSpec) }
+            if (velocity != 0f) {
+                launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
+            }
         }
     }
 

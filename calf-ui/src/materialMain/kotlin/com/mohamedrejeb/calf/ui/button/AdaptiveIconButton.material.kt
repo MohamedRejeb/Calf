@@ -14,6 +14,7 @@ actual fun AdaptiveIconButton(
     modifier: Modifier,
     enabled: Boolean,
     colors: IconButtonColors,
+    liquidGlassColors: LiquidGlassButtonColors?,
     interactionSource: MutableInteractionSource,
     content: @Composable () -> Unit,
 ) {

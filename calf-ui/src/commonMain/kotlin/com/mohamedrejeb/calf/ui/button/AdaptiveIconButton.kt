@@ -13,6 +13,7 @@ expect fun AdaptiveIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     colors: IconButtonColors = IconButtonDefaults.iconButtonColors(),
+    liquidGlassColors: LiquidGlassButtonColors? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     content: @Composable () -> Unit,
 )

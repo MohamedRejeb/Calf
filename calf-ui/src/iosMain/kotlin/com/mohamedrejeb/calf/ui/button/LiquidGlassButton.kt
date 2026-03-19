@@ -13,7 +13,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -85,27 +84,32 @@ fun LiquidGlassButton(
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
             Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+                content = content,
                 modifier = modifier
                     .drawBackdrop(
                         backdrop = backdrop,
                         shape = { shape },
                         effects = {
                             vibrancy()
-                            blur(2f.dp.toPx())
-                            lens(12f.dp.toPx(), 24f.dp.toPx())
+                            blur(2.dp.toPx())
+                            lens(12.dp.toPx(), 24.dp.toPx())
                         },
                         layerBlock = if (enabled) {
                             {
                                 val progress = interactiveHighlight.pressProgress
-                                val scale = lerp(1f, 1f + 4f.dp.toPx() / size.height, progress)
+                                val scale = lerp(1f, 1f + 4.dp.toPx() / size.height, progress)
 
                                 val maxOffset = size.minDimension
                                 val initialDerivative = 0.05f
                                 val offset = interactiveHighlight.offset
-                                translationX = maxOffset * tanh(initialDerivative * offset.x / maxOffset)
-                                translationY = maxOffset * tanh(initialDerivative * offset.y / maxOffset)
+                                translationX =
+                                    maxOffset * tanh(initialDerivative * offset.x / maxOffset)
+                                translationY =
+                                    maxOffset * tanh(initialDerivative * offset.y / maxOffset)
 
-                                val maxDragScale = 4f.dp.toPx() / size.height
+                                val maxDragScale = 4.dp.toPx() / size.height
                                 val offsetAngle = atan2(offset.y, offset.x)
                                 scaleX =
                                     scale +
@@ -122,19 +126,26 @@ fun LiquidGlassButton(
                             }
                         },
                         onDrawSurface = {
-                            val tint = colors.tintColor
-                            if (tint.isSpecified) {
-                                drawRect(tint, blendMode = BlendMode.Hue)
-                                drawRect(tint.copy(alpha = 0.75f))
-                            }
-                            val surface = colors.surfaceColor
-                            if (surface.isSpecified) {
-                                drawRect(surface)
+                            if (enabled) {
+                                val tint = colors.tintColor
+                                if (tint.isSpecified) {
+                                    drawRect(tint, blendMode = BlendMode.Hue)
+                                    drawRect(tint.copy(alpha = 0.75f))
+                                }
+                                val surface = colors.surfaceColor
+                                if (surface.isSpecified) {
+                                    drawRect(surface)
+                                }
                             }
                         },
                     )
                     .then(
-                        if (enabled) interactiveHighlight.gestureModifier else Modifier
+                        if (enabled)
+                            Modifier
+                                .then(interactiveHighlight.modifier)
+                                .then(interactiveHighlight.gestureModifier)
+                        else
+                            Modifier
                     )
                     .clickable(
                         interactionSource = interactionSource,
@@ -144,70 +155,12 @@ fun LiquidGlassButton(
                         onClick = onClick,
                     )
                     .height(LiquidGlassButtonDefaults.Height)
-                    .padding(contentPadding),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
-                content = content,
+                    .padding(contentPadding)
             )
         }
     }
 }
 
-/**
- * Color configuration for [LiquidGlassButton].
- *
- * When a Backdrop is available, [tintColor] and [surfaceColor] are used with the
- * backdrop's `onDrawSurface` to render the glass tint (via `BlendMode.Hue`) and surface overlay.
- *
- * When no Backdrop is available, [fallbackContainerColor] is used as a translucent background.
- */
-@Immutable
-class LiquidGlassButtonColors(
-    val tintColor: Color,
-    val surfaceColor: Color,
-    val contentColor: Color,
-    val disabledContentColor: Color,
-    val fallbackContainerColor: Color,
-    val fallbackDisabledContainerColor: Color,
-) {
-    fun copy(
-        tintColor: Color = this.tintColor,
-        surfaceColor: Color = this.surfaceColor,
-        contentColor: Color = this.contentColor,
-        disabledContentColor: Color = this.disabledContentColor,
-        fallbackContainerColor: Color = this.fallbackContainerColor,
-        fallbackDisabledContainerColor: Color = this.fallbackDisabledContainerColor,
-    ): LiquidGlassButtonColors = LiquidGlassButtonColors(
-        tintColor = tintColor,
-        surfaceColor = surfaceColor,
-        contentColor = contentColor,
-        disabledContentColor = disabledContentColor,
-        fallbackContainerColor = fallbackContainerColor,
-        fallbackDisabledContainerColor = fallbackDisabledContainerColor,
-    )
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is LiquidGlassButtonColors) return false
-        if (tintColor != other.tintColor) return false
-        if (surfaceColor != other.surfaceColor) return false
-        if (contentColor != other.contentColor) return false
-        if (disabledContentColor != other.disabledContentColor) return false
-        if (fallbackContainerColor != other.fallbackContainerColor) return false
-        if (fallbackDisabledContainerColor != other.fallbackDisabledContainerColor) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = tintColor.hashCode()
-        result = 31 * result + surfaceColor.hashCode()
-        result = 31 * result + contentColor.hashCode()
-        result = 31 * result + disabledContentColor.hashCode()
-        result = 31 * result + fallbackContainerColor.hashCode()
-        result = 31 * result + fallbackDisabledContainerColor.hashCode()
-        return result
-    }
-}
 
 /**
  * Defaults for [LiquidGlassButton].
@@ -246,12 +199,6 @@ object LiquidGlassButtonDefaults {
     /** Opacity when disabled */
     const val DisabledAlpha = 0.4f
 
-    /** Glass-like translucent white for fallback */
-    private val GlassWhite = Color(0x40FFFFFF)
-
-    /** Disabled glass fallback */
-    private val GlassDisabled = Color(0x20808080)
-
     /**
      * Filled liquid glass button colors.
      *
@@ -263,15 +210,11 @@ object LiquidGlassButtonDefaults {
         surfaceColor: Color = Color.Unspecified,
         contentColor: Color = Color.White,
         disabledContentColor: Color = Color.White.copy(alpha = 0.4f),
-        fallbackContainerColor: Color = GlassWhite,
-        fallbackDisabledContainerColor: Color = GlassDisabled,
     ): LiquidGlassButtonColors = LiquidGlassButtonColors(
         tintColor = tintColor,
         surfaceColor = surfaceColor,
         contentColor = contentColor,
         disabledContentColor = disabledContentColor,
-        fallbackContainerColor = fallbackContainerColor,
-        fallbackDisabledContainerColor = fallbackDisabledContainerColor,
     )
 
     /**
@@ -285,15 +228,11 @@ object LiquidGlassButtonDefaults {
         surfaceColor: Color = Color.Unspecified,
         contentColor: Color = Color(0xFF007AFF),
         disabledContentColor: Color = Color(0xFF007AFF).copy(alpha = 0.4f),
-        fallbackContainerColor: Color = Color(0x18FFFFFF),
-        fallbackDisabledContainerColor: Color = GlassDisabled,
     ): LiquidGlassButtonColors = LiquidGlassButtonColors(
         tintColor = tintColor,
         surfaceColor = surfaceColor,
         contentColor = contentColor,
         disabledContentColor = disabledContentColor,
-        fallbackContainerColor = fallbackContainerColor,
-        fallbackDisabledContainerColor = fallbackDisabledContainerColor,
     )
 
     /**
@@ -305,14 +244,10 @@ object LiquidGlassButtonDefaults {
         surfaceColor: Color = Color.Unspecified,
         contentColor: Color = Color(0xFF007AFF),
         disabledContentColor: Color = Color(0xFF007AFF).copy(alpha = 0.4f),
-        fallbackContainerColor: Color = Color.Transparent,
-        fallbackDisabledContainerColor: Color = Color.Transparent,
     ): LiquidGlassButtonColors = LiquidGlassButtonColors(
         tintColor = tintColor,
         surfaceColor = surfaceColor,
         contentColor = contentColor,
         disabledContentColor = disabledContentColor,
-        fallbackContainerColor = fallbackContainerColor,
-        fallbackDisabledContainerColor = fallbackDisabledContainerColor,
     )
 }
