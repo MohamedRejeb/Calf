@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.ui.button
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -32,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.ProvideTextStyle
 
 /**
@@ -112,42 +112,12 @@ fun CupertinoButton(
  * Color configuration for [CupertinoButton].
  */
 @Immutable
-class CupertinoButtonColors(
+data class CupertinoButtonColors(
     val containerColor: Color,
     val contentColor: Color,
     val disabledContainerColor: Color,
     val disabledContentColor: Color,
-) {
-    fun copy(
-        containerColor: Color = this.containerColor,
-        contentColor: Color = this.contentColor,
-        disabledContainerColor: Color = this.disabledContainerColor,
-        disabledContentColor: Color = this.disabledContentColor,
-    ): CupertinoButtonColors = CupertinoButtonColors(
-        containerColor = containerColor,
-        contentColor = contentColor,
-        disabledContainerColor = disabledContainerColor,
-        disabledContentColor = disabledContentColor,
-    )
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is CupertinoButtonColors) return false
-        if (containerColor != other.containerColor) return false
-        if (contentColor != other.contentColor) return false
-        if (disabledContainerColor != other.disabledContainerColor) return false
-        if (disabledContentColor != other.disabledContentColor) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = containerColor.hashCode()
-        result = 31 * result + contentColor.hashCode()
-        result = 31 * result + disabledContainerColor.hashCode()
-        result = 31 * result + disabledContentColor.hashCode()
-        return result
-    }
-}
+)
 
 /**
  * Defaults for [CupertinoButton].
