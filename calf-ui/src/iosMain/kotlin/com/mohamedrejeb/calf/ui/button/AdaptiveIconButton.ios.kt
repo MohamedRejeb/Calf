@@ -18,6 +18,7 @@ actual fun AdaptiveIconButton(
     modifier: Modifier,
     enabled: Boolean,
     colors: IconButtonColors,
+    liquidGlassColors: LiquidGlassButtonColors?,
     interactionSource: MutableInteractionSource,
     content: @Composable () -> Unit,
 ) {
@@ -26,7 +27,10 @@ actual fun AdaptiveIconButton(
             onClick = onClick,
             modifier = modifier.size(LiquidGlassButtonDefaults.IconSize),
             enabled = enabled,
-            colors = LiquidGlassButtonDefaults.plainButtonColors(),
+            colors = liquidGlassColors ?: LiquidGlassButtonDefaults.plainButtonColors(
+                contentColor = colors.contentColor,
+                disabledContentColor = colors.disabledContentColor,
+            ),
             shape = LiquidGlassButtonDefaults.Shape,
             contentPadding = PaddingValues(),
             interactionSource = interactionSource,

@@ -18,6 +18,7 @@ actual fun AdaptiveButton(
     enabled: Boolean,
     shape: Shape,
     colors: ButtonColors,
+    liquidGlassColors: LiquidGlassButtonColors?,
     contentPadding: PaddingValues,
     interactionSource: MutableInteractionSource,
     content: @Composable RowScope.() -> Unit,
