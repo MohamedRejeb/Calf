@@ -140,11 +140,11 @@ private fun FeatureListItem(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
+        onClick = onClick,
         shape = MaterialTheme.shapes.medium,
         modifier = modifier
             .padding(horizontal = 12.dp, vertical = 4.dp)
             .fillMaxWidth()
-            .clickable { onClick() },
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
