@@ -1,5 +1,7 @@
 package com.mohamedrejeb.calf.ui.navigation
 
+import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
+import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 
 /**
@@ -23,7 +25,11 @@ data class UIKitUIBarButtonItem(
     val selected: Boolean = false,
     val width: Double? = null,
     val onClick: () -> Unit = {},
+    val menuItems: List<AdaptiveDropDownItem> = emptyList(),
+    val menuSections: List<AdaptiveDropDownSection> = emptyList(),
 ) {
+    internal val hasMenu: Boolean
+        get() = menuItems.isNotEmpty() || menuSections.isNotEmpty()
     companion object {
 
         /** Creates a bar button item with a title. Matches UIBarButtonItem(title:style:target:action:). */
@@ -68,6 +74,23 @@ data class UIKitUIBarButtonItem(
         fun fixedSpace(width: Double = 16.0) = UIKitUIBarButtonItem(
             systemItem = UIKitUIBarButtonSystemItem.FixedSpace,
             width = width,
+        )
+
+        /** Creates a bar button item with a native dropdown menu (iOS 14+). */
+        fun withMenu(
+            title: String? = null,
+            image: UIKitImage? = null,
+            systemItem: UIKitUIBarButtonSystemItem? = null,
+            menuItems: List<AdaptiveDropDownItem> = emptyList(),
+            menuSections: List<AdaptiveDropDownSection> = emptyList(),
+            enabled: Boolean = true,
+        ) = UIKitUIBarButtonItem(
+            title = title,
+            image = image,
+            systemItem = systemItem,
+            enabled = enabled,
+            menuItems = menuItems,
+            menuSections = menuSections,
         )
     }
 }

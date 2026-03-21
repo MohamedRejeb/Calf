@@ -56,9 +56,9 @@ internal class ToolbarManager {
     fun update(items: List<UIKitUIBarButtonItem>) {
         if (items == currentItems) return
 
-        // Create action handlers for each item
+        // Create action handlers for each item (onClick is ignored when a menu is present)
         actionHandlers = items.map { item ->
-            BarButtonActionHandler(item.onClick)
+            BarButtonActionHandler(if (item.hasMenu) ({}) else item.onClick)
         }
 
         // Convert to UIBarButtonItems — no automatic spacing added
