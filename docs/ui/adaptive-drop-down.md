@@ -112,3 +112,9 @@ AdaptiveDropDown(
     },
 )
 ```
+
+## Using Drop Down with Top Bar
+
+You can use `AdaptiveDropDownItem` with `UIKitUIBarButtonItem.withMenu()` to attach a native iOS pull-down menu directly to a navigation bar button. This provides the best native experience for top bar menus on iOS.
+
+See [Top Bar — Bar Button Item with Menu](adaptive-top-bar.md#bar-button-item-with-menu) for full usage details.

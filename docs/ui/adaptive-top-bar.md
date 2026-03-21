@@ -99,3 +99,72 @@ UIKitUIBarButtonItem.flexibleSpace()
 // Fixed-width space
 UIKitUIBarButtonItem.fixedSpace(width = 16.0)
 ```
+
+### Bar Button Item with Menu
+
+You can attach a native drop-down menu to a bar button item on iOS using `UIKitUIBarButtonItem.withMenu()`.
+This uses the native `UIBarButtonItem.menu` API (iOS 14+), providing smooth system animations anchored to the bar button — no overlay hacks needed.
+
+On Material platforms, use a standard `DropdownMenu` inside the `actions` slot.
+
+| Material | Cupertino | Liquid Glass |
+|----------|-----------|--------------|
+| ![AdaptiveTopBarDropdown Material](../images/gif/AdaptiveTopBarDropdown-material.gif) | ![AdaptiveTopBarDropdown iOS](../images/gif/AdaptiveTopBarDropdown-ios.gif) | ![AdaptiveTopBarDropdown Liquid Glass](../images/gif/AdaptiveTopBarDropdown-ios-liquid-glass.gif) |
+
+```kotlin
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
+@Composable
+fun MyScreen() {
+    var expanded by remember { mutableStateOf(false) }
+
+    AdaptiveTopBar(
+        title = { Text("My Screen") },
+        actions = {
+            // Material platforms: standard DropdownMenu
+            Box {
+                IconButton(onClick = { expanded = true }) {
+                    Icon(Icons.Filled.MoreVert, contentDescription = "More")
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        onClick = { expanded = false },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        onClick = { expanded = false },
+                    )
+                }
+            }
+        },
+        // iOS: native pull-down menu on the bar button
+        iosTitle = "My Screen",
+        iosTrailingItems = listOf(
+            UIKitUIBarButtonItem.withMenu(
+                image = UIKitImage.SystemName("ellipsis.circle"),
+                menuItems = listOf(
+                    AdaptiveDropDownItem(
+                        title = "Edit",
+                        iosIcon = UIKitImage.SystemName("pencil"),
+                        onClick = { /* handle */ },
+                    ),
+                    AdaptiveDropDownItem(
+                        title = "Delete",
+                        iosIcon = UIKitImage.SystemName("trash"),
+                        isDestructive = true,
+                        onClick = { /* handle */ },
+                    ),
+                ),
+            ),
+        ),
+    )
+}
+```
+
+!!! note
+    When a menu is provided, the `onClick` of the bar button item is ignored — the menu is shown as the primary action.
+
+See also: [Drop Down](adaptive-drop-down.md) for more details on `AdaptiveDropDownItem` and sections.

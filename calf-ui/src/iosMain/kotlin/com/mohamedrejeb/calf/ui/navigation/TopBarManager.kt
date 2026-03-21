@@ -2,13 +2,21 @@
 
 package com.mohamedrejeb.calf.ui.navigation
 
+import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
+import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
 import com.mohamedrejeb.calf.ui.utils.toUIImage
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
+import platform.UIKit.UIAction
 import platform.UIKit.UIBarButtonItem
 import platform.UIKit.UIBarButtonItemStyle
 import platform.UIKit.UIBarButtonSystemItem
+import platform.UIKit.UIMenu
+import platform.UIKit.UIMenuElement
+import platform.UIKit.UIMenuElementAttributesDestructive
+import platform.UIKit.UIMenuElementAttributesDisabled
+import platform.UIKit.UIMenuOptionsDisplayInline
 import platform.UIKit.UINavigationBar
 import platform.UIKit.UINavigationBarAppearance
 import platform.UIKit.UINavigationBarDelegateProtocol
@@ -56,17 +64,17 @@ internal class TopBarManager(
         if (needsItemUpdate) {
             val navItem = UINavigationItem(title = title)
 
-            // Create leading (left) bar button items
+            // Create leading (left) bar button items (onClick is ignored when a menu is present)
             leadingActionHandlers = leadingItems.map { item ->
-                BarButtonActionHandler(item.onClick)
+                BarButtonActionHandler(if (item.hasMenu) ({}) else item.onClick)
             }
             navItem.leftBarButtonItems = leadingItems.mapIndexed { index, item ->
                 item.toUIBarButtonItem(leadingActionHandlers[index])
             }
 
-            // Create trailing (right) bar button items
+            // Create trailing (right) bar button items (onClick is ignored when a menu is present)
             trailingActionHandlers = trailingItems.map { item ->
-                BarButtonActionHandler(item.onClick)
+                BarButtonActionHandler(if (item.hasMenu) ({}) else item.onClick)
             }
             navItem.rightBarButtonItems = trailingItems.mapIndexed { index, item ->
                 item.toUIBarButtonItem(trailingActionHandlers[index])
@@ -135,15 +143,20 @@ internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
         }
     }
 
+    // When a menu is provided, ignore onClick — the menu handles interaction
+    val target = if (hasMenu) null else actionHandler
+    val action = if (hasMenu) null else selector
+
     // If systemItem is specified, use system item constructor
     if (systemItem != null) {
         return UIBarButtonItem(
             barButtonSystemItem = systemItem.toUIBarButtonSystemItem(),
-            target = actionHandler,
-            action = selector,
+            target = target,
+            action = action,
         ).also {
             it.enabled = enabled
             it.selected = selected
+            if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections)
         }
     }
 
@@ -153,11 +166,12 @@ internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
         return UIBarButtonItem(
             image = uiImage,
             style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
-            target = actionHandler,
-            action = selector,
+            target = target,
+            action = action,
         ).also {
             it.enabled = enabled
             it.selected = selected
+            if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections)
         }
     }
 
@@ -165,12 +179,49 @@ internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
     return UIBarButtonItem(
         title = title ?: "",
         style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
-        target = actionHandler,
-        action = selector,
+        target = target,
+        action = action,
     ).also {
         it.enabled = enabled
         it.selected = selected
+        if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections)
     }
+}
+
+private fun buildUIMenu(
+    items: List<AdaptiveDropDownItem>,
+    sections: List<AdaptiveDropDownSection>,
+): UIMenu {
+    val allActions: List<UIMenuElement> = items.map { it.toUIAction() }
+    val sectionMenus: List<UIMenuElement> = sections.map { section ->
+        UIMenu.menuWithTitle(
+            title = section.title,
+            image = null,
+            identifier = null,
+            options = UIMenuOptionsDisplayInline,
+            children = section.items.map { it.toUIAction() },
+        )
+    }
+    return UIMenu.menuWithTitle(
+        title = "",
+        children = allActions + sectionMenus,
+    )
+}
+
+private fun AdaptiveDropDownItem.toUIAction(): UIAction {
+    val image = iosIcon?.toUIImage()
+    val action = UIAction.actionWithTitle(
+        title = title,
+        image = image,
+        identifier = null,
+    ) { _ ->
+        onClick()
+    }
+    var attributes: ULong = 0u
+    if (isDestructive) attributes = attributes or UIMenuElementAttributesDestructive
+    if (isDisabled) attributes = attributes or UIMenuElementAttributesDisabled
+    action.attributes = attributes
+    return action
 }
 
 internal fun UIKitUIBarButtonSystemItem.toUIBarButtonSystemItem(): UIBarButtonSystemItem =

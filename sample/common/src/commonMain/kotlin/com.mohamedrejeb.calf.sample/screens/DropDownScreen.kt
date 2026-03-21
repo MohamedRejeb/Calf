@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,6 +32,8 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDown
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
+import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
+import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 
 @OptIn(ExperimentalCalfUiApi::class)
 @Composable
@@ -39,9 +42,57 @@ fun DropDownScreen(
 ) {
     var selectedAction by remember { mutableStateOf("Tap a button to open a drop-down") }
 
+    var topBarMenuExpanded by remember { mutableStateOf(false) }
+
+    val topBarMenuItems = listOf(
+        AdaptiveDropDownItem(
+            title = "Edit",
+            iosIcon = UIKitImage.SystemName("pencil"),
+            onClick = { selectedAction = "Editing!" },
+        ),
+        AdaptiveDropDownItem(
+            title = "Duplicate",
+            iosIcon = UIKitImage.SystemName("doc.on.doc"),
+            onClick = { selectedAction = "Duplicated!" },
+        ),
+        AdaptiveDropDownItem(
+            title = "Delete",
+            iosIcon = UIKitImage.SystemName("trash"),
+            isDestructive = true,
+            onClick = { selectedAction = "Deleted!" },
+        ),
+    )
+
     SampleScreenScaffold(
         title = "Adaptive Drop Down",
         navigateBack = navigateBack,
+        actions = {
+            Box {
+                AdaptiveIconButton(onClick = { topBarMenuExpanded = true }) {
+                    Icon(Icons.Filled.MoreVert, contentDescription = "More options")
+                }
+                DropdownMenu(
+                    expanded = topBarMenuExpanded,
+                    onDismissRequest = { topBarMenuExpanded = false },
+                ) {
+                    topBarMenuItems.forEach { item ->
+                        DropdownMenuItem(
+                            text = { Text(item.title) },
+                            onClick = {
+                                topBarMenuExpanded = false
+                                item.onClick()
+                            },
+                        )
+                    }
+                }
+            }
+        },
+        iosTrailingItems = listOf(
+            UIKitUIBarButtonItem.withMenu(
+                image = UIKitImage.SystemName("ellipsis.circle"),
+                menuItems = topBarMenuItems,
+            ),
+        ),
     ) { padding ->
         Column(
             modifier = Modifier
