@@ -1,4 +1,4 @@
-# AdaptiveNavigationBar
+# Navigation Bar
 
 `AdaptiveNavigationBar` is an adaptive navigation bar that uses UIKit's `UITabBar` on iOS and Material3's `NavigationBar` on other platforms (Android, Desktop, Web).
 

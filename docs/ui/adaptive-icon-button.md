@@ -1,4 +1,4 @@
-# AdaptiveIconButton
+# Icon Button
 
 `AdaptiveIconButton` is an icon button composable that adapts to the platform it is running on. On Android, Desktop, and Web, it uses the Material `IconButton`. On iOS < 26, it uses a Cupertino-style icon button, and on iOS 26+, it uses a Liquid Glass icon button.
 

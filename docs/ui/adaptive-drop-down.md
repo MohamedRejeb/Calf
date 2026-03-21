@@ -1,4 +1,4 @@
-# AdaptiveDropDown
+# Drop Down
 
 `AdaptiveDropDown` is an adaptive drop-down menu that uses a native pull-down menu via `UIButton.menu` on iOS and Material3's `DropdownMenu` on other platforms (Android, Desktop, Web).
 

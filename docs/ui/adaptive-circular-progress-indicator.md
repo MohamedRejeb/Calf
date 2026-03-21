@@ -1,4 +1,4 @@
-# AdaptiveCircularProgressIndicator
+# Circular Progress Indicator
 
 `AdaptiveCircularProgressIndicator` is a circular progress indicator that adapts to the platform it is running on. It is a wrapper around `CircularProgressIndicator` on Android, and it implements similar look to `UIActivityIndicatorView` on iOS.
 

@@ -1,4 +1,4 @@
-# AdaptiveToolbar
+# Toolbar
 
 `AdaptiveToolbar` is an adaptive toolbar that uses a native `UIToolbar` with Liquid Glass on iOS 26+ and a Material 3 Expressive `HorizontalFloatingToolbar` on other platforms (Android, Desktop, Web, and older iOS).
 

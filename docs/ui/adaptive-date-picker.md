@@ -1,4 +1,4 @@
-# AdaptiveDatePicker
+# Date Picker
 
 `AdaptiveDatePicker` is a date picker that adapts to the platform it is running on. It is a wrapper around `DatePicker` on Android and `UIDatePicker` on iOS, providing a native date selection experience on each platform.
 

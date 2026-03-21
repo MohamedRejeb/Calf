@@ -1,4 +1,4 @@
-# AdaptiveBottomSheet
+# Bottom Sheet
 
 `AdaptiveBottomSheet` is a bottom sheet that adapts to the platform it is running on. It is a wrapper around `ModalBottomSheet` on Android and `UIModalPresentationPopover` on iOS, providing a native bottom sheet experience on each platform.
 

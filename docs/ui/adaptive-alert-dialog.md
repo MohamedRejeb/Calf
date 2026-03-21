@@ -1,4 +1,4 @@
-# AdaptiveAlertDialog
+# Alert Dialog
 
 Calf provides two different alert dialog composables that adapt to the platform they're running on:
 

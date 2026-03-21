@@ -1,4 +1,4 @@
-# AdaptiveSwitch
+# Switch
 
 `AdaptiveSwitch` is a switch/toggle composable that adapts to the platform it is running on. On Android, Desktop, and Web, it uses the Material `Switch`. On iOS < 26, it uses a Cupertino-style switch, and on iOS 26+, it uses a Liquid Glass switch.
 
