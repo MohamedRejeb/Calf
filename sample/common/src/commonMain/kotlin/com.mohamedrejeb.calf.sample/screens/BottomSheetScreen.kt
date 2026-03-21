@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
+import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -65,7 +65,7 @@ fun BottomSheetScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
+            AdaptiveButton(
                 onClick = { openBottomSheet = true },
             ) {
                 Text("Show Bottom Sheet")
@@ -87,7 +87,7 @@ fun BottomSheetScreen(
                     item {
                         Text("Bottom Sheet")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(
+                        AdaptiveButton(
                             onClick = {
                                 scope.launch { sheetState.hide() }.invokeOnCompletion {
                                     if (!sheetState.isVisible) {
@@ -115,7 +115,7 @@ fun BottomSheetScreen(
                     }
 
                     item {
-                        Button(
+                        AdaptiveButton(
                             onClick = {
                                 showDialog = true
                             },

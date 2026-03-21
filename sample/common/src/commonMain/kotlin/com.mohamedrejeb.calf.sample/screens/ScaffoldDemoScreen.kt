@@ -24,7 +24,7 @@ import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
@@ -67,7 +67,7 @@ fun ScaffoldDemoScreen(
             AdaptiveTopBar(
                 title = { Text(tabs[selectedIndex]) },
                 navigationIcon = {
-                    IconButton(onClick = navigateBack) {
+                    AdaptiveIconButton(onClick = navigateBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",

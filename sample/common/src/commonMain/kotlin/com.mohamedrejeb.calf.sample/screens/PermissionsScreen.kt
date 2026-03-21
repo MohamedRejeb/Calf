@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -137,7 +137,7 @@ private fun MultiplePermissionsItem(permissions: List<Permission>) {
         text = "Revoked permissions: ${multiplePermissionsState.revokedPermissions.joinToString { it.permission.name }}",
     )
 
-    Button(
+    AdaptiveButton(
         onClick = {
             multiplePermissionsState.launchMultiplePermissionRequest()
         },
@@ -174,7 +174,7 @@ private fun PermissionItem(permission: Permission) {
         }
     }
 
-    Button(
+    AdaptiveButton(
         onClick = {
             permissionState.launchPermissionRequest()
         },
@@ -189,7 +189,7 @@ private fun PermissionItem(permission: Permission) {
     Spacer(modifier = Modifier.height(16.dp))
 
     if (permission.name == Permission.Notification.name) {
-        Button(
+        AdaptiveButton(
             onClick = {
                 permissionState.openAppSettings()
             },

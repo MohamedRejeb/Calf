@@ -15,7 +15,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -93,7 +93,7 @@ fun DropDownScreen(
                         )
                     }
                     Box {
-                        IconButton(onClick = { simpleExpanded = true }) {
+                        AdaptiveIconButton(onClick = { simpleExpanded = true }) {
                             Icon(Icons.Filled.MoreVert, contentDescription = "More options")
                         }
 
@@ -164,7 +164,7 @@ fun DropDownScreen(
                         )
                     }
                     Box {
-                        IconButton(onClick = { sectionedExpanded = true }) {
+                        AdaptiveIconButton(onClick = { sectionedExpanded = true }) {
                             Icon(Icons.Filled.MoreVert, contentDescription = "More options")
                         }
 
