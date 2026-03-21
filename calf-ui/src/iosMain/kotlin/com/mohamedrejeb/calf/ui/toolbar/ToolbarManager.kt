@@ -10,7 +10,6 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIToolbar
 import platform.UIKit.UIView
 import platform.UIKit.NSLayoutConstraint
-import platform.UIKit.translatesAutoresizingMaskIntoConstraints
 
 /**
  * A helper class that manages a native iOS UIToolbar, handling item setup and layout.

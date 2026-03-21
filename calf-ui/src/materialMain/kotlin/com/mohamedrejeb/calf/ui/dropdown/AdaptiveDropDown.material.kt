@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.ui.dropdown
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.runtime.Composable
@@ -15,7 +16,7 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 
 @ExperimentalCalfUiApi
 @Composable
-actual fun AdaptiveDropDown(
+actual fun BoxScope.AdaptiveDropDown(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     iosItems: List<AdaptiveDropDownItem>,
