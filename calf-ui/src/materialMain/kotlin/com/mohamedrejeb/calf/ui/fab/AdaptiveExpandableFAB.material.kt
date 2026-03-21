@@ -32,7 +32,7 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
  */
 @ExperimentalCalfUiApi
 @Composable
-actual fun AdaptiveExpandableFAB(
+internal actual fun AdaptiveExpandableFAB(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     mainIcon: ImageVector,

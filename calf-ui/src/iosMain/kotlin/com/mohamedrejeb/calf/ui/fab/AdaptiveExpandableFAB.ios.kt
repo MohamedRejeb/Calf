@@ -40,7 +40,7 @@ import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 @OptIn(ExperimentalComposeUiApi::class)
 @ExperimentalCalfUiApi
 @Composable
-actual fun AdaptiveExpandableFAB(
+internal actual fun AdaptiveExpandableFAB(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     mainIcon: ImageVector,

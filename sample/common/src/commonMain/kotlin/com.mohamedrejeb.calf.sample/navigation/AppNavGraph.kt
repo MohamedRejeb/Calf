@@ -9,12 +9,12 @@ import com.mohamedrejeb.calf.sample.screens.BottomSheetScreen
 import com.mohamedrejeb.calf.sample.screens.ButtonScreen
 import com.mohamedrejeb.calf.sample.screens.CameraPickerScreen
 import com.mohamedrejeb.calf.sample.screens.DropDownScreen
-import com.mohamedrejeb.calf.sample.screens.ExpandableFABScreen
+//import com.mohamedrejeb.calf.sample.screens.ExpandableFABScreen
 import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
 import com.mohamedrejeb.calf.sample.screens.FilePickerScreen
 import com.mohamedrejeb.calf.sample.screens.HomeScreen
 import com.mohamedrejeb.calf.sample.screens.ImagePickerScreen
-import com.mohamedrejeb.calf.sample.screens.MapScreen
+//import com.mohamedrejeb.calf.sample.screens.MapScreen
 import com.mohamedrejeb.calf.sample.screens.NavigationBarScreen
 import com.mohamedrejeb.calf.sample.screens.PermissionScreen
 import com.mohamedrejeb.calf.sample.screens.ProgressBarScreen
@@ -146,13 +146,13 @@ fun AppNavGraph(
                 }
             )
         }
-        composable(Screen.Map.name) {
-            MapScreen(
-                navigateBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
+//        composable(Screen.Map.name) {
+//            MapScreen(
+//                navigateBack = {
+//                    navController.popBackStack()
+//                }
+//            )
+//        }
         composable(Screen.NavigationBar.name) {
             NavigationBarScreen(
                 navigateBack = {
@@ -174,13 +174,13 @@ fun AppNavGraph(
                 }
             )
         }
-        composable(Screen.ExpandableFAB.name) {
-            ExpandableFABScreen(
-                navigateBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
+//        composable(Screen.ExpandableFAB.name) {
+//            ExpandableFABScreen(
+//                navigateBack = {
+//                    navController.popBackStack()
+//                }
+//            )
+//        }
         composable(Screen.Toolbar.name) {
             ToolbarScreen(
                 navigateBack = {

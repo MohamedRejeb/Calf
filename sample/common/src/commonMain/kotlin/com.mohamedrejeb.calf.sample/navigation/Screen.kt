@@ -132,12 +132,12 @@ enum class Screen(
         icon = Icons.Outlined.Security,
         category = ScreenCategory.PlatformAPIs,
     ),
-    Map(
-        title = "Adaptive Map",
-        description = "Map views with Apple Maps on iOS and Google Maps on Android",
-        icon = Icons.Outlined.Map,
-        category = ScreenCategory.PlatformAPIs,
-    ),
+//    Map(
+//        title = "Adaptive Map",
+//        description = "Map views with Apple Maps on iOS and Google Maps on Android",
+//        icon = Icons.Outlined.Map,
+//        category = ScreenCategory.PlatformAPIs,
+//    ),
     NavigationBar(
         title = "Adaptive Navigation Bar",
         description = "Bottom navigation with iOS UITabBar and Material3 NavigationBar",
@@ -156,12 +156,12 @@ enum class Screen(
         icon = Icons.Outlined.WebAsset,
         category = ScreenCategory.Navigation,
     ),
-    ExpandableFAB(
-        title = "Adaptive Expandable FAB",
-        description = "Expandable floating action button with Liquid Glass on iOS and Material3 animation",
-        icon = Icons.Outlined.Add,
-        category = ScreenCategory.UIComponents,
-    ),
+//    ExpandableFAB(
+//        title = "Adaptive Expandable FAB",
+//        description = "Expandable floating action button with Liquid Glass on iOS and Material3 animation",
+//        icon = Icons.Outlined.Add,
+//        category = ScreenCategory.UIComponents,
+//    ),
     Toolbar(
         title = "Adaptive Toolbar",
         description = "Floating toolbar with Liquid Glass on iOS and Material3 Expressive HorizontalFloatingToolbar",

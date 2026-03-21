@@ -52,10 +52,18 @@ nav:
     - 'Overview': ui.md
     - 'AdaptiveAlertDialog': ui/adaptive-alert-dialog.md
     - 'AdaptiveBottomSheet': ui/adaptive-bottom-sheet.md
+    - 'AdaptiveButton': ui/adaptive-button.md
     - 'AdaptiveCircularProgressIndicator': ui/adaptive-circular-progress-indicator.md
     - 'AdaptiveClickable': ui/adaptive-clickable.md
     - 'AdaptiveDatePicker': ui/adaptive-date-picker.md
+    - 'AdaptiveDropDown': ui/adaptive-drop-down.md
+    - 'AdaptiveIconButton': ui/adaptive-icon-button.md
+    - 'AdaptiveNavigationBar': ui/adaptive-navigation-bar.md
+    - 'AdaptiveSlider': ui/adaptive-slider.md
+    - 'AdaptiveSwitch': ui/adaptive-switch.md
     - 'AdaptiveTimePicker': ui/adaptive-time-picker.md
+    - 'AdaptiveToolbar': ui/adaptive-toolbar.md
+    - 'AdaptiveTopBar': ui/adaptive-top-bar.md
   - 'WebView': webview.md
   - 'File Picker': filepicker.md
   - 'Permissions': permissions.md
