@@ -5,6 +5,7 @@ package com.mohamedrejeb.calf.ui.dropdown
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,8 +33,10 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIAction
 import platform.UIKit.UIButton
-import platform.UIKit.UIButtonTypeSystem
+import platform.UIKit.UIButtonTypePlain
 import platform.UIKit.UIColor
+import platform.UIKit.UIControlStateNormal
+import platform.UIKit.UIDevice
 import platform.UIKit.UIEvent
 import platform.UIKit.UIGestureRecognizer
 import platform.UIKit.UIMenu
@@ -47,7 +50,7 @@ import platform.darwin.NSObject
 @OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
 @ExperimentalCalfUiApi
 @Composable
-actual fun AdaptiveDropDown(
+actual fun BoxScope.AdaptiveDropDown(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     iosItems: List<AdaptiveDropDownItem>,
@@ -78,14 +81,14 @@ actual fun AdaptiveDropDown(
 
     // Add the hidden UIButton to the ViewController's view hierarchy
     DisposableEffect(viewController) {
-        val button = UIButton.buttonWithType(UIButtonTypeSystem)
+        val button = UIButton.buttonWithType(UIButtonTypePlain)
         button.backgroundColor = UIColor.clearColor
-        button.setTitle("", forState = 0u)
+        button.setTitle("", forState = UIControlStateNormal)
         button.showsMenuAsPrimaryAction = true
-        button.alpha = 0.01 // Nearly invisible but still interactive
-        button.translatesAutoresizingMaskIntoConstraints = true
+//        button.alpha = 0.01
 
         viewController.view.addSubview(button)
+        viewController.view.insertSubview(button, atIndex = 0)
 
         menuDelegate.button = button
 
@@ -110,12 +113,17 @@ actual fun AdaptiveDropDown(
         val button = menuDelegate.button ?: return@LaunchedEffect
         if (expanded) {
             // Use the context menu interaction to programmatically present the menu
-            val gestureRecognizers = button.gestureRecognizers.orEmpty().filterIsInstance<UIGestureRecognizer>()
-            val gesture = gestureRecognizers.firstOrNull {
-                it.`class`()?.toString()
-                    ?.contains("UITouchDownGestureRecognizer", true) ?: false
+            if (isPerformPrimaryActionAvailable()) {
+                button.performPrimaryAction()
+            } else {
+                val gestureRecognizers =
+                    button.gestureRecognizers.orEmpty().filterIsInstance<UIGestureRecognizer>()
+                val gesture = gestureRecognizers.firstOrNull {
+                    it.`class`()?.toString()
+                        ?.contains("UITouchDownGestureRecognizer", true) ?: false
+                }
+                gesture?.touchesBegan(emptySet<Nothing>(), UIEvent())
             }
-            gesture?.touchesBegan(emptySet<Nothing>(), UIEvent())
             onDismissRequest()
         }
     }
@@ -123,6 +131,7 @@ actual fun AdaptiveDropDown(
     // Invisible compose box to track position
     Box(
         modifier = modifier
+            .matchParentSize()
             .onPlaced {
                 val position = it.positionInWindow()
                 posX = position.x.toDouble() / density.density
@@ -174,4 +183,11 @@ private fun AdaptiveDropDownItem.toUIAction(): UIAction {
     if (isDisabled) attributes = attributes or UIMenuElementAttributesDisabled
     action.attributes = attributes
     return action
+}
+
+private fun isPerformPrimaryActionAvailable(): Boolean {
+    val systemVersion = UIDevice.currentDevice.systemVersion
+    val major = systemVersion.split(".").firstOrNull()?.toIntOrNull() ?: 0
+    val minor = systemVersion.split(".").getOrNull(1)?.toIntOrNull() ?: 0
+    return major >= 17 && minor >= 4
 }
