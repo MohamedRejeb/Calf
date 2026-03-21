@@ -1,4 +1,4 @@
-# AdaptiveClickable
+# Clickable
 
 `.adaptiveClickable` is a clickable modifier that adapts to the platform it is running on. On Android, it behaves like the standard `.clickable` modifier with ripple indication, while on iOS, it replaces the indication with a scaling effect that matches iOS design patterns.
 

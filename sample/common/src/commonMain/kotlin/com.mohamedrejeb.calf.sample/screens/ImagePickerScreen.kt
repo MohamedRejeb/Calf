@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -85,7 +85,7 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
+            AdaptiveButton(
                 onClick = {
                     if (isMultiple) {
                         multiplePickerLauncher.launch()

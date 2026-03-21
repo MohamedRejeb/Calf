@@ -11,10 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,6 +68,10 @@ fun DropDownScreen(
             var simpleExpanded by remember { mutableStateOf(false) }
 
             Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
+                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
@@ -88,7 +93,7 @@ fun DropDownScreen(
                         )
                     }
                     Box {
-                        IconButton(onClick = { simpleExpanded = true }) {
+                        AdaptiveIconButton(onClick = { simpleExpanded = true }) {
                             Icon(Icons.Filled.MoreVert, contentDescription = "More options")
                         }
 
@@ -134,6 +139,10 @@ fun DropDownScreen(
             var sectionedExpanded by remember { mutableStateOf(false) }
 
             Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
+                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
@@ -155,7 +164,7 @@ fun DropDownScreen(
                         )
                     }
                     Box {
-                        IconButton(onClick = { sectionedExpanded = true }) {
+                        AdaptiveIconButton(onClick = { sectionedExpanded = true }) {
                             Icon(Icons.Filled.MoreVert, contentDescription = "More options")
                         }
 

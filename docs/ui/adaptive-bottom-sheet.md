@@ -1,10 +1,10 @@
-# AdaptiveBottomSheet
+# Bottom Sheet
 
 `AdaptiveBottomSheet` is a bottom sheet that adapts to the platform it is running on. It is a wrapper around `ModalBottomSheet` on Android and `UIModalPresentationPopover` on iOS, providing a native bottom sheet experience on each platform.
 
-| Material (Android, Desktop, Web)                                | Cupertino (iOS)                                         |
-|-----------------------------------------------------------------|---------------------------------------------------------|
-| ![Bottom Sheet Android](../images/AdaptiveBottomSheet-android.png) | ![Bottom Sheet iOS](../images/AdaptiveBottomSheet-ios.png) |
+| Material (Android, Desktop, Web)                                       | Cupertino (iOS < 26)                                                        | Liquid Glass (iOS 26+)                                                                        |
+|------------------------------------------------------------------------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| ![Bottom Sheet Android](../images/gif/AdaptiveBottomSheet-material.gif)     | ![Bottom Sheet iOS](../images/gif/AdaptiveBottomSheet-ios.gif)              | ![Bottom Sheet Liquid Glass](../images/gif/AdaptiveBottomSheet-ios-liquid-glass.gif)          |
 
 ## Usage
 

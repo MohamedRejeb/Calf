@@ -50,12 +50,20 @@ nav:
   - 'Installation': installation.md
   - 'Adaptive UI':
     - 'Overview': ui.md
-    - 'AdaptiveAlertDialog': ui/adaptive-alert-dialog.md
-    - 'AdaptiveBottomSheet': ui/adaptive-bottom-sheet.md
-    - 'AdaptiveCircularProgressIndicator': ui/adaptive-circular-progress-indicator.md
-    - 'AdaptiveClickable': ui/adaptive-clickable.md
-    - 'AdaptiveDatePicker': ui/adaptive-date-picker.md
-    - 'AdaptiveTimePicker': ui/adaptive-time-picker.md
+    - 'Alert Dialog': ui/adaptive-alert-dialog.md
+    - 'Bottom Sheet': ui/adaptive-bottom-sheet.md
+    - 'Button': ui/adaptive-button.md
+    - 'Circular Progress Indicator': ui/adaptive-circular-progress-indicator.md
+    - 'Clickable': ui/adaptive-clickable.md
+    - 'Date Picker': ui/adaptive-date-picker.md
+    - 'Drop Down': ui/adaptive-drop-down.md
+    - 'Icon Button': ui/adaptive-icon-button.md
+    - 'Navigation Bar': ui/adaptive-navigation-bar.md
+    - 'Slider': ui/adaptive-slider.md
+    - 'Switch': ui/adaptive-switch.md
+    - 'Time Picker': ui/adaptive-time-picker.md
+    - 'Toolbar': ui/adaptive-toolbar.md
+    - 'Top Bar': ui/adaptive-top-bar.md
   - 'WebView': webview.md
   - 'File Picker': filepicker.md
   - 'Permissions': permissions.md

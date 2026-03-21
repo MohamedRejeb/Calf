@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 import com.mohamedrejeb.calf.sample.currentPlatform
+import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveBasicAlertDialog
@@ -53,7 +54,7 @@ fun AlertDialogScreen(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Button(
+            AdaptiveButton(
                 onClick = { showSimpleDialog = true },
             ) {
                 Text("Show Alert Dialog")
@@ -68,7 +69,7 @@ fun AlertDialogScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(
+                AdaptiveButton(
                     onClick = { showComplexDialog = true },
                 ) {
                     Text("Show Complex Dialog")
@@ -82,7 +83,7 @@ fun AlertDialogScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(
+                AdaptiveButton(
                     onClick = { showActionSheetDialog = true },
                 ) {
                     Text("Show ActionSheet")

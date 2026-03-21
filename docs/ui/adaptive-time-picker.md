@@ -1,4 +1,4 @@
-# AdaptiveTimePicker
+# Time Picker
 
 `AdaptiveTimePicker` is a time picker that adapts to the platform it is running on. It is a wrapper around `TimePicker` on Android and `UIDatePicker` (in time mode) on iOS, providing a native time selection experience on each platform.
 

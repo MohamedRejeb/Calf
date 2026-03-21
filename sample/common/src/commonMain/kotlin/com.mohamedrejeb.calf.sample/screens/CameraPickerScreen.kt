@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ElevatedButton
+import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -72,7 +72,7 @@ fun CameraPickerScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            ElevatedButton(
+            AdaptiveButton(
                 onClick = {
                     if (cameraPermissionState.status.isGranted) {
                         cameraPickerLauncher.launch()

@@ -17,7 +17,7 @@ import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -169,16 +169,16 @@ fun ToolbarScreen(
                     .padding(bottom = 16.dp),
                 iosItems = iosItems,
                 content = {
-                    IconButton(onClick = { lastAction = "Back tapped" }) {
+                    AdaptiveIconButton(onClick = { lastAction = "Back tapped" }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                    IconButton(onClick = { lastAction = "Forward tapped" }) {
+                    AdaptiveIconButton(onClick = { lastAction = "Forward tapped" }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Forward")
                     }
-                    IconButton(onClick = { lastAction = "Share tapped" }) {
+                    AdaptiveIconButton(onClick = { lastAction = "Share tapped" }) {
                         Icon(Icons.Filled.Share, contentDescription = "Share")
                     }
-                    IconButton(onClick = { lastAction = "Bookmark tapped" }) {
+                    AdaptiveIconButton(onClick = { lastAction = "Bookmark tapped" }) {
                         Icon(Icons.Filled.BookmarkBorder, contentDescription = "Bookmark")
                     }
                 },

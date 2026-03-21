@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.currentPlatform
+import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.toolbar.AdaptiveToolbar
@@ -132,7 +133,7 @@ fun WebViewScreen(
         topBar = {
             TopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = { navigateBack() }) {
+                    AdaptiveIconButton(onClick = { navigateBack() }) {
                         Icon(Icons.Filled.ArrowBackIosNew, contentDescription = "Back")
                     }
                 },
@@ -192,28 +193,28 @@ fun WebViewScreen(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 16.dp),
                 content = {
-                    IconButton(
+                    AdaptiveIconButton(
                         onClick = { navigator.navigateBack() },
                         enabled = navigator.canGoBack,
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate Back")
                     }
-                    IconButton(
+                    AdaptiveIconButton(
                         onClick = { navigator.navigateForward() },
                         enabled = navigator.canGoForward,
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Navigate Forward")
                     }
-                    IconButton(onClick = { navigator.reload() }) {
+                    AdaptiveIconButton(onClick = { navigator.reload() }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Reload")
                     }
-                    IconButton(onClick = { navigator.stopLoading() }) {
+                    AdaptiveIconButton(onClick = { navigator.stopLoading() }) {
                         Icon(Icons.Filled.Close, contentDescription = "Stop Loading")
                     }
-                    IconButton(onClick = { navigator.loadUrl(INITIAL_URL) }) {
+                    AdaptiveIconButton(onClick = { navigator.loadUrl(INITIAL_URL) }) {
                         Icon(Icons.Filled.Language, contentDescription = "Load URL")
                     }
-                    IconButton(onClick = { navigator.loadHtml(DUMMY_HTML) }) {
+                    AdaptiveIconButton(onClick = { navigator.loadHtml(DUMMY_HTML) }) {
                         Icon(Icons.Filled.Code, contentDescription = "Load HTML")
                     }
                 },

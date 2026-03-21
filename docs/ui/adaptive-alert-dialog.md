@@ -1,4 +1,4 @@
-# AdaptiveAlertDialog
+# Alert Dialog
 
 Calf provides two different alert dialog composables that adapt to the platform they're running on:
 
@@ -7,9 +7,9 @@ Calf provides two different alert dialog composables that adapt to the platform 
 
 Both composables use native `UIAlertController` on iOS and Material dialogs on other platforms (Android, Desktop, Web).
 
-| Material (Android, Desktop, Web)                                | Cupertino (iOS)                                         |
-|-----------------------------------------------------------------|---------------------------------------------------------|
-| ![Alert Dialog Android](../images/AdaptiveAlertDialog-android.png) | ![Alert Dialog iOS](../images/AdaptiveAlertDialog-ios.png) |
+| Material (Android, Desktop, Web)                                       | Cupertino (iOS < 26)                                                   | Liquid Glass (iOS 26+)                                                                    |
+|------------------------------------------------------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| ![Alert Dialog Android](../images/AdaptiveAlertDialog-android.png)     | ![Alert Dialog iOS](../images/AdaptiveAlertDialog-ios.png)             | ![Alert Dialog Liquid Glass](../images/AdaptiveAlertDialog-ios-liquid-glass.png)          |
 
 ## AdaptiveAlertDialog
 
@@ -162,9 +162,9 @@ if (showActionSheetDialog) {
 }
 ```
 
-| iOS Action Sheet                                                      |
-|-----------------------------------------------------------------------|
-| ![iOS Action Sheet](../images/AdaptiveAlertDialog-ios-action-sheet.png) |
+| iOS Action Sheet (Cupertino, iOS < 26)                                          | iOS Action Sheet (Liquid Glass, iOS 26+)                                                                  |
+|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| ![iOS Action Sheet](../images/AdaptiveAlertDialog-ios-action-sheet.png)         | ![iOS Action Sheet Liquid Glass](../images/AdaptiveAlertDialog-ios-liquid-glass-action-sheet.png)         |
 
 ## Dialog with Text Fields (iOS)
 

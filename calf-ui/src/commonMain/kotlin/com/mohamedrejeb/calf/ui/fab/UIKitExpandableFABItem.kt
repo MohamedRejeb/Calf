@@ -11,7 +11,7 @@ import com.mohamedrejeb.calf.ui.uikit.UIKitImage
  * @param title The label for the FAB item.
  * @param image The image for the FAB item. See [UIKitImage] for supported types.
  */
-data class UIKitExpandableFABItem(
+internal data class UIKitExpandableFABItem(
     val title: String,
     val image: UIKitImage? = null,
 )
