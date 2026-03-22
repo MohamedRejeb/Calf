@@ -4,9 +4,9 @@
 
 This toolbar is intended for contextual action buttons (not navigation), similar to a web browser's bottom toolbar with back, forward, share, and bookmark buttons.
 
-| Material (Android, Desktop, Web)                                           | Cupertino (iOS < 26)                                                |
-|----------------------------------------------------------------------------|---------------------------------------------------------------------|
-| ![AdaptiveToolbar Material](../images/gif/AdaptiveToolbar-material.gif)    | ![AdaptiveToolbar iOS](../images/gif/AdaptiveToolbar-ios.gif)       |
+| Material (Android, Desktop, Web)                                           | Cupertino (iOS < 26)                                                | Cupertino (iOS 26+ Liquid Glass)                                                              |
+|----------------------------------------------------------------------------|---------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| ![AdaptiveToolbar Material](../images/gif/AdaptiveToolbar-material.gif)    | ![AdaptiveToolbar iOS](../images/gif/AdaptiveToolbar-ios.gif)       | ![AdaptiveToolbar iOS Liquid Glass](../images/gif/AdaptiveToolbar-ios-liquid-glass.gif)        |
 
 ## Usage
 
