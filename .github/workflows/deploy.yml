@@ -48,4 +48,4 @@ jobs:
       uses: gradle/actions/setup-gradle@v5
 
     - name: Publish to Maven Central
-      run: ./gradlew publishToMavenCentral --no-configuration-cache
+      run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
