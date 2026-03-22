@@ -11,7 +11,7 @@ documentfile = "1.1.0"
 jna = "5.18.1"
 coil = "3.4.0"
 
-calf = "0.9.0"
+calf = "0.10.0"
 
 android-minSdk = "23"
 android-compileSdk = "36"
