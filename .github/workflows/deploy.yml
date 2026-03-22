@@ -48,6 +48,11 @@ jobs:
     - name: Setup gradle
       uses: gradle/actions/setup-gradle@v5
 
-    - name: Gradle publish
-      run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+    - name: Drop open staging repositories
+      run: ./gradlew findSonatypeStagingRepository --info || true
 
+    - name: Publish to Sonatype staging repository
+      run: ./gradlew publishToSonatype --no-configuration-cache
+
+    - name: Close and release staging repository
+      run: ./gradlew closeAndReleaseSonatypeStagingRepository --no-configuration-cache
