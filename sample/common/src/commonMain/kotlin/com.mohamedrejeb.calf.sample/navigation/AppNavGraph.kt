@@ -14,6 +14,7 @@ import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
 import com.mohamedrejeb.calf.sample.screens.FilePickerScreen
 import com.mohamedrejeb.calf.sample.screens.HomeScreen
 import com.mohamedrejeb.calf.sample.screens.ImagePickerScreen
+import com.mohamedrejeb.calf.sample.screens.ShowcaseScreen
 //import com.mohamedrejeb.calf.sample.screens.MapScreen
 import com.mohamedrejeb.calf.sample.screens.NavigationBarScreen
 import com.mohamedrejeb.calf.sample.screens.PermissionScreen
@@ -39,6 +40,13 @@ fun AppNavGraph(
                 navigate = {
                     navController.navigate(it)
                 }
+            )
+        }
+        composable(Screen.Showcase.name) {
+            ShowcaseScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                },
             )
         }
         composable(Screen.Dialog.name) {
