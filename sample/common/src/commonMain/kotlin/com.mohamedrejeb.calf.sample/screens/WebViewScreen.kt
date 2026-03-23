@@ -19,6 +19,7 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.toolbar.AdaptiveToolbar
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import com.mohamedrejeb.calf.ui.web.LoadingState
 import com.mohamedrejeb.calf.ui.web.WebView
 import com.mohamedrejeb.calf.ui.web.rememberWebViewNavigator
 import com.mohamedrejeb.calf.ui.web.rememberWebViewState
@@ -180,12 +181,24 @@ fun WebViewScreen(
                 modifier = Modifier.fillMaxSize(),
             )
 
-            if (state.isLoading)
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                )
+            val loadingState = state.loadingState
+            if (loadingState is LoadingState.Loading) {
+                val progress = loadingState.progress
+                if (progress in 0.0f..1.0f) {
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter)
+                    )
+                } else {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter)
+                    )
+                }
+            }
 
             AdaptiveToolbar(
                 expanded = true,

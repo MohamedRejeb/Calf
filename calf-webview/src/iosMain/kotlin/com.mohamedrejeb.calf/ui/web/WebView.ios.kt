@@ -8,11 +8,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
+import com.mohamedrejeb.calf.ui.web.helper.NSKeyValueObservingProtocol
 import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCSignatureOverride
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import platform.Foundation.NSKeyValueObservingOptionNew
 import platform.Foundation.NSString
 import platform.Foundation.create
 import platform.Foundation.setValue
@@ -21,12 +24,10 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSMutableURLRequest
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.NSError
+import platform.Foundation.addObserver
+import platform.Foundation.removeObserver
 import platform.WebKit.*
 import platform.darwin.NSObject
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.isActive
 
 /**
  * A wrapper around WKWebView to provide a basic WebView composable for iOS.
@@ -62,17 +63,12 @@ actual fun WebView(
             navigator.handleNavigationEvents(wv)
         }
 
-        // Poll estimatedProgress for granular loading progress updates
-        LaunchedEffect(wv) {
-            snapshotFlow { state.isLoading }.distinctUntilChanged().collectLatest { isLoading ->
-                if (isLoading) {
-                    while (isActive && state.isLoading) {
-                        val progress = wv.estimatedProgress.toFloat()
-                        state.loadingState = LoadingState.Loading(progress)
-                        state.pageTitle = wv.title
-                        delay(100)
-                    }
-                }
+        // Observe WKWebView properties using KVO
+        DisposableEffect(wv) {
+            val observer = WKWebViewObserver(state)
+            observer.startObserving(wv)
+            onDispose {
+                observer.stopObserving(wv)
             }
         }
 
@@ -294,6 +290,87 @@ internal suspend fun WebViewNavigator.handleNavigationEvents(
                     }
                 }
                 webView.loadRequest(urlRequest)
+            }
+        }
+    }
+}
+
+/**
+ * KVO observer for WKWebView properties.
+ * Observes estimatedProgress, title, URL, canGoBack, and canGoForward.
+ */
+@OptIn(ExperimentalForeignApi::class)
+private class WKWebViewObserver(
+    private val state: WebViewState,
+) : NSObject(), NSKeyValueObservingProtocol {
+
+    private val observedKeyPaths = listOf(
+        "estimatedProgress",
+        "loading",
+        "title",
+        "URL",
+        "canGoBack",
+        "canGoForward",
+    )
+
+    fun startObserving(webView: WKWebView) {
+        observedKeyPaths.forEach { keyPath ->
+            webView.addObserver(
+                observer = this,
+                forKeyPath = keyPath,
+                options = NSKeyValueObservingOptionNew,
+                context = null,
+            )
+        }
+    }
+
+    fun stopObserving(webView: WKWebView) {
+        observedKeyPaths.forEach { keyPath ->
+            webView.removeObserver(
+                observer = this,
+                forKeyPath = keyPath,
+            )
+        }
+    }
+
+    override fun observeValueForKeyPath(
+        keyPath: String?,
+        ofObject: Any?,
+        change: Map<Any?, *>?,
+        context: COpaquePointer?,
+    ) {
+        val webView = ofObject as? WKWebView ?: return
+
+        when (keyPath) {
+            "estimatedProgress" -> {
+                val progress = webView.estimatedProgress.toFloat()
+                if (state.isLoading) {
+                    state.loadingState = LoadingState.Loading(progress)
+                }
+            }
+
+            "loading" -> {
+                if (webView.loading) {
+                    state.loadingState = LoadingState.Loading(webView.estimatedProgress.toFloat())
+                } else {
+                    state.loadingState = LoadingState.Finished
+                }
+            }
+
+            "title" -> {
+                state.pageTitle = webView.title
+            }
+
+            "URL" -> {
+                state.lastLoadedUrl = webView.URL?.absoluteString
+            }
+
+            "canGoBack" -> {
+                state.navigator?.canGoBack = webView.canGoBack
+            }
+
+            "canGoForward" -> {
+                state.navigator?.canGoForward = webView.canGoForward
             }
         }
     }

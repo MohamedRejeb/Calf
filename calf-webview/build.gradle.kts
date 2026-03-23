@@ -1,4 +1,5 @@
 import org.gradle.internal.os.OperatingSystem
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     id("compose.multiplatform")
@@ -17,6 +18,15 @@ val platform =
     } + if (isAarch64) "-aarch64" else ""
 
 kotlin {
+    targets.withType<KotlinNativeTarget>()
+        .matching { it.konanTarget.family.isAppleFamily }
+        .configureEach {
+            compilations.getByName("main") {
+                cinterops.create("nskeyvalueobserving") {
+                    definitionFile = file("src/iosMain/cinterop/nskeyvalueobserving.def")
+                }
+            }
+        }
     sourceSets.commonMain.dependencies {
         implementation(libs.compose.foundation)
         implementation(libs.compose.material3)
