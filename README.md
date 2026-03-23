@@ -72,7 +72,7 @@ Feel free to help out by sending a pull request :heart:.
 Support it by joining __[stargazers](https://github.com/MohamedRejeb/Calf/stargazers)__ for this repository. :star: <br>
 Also, __[follow me](https://github.com/MohamedRejeb)__ on GitHub for more libraries! 🤩
 
-You can always <a href="https://www.buymeacoffee.com/MohamedRejeb"><img src="docs/images/bmc-yellow-button.png"></a>
+You can always <a href="https://www.buymeacoffee.com/MohamedRejeb"><img style="display: block; height: 60px;" src="docs/images/bmc-yellow-button.png"></a>
 
 ## 🙏 Credits
 
