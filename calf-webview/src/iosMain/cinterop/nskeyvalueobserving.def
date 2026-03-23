@@ -1,0 +1,14 @@
+package = com.mohamedrejeb.calf.ui.web.helper
+language = Objective-C
+---
+#import <Foundation/Foundation.h>
+
+@protocol NSKeyValueObserving
+
+@required
+- (void)observeValueForKeyPath:(NSString *)keyPath
+    ofObject:(id)object
+    change:(NSDictionary<NSKeyValueChangeKey, id> *)change
+    context:(void *)context;
+
+@end;
