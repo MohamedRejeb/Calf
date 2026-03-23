@@ -5,10 +5,6 @@ on:
     types:
       [ published ]
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to deploy'
-        required: true
 
 jobs:
   build-and-deploy:
