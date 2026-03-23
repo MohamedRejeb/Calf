@@ -9,7 +9,7 @@ kotlin {
         implementation(libs.compose.ui)
         implementation(libs.compose.ui.graphics)
         implementation(projects.external.shapes)
-        implementation("org.jetbrains:annotations:26.0.2-1")
+        implementation("org.jetbrains:annotations:26.1.0")
     }
     sourceSets.all {
         languageSettings.enableLanguageFeature("ContextParameters")
