@@ -1,22 +1,21 @@
 package com.mohamedrejeb.calf.sample.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AdsClick
-import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.AttachFile
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Camera
+import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Navigation
 import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.PunchClock
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Security
-import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.ToggleOn
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.ViewCompact
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.outlined.Web
@@ -40,6 +39,12 @@ enum class Screen(
         title = "Home",
         description = "",
         icon = Icons.Outlined.ViewCompact,
+        category = ScreenCategory.UIComponents,
+    ),
+    Showcase(
+        title = "Component Showcase",
+        description = "All adaptive components in a single view",
+        icon = Icons.Outlined.AutoAwesome,
         category = ScreenCategory.UIComponents,
     ),
     Dialog(

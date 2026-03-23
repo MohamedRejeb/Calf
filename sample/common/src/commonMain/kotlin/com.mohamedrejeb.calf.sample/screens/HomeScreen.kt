@@ -1,7 +1,6 @@
 package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,7 +40,7 @@ fun HomeScreen(
     navigate: (String) -> Unit,
 ) {
     val screensByCategory = Screen.entries
-        .filter { it != Screen.Home }
+        .filter { it != Screen.Home && it != Screen.Showcase }
         .groupBy { it.category }
 
     Column(
@@ -86,6 +85,12 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
+            item(key = "showcase") {
+                ShowcaseBanner(
+                    onClick = { navigate(Screen.Showcase.name) },
+                )
+            }
+
             ScreenCategory.entries.forEach { category ->
                 val screens = screensByCategory[category] ?: return@forEach
 
@@ -126,6 +131,59 @@ private fun SectionHeader(
         modifier = modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
     )
+}
+
+@Composable
+private fun ShowcaseBanner(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large,
+        modifier = modifier
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            Icon(
+                imageVector = Screen.Showcase.icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(28.dp),
+            )
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = Screen.Showcase.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Text(
+                    text = Screen.Showcase.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                Icons.AutoMirrored.Outlined.ArrowForwardIos,
+                contentDescription = "Navigate",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+    }
 }
 
 @Composable
