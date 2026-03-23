@@ -74,6 +74,12 @@ Also, __[follow me](https://github.com/MohamedRejeb)__ on GitHub for more librar
 
 You can always <a href="https://www.buymeacoffee.com/MohamedRejeb"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=MohamedRejeb&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"></a>
 
+## 🙏 Credits
+
+Special thanks to:
+- [compose-cupertino](https://github.com/alexzhirkevich/compose-cupertino)
+- [AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass)
+
 # License
 ```
 Copyright 2023 Mohamed Rejeb
