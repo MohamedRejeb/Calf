@@ -39,14 +39,14 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
 
     val singlePickerLauncher =
         rememberFilePickerLauncher(
-            type = FilePickerFileType.Image,
+            type = FilePickerFileType.Image(),
             selectionMode = FilePickerSelectionMode.Single,
             onResult = { files = it },
         )
 
     val multiplePickerLauncher =
         rememberFilePickerLauncher(
-            type = FilePickerFileType.Image,
+            type = FilePickerFileType.Image(),
             selectionMode = FilePickerSelectionMode.Multiple,
             onResult = { files = it },
         )
