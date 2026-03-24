@@ -45,7 +45,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Setup gradle
-      uses: gradle/actions/setup-gradle@v5
+      uses: gradle/actions/setup-gradle@v6
 
     - name: Publish to Maven Central
       run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
