@@ -24,7 +24,7 @@ jobs:
         run: ./gradlew wasmJsBrowserDistribution
 
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v2
+        uses: nwtgck/actions-netlify@v3
         with:
           publish-dir: ./sample/web-wasm/build/dist/wasmJs/productionExecutable
           production-deploy: true
