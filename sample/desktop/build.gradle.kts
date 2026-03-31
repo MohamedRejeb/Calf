@@ -26,6 +26,12 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Calf"
             packageVersion = "1.0.0"
+
+            macOS {
+                jvmArgs(
+                    "-Dapple.awt.application.appearance=system",
+                )
+            }
         }
     }
 }
