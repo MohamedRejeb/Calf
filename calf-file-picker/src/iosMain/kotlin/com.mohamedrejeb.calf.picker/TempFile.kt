@@ -1,20 +1,26 @@
 package com.mohamedrejeb.calf.picker
 
-import platform.Foundation.NSData
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
+import platform.Foundation.NSFileManager
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.NSUUID
-import platform.Foundation.dataWithContentsOfURL
-import platform.Foundation.writeToURL
 
-internal fun NSURL.createTempFile(): NSURL? {
+@OptIn(ExperimentalForeignApi::class)
+internal suspend fun NSURL.createTempFile(): NSURL? = withContext(Dispatchers.IO) {
     val extension = absoluteString
         ?.substringAfterLast('/')
-        ?.substringAfterLast('.', "") ?: return null
-    val data = NSData.dataWithContentsOfURL(this)
-        ?: absoluteURL?.dataRepresentation()
-        ?: return null
-    return NSURL.fileURLWithPath("${NSTemporaryDirectory().removeSuffix("/")}/${NSUUID().UUIDString}.$extension").apply {
-        data.writeToURL(this, true)
-    }
+        ?.substringAfterLast('.', "") ?: return@withContext null
+    val tempUrl = NSURL.fileURLWithPath(
+        "${NSTemporaryDirectory().removeSuffix("/")}/${NSUUID().UUIDString}.$extension"
+    )
+    val success = NSFileManager.defaultManager.copyItemAtURL(
+        srcURL = this@createTempFile,
+        toURL = tempUrl,
+        error = null,
+    )
+    if (success) tempUrl else null
 }

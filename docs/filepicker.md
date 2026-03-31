@@ -61,6 +61,21 @@ val pickerLauncher = rememberFilePickerLauncher(
 )
 ```
 
+Or use `rememberFilePickerSettings` inside a `@Composable` to automatically recompose when settings change:
+
+```kotlin
+val settings = rememberFilePickerSettings(
+    title = dialogTitle,
+    initialDirectory = selectedDirectory,
+)
+
+val pickerLauncher = rememberFilePickerLauncher(
+    type = FilePickerFileType.Image,
+    settings = settings,
+    onResult = { files -> /* ... */ }
+)
+```
+
 Common properties available on all platforms:
 
 - `title` - Dialog window title
@@ -103,7 +118,26 @@ val type = FilePickerFileType.Extension(
 ## Selection Modes
 
 - `FilePickerSelectionMode.Single` - Pick a single file
-- `FilePickerSelectionMode.Multiple` - Pick multiple files
+- `FilePickerSelectionMode.Multiple` - Pick multiple files (unlimited)
+- `FilePickerSelectionMode.Multiple(maxItems = 5)` - Pick up to 5 files
+
+### Limiting Selection Count
+
+You can limit the number of files the user can select by passing `maxItems` to `Multiple`:
+
+```kotlin
+val pickerLauncher = rememberFilePickerLauncher(
+    type = FilePickerFileType.Image,
+    selectionMode = FilePickerSelectionMode.Multiple(maxItems = 5),
+    onResult = { files ->
+        // files.size will be at most 5
+    }
+)
+```
+
+On **Android** (visual media picker) and **iOS** (PHPicker), the limit is enforced natively by the picker UI — the user cannot select more than `maxItems` files. On all other platforms and picker types, the result list is truncated to `maxItems` after selection.
+
+Passing `null` (the default) allows unlimited selection. `FilePickerSelectionMode.Multiple` without parentheses is equivalent to `Multiple(maxItems = null)`.
 
 ## Desktop Setup
 

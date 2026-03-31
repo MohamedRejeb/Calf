@@ -25,10 +25,13 @@ import platform.PhotosUI.PHPickerFilter
 import platform.PhotosUI.PHPickerResult
 import platform.PhotosUI.PHPickerViewController
 import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
+import platform.UIKit.UIAdaptivePresentationControllerDelegateProtocol
 import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
+import platform.UIKit.UIPresentationController
 import platform.UIKit.UIViewController
+import platform.UIKit.presentationController
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeApplication
 import platform.UniformTypeIdentifiers.UTTypeAudio
@@ -38,6 +41,7 @@ import platform.UniformTypeIdentifiers.UTTypeImage
 import platform.UniformTypeIdentifiers.UTTypeText
 import platform.UniformTypeIdentifiers.UTTypeVideo
 import platform.darwin.NSObject
+import kotlin.concurrent.AtomicInt
 import kotlin.coroutines.resume
 import platform.UniformTypeIdentifiers.UTTypeMovie
 
@@ -95,22 +99,23 @@ private fun rememberDocumentPickerLauncher(
                     controller: UIDocumentPickerViewController,
                     didPickDocumentsAtURLs: List<*>,
                 ) {
-                    val maxItems = (selectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
-                    val dataList =
-                        didPickDocumentsAtURLs.mapNotNull {
-                            val nsUrl = it as? NSURL ?: return@mapNotNull null
-                            if (type == FilePickerFileType.Folder)
-                                KmpFile(nsUrl)
-                            else
-                                nsUrl.createTempFile()?.let { tempUrl ->
-                                    KmpFile(
-                                        url = nsUrl,
-                                        tempUrl = tempUrl
-                                    )
-                                }
-                        }.let { if (maxItems != null) it.take(maxItems) else it }
-
                     scope.launch(Dispatchers.Main) {
+                        val maxItems =
+                            (selectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
+                        val dataList =
+                            didPickDocumentsAtURLs.mapNotNull {
+                                val nsUrl = it as? NSURL ?: return@mapNotNull null
+                                if (type == FilePickerFileType.Folder)
+                                    KmpFile(nsUrl)
+                                else
+                                    nsUrl.createTempFile()?.let { tempUrl ->
+                                        KmpFile(
+                                            url = nsUrl,
+                                            tempUrl = tempUrl
+                                        )
+                                    }
+                            }.let { if (maxItems != null) it.take(maxItems) else it }
+
                         currentOnResult(dataList)
                     }
                 }
@@ -156,19 +161,27 @@ private fun rememberImageVideoPickerLauncher(
     val currentUIViewController = LocalUIViewController.current
     val currentOnResult by rememberUpdatedState(onResult)
 
+    // Guard against double-callback, PHPicker may fire didFinishPicking more than once
+    val hasFinished = remember { AtomicInt(0) }
+
     val pickerDelegate = remember {
         object : NSObject(), PHPickerViewControllerDelegateProtocol {
             override fun picker(
                 picker: PHPickerViewController,
                 didFinishPicking: List<*>,
             ) {
+                // Prevent processing results twice
+                if (hasFinished.compareAndSet(0, 1).not()) return
+
                 scope.launch {
                     val results = didFinishPicking
                         .mapNotNull {
                             val result = it as? PHPickerResult ?: return@mapNotNull null
 
                             async {
-                                result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend(type)
+                                result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend(
+                                    type
+                                )
                             }
                         }
                         .awaitAll()
@@ -184,17 +197,35 @@ private fun rememberImageVideoPickerLauncher(
         }
     }
 
+    // Catches swipe-to-dismiss as cancellation (iOS 13+ interactive dismiss)
+    val dismissDelegate = remember {
+        object : NSObject(), UIAdaptivePresentationControllerDelegateProtocol {
+            override fun presentationControllerDidDismiss(presentationController: UIPresentationController) {
+                if (hasFinished.compareAndSet(0, 1).not()) return
+                scope.launch(Dispatchers.Main) {
+                    currentOnResult(emptyList())
+                }
+            }
+        }
+    }
+
     return remember(currentUIViewController) {
         FilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
             onLaunch = {
+                // Reset guard for new launch
+                hasFinished.compareAndSet(1, 0)
+
                 val imagePicker =
                     createPHPickerViewController(
                         delegate = pickerDelegate,
                         type = type,
                         selectionMode = selectionMode,
                     )
+
+                // Attach dismiss delegate to detect swipe-to-dismiss
+                imagePicker.presentationController?.delegate = dismissDelegate
 
                 currentUIViewController.presentViewController(
                     imagePicker,
@@ -207,9 +238,9 @@ private fun rememberImageVideoPickerLauncher(
 }
 
 @OptIn(InternalCalfApi::class)
-private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(type: FilePickerFileType): KmpFile? =
-    suspendCancellableCoroutine { continuation ->
-        val identifier = when(type) {
+private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(type: FilePickerFileType): KmpFile? {
+    val url = suspendCancellableCoroutine { continuation ->
+        val identifier = when (type) {
             FilePickerFileType.Image -> UTTypeImage.identifier
             FilePickerFileType.Video -> UTTypeMovie.identifier
             else -> registeredTypeIdentifiers.firstOrNull() as? String ?: UTTypeImage.identifier
@@ -223,20 +254,21 @@ private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspen
                 return@loadFileRepresentationForTypeIdentifier
             }
 
-            continuation.resume(
-                url?.createTempFile()?.let { tempUrl ->
-                    KmpFile(
-                        url = url,
-                        tempUrl = tempUrl,
-                    )
-                }
-            )
+            continuation.resume(url)
         }
 
         continuation.invokeOnCancellation {
             progress.cancel()
         }
     }
+
+    return url?.createTempFile()?.let { tempUrl ->
+        KmpFile(
+            url = url,
+            tempUrl = tempUrl,
+        )
+    }
+}
 
 private fun createUIDocumentPickerViewController(
     delegate: UIDocumentPickerDelegateProtocol,
@@ -298,7 +330,8 @@ private fun createPHPickerViewController(
     }
     val newFilter = PHPickerFilter.anyFilterMatchingSubfilters(filterList.toList())
     configuration.filter = newFilter
-    configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCurrent
+    configuration.preferredAssetRepresentationMode =
+        PHPickerConfigurationAssetRepresentationModeCurrent
     configuration.selectionLimit = when (selectionMode) {
         is FilePickerSelectionMode.Multiple -> selectionMode.maxItems?.toLong() ?: 0
         else -> 1

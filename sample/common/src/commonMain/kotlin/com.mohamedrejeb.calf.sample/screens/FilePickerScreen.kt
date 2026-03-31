@@ -32,6 +32,7 @@ import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.FilePickerSettings
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
+import com.mohamedrejeb.calf.picker.rememberFilePickerSettings
 import com.mohamedrejeb.calf.sample.Platform
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 import com.mohamedrejeb.calf.sample.currentPlatform
@@ -70,12 +71,10 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
 
     val selectedFileType = fileTypeOptions[selectedTypeIndex].type
 
-    val settings = remember(dialogTitle, initialDirectory) {
-        FilePickerSettings(
-            title = dialogTitle,
-            initialDirectory = initialDirectory,
-        )
-    }
+    val settings = rememberFilePickerSettings(
+        title = dialogTitle,
+        initialDirectory = initialDirectory,
+    )
 
     val singlePickerLauncher = rememberFilePickerLauncher(
         type = selectedFileType,
