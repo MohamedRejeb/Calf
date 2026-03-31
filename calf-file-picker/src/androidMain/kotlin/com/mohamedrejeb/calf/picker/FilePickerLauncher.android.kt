@@ -7,7 +7,9 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
@@ -72,6 +74,8 @@ private fun pickSingleVisualMedia(
     type: FilePickerFileType,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
+    val currentType by rememberUpdatedState(type)
+
     val documentFallbackLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument(),
@@ -95,11 +99,11 @@ private fun pickSingleVisualMedia(
             onLaunch = {
                 try {
                     mediaPickerLauncher.launch(
-                        type.toPickVisualMediaRequest(),
+                        currentType.toPickVisualMediaRequest(),
                     )
                 } catch (_: ActivityNotFoundException) {
                     documentFallbackLauncher.launch(
-                        type.toVisualMediaMimeTypes(),
+                        currentType.toVisualMediaMimeTypes(),
                     )
                 }
             },
@@ -113,6 +117,8 @@ private fun pickMultipleVisualMedia(
     maxItems: Int?,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
+    val currentType by rememberUpdatedState(type)
+
     val documentFallbackLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenMultipleDocuments(),
@@ -149,11 +155,11 @@ private fun pickMultipleVisualMedia(
             onLaunch = {
                 try {
                     mediaPickerLauncher.launch(
-                        type.toPickVisualMediaRequest(),
+                        currentType.toPickVisualMediaRequest(),
                     )
                 } catch (_: ActivityNotFoundException) {
                     documentFallbackLauncher.launch(
-                        type.toVisualMediaMimeTypes(),
+                        currentType.toVisualMediaMimeTypes(),
                     )
                 }
             },
@@ -166,6 +172,8 @@ private fun pickSingleFile(
     type: FilePickerFileType,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
+    val currentType by rememberUpdatedState(type)
+
     val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument(),
@@ -182,10 +190,10 @@ private fun pickSingleFile(
                 val mimeTypeMap = MimeTypeMap.getSingleton()
 
                 filePickerLauncher.launch(
-                    if (type is FilePickerFileType.Extension)
-                        type.value.mapNotNull { mimeTypeMap.getMimeTypeFromExtension(it) }.toTypedArray()
+                    if (currentType is FilePickerFileType.Extension)
+                        currentType.value.mapNotNull { mimeTypeMap.getMimeTypeFromExtension(it) }.toTypedArray()
                     else
-                        type.value.toList().toTypedArray()
+                        currentType.value.toList().toTypedArray()
                 )
             },
         )
@@ -198,6 +206,8 @@ private fun pickMultipleFiles(
     maxItems: Int?,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
+    val currentType by rememberUpdatedState(type)
+
     val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenMultipleDocuments(),
@@ -217,10 +227,10 @@ private fun pickMultipleFiles(
                 val mimeTypeMap = MimeTypeMap.getSingleton()
 
                 filePickerLauncher.launch(
-                    if (type is FilePickerFileType.Extension)
-                        type.value.mapNotNull { mimeTypeMap.getMimeTypeFromExtension(it) }.toTypedArray()
+                    if (currentType is FilePickerFileType.Extension)
+                        currentType.value.mapNotNull { mimeTypeMap.getMimeTypeFromExtension(it) }.toTypedArray()
                     else
-                        type.value.toList().toTypedArray()
+                        currentType.value.toList().toTypedArray()
                 )
             },
         )

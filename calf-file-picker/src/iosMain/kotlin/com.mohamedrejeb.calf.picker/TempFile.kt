@@ -10,10 +10,10 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSUUID
 
 @OptIn(ExperimentalForeignApi::class)
-internal suspend fun NSURL.createTempFile(): NSURL? = withContext(Dispatchers.IO) {
+internal fun NSURL.createTempFile(): NSURL? {
     val extension = absoluteString
         ?.substringAfterLast('/')
-        ?.substringAfterLast('.', "") ?: return@withContext null
+        ?.substringAfterLast('.', "") ?: return null
     val tempUrl = NSURL.fileURLWithPath(
         "${NSTemporaryDirectory().removeSuffix("/")}/${NSUUID().UUIDString}.$extension"
     )
@@ -22,5 +22,5 @@ internal suspend fun NSURL.createTempFile(): NSURL? = withContext(Dispatchers.IO
         toURL = tempUrl,
         error = null,
     )
-    if (success) tempUrl else null
+    return if (success) tempUrl else null
 }

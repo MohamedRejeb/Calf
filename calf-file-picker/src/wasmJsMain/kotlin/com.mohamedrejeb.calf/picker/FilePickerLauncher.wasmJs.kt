@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.mohamedrejeb.calf.io.KmpFile
@@ -20,15 +21,18 @@ actual fun rememberFilePickerLauncher(
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     var fileDialogVisible by rememberSaveable { mutableStateOf(false) }
+    val currentType by rememberUpdatedState(type)
+    val currentSelectionMode by rememberUpdatedState(selectionMode)
+    val currentOnResult by rememberUpdatedState(onResult)
 
     return remember {
         FilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
             onLaunch = {
-                if (type == FilePickerFileType.Folder) {
+                if (currentType == FilePickerFileType.Folder) {
                     // Folder picking is not supported on Web
-                    onResult(emptyList())
+                    currentOnResult(emptyList())
                     return@FilePickerLauncher
                 }
 
@@ -44,12 +48,12 @@ actual fun rememberFilePickerLauncher(
                     name = "file"
 
                     accept =
-                        if (type is FilePickerFileType.Extension)
-                            type.value.joinToString(", ") { ".$it" }
+                        if (currentType is FilePickerFileType.Extension)
+                            currentType.value.joinToString(", ") { ".$it" }
                         else
-                            type.value.joinToString(", ")
+                            currentType.value.joinToString(", ")
 
-                    multiple = selectionMode is FilePickerSelectionMode.Multiple
+                    multiple = currentSelectionMode is FilePickerSelectionMode.Multiple
 
                     onchange = { event ->
                         try {
@@ -61,21 +65,21 @@ actual fun rememberFilePickerLauncher(
                                 .orEmpty()
 
                             // Apply maxItems limit if set
-                            val maxItems = (selectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
+                            val maxItems = (currentSelectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
                             val limitedFiles = if (maxItems != null) files.take(maxItems) else files
 
                             // Return the result
-                            onResult(limitedFiles.map { KmpFile(it) })
+                            currentOnResult(limitedFiles.map { KmpFile(it) })
                             fileDialogVisible = false
                         } catch (_: Throwable) {
-                            onResult(emptyList())
+                            currentOnResult(emptyList())
                         } finally {
                             cleanup()
                         }
                     }
 
                     oncancel = {
-                        onResult(emptyList())
+                        currentOnResult(emptyList())
                         cleanup()
                     }
 
