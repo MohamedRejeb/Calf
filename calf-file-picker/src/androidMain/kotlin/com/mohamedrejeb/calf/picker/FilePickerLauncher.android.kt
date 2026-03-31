@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.picker
 
+import android.content.ActivityNotFoundException
 import android.webkit.MimeTypeMap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -63,6 +64,14 @@ private fun pickSingleVisualMedia(
     type: FilePickerFileType,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
+    val documentFallbackLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+            onResult = { uri ->
+                onResult(uri?.let { listOf(KmpFile(it)) } ?: emptyList())
+            },
+        )
+
     val mediaPickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickVisualMedia(),
@@ -76,9 +85,15 @@ private fun pickSingleVisualMedia(
             type = type,
             selectionMode = FilePickerSelectionMode.Single,
             onLaunch = {
-                mediaPickerLauncher.launch(
-                    type.toPickVisualMediaRequest(),
-                )
+                try {
+                    mediaPickerLauncher.launch(
+                        type.toPickVisualMediaRequest(),
+                    )
+                } catch (_: ActivityNotFoundException) {
+                    documentFallbackLauncher.launch(
+                        type.toVisualMediaMimeTypes(),
+                    )
+                }
             },
         )
     }
@@ -89,6 +104,18 @@ private fun pickMultipleVisualMedia(
     type: FilePickerFileType,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
+    val documentFallbackLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenMultipleDocuments(),
+            onResult = { uriList ->
+                val fileList =
+                    uriList.map { uri ->
+                        KmpFile(uri)
+                    }
+                onResult(fileList)
+            },
+        )
+
     val mediaPickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickMultipleVisualMedia(),
@@ -106,9 +133,15 @@ private fun pickMultipleVisualMedia(
             type = type,
             selectionMode = FilePickerSelectionMode.Multiple,
             onLaunch = {
-                mediaPickerLauncher.launch(
-                    type.toPickVisualMediaRequest(),
-                )
+                try {
+                    mediaPickerLauncher.launch(
+                        type.toPickVisualMediaRequest(),
+                    )
+                } catch (_: ActivityNotFoundException) {
+                    documentFallbackLauncher.launch(
+                        type.toVisualMediaMimeTypes(),
+                    )
+                }
             },
         )
     }
@@ -201,6 +234,14 @@ private fun pickFolder(
                 singlePhotoPickerLauncher.launch(null)
             },
         )
+    }
+}
+
+internal fun FilePickerFileType.toVisualMediaMimeTypes(): Array<String> {
+    return when (this) {
+        FilePickerFileType.Image -> arrayOf(FilePickerFileType.ImageContentType)
+        FilePickerFileType.Video -> arrayOf(FilePickerFileType.VideoContentType)
+        else -> arrayOf(FilePickerFileType.ImageContentType, FilePickerFileType.VideoContentType)
     }
 }
 
