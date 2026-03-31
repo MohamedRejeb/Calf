@@ -1,6 +1,9 @@
 package com.mohamedrejeb.calf.picker
 
-actual class FilePickerSettings(
+import androidx.compose.runtime.Immutable
+
+@Immutable
+actual data class FilePickerSettings(
     actual val title: String? = null,
     actual val initialDirectory: String? = null,
 )

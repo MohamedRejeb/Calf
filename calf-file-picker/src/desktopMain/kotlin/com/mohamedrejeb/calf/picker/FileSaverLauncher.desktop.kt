@@ -13,22 +13,27 @@ import kotlinx.coroutines.launch
 @ExperimentalCalfApi
 @Composable
 fun rememberFileSaverLauncher(
+    settings: FilePickerSettings = defaultFilePickerSettings(),
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher {
     val scope = rememberCoroutineScope()
 
     val currentOnResult by rememberUpdatedState(onResult)
 
+    // Resolve parent window from local if not set explicitly
+    val localWindow = LocalFilePickerParentWindow.current
+    val resolvedParentWindow = settings.parentWindow ?: localWindow
+
     return remember {
         FileSaverLauncher(
             onLaunch = { bytes, baseName, extension, initialDirectory ->
                 scope.launch {
-                    // For save dialogs, the handle is created per-launch since
-                    // baseName/extension change on each call
                     val handle = PlatformFilePicker.createSaveDialogHandle(
-                        initialDirectory = initialDirectory,
+                        initialDirectory = initialDirectory ?: settings.initialDirectory,
                         baseName = baseName,
                         extension = extension,
+                        title = settings.title ?: "Save file",
+                        parentWindow = resolvedParentWindow,
                     )
                     try {
                         val file = PlatformFilePicker.showSaveDialog(handle, bytes)
