@@ -178,6 +178,10 @@ impl ParentWindow {
 
         #[cfg(target_os = "linux")]
         {
+            // On Linux, rfd uses GTK which manages its own display connection.
+            // The parent window hint is best-effort - GTK may ignore it
+            // if the display handle does not match its internal connection.
+            // The Window ID is still useful for focus/stacking behavior.
             use raw_window_handle::{XlibDisplayHandle, XlibWindowHandle};
             let raw_window = RawWindowHandle::Xlib(XlibWindowHandle::new(ptr as u32));
             let raw_display = RawDisplayHandle::Xlib(XlibDisplayHandle::new(None, 0));

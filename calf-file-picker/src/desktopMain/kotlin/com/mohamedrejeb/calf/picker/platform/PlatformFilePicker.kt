@@ -63,10 +63,11 @@ internal object PlatformFilePicker {
         initialDirectory: String?,
         baseName: String,
         extension: String,
+        title: String = "Save file",
         parentWindow: ComposeWindow? = null,
     ): Long {
         return NativeFilePickerBridge.createSaveDialog(
-            title = "Save file",
+            title = title,
             initialDirectory = initialDirectory,
             defaultName = "$baseName.$extension",
             extension = extension,
@@ -92,12 +93,10 @@ internal object PlatformFilePicker {
 
     /** Show a previously created save dialog and write bytes to the selected file. */
     suspend fun showSaveDialog(handle: Long, bytes: ByteArray?): File? {
-        val path = withContext(Dispatchers.IO) {
-            NativeFilePickerBridge.showSaveDialog(handle)
-        }
+        return withContext(Dispatchers.IO) {
+            val path = NativeFilePickerBridge.showSaveDialog(handle) ?: return@withContext null
 
-        return path?.let { pathStr ->
-            val file = File(pathStr)
+            val file = File(path)
             if (bytes != null) {
                 file.writeBytes(bytes)
             } else {

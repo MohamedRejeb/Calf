@@ -1,8 +1,11 @@
 package com.mohamedrejeb.calf.picker
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.uikit.LocalUIViewController
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
@@ -15,7 +18,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSItemProvider
 import platform.Foundation.NSURL
-import platform.Photos.PHPhotoLibrary
 import platform.PhotosUI.PHPickerConfiguration
 import platform.PhotosUI.PHPickerConfigurationAssetRepresentationModeCurrent
 import platform.PhotosUI.PHPickerConfigurationSelectionOrdered
@@ -62,6 +64,7 @@ private fun rememberDocumentPickerLauncher(
 ): FilePickerLauncher {
     val scope = rememberCoroutineScope()
     val currentUIViewController = LocalUIViewController.current
+    val currentOnResult by rememberUpdatedState(onResult)
 
     val delegate =
         remember {
@@ -84,7 +87,7 @@ private fun rememberDocumentPickerLauncher(
                                     }
                                 )
 
-                        onResult(result)
+                        currentOnResult(result)
                     }
                 }
 
@@ -107,13 +110,13 @@ private fun rememberDocumentPickerLauncher(
                         }
 
                     scope.launch(Dispatchers.Main) {
-                        onResult(dataList)
+                        currentOnResult(dataList)
                     }
                 }
 
                 override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
                     scope.launch(Dispatchers.Main) {
-                        onResult(emptyList())
+                        currentOnResult(emptyList())
                     }
                 }
             }
@@ -150,6 +153,7 @@ private fun rememberImageVideoPickerLauncher(
 ): FilePickerLauncher {
     val scope = rememberCoroutineScope()
     val currentUIViewController = LocalUIViewController.current
+    val currentOnResult by rememberUpdatedState(onResult)
 
     val pickerDelegate = remember {
         object : NSObject(), PHPickerViewControllerDelegateProtocol {
@@ -170,7 +174,7 @@ private fun rememberImageVideoPickerLauncher(
                         .filterNotNull()
 
                     withContext(Dispatchers.Main) {
-                        onResult(results)
+                        currentOnResult(results)
                     }
                 }
 
@@ -275,7 +279,7 @@ private fun createPHPickerViewController(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
 ): PHPickerViewController {
-    val configuration = PHPickerConfiguration(PHPhotoLibrary.sharedPhotoLibrary())
+    val configuration = PHPickerConfiguration()
     val filterList = mutableListOf<PHPickerFilter>()
     when (type) {
         FilePickerFileType.Image ->
@@ -301,6 +305,7 @@ private fun createPHPickerViewController(
 }
 
 
+@Stable
 actual class FilePickerLauncher actual constructor(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,

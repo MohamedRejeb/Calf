@@ -39,7 +39,7 @@ import java.util.Locale
  * http://www.iana.org/assignments/media-types/
  * http://www.webmaster-toolkit.com/mime-types.shtml
  */
-object MimeTypes {
+internal object MimeTypes {
     const val MIME_APPLICATION_ATOM_XML: String = "application/atom+xml"
     const val MIME_APPLICATION_JAVASCRIPT: String = "application/javascript"
     const val MIME_APPLICATION_JSON: String = "application/json"

@@ -31,7 +31,7 @@ import java.io.IOException
 /**
  * Optimized byte and character stream utilities.
  */
-object IOUtil {
+internal object IOUtil {
     // ---------------------------------------------------------------- silent close
     /**
      * Closes silently the closable object. If it is [Flushable], it

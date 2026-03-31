@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import com.mohamedrejeb.calf.io.KmpFile
 
@@ -84,7 +85,7 @@ private fun pickSingleVisualMedia(
 }
 
 @Composable
-fun pickMultipleVisualMedia(
+private fun pickMultipleVisualMedia(
     type: FilePickerFileType,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
@@ -220,6 +221,7 @@ internal fun FilePickerFileType.isVisualMedia(): Boolean {
     }
 }
 
+@Stable
 actual class FilePickerLauncher actual constructor(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,

@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.picker
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,8 +26,11 @@ actual fun rememberFilePickerLauncher(
             type = type,
             selectionMode = selectionMode,
             onLaunch = {
-                if (type == FilePickerFileType.Folder)
+                if (type == FilePickerFileType.Folder) {
+                    // Folder picking is not supported on Web
+                    onResult(emptyList())
                     return@FilePickerLauncher
+                }
 
                 val fileInputElement = document.createElement("input") as HTMLInputElement
 
@@ -55,8 +59,8 @@ actual fun rememberFilePickerLauncher(
                             // Return the result
                             onResult(files.map { KmpFile(it) })
                             fileDialogVisible = false
-                        } catch (e: Throwable) {
-                            e.printStackTrace()
+                        } catch (_: Throwable) {
+                            onResult(emptyList())
                         }
                     }
 
@@ -67,6 +71,7 @@ actual fun rememberFilePickerLauncher(
     }
 }
 
+@Stable
 actual class FilePickerLauncher actual constructor(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,

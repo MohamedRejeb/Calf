@@ -1,5 +1,7 @@
 package com.mohamedrejeb.calf.picker
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Platform-specific settings for the file picker dialog.
  *
@@ -22,6 +24,7 @@ package com.mohamedrejeb.calf.picker
  * )
  * ```
  */
+@Immutable
 expect class FilePickerSettings {
     val title: String?
     val initialDirectory: String?

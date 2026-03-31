@@ -59,13 +59,15 @@ internal fun loadNativeLibrary() {
         val tempFile = Files.createTempFile(cacheDir.toPath(), "calf-native-", ".tmp")
         try {
             Files.write(tempFile, bytes)
-            Files.move(tempFile, targetFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-        } catch (_: Exception) {
             try {
-                Files.move(tempFile, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                Files.move(tempFile, targetFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
             } catch (_: Exception) {
-                Files.deleteIfExists(tempFile)
+                // ATOMIC_MOVE not supported on this filesystem, fallback to regular move
+                Files.move(tempFile, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
             }
+        } catch (e: Exception) {
+            Files.deleteIfExists(tempFile)
+            error("Failed to extract native file picker library to '$targetFile': ${e.message}")
         }
     }
 
