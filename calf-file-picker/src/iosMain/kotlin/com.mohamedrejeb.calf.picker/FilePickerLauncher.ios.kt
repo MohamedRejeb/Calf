@@ -69,6 +69,8 @@ private fun rememberDocumentPickerLauncher(
     val scope = rememberCoroutineScope()
     val currentUIViewController = LocalUIViewController.current
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentType by rememberUpdatedState(type)
+    val currentSelectionMode by rememberUpdatedState(selectionMode)
 
     val delegate =
         remember {
@@ -79,7 +81,7 @@ private fun rememberDocumentPickerLauncher(
                 ) {
                     scope.launch(Dispatchers.Main) {
                         val result =
-                            if (type == FilePickerFileType.Folder)
+                            if (currentType == FilePickerFileType.Folder)
                                 listOf(KmpFile(didPickDocumentAtURL))
                             else
                                 listOfNotNull(
@@ -101,11 +103,11 @@ private fun rememberDocumentPickerLauncher(
                 ) {
                     scope.launch(Dispatchers.Main) {
                         val maxItems =
-                            (selectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
+                            (currentSelectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
                         val dataList =
                             didPickDocumentsAtURLs.mapNotNull {
                                 val nsUrl = it as? NSURL ?: return@mapNotNull null
-                                if (type == FilePickerFileType.Folder)
+                                if (currentType == FilePickerFileType.Folder)
                                     KmpFile(nsUrl)
                                 else
                                     nsUrl.createTempFile()?.let { tempUrl ->
@@ -136,8 +138,8 @@ private fun rememberDocumentPickerLauncher(
                 val pickerController =
                     createUIDocumentPickerViewController(
                         delegate = delegate,
-                        type = type,
-                        selectionMode = selectionMode,
+                        type = currentType,
+                        selectionMode = currentSelectionMode,
                     )
 
                 currentUIViewController.presentViewController(
@@ -160,6 +162,8 @@ private fun rememberImageVideoPickerLauncher(
     val scope = rememberCoroutineScope()
     val currentUIViewController = LocalUIViewController.current
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentType by rememberUpdatedState(type)
+    val currentSelectionMode by rememberUpdatedState(selectionMode)
 
     // Guard against double-callback, PHPicker may fire didFinishPicking more than once
     val hasFinished = remember { AtomicInt(0) }
@@ -180,7 +184,7 @@ private fun rememberImageVideoPickerLauncher(
 
                             async {
                                 result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend(
-                                    type
+                                    currentType
                                 )
                             }
                         }
@@ -220,8 +224,8 @@ private fun rememberImageVideoPickerLauncher(
                 val imagePicker =
                     createPHPickerViewController(
                         delegate = pickerDelegate,
-                        type = type,
-                        selectionMode = selectionMode,
+                        type = currentType,
+                        selectionMode = currentSelectionMode,
                     )
 
                 // Attach dismiss delegate to detect swipe-to-dismiss
