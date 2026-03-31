@@ -2,17 +2,19 @@ package com.mohamedrejeb.calf.picker.platform
 
 /**
  * JNI bridge to the native file picker library built with Rust + rfd.
- *
- * The native library is packaged inside the JAR at:
- *   native/<os>-<arch>/libcalf_filepicker_native.{dylib,so,dll}
- *
- * On first access it is extracted to a temp directory and loaded via [System.load].
  */
 internal object NativeFilePickerBridge {
 
     init {
         loadNativeLibrary()
     }
+
+    /**
+     * No-op function that forces the native library to load eagerly.
+     * Call this early to avoid first-launch latency when [pickFiles] is invoked.
+     */
+    @JvmStatic
+    external fun init()
 
     /**
      * Open a file picker dialog.

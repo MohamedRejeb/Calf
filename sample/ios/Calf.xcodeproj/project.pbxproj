@@ -296,7 +296,16 @@
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../common/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Calf/Info.plist;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Take pictures";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSContactsUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Just for tests";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -313,7 +322,7 @@
 					"-framework",
 					Common,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.mohamedrejeb.Calf.debug1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mohamedrejeb.Calf.debug;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -334,7 +343,16 @@
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../common/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Calf/Info.plist;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Take pictures";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSContactsUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Just for tests";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Just for tests";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -351,7 +369,7 @@
 					"-framework",
 					Common,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.mohamedrejeb.Calf.debug1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mohamedrejeb.Calf.debug;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

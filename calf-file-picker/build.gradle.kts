@@ -70,9 +70,7 @@ if (!hasPrebuiltNativeLibs) {
 
         commandLine("cargo", "build", "--release", "--target", rustTarget)
 
-        // Mark outputs for up-to-date checking
-        val (_, _, libFile) = nativeLibProps()
-        outputs.file(nativeDir.file("target/$rustTarget/release/$libFile"))
+        outputs.upToDateWhen { false }
     }
 
     val copyNativeLib by tasks.registering(Copy::class) {
@@ -98,4 +96,4 @@ if (!hasPrebuiltNativeLibs) {
     }
 }
 // When pre-built libs exist in src/desktopMain/resources/native/,
-// they are automatically included as resources — no extra config needed.
+// they are automatically included as resources, no extra config needed.

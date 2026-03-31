@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.picker
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
@@ -18,21 +19,22 @@ fun rememberFileSaverLauncher(
 
     val currentOnResult by rememberUpdatedState(onResult)
 
-    return FileSaverLauncher(
-        onLaunch = { bytes, baseName, extension, initialDirectory ->
-            scope.launch {
-                val file = PlatformFilePicker.saveFile(
-                    bytes = bytes,
-                    baseName = baseName,
-                    extension = extension,
-                    initialDirectory = initialDirectory,
-                    parentWindow = null,
-                )
+    return remember {
+        FileSaverLauncher(
+            onLaunch = { bytes, baseName, extension, initialDirectory ->
+                scope.launch {
+                    val file = PlatformFilePicker.saveFile(
+                        bytes = bytes,
+                        baseName = baseName,
+                        extension = extension,
+                        initialDirectory = initialDirectory,
+                    )
 
-                currentOnResult(file?.let { KmpFile(it) })
+                    currentOnResult(file?.let { KmpFile(it) })
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @ExperimentalCalfApi
