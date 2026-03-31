@@ -54,20 +54,17 @@ internal fun loadNativeLibrary() {
 
     val targetFile = File(cacheDir, libFileName)
 
-    // Extract to temp file, then atomically move to final location.
     inputStream.use { input ->
         val bytes = input.readBytes()
-        if (!targetFile.exists() || targetFile.length() != bytes.size.toLong()) {
-            val tempFile = Files.createTempFile(cacheDir.toPath(), "calf-native-", ".tmp")
+        val tempFile = Files.createTempFile(cacheDir.toPath(), "calf-native-", ".tmp")
+        try {
+            Files.write(tempFile, bytes)
+            Files.move(tempFile, targetFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+        } catch (_: Exception) {
             try {
-                Files.write(tempFile, bytes)
-                Files.move(tempFile, targetFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+                Files.move(tempFile, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
             } catch (_: Exception) {
-                try {
-                    Files.move(tempFile, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                } catch (_: Exception) {
-                    Files.deleteIfExists(tempFile)
-                }
+                Files.deleteIfExists(tempFile)
             }
         }
     }
