@@ -164,7 +164,9 @@ private fun rememberFilePickerLauncherInternal(
                             )
                         } else {
                             val files = PlatformFilePicker.showFilePicker(handle)
-                            currentOnResult(files.map { KmpFile(it) })
+                            val maxItems = (selectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
+                            val result = files.map { KmpFile(it) }
+                            currentOnResult(if (maxItems != null) result.take(maxItems) else result)
                         }
                     }
                 }

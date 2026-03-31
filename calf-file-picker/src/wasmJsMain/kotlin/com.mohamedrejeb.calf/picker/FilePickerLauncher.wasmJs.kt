@@ -45,7 +45,7 @@ actual fun rememberFilePickerLauncher(
                         else
                             type.value.joinToString(", ")
 
-                    multiple = selectionMode == FilePickerSelectionMode.Multiple
+                    multiple = selectionMode is FilePickerSelectionMode.Multiple
 
                     onchange = { event ->
                         try {
@@ -56,8 +56,12 @@ actual fun rememberFilePickerLauncher(
                                 ?.asList()
                                 .orEmpty()
 
+                            // Apply maxItems limit if set
+                            val maxItems = (selectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
+                            val limitedFiles = if (maxItems != null) files.take(maxItems) else files
+
                             // Return the result
-                            onResult(files.map { KmpFile(it) })
+                            onResult(limitedFiles.map { KmpFile(it) })
                             fileDialogVisible = false
                         } catch (_: Throwable) {
                             onResult(emptyList())

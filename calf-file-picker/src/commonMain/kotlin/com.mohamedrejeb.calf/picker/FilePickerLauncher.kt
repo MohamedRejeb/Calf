@@ -138,8 +138,27 @@ sealed class FilePickerFileType(vararg val value: String) {
 
 @Immutable
 sealed class FilePickerSelectionMode {
+
+    /**
+     * Single file selection mode.
+     */
     data object Single: FilePickerSelectionMode()
-    data object Multiple: FilePickerSelectionMode()
+
+    /**
+     * Multiple file selection mode.
+     *
+     * @param maxItems Maximum number of items to select, or null for unlimited.
+     * On Android (visual media) and iOS (PHPicker), this is enforced natively by the picker UI.
+     * On all other platforms, the result list is truncated to [maxItems] after selection.
+     */
+    open class Multiple(val maxItems: Int? = null) : FilePickerSelectionMode() {
+        /**
+         * Default instance with no item limit.
+         * Allows using [FilePickerSelectionMode.Multiple] without parentheses
+         * for backward compatibility.
+         */
+        companion object : Multiple(null)
+    }
 }
 
 @Stable
