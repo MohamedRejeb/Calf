@@ -25,7 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.mohamedrejeb.calf.core.LocalPlatformContext
 import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.io.getPath
 import com.mohamedrejeb.calf.picker.FilePickerFileType
@@ -61,8 +60,6 @@ private data class PickedFileInfo(
 
 @Composable
 fun FilePickerScreen(navigateBack: () -> Unit) {
-    val context = LocalPlatformContext.current
-
     var pickedFiles by remember { mutableStateOf<List<PickedFileInfo>>(emptyList()) }
     var isMultiple by remember { mutableStateOf(false) }
     var dialogTitle by remember { mutableStateOf("Pick a file") }
@@ -83,8 +80,8 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         onResult = { files ->
             pickedFiles = files.map { file ->
                 PickedFileInfo(
-                    name = file.getName(context).orEmpty(),
-                    path = file.getPath(context) ?: "Unknown path",
+                    name = file.getName().orEmpty(),
+                    path = file.getPath() ?: "Unknown path",
                 )
             }
         },
@@ -97,8 +94,8 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         onResult = { files ->
             pickedFiles = files.map { file ->
                 PickedFileInfo(
-                    name = file.getName(context).orEmpty(),
-                    path = file.getPath(context) ?: "Unknown path",
+                    name = file.getName().orEmpty(),
+                    path = file.getPath() ?: "Unknown path",
                 )
             }
         },
@@ -111,8 +108,8 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         onResult = { files ->
             pickedFiles = files.map { file ->
                 PickedFileInfo(
-                    name = file.getName(context).orEmpty(),
-                    path = file.getPath(context) ?: "Unknown path",
+                    name = file.getName().orEmpty(),
+                    path = file.getPath() ?: "Unknown path",
                 )
             }
         },
@@ -125,7 +122,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         onResult = { files ->
             val dir = files.firstOrNull()
             if (dir != null) {
-                initialDirectory = dir.getPath(context)
+                initialDirectory = dir.getPath()
             }
         },
     )

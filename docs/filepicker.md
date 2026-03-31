@@ -20,7 +20,6 @@ implementation("com.mohamedrejeb.calf:calf-file-picker:{{ calf_version }}")
 
 ```kotlin
 val scope = rememberCoroutineScope()
-val context = LocalPlatformContext.current
 
 val pickerLauncher = rememberFilePickerLauncher(
     type = FilePickerFileType.Image,
@@ -30,7 +29,7 @@ val pickerLauncher = rememberFilePickerLauncher(
             files.firstOrNull()?.let { file ->
                 // Do something with the selected file
                 // You can get the ByteArray of the file
-                file.readByteArray(context)
+                file.readByteArray()
             }
         }
     }
@@ -212,13 +211,13 @@ val pickerLauncher = rememberFilePickerLauncher(
 
 ## Extensions
 
+All `KmpFile` extension functions work without passing a context parameter. On Android, the application context is captured automatically when using `rememberFilePickerLauncher`.
+
 * Read the `ByteArray` of the file using the `readByteArray` extension function:
 
 ```kotlin
-val context = LocalPlatformContext.current
-
 LaunchedEffect(file) {
-    val byteArray = file.readByteArray(context)
+    val byteArray = file.readByteArray()
 }
 ```
 
@@ -231,34 +230,28 @@ LaunchedEffect(file) {
 * Check if the file exists using the `exists` extension function:
 
 ```kotlin
-val context = LocalPlatformContext.current
-
-val exists = file.exists(context)
+val exists = file.exists()
 ```
 
 * Get the file name using the `getName` extension function:
 
 ```kotlin
-val context = LocalPlatformContext.current
-
-val name = file.getName(context)
+val name = file.getName()
 ```
 
 * Get the file path using the `getPath` extension function:
 
 ```kotlin
-val context = LocalPlatformContext.current
-
-val path = file.getPath(context)
+val path = file.getPath()
 ```
 
 * Check if the file is a directory using the `isDirectory` extension function:
 
 ```kotlin
-val context = LocalPlatformContext.current
-
-val isDirectory = file.isDirectory(context)
+val isDirectory = file.isDirectory()
 ```
+
+> Overloads that accept a `PlatformContext` parameter are still available for backward compatibility.
 
 ## Platform-specific APIs
 
