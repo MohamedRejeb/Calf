@@ -39,23 +39,69 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-apple-darwin
+
+    - name: Cache Rust
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          calf-file-picker/native/target
+        key: rust-macos-${{ hashFiles('calf-file-picker/native/Cargo.toml') }}
+        restore-keys: rust-macos-
+
     - name: Setup gradle
       uses: gradle/actions/setup-gradle@v5
 
     - name: Gradle test
       run: ./gradlew allTests
 
+  build-native:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/build-native-libs.yml
+
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build
+    needs: [build, build-native]
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v6
+
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: Download macOS native libs
+        uses: actions/download-artifact@v4
+        with:
+          name: native-libs-macos
+          path: calf-file-picker/src/desktopMain/resources/
+
+      - name: Download Windows native libs
+        uses: actions/download-artifact@v4
+        with:
+          name: native-libs-windows
+          path: calf-file-picker/src/desktopMain/resources/
+
+      - name: Download Linux native libs
+        uses: actions/download-artifact@v4
+        with:
+          name: native-libs-linux
+          path: calf-file-picker/src/desktopMain/resources/
+
+      - name: Verify native libs
+        run: ls -lhR calf-file-picker/src/desktopMain/resources/native/
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5

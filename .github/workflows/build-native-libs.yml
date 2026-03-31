@@ -1,0 +1,126 @@
+name: Build Native File Picker Libraries
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache Rust
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            calf-file-picker/native/target
+          key: rust-macos-${{ hashFiles('calf-file-picker/native/Cargo.toml') }}
+          restore-keys: rust-macos-
+
+      - name: Build macOS arm64
+        working-directory: calf-file-picker/native
+        run: cargo build --release --target aarch64-apple-darwin
+
+      - name: Build macOS x64
+        working-directory: calf-file-picker/native
+        run: cargo build --release --target x86_64-apple-darwin
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p native-libs/native/macos-arm64
+          mkdir -p native-libs/native/macos-x64
+          cp calf-file-picker/native/target/aarch64-apple-darwin/release/libcalf_filepicker_native.dylib native-libs/native/macos-arm64/
+          cp calf-file-picker/native/target/x86_64-apple-darwin/release/libcalf_filepicker_native.dylib native-libs/native/macos-x64/
+
+      - name: Upload macOS native libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-libs-macos
+          path: native-libs/
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            calf-file-picker/native/target
+          key: rust-windows-${{ hashFiles('calf-file-picker/native/Cargo.toml') }}
+          restore-keys: rust-windows-
+
+      - name: Build Windows x64
+        working-directory: calf-file-picker/native
+        run: cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Prepare artifacts
+        shell: bash
+        run: |
+          mkdir -p native-libs/native/windows-x64
+          cp calf-file-picker/native/target/x86_64-pc-windows-msvc/release/calf_filepicker_native.dll native-libs/native/windows-x64/
+
+      - name: Upload Windows native libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-libs-windows
+          path: native-libs/
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Cache Rust
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            calf-file-picker/native/target
+          key: rust-linux-${{ hashFiles('calf-file-picker/native/Cargo.toml') }}
+          restore-keys: rust-linux-
+
+      - name: Build Linux x64
+        working-directory: calf-file-picker/native
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p native-libs/native/linux-x64
+          cp calf-file-picker/native/target/x86_64-unknown-linux-gnu/release/libcalf_filepicker_native.so native-libs/native/linux-x64/
+
+      - name: Upload Linux native libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-libs-linux
+          path: native-libs/

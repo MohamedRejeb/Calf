@@ -65,3 +65,5 @@ venv/
 .claude
 
 kotlin-js-store
+
+calf-file-picker/src/desktopMain/resources/native

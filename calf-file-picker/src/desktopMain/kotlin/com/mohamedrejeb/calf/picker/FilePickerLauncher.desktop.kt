@@ -6,7 +6,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
 import kotlinx.coroutines.launch
-import java.io.File
 
 @Composable
 actual fun rememberFilePickerLauncher(
@@ -23,7 +22,7 @@ actual fun rememberFilePickerLauncher(
             onLaunch = {
                 scope.launch {
                     if (type == FilePickerFileType.Folder)
-                        PlatformFilePicker.current.launchDirectoryPicker(
+                        PlatformFilePicker.launchDirectoryPicker(
                             initialDirectory = null,
                             title = "Select a folder",
                             parentWindow = null,
@@ -37,7 +36,7 @@ actual fun rememberFilePickerLauncher(
                             }
                         )
                     else
-                        PlatformFilePicker.current.launchFilePicker(
+                        PlatformFilePicker.launchFilePicker(
                             initialDirectory = null,
                             type = type,
                             selectionMode = selectionMode,

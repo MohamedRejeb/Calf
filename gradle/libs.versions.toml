@@ -8,7 +8,6 @@ kotlinx-datetime = "0.7.1"
 kotlinx-browser = "0.5.0"
 vanniktech-maven-publish = "0.35.0"
 documentfile = "1.1.0"
-jna = "5.18.1"
 coil = "3.4.0"
 
 calf = "0.10.0"
@@ -58,9 +57,6 @@ coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 
 # Android
 documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
-
-# Desktop
-jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 
 # Wasm
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
