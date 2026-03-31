@@ -1,8 +1,12 @@
 use jni::objects::{JClass, JObjectArray, JString};
 use jni::sys::{jboolean, jlong, jobjectArray, jstring, JNI_TRUE};
 use jni::JNIEnv;
+use raw_window_handle::{
+    HandleError, HasDisplayHandle, HasWindowHandle, RawDisplayHandle, RawWindowHandle,
+};
 use rfd::FileDialog;
 use std::path::PathBuf;
+use std::ptr::NonNull;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -95,7 +99,103 @@ where
 }
 
 // ---------------------------------------------------------------------------
-// Stored dialog configuration - created once, shown many times
+// Parent window handle wrapper
+// ---------------------------------------------------------------------------
+
+/// A wrapper that implements HasWindowHandle + HasDisplayHandle for rfd::set_parent.
+/// Constructed from a raw native window pointer passed from the JVM.
+struct ParentWindow {
+    raw_window: RawWindowHandle,
+    raw_display: RawDisplayHandle,
+}
+
+// Safety: The window handle comes from the JVM's AWT thread and is valid
+// for the duration of the dialog. rfd internally dispatches to the correct thread.
+unsafe impl Send for ParentWindow {}
+unsafe impl Sync for ParentWindow {}
+
+impl HasWindowHandle for ParentWindow {
+    fn window_handle(&self) -> Result<raw_window_handle::WindowHandle<'_>, HandleError> {
+        // Safety: The raw handle is valid for the lifetime of this struct.
+        Ok(unsafe { raw_window_handle::WindowHandle::borrow_raw(self.raw_window) })
+    }
+}
+
+impl HasDisplayHandle for ParentWindow {
+    fn display_handle(&self) -> Result<raw_window_handle::DisplayHandle<'_>, HandleError> {
+        // Safety: The raw handle is valid for the lifetime of this struct.
+        Ok(unsafe { raw_window_handle::DisplayHandle::borrow_raw(self.raw_display) })
+    }
+}
+
+impl ParentWindow {
+    /// Create a ParentWindow from a native window pointer.
+    /// Returns None if the pointer is 0 (no parent).
+    fn from_raw_ptr(ptr: jlong) -> Option<Self> {
+        if ptr == 0 {
+            return None;
+        }
+
+        #[cfg(target_os = "macos")]
+        {
+            use objc2::rc::Retained;
+            use objc2_app_kit::{NSView, NSWindow};
+            use raw_window_handle::{AppKitDisplayHandle, AppKitWindowHandle};
+
+            // ComposeWindow.windowHandle returns an NSWindow pointer.
+            // AppKitWindowHandle expects an NSView pointer.
+            // Get the contentView from the NSWindow.
+            let ns_window_ptr = ptr as *mut NSWindow;
+            let ns_window: Retained<NSWindow> =
+                unsafe { Retained::retain(ns_window_ptr) }?;
+            let ns_view: Retained<NSView> = ns_window.contentView()?;
+            let ns_view_ptr =
+                NonNull::new(Retained::as_ptr(&ns_view) as *mut std::ffi::c_void)?;
+
+            let raw_window = RawWindowHandle::AppKit(AppKitWindowHandle::new(ns_view_ptr));
+            // Note: ns_window and ns_view are kept alive by the NSWindow's
+            // own strong reference. We just need the pointer value here.
+            let raw_display = RawDisplayHandle::AppKit(AppKitDisplayHandle::new());
+            Some(ParentWindow {
+                raw_window,
+                raw_display,
+            })
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            use raw_window_handle::{Win32WindowHandle, WindowsDisplayHandle};
+            let mut handle = Win32WindowHandle::new(unsafe {
+                std::num::NonZero::new_unchecked(ptr as isize)
+            });
+            let raw_window = RawWindowHandle::Win32(handle);
+            let raw_display = RawDisplayHandle::Windows(WindowsDisplayHandle::new());
+            Some(ParentWindow {
+                raw_window,
+                raw_display,
+            })
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            use raw_window_handle::{XlibDisplayHandle, XlibWindowHandle};
+            let raw_window = RawWindowHandle::Xlib(XlibWindowHandle::new(ptr as u32));
+            let raw_display = RawDisplayHandle::Xlib(XlibDisplayHandle::new(None, 0));
+            Some(ParentWindow {
+                raw_window,
+                raw_display,
+            })
+        }
+
+        #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
+        {
+            None
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Stored dialog configuration
 // ---------------------------------------------------------------------------
 
 /// The type of dialog to show.
@@ -111,6 +211,7 @@ struct DialogConfig {
     title: Option<String>,
     initial_directory: Option<String>,
     extensions: Vec<String>,
+    parent: Option<ParentWindow>,
 }
 
 impl DialogConfig {
@@ -138,14 +239,17 @@ impl DialogConfig {
             dialog = dialog.set_file_name(name);
         }
 
+        if let Some(ref parent) = self.parent {
+            dialog = dialog.set_parent(parent);
+        }
+
         dialog
     }
 }
 
 /// Box a DialogConfig and return its raw pointer as a jlong handle.
 fn box_config(config: DialogConfig) -> jlong {
-    let boxed = Box::new(config);
-    Box::into_raw(boxed) as jlong
+    Box::into_raw(Box::new(config)) as jlong
 }
 
 /// Recover a &DialogConfig from a jlong handle without taking ownership.
@@ -176,9 +280,9 @@ pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePick
 ) {
 }
 
-/// Create a file picker dialog config. Returns a handle (long) to reuse with showFileDialog.
+/// Create a file picker dialog config with optional parent window handle.
 ///
-/// Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Z)J
+/// Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;ZJ)J
 #[no_mangle]
 pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_createFileDialog(
     mut env: JNIEnv,
@@ -187,6 +291,7 @@ pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePick
     initial_directory: JString,
     extensions: JObjectArray,
     multiple: jboolean,
+    parent_window: jlong,
 ) -> jlong {
     catch_panic_and_throw(&mut env, 0, |env| {
         let config = DialogConfig {
@@ -200,20 +305,22 @@ pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePick
             } else {
                 jstring_array_to_vec(env, &extensions)
             },
+            parent: ParentWindow::from_raw_ptr(parent_window),
         };
         box_config(config)
     })
 }
 
-/// Create a directory picker dialog config. Returns a handle.
+/// Create a directory picker dialog config with optional parent window handle.
 ///
-/// Signature: (Ljava/lang/String;Ljava/lang/String;)J
+/// Signature: (Ljava/lang/String;Ljava/lang/String;J)J
 #[no_mangle]
 pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_createDirectoryDialog(
     mut env: JNIEnv,
     _class: JClass,
     title: JString,
     initial_directory: JString,
+    parent_window: jlong,
 ) -> jlong {
     catch_panic_and_throw(&mut env, 0, |env| {
         let config = DialogConfig {
@@ -221,14 +328,15 @@ pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePick
             title: jstring_to_string(env, &title),
             initial_directory: jstring_to_string(env, &initial_directory),
             extensions: Vec::new(),
+            parent: ParentWindow::from_raw_ptr(parent_window),
         };
         box_config(config)
     })
 }
 
-/// Create a save-file dialog config. Returns a handle.
+/// Create a save-file dialog config with optional parent window handle.
 ///
-/// Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J
+/// Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)J
 #[no_mangle]
 pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_createSaveDialog(
     mut env: JNIEnv,
@@ -237,6 +345,7 @@ pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePick
     initial_directory: JString,
     default_name: JString,
     extension: JString,
+    parent_window: jlong,
 ) -> jlong {
     catch_panic_and_throw(&mut env, 0, |env| {
         let ext = jstring_to_string(env, &extension);
@@ -247,6 +356,7 @@ pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePick
             title: jstring_to_string(env, &title),
             initial_directory: jstring_to_string(env, &initial_directory),
             extensions: ext.into_iter().filter(|e| !e.is_empty()).collect(),
+            parent: ParentWindow::from_raw_ptr(parent_window),
         };
         box_config(config)
     })

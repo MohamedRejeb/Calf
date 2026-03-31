@@ -102,6 +102,7 @@ private fun rememberFilePickerLauncherInternal(
                 PlatformFilePicker.createDirectoryPickerHandle(
                     initialDirectory = settings.initialDirectory,
                     title = title,
+                    parentWindow = settings.parentWindow,
                 )
             } else {
                 PlatformFilePicker.createFilePickerHandle(
@@ -109,6 +110,7 @@ private fun rememberFilePickerLauncherInternal(
                     type = type,
                     selectionMode = selectionMode,
                     title = title,
+                    parentWindow = settings.parentWindow,
                 )
             }
         }

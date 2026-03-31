@@ -9,6 +9,11 @@ crate-type = ["cdylib"]
 [dependencies]
 jni = "0.21"
 rfd = "0.15"
+raw-window-handle = "0.6"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", features = ["NSWindow", "NSView", "NSResponder"] }
 
 [profile.release]
 opt-level = "s"

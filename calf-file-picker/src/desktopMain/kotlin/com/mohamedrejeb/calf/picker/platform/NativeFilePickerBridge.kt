@@ -25,6 +25,7 @@ internal object NativeFilePickerBridge {
         initialDirectory: String?,
         extensions: Array<String>?,
         multiple: Boolean,
+        parentWindow: Long,
     ): Long
 
     /**
@@ -35,6 +36,7 @@ internal object NativeFilePickerBridge {
     external fun createDirectoryDialog(
         title: String?,
         initialDirectory: String?,
+        parentWindow: Long,
     ): Long
 
     /**
@@ -47,9 +49,10 @@ internal object NativeFilePickerBridge {
         initialDirectory: String?,
         defaultName: String?,
         extension: String?,
+        parentWindow: Long,
     ): Long
 
-    // -- Show dialog (reuses a previously created handle) --
+    // -- Show dialog --
 
     /**
      * Show a file picker dialog using a previously created handle.
