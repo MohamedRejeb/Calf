@@ -1,8 +1,12 @@
 use jni::objects::{JClass, JObjectArray, JString};
-use jni::sys::{jboolean, jobjectArray, jstring, JNI_TRUE};
+use jni::sys::{jboolean, jlong, jobjectArray, jstring, JNI_TRUE};
 use jni::JNIEnv;
 use rfd::FileDialog;
 use std::path::PathBuf;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 /// Convert a JString to a Rust String, returning None for null.
 fn jstring_to_string(env: &mut JNIEnv, js: &JString) -> Option<String> {
@@ -22,7 +26,6 @@ fn jstring_array_to_vec(env: &mut JNIEnv, array: &JObjectArray) -> Vec<String> {
             if let Some(s) = jstring_to_string(env, &jstr) {
                 result.push(s);
             }
-            // Release the local reference to avoid table overflow on large arrays
             let _ = env.delete_local_ref(jstr);
         }
     }
@@ -38,51 +41,19 @@ fn paths_to_jstring_array(
     let array = env.new_object_array(paths.len() as i32, &string_class, JString::default())?;
 
     for (i, path) in paths.iter().enumerate() {
-        // Use lossy conversion as fallback — non-UTF-8 chars become replacement character.
-        // This is safer than failing entirely for one bad path.
         let path_str = match path.to_str() {
             Some(s) => s.to_owned(),
             None => path.to_string_lossy().into_owned(),
         };
         let jstr = env.new_string(&path_str)?;
         env.set_object_array_element(&array, i as i32, &jstr)?;
-        // Release the local reference — the array holds its own reference
         env.delete_local_ref(jstr)?;
     }
 
     Ok(array.into_raw())
 }
 
-/// Build a FileDialog with common parameters applied.
-fn build_dialog(
-    env: &mut JNIEnv,
-    title: &JString,
-    initial_directory: &JString,
-    extensions: &JObjectArray,
-) -> FileDialog {
-    let mut dialog = FileDialog::new();
-
-    if let Some(t) = jstring_to_string(env, title) {
-        dialog = dialog.set_title(&t);
-    }
-
-    if let Some(dir) = jstring_to_string(env, initial_directory) {
-        dialog = dialog.set_directory(&dir);
-    }
-
-    if !extensions.is_null() {
-        let exts = jstring_array_to_vec(env, extensions);
-        if !exts.is_empty() {
-            let ext_refs: Vec<&str> = exts.iter().map(|s| s.as_str()).collect();
-            dialog = dialog.add_filter("Selected types", &ext_refs);
-        }
-    }
-
-    dialog
-}
-
 /// Convert a path to a jstring, returning null on failure.
-/// Uses strict UTF-8 conversion with lossy fallback for non-UTF-8 paths.
 fn path_to_jstring(env: &mut JNIEnv, path: &std::path::Path) -> jstring {
     let s = match path.to_str() {
         Some(s) => s.to_owned(),
@@ -99,12 +70,10 @@ fn throw_runtime_exception(env: &mut JNIEnv, msg: &str) {
 }
 
 /// Wrapper that catches panics and converts them to Java exceptions.
-/// Returns the given `fallback` value if a panic occurs.
 fn catch_panic_and_throw<F, T>(env: &mut JNIEnv, fallback: T, f: F) -> T
 where
     F: FnOnce(&mut JNIEnv) -> T + std::panic::UnwindSafe,
 {
-    // We need a raw pointer to pass env through catch_unwind since JNIEnv is not UnwindSafe
     let env_ptr = env as *mut JNIEnv;
     match std::panic::catch_unwind(|| {
         let env = unsafe { &mut *env_ptr };
@@ -126,38 +95,181 @@ where
 }
 
 // ---------------------------------------------------------------------------
+// Stored dialog configuration - created once, shown many times
+// ---------------------------------------------------------------------------
+
+/// The type of dialog to show.
+enum DialogKind {
+    PickFiles { multiple: bool },
+    PickDirectory,
+    SaveFile { default_name: Option<String> },
+}
+
+/// Stores dialog configuration so it can be reused across multiple show() calls.
+struct DialogConfig {
+    kind: DialogKind,
+    title: Option<String>,
+    initial_directory: Option<String>,
+    extensions: Vec<String>,
+}
+
+impl DialogConfig {
+    /// Build a fresh FileDialog from this stored config.
+    fn build(&self) -> FileDialog {
+        let mut dialog = FileDialog::new();
+
+        if let Some(ref t) = self.title {
+            dialog = dialog.set_title(t);
+        }
+
+        if let Some(ref dir) = self.initial_directory {
+            dialog = dialog.set_directory(dir);
+        }
+
+        if !self.extensions.is_empty() {
+            let ext_refs: Vec<&str> = self.extensions.iter().map(|s| s.as_str()).collect();
+            dialog = dialog.add_filter("Selected types", &ext_refs);
+        }
+
+        if let DialogKind::SaveFile {
+            default_name: Some(ref name),
+        } = self.kind
+        {
+            dialog = dialog.set_file_name(name);
+        }
+
+        dialog
+    }
+}
+
+/// Box a DialogConfig and return its raw pointer as a jlong handle.
+fn box_config(config: DialogConfig) -> jlong {
+    let boxed = Box::new(config);
+    Box::into_raw(boxed) as jlong
+}
+
+/// Recover a &DialogConfig from a jlong handle without taking ownership.
+///
+/// # Safety
+/// The handle must be a valid pointer returned by `box_config` that has not been destroyed.
+unsafe fn ref_config(handle: jlong) -> &'static DialogConfig {
+    &*(handle as *const DialogConfig)
+}
+
+/// Recover and free a Box<DialogConfig> from a jlong handle.
+///
+/// # Safety
+/// The handle must be a valid pointer returned by `box_config` and must not be used after this.
+unsafe fn drop_config(handle: jlong) {
+    let _ = Box::from_raw(handle as *mut DialogConfig);
+}
+
+// ---------------------------------------------------------------------------
 // JNI exports
 // ---------------------------------------------------------------------------
 
-/// JNI: Eagerly initialize the native library (no-op, but forces loading).
+/// No-op — forces the native library to load.
 #[no_mangle]
 pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_init(
     _env: JNIEnv,
     _class: JClass,
 ) {
-    // No-op. The library is loaded when this class is first accessed.
-    // This function exists so the Kotlin side can trigger loading eagerly.
 }
 
-/// JNI: Pick one or more files.
+/// Create a file picker dialog config. Returns a handle (long) to reuse with showFileDialog.
 ///
-/// Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Z)[Ljava/lang/String;
+/// Signature: (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Z)J
 #[no_mangle]
-pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_pickFiles(
+pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_createFileDialog(
     mut env: JNIEnv,
     _class: JClass,
     title: JString,
     initial_directory: JString,
     extensions: JObjectArray,
     multiple: jboolean,
+) -> jlong {
+    catch_panic_and_throw(&mut env, 0, |env| {
+        let config = DialogConfig {
+            kind: DialogKind::PickFiles {
+                multiple: multiple == JNI_TRUE,
+            },
+            title: jstring_to_string(env, &title),
+            initial_directory: jstring_to_string(env, &initial_directory),
+            extensions: if extensions.is_null() {
+                Vec::new()
+            } else {
+                jstring_array_to_vec(env, &extensions)
+            },
+        };
+        box_config(config)
+    })
+}
+
+/// Create a directory picker dialog config. Returns a handle.
+///
+/// Signature: (Ljava/lang/String;Ljava/lang/String;)J
+#[no_mangle]
+pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_createDirectoryDialog(
+    mut env: JNIEnv,
+    _class: JClass,
+    title: JString,
+    initial_directory: JString,
+) -> jlong {
+    catch_panic_and_throw(&mut env, 0, |env| {
+        let config = DialogConfig {
+            kind: DialogKind::PickDirectory,
+            title: jstring_to_string(env, &title),
+            initial_directory: jstring_to_string(env, &initial_directory),
+            extensions: Vec::new(),
+        };
+        box_config(config)
+    })
+}
+
+/// Create a save-file dialog config. Returns a handle.
+///
+/// Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J
+#[no_mangle]
+pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_createSaveDialog(
+    mut env: JNIEnv,
+    _class: JClass,
+    title: JString,
+    initial_directory: JString,
+    default_name: JString,
+    extension: JString,
+) -> jlong {
+    catch_panic_and_throw(&mut env, 0, |env| {
+        let ext = jstring_to_string(env, &extension);
+        let config = DialogConfig {
+            kind: DialogKind::SaveFile {
+                default_name: jstring_to_string(env, &default_name),
+            },
+            title: jstring_to_string(env, &title),
+            initial_directory: jstring_to_string(env, &initial_directory),
+            extensions: ext.into_iter().filter(|e| !e.is_empty()).collect(),
+        };
+        box_config(config)
+    })
+}
+
+/// Show a previously created dialog. Returns file paths (pick), directory (pick dir), or save path.
+///
+/// For file picker: returns String[]
+/// Signature: (J)[Ljava/lang/String;
+#[no_mangle]
+pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_showFileDialog(
+    mut env: JNIEnv,
+    _class: JClass,
+    handle: jlong,
 ) -> jobjectArray {
     catch_panic_and_throw(&mut env, std::ptr::null_mut(), |env| {
-        let dialog = build_dialog(env, &title, &initial_directory, &extensions);
+        let config = unsafe { ref_config(handle) };
+        let dialog = config.build();
 
-        let paths: Vec<PathBuf> = if multiple == JNI_TRUE {
-            dialog.pick_files().unwrap_or_default()
-        } else {
-            dialog.pick_file().into_iter().collect()
+        let paths: Vec<PathBuf> = match &config.kind {
+            DialogKind::PickFiles { multiple: true } => dialog.pick_files().unwrap_or_default(),
+            DialogKind::PickFiles { multiple: false } => dialog.pick_file().into_iter().collect(),
+            _ => Vec::new(),
         };
 
         match paths_to_jstring_array(env, &paths) {
@@ -170,26 +282,18 @@ pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePick
     })
 }
 
-/// JNI: Pick a directory.
+/// Show a previously created directory dialog. Returns the path or null.
 ///
-/// Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+/// Signature: (J)Ljava/lang/String;
 #[no_mangle]
-pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_pickDirectory(
+pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_showDirectoryDialog(
     mut env: JNIEnv,
     _class: JClass,
-    title: JString,
-    initial_directory: JString,
+    handle: jlong,
 ) -> jstring {
     catch_panic_and_throw(&mut env, std::ptr::null_mut(), |env| {
-        let mut dialog = FileDialog::new();
-
-        if let Some(t) = jstring_to_string(env, &title) {
-            dialog = dialog.set_title(&t);
-        }
-
-        if let Some(dir) = jstring_to_string(env, &initial_directory) {
-            dialog = dialog.set_directory(&dir);
-        }
+        let config = unsafe { ref_config(handle) };
+        let dialog = config.build();
 
         match dialog.pick_folder() {
             Some(path) => path_to_jstring(env, &path),
@@ -198,42 +302,38 @@ pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePick
     })
 }
 
-/// JNI: Show a save-file dialog.
+/// Show a previously created save dialog. Returns the path or null.
 ///
-/// Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+/// Signature: (J)Ljava/lang/String;
 #[no_mangle]
-pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_saveFileDialog(
+pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_showSaveDialog(
     mut env: JNIEnv,
     _class: JClass,
-    title: JString,
-    initial_directory: JString,
-    default_name: JString,
-    extension: JString,
+    handle: jlong,
 ) -> jstring {
     catch_panic_and_throw(&mut env, std::ptr::null_mut(), |env| {
-        let mut dialog = FileDialog::new();
-
-        if let Some(t) = jstring_to_string(env, &title) {
-            dialog = dialog.set_title(&t);
-        }
-
-        if let Some(dir) = jstring_to_string(env, &initial_directory) {
-            dialog = dialog.set_directory(&dir);
-        }
-
-        if let Some(name) = jstring_to_string(env, &default_name) {
-            dialog = dialog.set_file_name(&name);
-        }
-
-        if let Some(ext) = jstring_to_string(env, &extension) {
-            if !ext.is_empty() {
-                dialog = dialog.add_filter("File", &[&ext]);
-            }
-        }
+        let config = unsafe { ref_config(handle) };
+        let dialog = config.build();
 
         match dialog.save_file() {
             Some(path) => path_to_jstring(env, &path),
             None => std::ptr::null_mut(),
+        }
+    })
+}
+
+/// Destroy a dialog config and free its memory.
+///
+/// Signature: (J)V
+#[no_mangle]
+pub extern "system" fn Java_com_mohamedrejeb_calf_picker_platform_NativeFilePickerBridge_destroyDialog(
+    mut env: JNIEnv,
+    _class: JClass,
+    handle: jlong,
+) {
+    catch_panic_and_throw(&mut env, (), |_env| {
+        if handle != 0 {
+            unsafe { drop_config(handle) };
         }
     })
 }

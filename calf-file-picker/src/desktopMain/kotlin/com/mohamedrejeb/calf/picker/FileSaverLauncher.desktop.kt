@@ -23,14 +23,19 @@ fun rememberFileSaverLauncher(
         FileSaverLauncher(
             onLaunch = { bytes, baseName, extension, initialDirectory ->
                 scope.launch {
-                    val file = PlatformFilePicker.saveFile(
-                        bytes = bytes,
+                    // For save dialogs, the handle is created per-launch since
+                    // baseName/extension change on each call
+                    val handle = PlatformFilePicker.createSaveDialogHandle(
+                        initialDirectory = initialDirectory,
                         baseName = baseName,
                         extension = extension,
-                        initialDirectory = initialDirectory,
                     )
-
-                    currentOnResult(file?.let { KmpFile(it) })
+                    try {
+                        val file = PlatformFilePicker.showSaveDialog(handle, bytes)
+                        currentOnResult(file?.let { KmpFile(it) })
+                    } finally {
+                        PlatformFilePicker.destroyDialog(handle)
+                    }
                 }
             }
         )
