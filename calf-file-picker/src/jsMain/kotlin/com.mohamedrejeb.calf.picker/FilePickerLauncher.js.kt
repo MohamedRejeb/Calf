@@ -37,6 +37,10 @@ actual fun rememberFilePickerLauncher(
 
                 val fileInputElement = document.createElement("input") as HTMLInputElement
 
+                fun cleanup() {
+                    fileInputElement.remove()
+                }
+
                 with(fileInputElement) {
                     style.display = "none"
                     this.type = "file"
@@ -68,9 +72,18 @@ actual fun rememberFilePickerLauncher(
                             fileDialogVisible = false
                         } catch (_: Throwable) {
                             onResult(emptyList())
+                        } finally {
+                            cleanup()
                         }
                     }
 
+                    oncancel = {
+                        onResult(emptyList())
+                        cleanup()
+                    }
+
+                    // Append to DOM so events fire reliably, then trigger
+                    document.body?.appendChild(this)
                     click()
                 }
             },
