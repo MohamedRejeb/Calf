@@ -11,6 +11,7 @@ import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -84,14 +85,16 @@ private fun rememberDocumentPickerLauncher(
                             if (currentType == FilePickerFileType.Folder)
                                 listOf(KmpFile(didPickDocumentAtURL))
                             else
-                                listOfNotNull(
-                                    didPickDocumentAtURL.createTempFile()?.let { tempUrl ->
-                                        KmpFile(
-                                            url = didPickDocumentAtURL,
-                                            tempUrl = tempUrl,
-                                        )
-                                    }
-                                )
+                                withContext(Dispatchers.IO) {
+                                    listOfNotNull(
+                                        didPickDocumentAtURL.createTempFile()?.let { tempUrl ->
+                                            KmpFile(
+                                                url = didPickDocumentAtURL,
+                                                tempUrl = tempUrl,
+                                            )
+                                        }
+                                    )
+                                }
 
                         currentOnResult(result)
                     }
@@ -110,11 +113,13 @@ private fun rememberDocumentPickerLauncher(
                                 if (currentType == FilePickerFileType.Folder)
                                     KmpFile(nsUrl)
                                 else
-                                    nsUrl.createTempFile()?.let { tempUrl ->
-                                        KmpFile(
-                                            url = nsUrl,
-                                            tempUrl = tempUrl
-                                        )
+                                    withContext(Dispatchers.IO) {
+                                        nsUrl.createTempFile()?.let { tempUrl ->
+                                            KmpFile(
+                                                url = nsUrl,
+                                                tempUrl = tempUrl
+                                            )
+                                        }
                                     }
                             }.let { if (maxItems != null) it.take(maxItems) else it }
 
@@ -175,24 +180,30 @@ private fun rememberImageVideoPickerLauncher(
                 didFinishPicking: List<*>,
             ) {
                 // Prevent processing results twice
-                if (hasFinished.compareAndSet(0, 1).not()) return
+                val processResult =  hasFinished.compareAndSet(0, 1)
 
-                scope.launch {
-                    val results = didFinishPicking
-                        .mapNotNull {
-                            val result = it as? PHPickerResult ?: return@mapNotNull null
+                if (didFinishPicking.isNotEmpty()) {
+                    scope.launch {
+                        val results = didFinishPicking
+                            .mapNotNull {
+                                val result = it as? PHPickerResult ?: return@mapNotNull null
 
-                            async {
-                                result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend(
-                                    currentType
-                                )
+                                async {
+                                    result.itemProvider.loadFileRepresentationForTypeIdentifierSuspend(
+                                        currentType
+                                    )
+                                }
                             }
-                        }
-                        .awaitAll()
-                        .filterNotNull()
+                            .awaitAll()
+                            .filterNotNull()
 
-                    withContext(Dispatchers.Main) {
-                        currentOnResult(results)
+                        withContext(Dispatchers.Main) {
+                            currentOnResult(results)
+                        }
+                    }
+                } else if (processResult) {
+                    scope.launch(Dispatchers.Main) {
+                        currentOnResult(emptyList())
                     }
                 }
 
@@ -242,8 +253,10 @@ private fun rememberImageVideoPickerLauncher(
 }
 
 @OptIn(InternalCalfApi::class)
-private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(type: FilePickerFileType): KmpFile? {
-    val url = suspendCancellableCoroutine { continuation ->
+private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspend(
+    type: FilePickerFileType
+): KmpFile? = withContext(Dispatchers.IO) {
+    suspendCancellableCoroutine { continuation ->
         val identifier = when (type) {
             FilePickerFileType.Image -> UTTypeImage.identifier
             FilePickerFileType.Video -> UTTypeMovie.identifier
@@ -258,19 +271,19 @@ private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspen
                 return@loadFileRepresentationForTypeIdentifier
             }
 
-            continuation.resume(url)
+            continuation.resume(
+                url?.createTempFile()?.let { tempUrl ->
+                    KmpFile(
+                        url = url,
+                        tempUrl = tempUrl,
+                    )
+                }
+            )
         }
 
         continuation.invokeOnCancellation {
             progress.cancel()
         }
-    }
-
-    return url?.createTempFile()?.let { tempUrl ->
-        KmpFile(
-            url = url,
-            tempUrl = tempUrl,
-        )
     }
 }
 
