@@ -183,7 +183,7 @@ impl ParentWindow {
             // if the display handle does not match its internal connection.
             // The Window ID is still useful for focus/stacking behavior.
             use raw_window_handle::{XlibDisplayHandle, XlibWindowHandle};
-            let raw_window = RawWindowHandle::Xlib(XlibWindowHandle::new(ptr as u32));
+            let raw_window = RawWindowHandle::Xlib(XlibWindowHandle::new(ptr as u64));
             let raw_display = RawDisplayHandle::Xlib(XlibDisplayHandle::new(None, 0));
             Some(ParentWindow {
                 raw_window,
