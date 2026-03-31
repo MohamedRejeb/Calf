@@ -62,5 +62,6 @@ venv/
 .calf
 .calf/*
 .junie
+.claude
 
 kotlin-js-store
