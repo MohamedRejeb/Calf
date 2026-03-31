@@ -15,8 +15,12 @@ permissions:
 jobs:
   build:
     uses: ./.github/workflows/gradle.yml
+
+  build-native:
+    uses: ./.github/workflows/build-native-libs.yml
+
   deploy:
-    needs: build
+    needs: [build, build-native]
     runs-on: macos-14
 
     env:
@@ -44,8 +48,34 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Download macOS native libs
+      uses: actions/download-artifact@v4
+      with:
+        name: native-libs-macos
+        path: calf-file-picker/src/desktopMain/resources/
+
+    - name: Download Windows native libs
+      uses: actions/download-artifact@v4
+      with:
+        name: native-libs-windows
+        path: calf-file-picker/src/desktopMain/resources/
+
+    - name: Download Linux native libs
+      uses: actions/download-artifact@v4
+      with:
+        name: native-libs-linux
+        path: calf-file-picker/src/desktopMain/resources/
+
+    - name: Verify native libs
+      run: ls -lhR calf-file-picker/src/desktopMain/resources/native/
+
     - name: Setup gradle
       uses: gradle/actions/setup-gradle@v6
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-apple-darwin
 
     - name: Publish to Maven Central
       run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache

@@ -62,5 +62,8 @@ venv/
 .calf
 .calf/*
 .junie
+.claude
 
 kotlin-js-store
+
+calf-file-picker/src/desktopMain/resources/native

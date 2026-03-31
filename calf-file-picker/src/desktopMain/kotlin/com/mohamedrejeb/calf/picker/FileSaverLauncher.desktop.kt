@@ -6,7 +6,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
-import com.mohamedrejeb.calf.picker.platform.awt.AwtFileSaver
+import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
 import kotlinx.coroutines.launch
 
 @ExperimentalCalfApi
@@ -21,7 +21,7 @@ fun rememberFileSaverLauncher(
     return FileSaverLauncher(
         onLaunch = { bytes, baseName, extension, initialDirectory ->
             scope.launch {
-                val file = AwtFileSaver.saveFile(
+                val file = PlatformFilePicker.saveFile(
                     bytes = bytes,
                     baseName = baseName,
                     extension = extension,
@@ -29,7 +29,7 @@ fun rememberFileSaverLauncher(
                     parentWindow = null,
                 )
 
-                currentOnResult(file)
+                currentOnResult(file?.let { KmpFile(it) })
             }
         }
     )
