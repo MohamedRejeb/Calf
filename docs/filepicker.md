@@ -107,6 +107,28 @@ val type = FilePickerFileType.Extension(
 
 ## Desktop Setup
 
+#### macOS Dark Theme
+
+The file dialog follows the application's theme. To enable dark mode support on macOS, add this JVM argument to your Gradle configuration:
+
+```kotlin
+compose.desktop {
+    application {
+        nativeDistributions {
+            macOS {
+                jvmArgs(
+                    "-Dapple.awt.application.appearance=system",
+                )
+            }
+        }
+    }
+}
+```
+
+> Make sure to use the Gradle `run` task. Other run configurations (e.g. `hotRun`, `jvmRun`) may ignore these settings.
+
+#### Parent Window
+
 To attach the file dialog to the current window, you have three options:
 
 #### Option 1: ProvideFilePickerParentWindow (recommended)
