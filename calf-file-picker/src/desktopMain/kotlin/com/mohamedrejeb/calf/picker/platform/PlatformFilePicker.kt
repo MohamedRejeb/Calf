@@ -5,44 +5,46 @@ import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import jodd.net.MimeTypes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.awt.Window
 import java.io.File
 
 internal object PlatformFilePicker {
+
+    fun warmup() {
+        NativeFilePickerBridge.init()
+    }
 
     suspend fun launchFilePicker(
         initialDirectory: String?,
         type: FilePickerFileType,
         selectionMode: FilePickerSelectionMode,
         title: String?,
-        parentWindow: Window?,
-        onResult: (List<File>) -> Unit,
-    ) = withContext(Dispatchers.Default) {
+    ): List<File> {
         val extensions = resolveExtensions(type)
 
-        val paths = NativeFilePickerBridge.pickFiles(
-            title = title,
-            initialDirectory = initialDirectory,
-            extensions = extensions?.toTypedArray(),
-            multiple = selectionMode == FilePickerSelectionMode.Multiple,
-        )
+        val paths = withContext(Dispatchers.IO) {
+            NativeFilePickerBridge.pickFiles(
+                title = title,
+                initialDirectory = initialDirectory,
+                extensions = extensions?.toTypedArray(),
+                multiple = selectionMode == FilePickerSelectionMode.Multiple,
+            )
+        }
 
-        val files = paths.map { File(it) }
-        onResult(files)
+        return paths.map { File(it) }
     }
 
     suspend fun launchDirectoryPicker(
         initialDirectory: String?,
         title: String?,
-        parentWindow: Window?,
-        onResult: (File?) -> Unit,
-    ) = withContext(Dispatchers.Default) {
-        val path = NativeFilePickerBridge.pickDirectory(
-            title = title,
-            initialDirectory = initialDirectory,
-        )
+    ): File? {
+        val path = withContext(Dispatchers.IO) {
+            NativeFilePickerBridge.pickDirectory(
+                title = title,
+                initialDirectory = initialDirectory,
+            )
+        }
 
-        onResult(path?.let { File(it) })
+        return path?.let { File(it) }
     }
 
     suspend fun saveFile(
@@ -50,16 +52,17 @@ internal object PlatformFilePicker {
         baseName: String,
         extension: String,
         initialDirectory: String?,
-        parentWindow: Window?,
-    ): File? = withContext(Dispatchers.Default) {
-        val path = NativeFilePickerBridge.saveFileDialog(
-            title = "Save file",
-            initialDirectory = initialDirectory,
-            defaultName = "$baseName.$extension",
-            extension = extension,
-        )
+    ): File? {
+        val path = withContext(Dispatchers.IO) {
+            NativeFilePickerBridge.saveFileDialog(
+                title = "Save file",
+                initialDirectory = initialDirectory,
+                defaultName = "$baseName.$extension",
+                extension = extension,
+            )
+        }
 
-        path?.let { pathStr ->
+        return path?.let { pathStr ->
             val file = File(pathStr)
             if (bytes != null) {
                 file.writeBytes(bytes)
