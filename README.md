@@ -30,6 +30,10 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 
 > The main focus for now is Android and iOS, but more Desktop components are coming that allows you to create adaptive UIs for Desktop as well (Windows, macOS, Linux)
 
+---
+
+<div align="center"><a href="https://github.com/Safouene1/support-palestine-banner/blob/master/Markdown-pages/Support.md"><img src="https://raw.githubusercontent.com/Safouene1/support-palestine-banner/master/banner-project.svg" alt="Support Palestine" style="width: 100%;"></a></div>
+
 ## Web Demo
 
 You can try the web demo [here](https://calf-library.netlify.app/)
