@@ -13,53 +13,80 @@ internal object PlatformFilePicker {
         NativeFilePickerBridge.init()
     }
 
-    suspend fun launchFilePicker(
+    /**
+     * Create a native file picker dialog handle.
+     * The handle stores all configuration (title, filters, selection mode)
+     * so that [showFilePicker] only needs to display it.
+     *
+     * Must be paired with [destroyDialog] when no longer needed.
+     */
+    fun createFilePickerHandle(
         initialDirectory: String?,
         type: FilePickerFileType,
         selectionMode: FilePickerSelectionMode,
         title: String?,
-    ): List<File> {
+    ): Long {
         val extensions = resolveExtensions(type)
 
-        val paths = withContext(Dispatchers.IO) {
-            NativeFilePickerBridge.pickFiles(
-                title = title,
-                initialDirectory = initialDirectory,
-                extensions = extensions?.toTypedArray(),
-                multiple = selectionMode == FilePickerSelectionMode.Multiple,
-            )
-        }
+        return NativeFilePickerBridge.createFileDialog(
+            title = title,
+            initialDirectory = initialDirectory,
+            extensions = extensions?.toTypedArray(),
+            multiple = selectionMode == FilePickerSelectionMode.Multiple,
+        )
+    }
 
+    /**
+     * Create a native directory picker dialog handle.
+     * Must be paired with [destroyDialog] when no longer needed.
+     */
+    fun createDirectoryPickerHandle(
+        initialDirectory: String?,
+        title: String?,
+    ): Long {
+        return NativeFilePickerBridge.createDirectoryDialog(
+            title = title,
+            initialDirectory = initialDirectory,
+        )
+    }
+
+    /**
+     * Create a native save-file dialog handle.
+     * Must be paired with [destroyDialog] when no longer needed.
+     */
+    fun createSaveDialogHandle(
+        initialDirectory: String?,
+        baseName: String,
+        extension: String,
+    ): Long {
+        return NativeFilePickerBridge.createSaveDialog(
+            title = "Save file",
+            initialDirectory = initialDirectory,
+            defaultName = "$baseName.$extension",
+            extension = extension,
+        )
+    }
+
+    /** Show a previously created file picker dialog. */
+    suspend fun showFilePicker(handle: Long): List<File> {
+        val paths = withContext(Dispatchers.IO) {
+            NativeFilePickerBridge.showFileDialog(handle)
+        }
         return paths.map { File(it) }
     }
 
-    suspend fun launchDirectoryPicker(
-        initialDirectory: String?,
-        title: String?,
-    ): File? {
+    /** Show a previously created directory picker dialog. */
+    suspend fun showDirectoryPicker(handle: Long): File? {
         val path = withContext(Dispatchers.IO) {
-            NativeFilePickerBridge.pickDirectory(
-                title = title,
-                initialDirectory = initialDirectory,
-            )
+            NativeFilePickerBridge.showDirectoryDialog(handle)
         }
-
         return path?.let { File(it) }
     }
 
-    suspend fun saveFile(
-        bytes: ByteArray?,
-        baseName: String,
-        extension: String,
-        initialDirectory: String?,
-    ): File? {
+    /** Show a previously created save dialog and write bytes to the selected file. */
+    suspend fun showSaveDialog(handle: Long, bytes: ByteArray?): File? {
         val path = withContext(Dispatchers.IO) {
-            NativeFilePickerBridge.saveFileDialog(
-                title = "Save file",
-                initialDirectory = initialDirectory,
-                defaultName = "$baseName.$extension",
-                extension = extension,
-            )
+            NativeFilePickerBridge.showSaveDialog(handle)
         }
 
         return path?.let { pathStr ->
@@ -71,6 +98,11 @@ internal object PlatformFilePicker {
             }
             file
         }
+    }
+
+    /** Free the native memory for a dialog handle. */
+    fun destroyDialog(handle: Long) {
+        NativeFilePickerBridge.destroyDialog(handle)
     }
 }
 
