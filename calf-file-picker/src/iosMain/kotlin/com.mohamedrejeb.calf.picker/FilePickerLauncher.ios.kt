@@ -44,6 +44,7 @@ import platform.UniformTypeIdentifiers.UTTypeMovie
 actual fun rememberFilePickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
+    settings: FilePickerSettings,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher =
     if (type == FilePickerFileType.Image || type == FilePickerFileType.Video || type == FilePickerFileType.ImageVideo) {

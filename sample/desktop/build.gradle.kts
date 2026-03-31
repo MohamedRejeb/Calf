@@ -15,6 +15,7 @@ kotlin {
 
     sourceSets.jvmMain.dependencies {
         implementation(projects.sample.common)
+        implementation(projects.calfFilePicker)
         implementation(compose.desktop.currentOs)
     }
 }

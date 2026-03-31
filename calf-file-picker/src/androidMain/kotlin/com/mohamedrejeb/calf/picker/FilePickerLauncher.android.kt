@@ -12,6 +12,7 @@ import com.mohamedrejeb.calf.io.KmpFile
 actual fun rememberFilePickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
+    settings: FilePickerSettings,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     return when (selectionMode) {

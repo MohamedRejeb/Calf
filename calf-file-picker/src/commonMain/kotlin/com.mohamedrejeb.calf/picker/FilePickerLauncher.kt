@@ -7,6 +7,7 @@ import com.mohamedrejeb.calf.io.KmpFile
 expect fun rememberFilePickerLauncher(
     type: FilePickerFileType = FilePickerFileType.All,
     selectionMode: FilePickerSelectionMode = FilePickerSelectionMode.Single,
+    settings: FilePickerSettings = defaultFilePickerSettings(),
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher
 

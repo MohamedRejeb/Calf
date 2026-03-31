@@ -18,6 +18,7 @@ import kotlin.coroutines.resumeWithException
 actual fun rememberFilePickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
+    settings: FilePickerSettings,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     var fileDialogVisible by rememberSaveable { mutableStateOf(false) }

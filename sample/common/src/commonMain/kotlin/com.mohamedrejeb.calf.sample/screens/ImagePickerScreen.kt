@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import com.mohamedrejeb.calf.ui.button.AdaptiveButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,30 +26,30 @@ import coil3.compose.AsyncImage
 import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
+import com.mohamedrejeb.calf.picker.FilePickerSettings
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 
 @Composable
 fun ImagePickerScreen(navigateBack: () -> Unit) {
-    var files by remember {
-        mutableStateOf<List<KmpFile>>(emptyList())
-    }
+    var files by remember { mutableStateOf<List<KmpFile>>(emptyList()) }
     var isMultiple by remember { mutableStateOf(false) }
 
-    val singlePickerLauncher =
-        rememberFilePickerLauncher(
-            type = FilePickerFileType.Image,
-            selectionMode = FilePickerSelectionMode.Single,
-            onResult = { files = it },
-        )
+    val singlePickerLauncher = rememberFilePickerLauncher(
+        type = FilePickerFileType.Image,
+        selectionMode = FilePickerSelectionMode.Single,
+        settings = FilePickerSettings(title = "Pick an image"),
+        onResult = { files = it },
+    )
 
-    val multiplePickerLauncher =
-        rememberFilePickerLauncher(
-            type = FilePickerFileType.Image,
-            selectionMode = FilePickerSelectionMode.Multiple,
-            onResult = { files = it },
-        )
+    val multiplePickerLauncher = rememberFilePickerLauncher(
+        type = FilePickerFileType.Image,
+        selectionMode = FilePickerSelectionMode.Multiple,
+        settings = FilePickerSettings(title = "Pick images"),
+        onResult = { files = it },
+    )
 
     SampleScreenScaffold(
         title = "Adaptive Image Picker",
@@ -99,18 +99,26 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            HorizontalDivider()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
-                text = if (files.isEmpty()) "No images selected" else "Images picked:",
+                text = when {
+                    files.isEmpty() -> "No images selected"
+                    files.size == 1 -> "1 image picked:"
+                    else -> "${files.size} images picked:"
+                },
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            files.forEach {
+            files.forEach { file ->
                 AsyncImage(
-                    model = it,
-                    contentDescription = "Image",
+                    model = file,
+                    contentDescription = "Picked image",
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
                         .fillMaxWidth()
