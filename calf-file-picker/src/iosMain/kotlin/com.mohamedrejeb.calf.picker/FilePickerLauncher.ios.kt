@@ -95,6 +95,7 @@ private fun rememberDocumentPickerLauncher(
                     controller: UIDocumentPickerViewController,
                     didPickDocumentsAtURLs: List<*>,
                 ) {
+                    val maxItems = (selectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
                     val dataList =
                         didPickDocumentsAtURLs.mapNotNull {
                             val nsUrl = it as? NSURL ?: return@mapNotNull null
@@ -107,7 +108,7 @@ private fun rememberDocumentPickerLauncher(
                                         tempUrl = tempUrl
                                     )
                                 }
-                        }
+                        }.let { if (maxItems != null) it.take(maxItems) else it }
 
                     scope.launch(Dispatchers.Main) {
                         currentOnResult(dataList)
@@ -269,7 +270,7 @@ private fun createUIDocumentPickerViewController(
             asCopy = type != FilePickerFileType.Folder,
         )
     pickerController.delegate = delegate
-    pickerController.allowsMultipleSelection = selectionMode == FilePickerSelectionMode.Multiple
+    pickerController.allowsMultipleSelection = selectionMode is FilePickerSelectionMode.Multiple
     return pickerController
 }
 
@@ -298,7 +299,10 @@ private fun createPHPickerViewController(
     val newFilter = PHPickerFilter.anyFilterMatchingSubfilters(filterList.toList())
     configuration.filter = newFilter
     configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCurrent
-    configuration.selectionLimit = if (selectionMode == FilePickerSelectionMode.Multiple) 0 else 1
+    configuration.selectionLimit = when (selectionMode) {
+        is FilePickerSelectionMode.Multiple -> selectionMode.maxItems?.toLong() ?: 0
+        else -> 1
+    }
     val picker = PHPickerViewController(configuration)
     picker.delegate = delegate
     return picker

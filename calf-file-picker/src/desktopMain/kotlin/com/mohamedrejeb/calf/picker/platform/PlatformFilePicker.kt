@@ -34,7 +34,7 @@ internal object PlatformFilePicker {
             title = title,
             initialDirectory = initialDirectory,
             extensions = extensions?.toTypedArray(),
-            multiple = selectionMode == FilePickerSelectionMode.Multiple,
+            multiple = selectionMode is FilePickerSelectionMode.Multiple,
             parentWindow = parentWindow?.windowHandle ?: 0L,
         )
     }

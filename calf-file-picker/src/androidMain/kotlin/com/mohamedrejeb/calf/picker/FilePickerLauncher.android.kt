@@ -37,11 +37,12 @@ actual fun rememberFilePickerLauncher(
                     )
             }
         }
-        FilePickerSelectionMode.Multiple -> {
+        is FilePickerSelectionMode.Multiple -> {
             when (type) {
                 FilePickerFileType.Image, FilePickerFileType.Video, FilePickerFileType.ImageVideo ->
                     pickMultipleVisualMedia(
                         type = type,
+                        maxItems = selectionMode.maxItems,
                         onResult = onResult,
                     )
                 FilePickerFileType.Folder ->
@@ -52,6 +53,7 @@ actual fun rememberFilePickerLauncher(
                 else ->
                     pickMultipleFiles(
                         type = type,
+                        maxItems = selectionMode.maxItems,
                         onResult = onResult,
                     )
             }
@@ -102,23 +104,29 @@ private fun pickSingleVisualMedia(
 @Composable
 private fun pickMultipleVisualMedia(
     type: FilePickerFileType,
+    maxItems: Int?,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val documentFallbackLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenMultipleDocuments(),
             onResult = { uriList ->
-                val fileList =
-                    uriList.map { uri ->
-                        KmpFile(uri)
-                    }
+                val fileList = uriList
+                    .map { uri -> KmpFile(uri) }
+                    .let { if (maxItems != null) it.take(maxItems) else it }
                 onResult(fileList)
             },
         )
 
+    val contract = if (maxItems != null) {
+        ActivityResultContracts.PickMultipleVisualMedia(maxItems)
+    } else {
+        ActivityResultContracts.PickMultipleVisualMedia()
+    }
+
     val mediaPickerLauncher =
         rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.PickMultipleVisualMedia(),
+            contract = contract,
             onResult = { uriList ->
                 val fileList =
                     uriList.map { uri ->
@@ -181,16 +189,16 @@ private fun pickSingleFile(
 @Composable
 private fun pickMultipleFiles(
     type: FilePickerFileType,
+    maxItems: Int?,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenMultipleDocuments(),
             onResult = { uriList ->
-                val fileList =
-                    uriList.map { uri ->
-                        KmpFile(uri)
-                    }
+                val fileList = uriList
+                    .map { uri -> KmpFile(uri) }
+                    .let { if (maxItems != null) it.take(maxItems) else it }
                 onResult(fileList)
             },
         )
