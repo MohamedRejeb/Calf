@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.picker.platform
 
+import androidx.compose.ui.awt.ComposeWindow
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import jodd.net.MimeTypes
@@ -25,6 +26,7 @@ internal object PlatformFilePicker {
         type: FilePickerFileType,
         selectionMode: FilePickerSelectionMode,
         title: String?,
+        parentWindow: ComposeWindow? = null,
     ): Long {
         val extensions = resolveExtensions(type)
 
@@ -33,6 +35,7 @@ internal object PlatformFilePicker {
             initialDirectory = initialDirectory,
             extensions = extensions?.toTypedArray(),
             multiple = selectionMode == FilePickerSelectionMode.Multiple,
+            parentWindow = parentWindow?.windowHandle ?: 0L,
         )
     }
 
@@ -43,10 +46,12 @@ internal object PlatformFilePicker {
     fun createDirectoryPickerHandle(
         initialDirectory: String?,
         title: String?,
+        parentWindow: ComposeWindow? = null,
     ): Long {
         return NativeFilePickerBridge.createDirectoryDialog(
             title = title,
             initialDirectory = initialDirectory,
+            parentWindow = parentWindow?.windowHandle ?: 0L,
         )
     }
 
@@ -58,12 +63,14 @@ internal object PlatformFilePicker {
         initialDirectory: String?,
         baseName: String,
         extension: String,
+        parentWindow: ComposeWindow? = null,
     ): Long {
         return NativeFilePickerBridge.createSaveDialog(
             title = "Save file",
             initialDirectory = initialDirectory,
             defaultName = "$baseName.$extension",
             extension = extension,
+            parentWindow = parentWindow?.windowHandle ?: 0L,
         )
     }
 

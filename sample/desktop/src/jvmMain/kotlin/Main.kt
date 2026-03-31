@@ -1,5 +1,6 @@
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.mohamedrejeb.calf.picker.ProvideFilePickerParentWindow
 import com.mohamedrejeb.calf.sample.App
 
 
@@ -11,7 +12,9 @@ fun main() {
             title = "Calf",
             onCloseRequest = ::exitApplication
         ) {
-            App()
+            ProvideFilePickerParentWindow {
+                App()
+            }
         }
     }
 }

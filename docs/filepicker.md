@@ -4,16 +4,11 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-file-picker)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-file-picker%22)
 
-Add the following dependency to your module `build.gradle.kts` file:
-
 ```kotlin
 implementation("com.mohamedrejeb.calf:calf-file-picker:{{ calf_version }}")
 ```
 
-## Usage
-
-Calf File Picker allows you to pick files from the device storage.
-
+## Quick Start
 
 | Android                                                       | iOS                                                   |
 |---------------------------------------------------------------|-------------------------------------------------------|
@@ -51,21 +46,45 @@ Button(
 }
 ```
 
-#### FilePickerFileType
+## Settings
 
-`FilePickerFileType` allows you to specify the type of files you want to pick:
+Use `FilePickerSettings` to customize the dialog behavior:
 
-* `FilePickerFileType.Image` - Allows you to pick images only
-* `FilePickerFileType.Video` - Allows you to pick videos only
-* `FilePickerFileType.ImageVideo` - Allows you to pick images and videos only
-* `FilePickerFileType.Audio` - Allows you to pick audio files only
-* `FilePickerFileType.Document` - Allows you to pick documents only
-* `FilePickerFileType.Text` - Allows you to pick text files only
-* `FilePickerFileType.Pdf` - Allows you to pick PDF files only
-* `FilePickerFileType.All` - Allows you to pick all types of files
-* `FilePickerFileType.Folder` - Allows you to pick folders
+```kotlin
+val pickerLauncher = rememberFilePickerLauncher(
+    type = FilePickerFileType.Image,
+    settings = FilePickerSettings(
+        title = "Select an image",
+        initialDirectory = "/home/user/Pictures",
+    ),
+    onResult = { files -> /* ... */ }
+)
+```
 
-You can filter files by custom mime types using `FilePickerFileType.Custom`.
+Common properties available on all platforms:
+
+- `title` - Dialog window title
+- `initialDirectory` - Directory to open the dialog in
+
+Desktop adds an additional property:
+
+- `parentWindow` - The `ComposeWindow` to attach the dialog to (see [Desktop Setup](#desktop-setup))
+
+## File Types
+
+`FilePickerFileType` controls which files the user can select:
+
+- `FilePickerFileType.Image` - Images only
+- `FilePickerFileType.Video` - Videos only
+- `FilePickerFileType.ImageVideo` - Images and videos
+- `FilePickerFileType.Audio` - Audio files only
+- `FilePickerFileType.Document` - Documents only
+- `FilePickerFileType.Text` - Text files only
+- `FilePickerFileType.Pdf` - PDF files only
+- `FilePickerFileType.All` - All file types
+- `FilePickerFileType.Folder` - Folders only
+
+Filter by MIME type:
 
 ```kotlin
 val type = FilePickerFileType.Custom(
@@ -73,7 +92,7 @@ val type = FilePickerFileType.Custom(
 )
 ```
 
-You can also filter files by custom extensions using `FilePickerFileType.Extension`.
+Filter by extension:
 
 ```kotlin
 val type = FilePickerFileType.Extension(
@@ -81,14 +100,61 @@ val type = FilePickerFileType.Extension(
 )
 ```
 
-#### FilePickerSelectionMode
+## Selection Modes
 
-`FilePickerSelectionMode` allows you to specify the selection mode of the file picker:
+- `FilePickerSelectionMode.Single` - Pick a single file
+- `FilePickerSelectionMode.Multiple` - Pick multiple files
 
-* `FilePickerSelectionMode.Single` - Allows you to pick a single file
-* `FilePickerSelectionMode.Multiple` - Allows you to pick multiple files
+## Desktop Setup
 
-#### Extensions
+To attach the file dialog to the current window, you have three options:
+
+#### Option 1: ProvideFilePickerParentWindow (recommended)
+
+Wrap your content with `ProvideFilePickerParentWindow` to automatically provide the parent window to all file pickers in the tree:
+
+```kotlin
+fun main() = application {
+    Window(onCloseRequest = ::exitApplication) {
+        ProvideFilePickerParentWindow {
+            App()
+        }
+    }
+}
+```
+
+#### Option 2: FrameWindowScope extension
+
+Use the `FrameWindowScope.rememberFilePickerLauncher` extension, which auto-captures the window:
+
+```kotlin
+fun main() = application {
+    Window(onCloseRequest = ::exitApplication) {
+        val pickerLauncher = rememberFilePickerLauncher(
+            type = FilePickerFileType.Image,
+            onResult = { files -> /* ... */ }
+        )
+    }
+}
+```
+
+#### Option 3: Explicit settings
+
+Pass the window directly through `FilePickerSettings`:
+
+```kotlin
+val window = LocalFilePickerParentWindow.current
+
+val pickerLauncher = rememberFilePickerLauncher(
+    type = FilePickerFileType.Image,
+    settings = FilePickerSettings(
+        parentWindow = window,
+    ),
+    onResult = { files -> /* ... */ }
+)
+```
+
+## Extensions
 
 * Read the `ByteArray` of the file using the `readByteArray` extension function:
 
@@ -138,7 +204,7 @@ val context = LocalPlatformContext.current
 val isDirectory = file.isDirectory(context)
 ```
 
-#### Platform-specific APIs
+## Platform-specific APIs
 
 KmpFile is a wrapper around platform-specific APIs,
 you can access the native APIs for each platform using the following properties:
@@ -163,14 +229,14 @@ val file: java.io.File = kmpFile.file
 val file: org.w3c.files.File = kmpFile.file
 ```
 
-#### Coil etensions
+## Coil Extensions
 
 In case you're using [Coil](https://github.com/coil-kt/coil) in your project, Calf has a dedicated package that includes utilities to ease the integration between both libraries.
 
 You can use it by adding the following dependency to your module `build.gradle.kts` file:
 
 ```kotlin  
-implementation("com.mohamedrejeb.calf:calf-file-picker-coil:0.5.1")  
+implementation("com.mohamedrejeb.calf:calf-file-picker-coil:{{ calf_version }}")  
 ```  
 
 Currently, this package contains a `KmpFileFetcher` that you can use to let Coil know how to load a KmpFile by adding it to Coil's  `ImageLoader`:
