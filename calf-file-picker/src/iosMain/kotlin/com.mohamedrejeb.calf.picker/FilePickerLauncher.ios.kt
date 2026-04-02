@@ -20,18 +20,15 @@ import kotlinx.coroutines.withContext
 import platform.Foundation.NSItemProvider
 import platform.Foundation.NSURL
 import platform.PhotosUI.PHPickerConfiguration
-import platform.PhotosUI.PHPickerConfigurationAssetRepresentationModeCurrent
-import platform.PhotosUI.PHPickerConfigurationSelectionOrdered
+import platform.PhotosUI.PHPickerConfigurationAssetRepresentationModeCompatible
 import platform.PhotosUI.PHPickerFilter
 import platform.PhotosUI.PHPickerResult
 import platform.PhotosUI.PHPickerViewController
 import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
 import platform.UIKit.UIAdaptivePresentationControllerDelegateProtocol
-import platform.UIKit.UIApplication
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
 import platform.UIKit.UIPresentationController
-import platform.UIKit.UIViewController
 import platform.UIKit.presentationController
 import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeApplication
@@ -180,7 +177,7 @@ private fun rememberImageVideoPickerLauncher(
                 didFinishPicking: List<*>,
             ) {
                 // Prevent processing results twice
-                val processResult =  hasFinished.compareAndSet(0, 1)
+                val processResult = hasFinished.compareAndSet(0, 1)
 
                 if (didFinishPicking.isNotEmpty()) {
                     scope.launch {
@@ -348,7 +345,7 @@ private fun createPHPickerViewController(
     val newFilter = PHPickerFilter.anyFilterMatchingSubfilters(filterList.toList())
     configuration.filter = newFilter
     configuration.preferredAssetRepresentationMode =
-        PHPickerConfigurationAssetRepresentationModeCurrent
+        PHPickerConfigurationAssetRepresentationModeCompatible
     configuration.selectionLimit = when (selectionMode) {
         is FilePickerSelectionMode.Multiple -> selectionMode.maxItems?.toLong() ?: 0
         else -> 1
