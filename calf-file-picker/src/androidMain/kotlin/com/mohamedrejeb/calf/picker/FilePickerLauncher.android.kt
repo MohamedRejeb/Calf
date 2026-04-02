@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.picker
 
 import android.content.ActivityNotFoundException
+import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -36,6 +37,7 @@ actual fun rememberFilePickerLauncher(
                 FilePickerFileType.Folder ->
                     pickFolder(
                         type = type,
+                        initialDirectory = settings.initialDirectory,
                         onResult = onResult,
                     )
                 else ->
@@ -56,6 +58,7 @@ actual fun rememberFilePickerLauncher(
                 FilePickerFileType.Folder ->
                     pickFolder(
                         type = type,
+                        initialDirectory = settings.initialDirectory,
                         onResult = onResult,
                     )
                 else ->
@@ -187,14 +190,7 @@ private fun pickSingleFile(
             type = type,
             selectionMode = FilePickerSelectionMode.Single,
             onLaunch = {
-                val mimeTypeMap = MimeTypeMap.getSingleton()
-
-                filePickerLauncher.launch(
-                    if (currentType is FilePickerFileType.Extension)
-                        currentType.value.mapNotNull { mimeTypeMap.getMimeTypeFromExtension(it) }.toTypedArray()
-                    else
-                        currentType.value.toList().toTypedArray()
-                )
+                filePickerLauncher.launch(currentType.toMimeTypes())
             },
         )
     }
@@ -224,14 +220,7 @@ private fun pickMultipleFiles(
             type = type,
             selectionMode = FilePickerSelectionMode.Multiple,
             onLaunch = {
-                val mimeTypeMap = MimeTypeMap.getSingleton()
-
-                filePickerLauncher.launch(
-                    if (currentType is FilePickerFileType.Extension)
-                        currentType.value.mapNotNull { mimeTypeMap.getMimeTypeFromExtension(it) }.toTypedArray()
-                    else
-                        currentType.value.toList().toTypedArray()
-                )
+                filePickerLauncher.launch(currentType.toMimeTypes())
             },
         )
     }
@@ -240,9 +229,12 @@ private fun pickMultipleFiles(
 @Composable
 private fun pickFolder(
     type: FilePickerFileType,
+    initialDirectory: String?,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
-    val singlePhotoPickerLauncher =
+    val currentInitialDirectory by rememberUpdatedState(initialDirectory)
+
+    val folderPickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree(),
             onResult = { uri ->
@@ -255,10 +247,41 @@ private fun pickFolder(
             type = type,
             selectionMode = FilePickerSelectionMode.Single,
             onLaunch = {
-                singlePhotoPickerLauncher.launch(null)
+                val initialUri = currentInitialDirectory?.let { Uri.parse(it) }
+                folderPickerLauncher.launch(initialUri)
             },
         )
     }
+}
+
+/**
+ * Additional MIME type mappings for extensions where [MimeTypeMap] may
+ * return only one variant, causing files to be missing in the picker.
+ */
+private val extensionMimeTypeFallbacks = mapOf(
+    "csv" to listOf("text/csv", "text/comma-separated-values", "application/csv"),
+)
+
+/**
+ * Resolves MIME types for a [FilePickerFileType], handling extensions that need
+ * multiple MIME type variants to work reliably across devices.
+ */
+internal fun FilePickerFileType.toMimeTypes(): Array<String> {
+    if (this is FilePickerFileType.Extension) {
+        val mimeTypeMap = MimeTypeMap.getSingleton()
+        return value.flatMap { ext ->
+            val lowerExt = ext.lowercase()
+            val fallbacks = extensionMimeTypeFallbacks[lowerExt]
+            if (fallbacks != null) {
+                // Use known fallbacks + system mapping (deduplicated)
+                val systemType = mimeTypeMap.getMimeTypeFromExtension(lowerExt)
+                (fallbacks + listOfNotNull(systemType)).distinct()
+            } else {
+                listOfNotNull(mimeTypeMap.getMimeTypeFromExtension(lowerExt))
+            }
+        }.toTypedArray()
+    }
+    return value.toList().toTypedArray()
 }
 
 internal fun FilePickerFileType.toVisualMediaMimeTypes(): Array<String> {
