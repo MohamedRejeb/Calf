@@ -17,6 +17,10 @@ kotlin {
     sourceSets.androidMain.dependencies {
         implementation(libs.activity.compose)
     }
+
+    sourceSets.webMain.dependencies {
+        implementation(libs.kotlinx.browser)
+    }
 }
 
 // ---------------------------------------------------------------------------

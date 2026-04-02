@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.picker
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -12,13 +13,13 @@ import kotlinx.coroutines.launch
 
 @ExperimentalCalfApi
 @Composable
-fun rememberFileSaverLauncher(
-    settings: FilePickerSettings = defaultFilePickerSettings(),
+actual fun rememberFileSaverLauncher(
+    settings: FilePickerSettings,
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher {
     val scope = rememberCoroutineScope()
-
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentSettings by rememberUpdatedState(settings)
 
     // Resolve parent window from local if not set explicitly
     val localWindow = LocalFilePickerParentWindow.current
@@ -29,10 +30,10 @@ fun rememberFileSaverLauncher(
             onLaunch = { bytes, baseName, extension, initialDirectory ->
                 scope.launch {
                     val handle = PlatformFilePicker.createSaveDialogHandle(
-                        initialDirectory = initialDirectory ?: settings.initialDirectory,
+                        initialDirectory = initialDirectory ?: currentSettings.initialDirectory,
                         baseName = baseName,
                         extension = extension,
-                        title = settings.title ?: "Save file",
+                        title = currentSettings.title ?: "Save file",
                         parentWindow = resolvedParentWindow,
                     )
                     try {
@@ -48,7 +49,8 @@ fun rememberFileSaverLauncher(
 }
 
 @ExperimentalCalfApi
-class FileSaverLauncher(
+@Stable
+actual class FileSaverLauncher(
     private val onLaunch: (
         bytes: ByteArray?,
         baseName: String,
@@ -56,17 +58,12 @@ class FileSaverLauncher(
         initialDirectory: String?,
     ) -> Unit,
 ) {
-    fun launch(
+    actual fun launch(
         bytes: ByteArray?,
         baseName: String,
         extension: String,
         initialDirectory: String?,
     ) {
-        onLaunch(
-            bytes,
-            baseName,
-            extension,
-            initialDirectory,
-        )
+        onLaunch(bytes, baseName, extension, initialDirectory)
     }
 }

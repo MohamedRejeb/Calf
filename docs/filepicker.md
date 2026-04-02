@@ -269,6 +269,44 @@ val isDirectory = file.isDirectory()
 
 > Overloads that accept a `PlatformContext` parameter are still available for backward compatibility.
 
+## File Saver
+
+`rememberFileSaverLauncher` lets the user save a file to a location of their choice. Available on all platforms.
+
+```kotlin
+@OptIn(ExperimentalCalfApi::class)
+@Composable
+fun SaveFileExample() {
+    val saverLauncher = rememberFileSaverLauncher(
+        onResult = { file ->
+            // file is the saved KmpFile, or null if cancelled
+            // On web, onResult is not called (downloads are fire-and-forget)
+        }
+    )
+
+    Button(onClick = {
+        saverLauncher.launch(
+            bytes = myByteArray,
+            baseName = "document",
+            extension = "pdf",
+        )
+    }) {
+        Text("Save File")
+    }
+}
+```
+
+**Platform behavior:**
+
+| Platform | Mechanism |
+|----------|-----------|
+| Android | System document creation dialog (`CreateDocument`) |
+| iOS | Export dialog (`UIDocumentPickerViewController`) |
+| Desktop | Native save dialog via rfd |
+| Web | Browser download — `onResult` is not called since downloads are fire-and-forget |
+
+> `rememberFileSaverLauncher` is annotated with `@ExperimentalCalfApi`.
+
 ## Platform-specific APIs
 
 KmpFile is a wrapper around platform-specific APIs,

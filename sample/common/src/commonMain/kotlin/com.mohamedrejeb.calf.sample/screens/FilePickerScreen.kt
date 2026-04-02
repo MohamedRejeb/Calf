@@ -130,7 +130,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
     )
 
     SampleScreenScaffold(
-        title = "Adaptive File Picker",
+        title = "File Picker",
         navigateBack = navigateBack,
     ) { padding ->
         Column(
