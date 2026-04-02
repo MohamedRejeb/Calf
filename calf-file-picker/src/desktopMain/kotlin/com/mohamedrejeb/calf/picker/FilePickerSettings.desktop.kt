@@ -7,6 +7,7 @@ import androidx.compose.ui.awt.ComposeWindow
 internal data class DesktopFilePickerSettings(
     override val title: String? = null,
     override val initialDirectory: String? = null,
+    override val imageRepresentationMode: ImageRepresentationMode = ImageRepresentationMode.Compatible,
     /**
      * The parent window for the file picker dialog.
      * On Windows this ensures the dialog appears in front of the app window.
@@ -21,10 +22,12 @@ internal data class DesktopFilePickerSettings(
 fun FilePickerSettings(
     title: String? = null,
     initialDirectory: String? = null,
+    imageRepresentationMode: ImageRepresentationMode = ImageRepresentationMode.Compatible,
     parentWindow: ComposeWindow? = null,
 ): FilePickerSettings = DesktopFilePickerSettings(
     title = title,
     initialDirectory = initialDirectory,
+    imageRepresentationMode = imageRepresentationMode,
     parentWindow = parentWindow,
 )
 
@@ -42,11 +45,13 @@ val FilePickerSettings.parentWindow: ComposeWindow?
 fun rememberFilePickerSettings(
     title: String? = null,
     initialDirectory: String? = null,
+    imageRepresentationMode: ImageRepresentationMode = ImageRepresentationMode.Compatible,
     parentWindow: ComposeWindow? = null,
-): FilePickerSettings = remember(title, initialDirectory, parentWindow) {
+): FilePickerSettings = remember(title, initialDirectory, imageRepresentationMode, parentWindow) {
     FilePickerSettings(
         title = title,
         initialDirectory = initialDirectory,
+        imageRepresentationMode = imageRepresentationMode,
         parentWindow = parentWindow,
     )
 }

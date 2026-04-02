@@ -79,10 +79,26 @@ Common properties available on all platforms:
 
 - `title` - Dialog window title
 - `initialDirectory` - Directory to open the dialog in
+- `imageRepresentationMode` - Controls how iOS returns image assets (see [iOS Image Representation](#ios-image-representation))
 
 Desktop adds an additional property:
 
 - `parentWindow` - The `ComposeWindow` to attach the dialog to (see [Desktop Setup](#desktop-setup))
+
+### iOS Image Representation
+
+By default, the iOS photo picker transcodes images to a compatible format (e.g. HEIC → JPEG) so they can be displayed with Compose/Skia. If you need the original format (HEIC, RAW, etc.), set `imageRepresentationMode` to `Current`:
+
+```kotlin
+val settings = FilePickerSettings(
+    imageRepresentationMode = ImageRepresentationMode.Current,
+)
+```
+
+- `ImageRepresentationMode.Compatible` (default) - Transcodes to JPEG. Recommended for displaying images with Compose.
+- `ImageRepresentationMode.Current` - Returns original format. Use when you handle decoding yourself or need original quality.
+
+> This setting only affects iOS. It is ignored on other platforms.
 
 ## File Types
 
