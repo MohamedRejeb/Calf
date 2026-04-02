@@ -49,19 +49,19 @@ jobs:
         distribution: 'temurin'
 
     - name: Download macOS native libs
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: native-libs-macos
         path: calf-file-picker/src/desktopMain/resources/
 
     - name: Download Windows native libs
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: native-libs-windows
         path: calf-file-picker/src/desktopMain/resources/
 
     - name: Download Linux native libs
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: native-libs-linux
         path: calf-file-picker/src/desktopMain/resources/
