@@ -44,7 +44,7 @@ jobs:
           cp calf-file-picker/native/target/x86_64-apple-darwin/release/libcalf_filepicker_native.dylib native-libs/native/macos-x64/
 
       - name: Upload macOS native libs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: native-libs-macos
           path: native-libs/
@@ -80,7 +80,7 @@ jobs:
           cp calf-file-picker/native/target/x86_64-pc-windows-msvc/release/calf_filepicker_native.dll native-libs/native/windows-x64/
 
       - name: Upload Windows native libs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: native-libs-windows
           path: native-libs/
@@ -120,7 +120,7 @@ jobs:
           cp calf-file-picker/native/target/x86_64-unknown-linux-gnu/release/libcalf_filepicker_native.so native-libs/native/linux-x64/
 
       - name: Upload Linux native libs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: native-libs-linux
           path: native-libs/
