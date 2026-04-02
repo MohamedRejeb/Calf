@@ -59,7 +59,7 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
     )
 
     SampleScreenScaffold(
-        title = "Adaptive Image Picker",
+        title = "Image Picker",
         navigateBack = navigateBack,
     ) { padding ->
         Column(

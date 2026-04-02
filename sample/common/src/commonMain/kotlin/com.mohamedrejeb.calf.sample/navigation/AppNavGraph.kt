@@ -14,6 +14,7 @@ import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
 import com.mohamedrejeb.calf.sample.screens.FilePickerScreen
 import com.mohamedrejeb.calf.sample.screens.HomeScreen
 import com.mohamedrejeb.calf.sample.screens.ImagePickerScreen
+import com.mohamedrejeb.calf.sample.screens.FileSaverScreen
 import com.mohamedrejeb.calf.sample.screens.ShowcaseScreen
 //import com.mohamedrejeb.calf.sample.screens.MapScreen
 import com.mohamedrejeb.calf.sample.screens.NavigationBarScreen
@@ -128,6 +129,13 @@ fun AppNavGraph(
         }
         composable(Screen.ImagePicker.name) {
             ImagePickerScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.ProfilePicture.name) {
+            FileSaverScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }

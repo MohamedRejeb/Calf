@@ -13,6 +13,7 @@ import androidx.compose.material.icons.outlined.Navigation
 import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.PunchClock
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.SaveAlt
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.ToggleOn
 import androidx.compose.material.icons.outlined.Tune
@@ -108,15 +109,21 @@ enum class Screen(
         category = ScreenCategory.Pickers,
     ),
     FilePicker(
-        title = "Adaptive File Picker",
+        title = "File Picker",
         description = "File selection with platform-native file pickers",
         icon = Icons.Outlined.AttachFile,
         category = ScreenCategory.Pickers,
     ),
     ImagePicker(
-        title = "Adaptive Image Picker",
+        title = "Image Picker",
         description = "Image selection with native photo library pickers",
         icon = Icons.Outlined.Image,
+        category = ScreenCategory.Pickers,
+    ),
+    ProfilePicture(
+        title = "File Saver",
+        description = "Pick, preview, and export a profile picture using file picker and saver",
+        icon = Icons.Outlined.SaveAlt,
         category = ScreenCategory.Pickers,
     ),
     CameraPickerScreen(
@@ -126,7 +133,7 @@ enum class Screen(
         category = ScreenCategory.Pickers,
     ),
     WebView(
-        title = "Adaptive Web View",
+        title = "Web View",
         description = "Embedded web content with WKWebView on iOS and WebView on Android",
         icon = Icons.Outlined.Web,
         category = ScreenCategory.PlatformAPIs,
