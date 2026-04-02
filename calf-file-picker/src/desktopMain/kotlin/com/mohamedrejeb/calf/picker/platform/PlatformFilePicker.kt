@@ -63,7 +63,7 @@ internal object PlatformFilePicker {
         initialDirectory: String?,
         baseName: String,
         extension: String,
-        title: String = "Save file",
+        title: String? = null,
         parentWindow: ComposeWindow? = null,
     ): Long {
         return NativeFilePickerBridge.createSaveDialog(

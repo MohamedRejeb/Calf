@@ -33,7 +33,7 @@ actual fun rememberFileSaverLauncher(
                         initialDirectory = initialDirectory ?: currentSettings.initialDirectory,
                         baseName = baseName,
                         extension = extension,
-                        title = currentSettings.title ?: "Save file",
+                        title = currentSettings.title,
                         parentWindow = resolvedParentWindow,
                     )
                     try {
