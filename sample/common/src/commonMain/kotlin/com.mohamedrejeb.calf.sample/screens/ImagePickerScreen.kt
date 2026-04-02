@@ -27,6 +27,7 @@ import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.FilePickerSettings
+import com.mohamedrejeb.calf.picker.ImageRepresentationMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
@@ -40,14 +41,20 @@ fun ImagePickerScreen(navigateBack: () -> Unit) {
     val singlePickerLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Image,
         selectionMode = FilePickerSelectionMode.Single,
-        settings = FilePickerSettings(title = "Pick an image"),
+        settings = FilePickerSettings(
+            title = "Pick an image",
+            imageRepresentationMode = ImageRepresentationMode.Compatible,
+        ),
         onResult = { files = it },
     )
 
     val multiplePickerLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Image,
         selectionMode = FilePickerSelectionMode.Multiple,
-        settings = FilePickerSettings(title = "Pick images"),
+        settings = FilePickerSettings(
+            title = "Pick images",
+            imageRepresentationMode = ImageRepresentationMode.Compatible,
+        ),
         onResult = { files = it },
     )
 
