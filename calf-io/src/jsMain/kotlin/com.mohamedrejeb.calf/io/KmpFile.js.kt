@@ -1,6 +1,5 @@
 package com.mohamedrejeb.calf.io
 
-import com.mohamedrejeb.calf.core.PlatformContext
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
@@ -9,13 +8,7 @@ import org.w3c.files.FileReader
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-actual class KmpFile(
-    val file: File,
-)
-
-actual fun KmpFile.exists(context: PlatformContext) = true
-
-actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray =
+internal actual suspend fun readFileAsBytes(file: File): ByteArray =
     suspendCoroutine { continuation ->
         val fileReader = FileReader()
         fileReader.readAsArrayBuffer(file)
@@ -33,9 +26,3 @@ actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray =
             }
         }
     }
-
-actual fun KmpFile.getName(context: PlatformContext): String? = file.name
-
-actual fun KmpFile.getPath(context: PlatformContext): String? = file.name
-
-actual fun KmpFile.isDirectory(context: PlatformContext): Boolean = !file.name.contains(".")
