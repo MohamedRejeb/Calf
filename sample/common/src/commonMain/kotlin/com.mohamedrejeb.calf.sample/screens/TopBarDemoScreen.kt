@@ -12,45 +12,72 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.navigation.AdaptiveScaffold
+import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
+import com.mohamedrejeb.calf.ui.navigation.UIKitNavigationBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
 @Composable
 fun TopBarDemoScreen(
     navigateBack: () -> Unit,
 ) {
-    SampleScreenScaffold(
-        title = "Adaptive Top Bar",
-        navigateBack = navigateBack,
-        actions = {
-            AdaptiveIconButton(onClick = { /* share */ }) {
-                Icon(Icons.Filled.Share, contentDescription = "Share")
-            }
-            AdaptiveIconButton(onClick = { /* more */ }) {
-                Icon(Icons.Filled.MoreVert, contentDescription = "More")
-            }
+    AdaptiveScaffold(
+        topBar = {
+            AdaptiveTopBar(
+                title = { Text("Adaptive Top Bar") },
+                navigationIcon = {
+                    IconButton(onClick = navigateBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                        )
+                    }
+                },
+                actions = {
+                    AdaptiveIconButton(onClick = { /* share */ }) {
+                        Icon(Icons.Filled.Share, contentDescription = "Share")
+                    }
+                    AdaptiveIconButton(onClick = { /* more */ }) {
+                        Icon(Icons.Filled.MoreVert, contentDescription = "More")
+                    }
+                },
+                iosTitle = "Adaptive Top Bar",
+                iosLeadingItems = listOf(
+                    UIKitUIBarButtonItem(
+                        title = "Back",
+                        onClick = navigateBack,
+                    ),
+                ),
+                iosTrailingItems = listOf(
+                    UIKitUIBarButtonItem(
+                        image = UIKitImage.SystemName("square.and.arrow.up"),
+                        onClick = { /* share */ },
+                    ),
+                    UIKitUIBarButtonItem(
+                        image = UIKitImage.SystemName("ellipsis.circle"),
+                        onClick = { /* more */ },
+                    ),
+                ),
+                iosConfiguration = UIKitNavigationBarConfiguration(
+                    prefersLargeTitles = true,
+                )
+            )
         },
-        iosTrailingItems = listOf(
-            UIKitUIBarButtonItem(
-                image = UIKitImage.SystemName("square.and.arrow.up"),
-                onClick = { /* share */ },
-            ),
-            UIKitUIBarButtonItem(
-                image = UIKitImage.SystemName("ellipsis.circle"),
-                onClick = { /* more */ },
-            ),
-        ),
     ) { padding ->
         Column(
             modifier = Modifier

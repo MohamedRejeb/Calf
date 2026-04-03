@@ -57,6 +57,7 @@ actual fun AdaptiveNavigationBar(
     iosItems: List<UIKitUITabBarItem>,
     iosSelectedIndex: Int,
     iosOnItemSelected: (Int) -> Unit,
+    iosConfiguration: UIKitTabBarConfiguration,
     content: @Composable RowScope.() -> Unit
 ) {
     val density = LocalDensity.current
@@ -84,6 +85,12 @@ actual fun AdaptiveNavigationBar(
 
     LaunchedEffect(iosItems, iosSelectedIndex) {
         tabBarManager.setItems(iosItems, iosSelectedIndex)
+    }
+
+    SideEffect {
+        tabBarManager.updateConfiguration(
+            configuration = iosConfiguration,
+        )
     }
 
     val initialSafeAreaBottom = remember {

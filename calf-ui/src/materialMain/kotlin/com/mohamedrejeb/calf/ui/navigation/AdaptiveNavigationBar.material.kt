@@ -26,6 +26,7 @@ actual fun AdaptiveNavigationBar(
     iosItems: List<UIKitUITabBarItem>,
     iosSelectedIndex: Int,
     iosOnItemSelected: (Int) -> Unit,
+    iosConfiguration: UIKitTabBarConfiguration,
     content: @Composable RowScope.() -> Unit
 ) {
     NavigationBar(

@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.navigation
 
+import androidx.compose.runtime.Immutable
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
@@ -17,6 +18,7 @@ import com.mohamedrejeb.calf.ui.uikit.UIKitImage
  * @param width The width for a [UIKitUIBarButtonSystemItem.FixedSpace] item. Defaults to null.
  * @param onClick Callback invoked when the bar button item is clicked.
  */
+@Immutable
 data class UIKitUIBarButtonItem(
     val title: String? = null,
     val image: UIKitImage? = null,

@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.navigation
 
+import androidx.compose.runtime.Immutable
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 
 /**
@@ -9,6 +10,7 @@ import com.mohamedrejeb.calf.ui.uikit.UIKitImage
  * @param image The image for the tab bar item. See [UIKitImage] for supported types.
  * @param selectedImage Optional image to show when the item is selected.
  */
+@Immutable
 data class UIKitUITabBarItem(
     val title: String,
     val image: UIKitImage? = null,

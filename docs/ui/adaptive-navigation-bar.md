@@ -51,7 +51,32 @@ fun MyNavigationBar() {
 | `iosItems`           | The list of tab bar items for the iOS UITabBar. See `UIKitUITabBarItem`.                                     |
 | `iosSelectedIndex`   | The index of the currently selected item on iOS.                                                             |
 | `iosOnItemSelected`  | Callback invoked when an item is selected on iOS, with the item index.                                       |
+| `iosConfiguration`   | Configuration for the iOS UITabBar appearance (item tint colors, translucency). See `UIKitTabBarConfiguration`. |
 | `content`            | The content of the navigation bar on Material platforms, typically `NavigationBarItem`s within a `RowScope`.  |
+
+## iOS Configuration
+
+You can customize the iOS tab bar appearance using `UIKitTabBarConfiguration`:
+
+```kotlin
+AdaptiveNavigationBar(
+    iosItems = items,
+    iosSelectedIndex = selectedIndex,
+    iosOnItemSelected = { selectedIndex = it },
+    iosConfiguration = UIKitTabBarConfiguration(
+        selectedItemColor = Color.Red,
+        unselectedItemColor = Color.Gray,
+        isTranslucent = true,
+    ),
+    content = { /* Material content */ },
+)
+```
+
+| Property              | Description                                                                                                |
+|-----------------------|------------------------------------------------------------------------------------------------------------|
+| `selectedItemColor`   | Tint color for selected tab bar items (icon + label). Maps to `UITabBar.tintColor`. Default: iOS system blue. |
+| `unselectedItemColor` | Color for unselected tab bar items (icon + label). Note: Liquid Glass (iOS 26+) ignores this property; not yet supported. |
+| `isTranslucent`       | Whether the tab bar is translucent. Default: `true`.                                                       |
 
 ## iOS Tab Bar Items
 

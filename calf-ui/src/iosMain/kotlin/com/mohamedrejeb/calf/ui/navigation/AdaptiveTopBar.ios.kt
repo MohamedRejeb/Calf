@@ -97,7 +97,12 @@ actual fun AdaptiveTopBar(
     val initialSafeAreaTop = remember {
         viewController.view.safeAreaInsets.useContents { top.dp }
     }
-    val cachedNavBarHeight = remember { IosBarHeightCache.lastNavBarHeight }
+    val cachedNavBarHeight = remember(iosConfiguration.prefersLargeTitles) {
+        if (iosConfiguration.prefersLargeTitles)
+            IosBarHeightCache.lastLargeTitleNavBarHeight
+        else
+            IosBarHeightCache.lastNavBarHeight
+    }
 
     var topLeft by remember { mutableStateOf(DpOffset.Zero) }
     var positionInRoot by remember { mutableStateOf(DpOffset.Zero) }
@@ -141,7 +146,7 @@ actual fun AdaptiveTopBar(
                 val safeAreaTop = viewController.view.safeAreaInsets.useContents { top.dp }
                 val newNavBarHeight = size.height.dp + safeAreaTop
 
-                IosBarHeightCache.updateNavBarHeight(size.height.dp)
+                IosBarHeightCache.updateNavBarHeight(size.height.dp, iosConfiguration.prefersLargeTitles)
 
                 if (navBarHeight != newNavBarHeight) {
                     navBarHeight = newNavBarHeight

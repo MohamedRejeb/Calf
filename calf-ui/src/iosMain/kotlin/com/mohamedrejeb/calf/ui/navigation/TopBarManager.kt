@@ -2,8 +2,10 @@
 
 package com.mohamedrejeb.calf.ui.navigation
 
+import androidx.compose.ui.graphics.isSpecified
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
+import com.mohamedrejeb.calf.ui.utils.toUIColor
 import com.mohamedrejeb.calf.ui.utils.toUIImage
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -91,14 +93,24 @@ internal class TopBarManager(
             navBar.prefersLargeTitles = configuration.prefersLargeTitles
             navBar.translucent = configuration.isTranslucent
 
-            if (!isLiquidGlassEnabled) {
-                val appearance = UINavigationBarAppearance().apply {
+            val appearance = UINavigationBarAppearance().apply {
+                if (!isLiquidGlassEnabled) {
                     configureWithDefaultBackground()
                 }
-                navBar.standardAppearance = appearance
-                navBar.scrollEdgeAppearance = appearance
-                navBar.compactAppearance = appearance
+
+                if (configuration.titleColor.isSpecified) {
+                    val uiColor = configuration.titleColor.toUIColor()
+                    // "NSColor" is the raw key for NSForegroundColorAttributeName
+                    val textAttributes = mapOf<Any?, Any?>(
+                        "NSColor" to uiColor,
+                    )
+                    titleTextAttributes = textAttributes
+                    largeTitleTextAttributes = textAttributes
+                }
             }
+            navBar.standardAppearance = appearance
+            navBar.scrollEdgeAppearance = appearance
+            navBar.compactAppearance = appearance
 
             currentConfiguration = configuration
         }
