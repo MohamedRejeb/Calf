@@ -50,3 +50,13 @@ actual fun KmpFile.isDirectory(context: PlatformContext): Boolean {
 
     return documentFile?.isDirectory == true
 }
+
+/**
+ * Converts this [Uri] to a [KmpFile].
+ */
+fun Uri.toKmpFile(): KmpFile = KmpFile(this)
+
+/**
+ * Converts this [java.io.File] to a [KmpFile] by converting to a file [Uri].
+ */
+fun java.io.File.toKmpFile(): KmpFile = KmpFile(Uri.fromFile(this))

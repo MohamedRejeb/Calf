@@ -12,7 +12,7 @@ kotlin {
         implementation(libs.documentfile)
     }
 
-    sourceSets.wasmJsMain.dependencies {
+    sourceSets.webMain.dependencies {
         implementation(libs.kotlinx.browser)
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.browser.document
+import org.w3c.files.File
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
@@ -29,23 +30,34 @@ actual fun rememberFileSaverLauncher(
                 val content = bytes ?: byteArrayOf()
 
                 val blob = createBlob(content, mimeType)
-                val url = URL.createObjectURL(blob)
-
-                val anchor = document.createElement("a") as HTMLAnchorElement
-                anchor.href = url
-                anchor.download = fileName
-                anchor.style.display = "none"
-                document.body?.appendChild(anchor)
-                anchor.click()
-                anchor.remove()
-                URL.revokeObjectURL(url)
-
-                // On web, downloads are fire-and-forget — the browser handles the save
-                // dialog. We have no way to know if the user completed or cancelled the
-                // download, so onResult is not called to avoid a false cancellation signal.
-            }
+                triggerDownload(blob, fileName)
+            },
+            onLaunchFile = { file, baseName, extension, _ ->
+                val fileName = "$baseName.$extension"
+                triggerDownload(file.file, fileName)
+            },
+            onLaunchBlob = { blob, baseName, extension, _ ->
+                val fileName = "$baseName.$extension"
+                triggerDownload(blob, fileName)
+            },
         )
     }
+}
+
+/**
+ * Triggers a browser download for the given [Blob] with the specified file name.
+ * Downloads are fire-and-forget — the browser handles the save dialog.
+ */
+private fun triggerDownload(blob: Blob, fileName: String) {
+    val url = URL.createObjectURL(blob)
+    val anchor = document.createElement("a") as HTMLAnchorElement
+    anchor.href = url
+    anchor.download = fileName
+    anchor.style.display = "none"
+    document.body?.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(url)
 }
 
 internal fun extensionToMimeType(extension: String): String {
@@ -81,6 +93,18 @@ actual class FileSaverLauncher(
         extension: String,
         initialDirectory: String?,
     ) -> Unit,
+    private val onLaunchFile: (
+        file: KmpFile,
+        baseName: String,
+        extension: String,
+        initialDirectory: String?,
+    ) -> Unit,
+    private val onLaunchBlob: (
+        blob: Blob,
+        baseName: String,
+        extension: String,
+        initialDirectory: String?,
+    ) -> Unit,
 ) {
     actual fun launch(
         bytes: ByteArray?,
@@ -89,5 +113,48 @@ actual class FileSaverLauncher(
         initialDirectory: String?,
     ) {
         onLaunch(bytes, baseName, extension, initialDirectory)
+    }
+
+    actual fun launch(
+        file: KmpFile,
+        baseName: String,
+        extension: String,
+        initialDirectory: String?,
+    ) {
+        onLaunchFile(file, baseName, extension, initialDirectory)
+    }
+
+    /**
+     * Launches a browser download using a W3C [File] as the source.
+     *
+     * @param file The source [org.w3c.files.File] to download.
+     * @param baseName The suggested file name without extension (e.g. "document").
+     * @param extension The file extension without dot (e.g. "pdf").
+     * @param initialDirectory Ignored on web.
+     */
+    fun launch(
+        file: File,
+        baseName: String,
+        extension: String,
+        initialDirectory: String? = null,
+    ) {
+        launch(KmpFile(file), baseName, extension, initialDirectory)
+    }
+
+    /**
+     * Launches a browser download using a [Blob] as the source.
+     *
+     * @param blob The source [Blob] to download.
+     * @param baseName The suggested file name without extension (e.g. "document").
+     * @param extension The file extension without dot (e.g. "pdf").
+     * @param initialDirectory Ignored on web.
+     */
+    fun launch(
+        blob: Blob,
+        baseName: String,
+        extension: String,
+        initialDirectory: String? = null,
+    ) {
+        onLaunchBlob(blob, baseName, extension, initialDirectory)
     }
 }
