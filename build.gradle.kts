@@ -12,5 +12,5 @@ plugins {
 
 allprojects {
     group = "com.mohamedrejeb.calf"
-    version = System.getenv("VERSION") ?: "0.10.0"
+    version = System.getenv("VERSION") ?: "0.11.0"
 }
