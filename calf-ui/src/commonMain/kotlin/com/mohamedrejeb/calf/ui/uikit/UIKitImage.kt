@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.uikit
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -11,6 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * - [Vector]: A Compose [ImageVector].
  * - [Bitmap]: A Compose [ImageBitmap].
  */
+@Immutable
 sealed interface UIKitImage {
     /**
      * An iOS SF Symbol system image name.

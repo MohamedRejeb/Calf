@@ -72,9 +72,16 @@ AdaptiveTopBar(
     iosConfiguration = UIKitNavigationBarConfiguration(
         prefersLargeTitles = true,
         isTranslucent = true,
+        titleColor = Color.Red,
     ),
 )
 ```
+
+| Property              | Description                                                                                              |
+|-----------------------|----------------------------------------------------------------------------------------------------------|
+| `prefersLargeTitles`  | Whether the navigation bar should display large titles. Default: `false`.                                |
+| `isTranslucent`       | Whether the navigation bar is translucent. Default: `true`.                                              |
+| `titleColor`          | The color of the navigation bar title text. When `Color.Unspecified`, the default iOS title color is used. |
 
 ## iOS Bar Button Items
 

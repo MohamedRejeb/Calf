@@ -21,21 +21,35 @@ internal object IosBarHeightCache {
             54.dp
         else
             44.dp
+    private val DEFAULT_LARGE_TITLE_NAV_BAR_HEIGHT =
+        if (isLiquidGlassEnabled)
+            106.dp
+        else
+            96.dp
     private val DEFAULT_TAB_BAR_HEIGHT =
         if (isLiquidGlassEnabled)
             83.dp
         else
             49.dp
 
+    /** Cached height for standard (non-large-title) navigation bar. */
     var lastNavBarHeight: Dp = DEFAULT_NAV_BAR_HEIGHT
+        private set
+
+    /** Cached height for large-title navigation bar. */
+    var lastLargeTitleNavBarHeight: Dp = DEFAULT_LARGE_TITLE_NAV_BAR_HEIGHT
         private set
 
     var lastTabBarHeight: Dp = DEFAULT_TAB_BAR_HEIGHT
         private set
 
-    fun updateNavBarHeight(height: Dp) {
+    fun updateNavBarHeight(height: Dp, prefersLargeTitles: Boolean) {
         if (height.value > 0f) {
-            lastNavBarHeight = height
+            if (prefersLargeTitles) {
+                lastLargeTitleNavBarHeight = height
+            } else {
+                lastNavBarHeight = height
+            }
         }
     }
 

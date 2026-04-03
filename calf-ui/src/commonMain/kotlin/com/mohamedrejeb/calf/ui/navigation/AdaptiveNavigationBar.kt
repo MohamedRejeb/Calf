@@ -30,6 +30,7 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
  * @param iosItems The list of tab bar items for the iOS UITabBar.
  * @param iosSelectedIndex The index of the currently selected item on iOS.
  * @param iosOnItemSelected Callback invoked when an item is selected on iOS, with the item index.
+ * @param iosConfiguration Configuration for the iOS UITabBar appearance (item tint colors, translucency).
  * @param content The content of the navigation bar on Material platforms, typically
  *   [NavigationBarItem]s within a [RowScope].
  */
@@ -44,5 +45,6 @@ expect fun AdaptiveNavigationBar(
     iosItems: List<UIKitUITabBarItem> = emptyList(),
     iosSelectedIndex: Int = 0,
     iosOnItemSelected: (Int) -> Unit = {},
+    iosConfiguration: UIKitTabBarConfiguration = UIKitTabBarConfiguration(),
     content: @Composable RowScope.() -> Unit = {}
 )
