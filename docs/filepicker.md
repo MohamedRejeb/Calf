@@ -296,6 +296,20 @@ fun SaveFileExample() {
 }
 ```
 
+### Saving from a KmpFile
+
+If you already have a `KmpFile` (e.g., from a file picker), you can pass it directly instead of loading bytes into memory:
+
+```kotlin
+saverLauncher.launch(
+    file = pickedFile,
+    baseName = "copy",
+    extension = "pdf",
+)
+```
+
+This avoids loading the entire file content into memory. On each platform, the file is copied or streamed directly to the destination chosen by the user.
+
 **Platform behavior:**
 
 | Platform | Mechanism |

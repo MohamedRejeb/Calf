@@ -19,8 +19,8 @@ expect fun rememberFileSaverLauncher(
 ): FileSaverLauncher
 
 /**
- * Launcher for saving a file. Call [launch] with the bytes and file name to trigger
- * the platform save dialog.
+ * Launcher for saving a file. Call [launch] with the bytes or a [KmpFile] and file name
+ * to trigger the platform save dialog.
  *
  * @see rememberFileSaverLauncher
  */
@@ -37,6 +37,24 @@ expect class FileSaverLauncher {
      */
     fun launch(
         bytes: ByteArray?,
+        baseName: String,
+        extension: String,
+        initialDirectory: String? = null,
+    )
+
+    /**
+     * Launches the platform save dialog using a [KmpFile] as the source.
+     *
+     * This avoids loading the entire file content into memory. On each platform,
+     * the file is copied or streamed directly to the destination chosen by the user.
+     *
+     * @param file The source file to save.
+     * @param baseName The suggested file name without extension (e.g. "document").
+     * @param extension The file extension without dot (e.g. "pdf").
+     * @param initialDirectory Optional initial directory for the save dialog.
+     */
+    fun launch(
+        file: KmpFile,
         baseName: String,
         extension: String,
         initialDirectory: String? = null,

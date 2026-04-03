@@ -56,3 +56,8 @@ actual fun KmpFile.isDirectory(context: PlatformContext): Boolean {
     val result = originalUrl.resourceValuesForKeys(listOf(NSURLIsDirectoryKey), error = null)
     return result?.get(NSURLIsDirectoryKey) == true
 }
+
+/**
+ * Converts this [NSURL] to a [KmpFile].
+ */
+fun NSURL.toKmpFile(): KmpFile = KmpFile(this)

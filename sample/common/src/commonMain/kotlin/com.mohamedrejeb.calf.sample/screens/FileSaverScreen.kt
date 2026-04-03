@@ -32,8 +32,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
@@ -45,9 +57,14 @@ import com.mohamedrejeb.calf.picker.FilePickerSettings
 import com.mohamedrejeb.calf.picker.ImageRepresentationMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import com.mohamedrejeb.calf.picker.rememberFileSaverLauncher
+import com.mohamedrejeb.calf.picker.toImageBitmap
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.sample.utils.toByteArray
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.math.min
 
 @OptIn(ExperimentalCalfApi::class)
 @Composable
@@ -154,11 +171,14 @@ fun FileSaverScreen(navigateBack: () -> Unit) {
                     scope.launch {
                         val file = selectedFile ?: return@launch
                         val bytes = file.readByteArray()
+                        val cropped = withContext(Dispatchers.Default) {
+                            circleCropImage(bytes)
+                        }
                         val baseName = fileNameState.text.toString().ifBlank { "profile_picture" }
                         saverLauncher.launch(
-                            bytes = bytes,
+                            bytes = cropped,
                             baseName = baseName,
-                            extension = "jpg",
+                            extension = "png",
                         )
                     }
                 },
@@ -180,9 +200,46 @@ fun FileSaverScreen(navigateBack: () -> Unit) {
             Text(
                 text = saveMessage ?: "Export status",
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (saveMessage != null) Color(0xFF4CAF50) else Color.Transparent,
+                color = when (saveMessage) {
+                    "Save cancelled" -> Color(0xFFF44336)
+                    null -> Color.Transparent
+                    else -> Color(0xFF4CAF50)
+                },
                 modifier = Modifier.alpha(if (saveMessage != null) 1f else 0f),
             )
         }
     }
+}
+
+private fun circleCropImage(bytes: ByteArray): ByteArray {
+    val source = bytes.toImageBitmap()
+    val size = min(source.width, source.height)
+
+    // Draw circle-cropped image onto a new bitmap
+    val output = ImageBitmap(size, size)
+    val canvas = Canvas(output)
+
+    // Clip to circle
+    val path = Path().apply {
+        addOval(
+            androidx.compose.ui.geometry.Rect(
+                offset = Offset.Zero,
+                size = Size(size.toFloat(), size.toFloat()),
+            )
+        )
+    }
+    canvas.clipPath(path)
+
+    // Center crop: draw the center portion of the source image
+    val srcX = (source.width - size) / 2
+    val srcY = (source.height - size) / 2
+    canvas.drawImageRect(
+        image = source,
+        srcOffset = IntOffset(srcX, srcY),
+        srcSize = IntSize(size, size),
+        dstOffset = IntOffset.Zero,
+        dstSize = IntSize(size, size),
+        paint = Paint(),
+    )
+    return output.toByteArray()
 }

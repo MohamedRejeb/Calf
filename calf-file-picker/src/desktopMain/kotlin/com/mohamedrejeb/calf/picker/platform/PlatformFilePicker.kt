@@ -106,6 +106,17 @@ internal object PlatformFilePicker {
         }
     }
 
+    /** Show a previously created save dialog and copy a source file to the selected location. */
+    suspend fun showSaveDialogWithFile(handle: Long, sourceFile: File): File? {
+        return withContext(Dispatchers.IO) {
+            val path = NativeFilePickerBridge.showSaveDialog(handle) ?: return@withContext null
+
+            val destFile = File(path)
+            sourceFile.copyTo(destFile, overwrite = true)
+            destFile
+        }
+    }
+
     /** Free the native memory for a dialog handle. */
     fun destroyDialog(handle: Long) {
         NativeFilePickerBridge.destroyDialog(handle)

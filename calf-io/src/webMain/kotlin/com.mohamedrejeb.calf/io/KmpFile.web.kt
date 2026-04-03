@@ -19,3 +19,8 @@ actual fun KmpFile.getPath(context: PlatformContext): String? = file.name
 actual fun KmpFile.isDirectory(context: PlatformContext): Boolean = !file.name.contains(".")
 
 internal expect suspend fun readFileAsBytes(file: File): ByteArray
+
+/**
+ * Converts this [org.w3c.files.File] to a [KmpFile].
+ */
+fun File.toKmpFile(): KmpFile = KmpFile(this)

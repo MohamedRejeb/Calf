@@ -16,3 +16,8 @@ actual fun KmpFile.getName(context: PlatformContext): String? = file.name
 actual fun KmpFile.getPath(context: PlatformContext): String? = file.path
 
 actual fun KmpFile.isDirectory(context: PlatformContext): Boolean = file.isDirectory
+
+/**
+ * Converts this [java.io.File] to a [KmpFile].
+ */
+fun File.toKmpFile(): KmpFile = KmpFile(this)
