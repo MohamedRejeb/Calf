@@ -87,8 +87,8 @@ private fun rememberDocumentPickerLauncher(
                                     listOfNotNull(
                                         didPickDocumentAtURL.createTempFile()?.let { tempUrl ->
                                             KmpFile(
-                                                url = didPickDocumentAtURL,
-                                                tempUrl = tempUrl,
+                                                url = tempUrl,
+                                                originalUrl = didPickDocumentAtURL,
                                             )
                                         }
                                     )
@@ -114,8 +114,8 @@ private fun rememberDocumentPickerLauncher(
                                     withContext(Dispatchers.IO) {
                                         nsUrl.createTempFile()?.let { tempUrl ->
                                             KmpFile(
-                                                url = nsUrl,
-                                                tempUrl = tempUrl
+                                                originalUrl = nsUrl,
+                                                url = tempUrl,
                                             )
                                         }
                                     }
@@ -274,8 +274,8 @@ private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspen
             continuation.resume(
                 url?.createTempFile()?.let { tempUrl ->
                     KmpFile(
-                        url = url,
-                        tempUrl = tempUrl,
+                        originalUrl = url,
+                        url = tempUrl,
                     )
                 }
             )
