@@ -1,8 +1,18 @@
-name: Build Native File Picker Libraries
+name: Build Native Libraries
 
 on:
   workflow_call:
+    inputs:
+      version:
+        description: 'Version to stamp in Cargo.toml (e.g., 0.11.0 or 0.11.0-SNAPSHOT)'
+        required: false
+        type: string
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to stamp in Cargo.toml'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -25,15 +35,32 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             calf-file-picker/native/target
-          key: rust-macos-${{ hashFiles('calf-file-picker/native/Cargo.toml') }}
+            calf-share/native/target
+          key: rust-macos-${{ hashFiles('calf-file-picker/native/Cargo.toml', 'calf-share/native/Cargo.toml') }}
           restore-keys: rust-macos-
 
-      - name: Build macOS arm64
+      - name: Stamp version in Cargo.toml
+        if: inputs.version != ''
+        run: |
+          sed -i '' "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-file-picker/native/Cargo.toml
+          sed -i '' "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-share/native/Cargo.toml
+
+      # calf-file-picker
+      - name: Build file-picker macOS arm64
         working-directory: calf-file-picker/native
         run: cargo build --release --target aarch64-apple-darwin
 
-      - name: Build macOS x64
+      - name: Build file-picker macOS x64
         working-directory: calf-file-picker/native
+        run: cargo build --release --target x86_64-apple-darwin
+
+      # calf-share
+      - name: Build share macOS arm64
+        working-directory: calf-share/native
+        run: cargo build --release --target aarch64-apple-darwin
+
+      - name: Build share macOS x64
+        working-directory: calf-share/native
         run: cargo build --release --target x86_64-apple-darwin
 
       - name: Prepare artifacts
@@ -42,6 +69,8 @@ jobs:
           mkdir -p native-libs/native/macos-x64
           cp calf-file-picker/native/target/aarch64-apple-darwin/release/libcalf_filepicker_native.dylib native-libs/native/macos-arm64/
           cp calf-file-picker/native/target/x86_64-apple-darwin/release/libcalf_filepicker_native.dylib native-libs/native/macos-x64/
+          cp calf-share/native/target/aarch64-apple-darwin/release/libcalf_share_native.dylib native-libs/native/macos-arm64/
+          cp calf-share/native/target/x86_64-apple-darwin/release/libcalf_share_native.dylib native-libs/native/macos-x64/
 
       - name: Upload macOS native libs
         uses: actions/upload-artifact@v7
@@ -66,11 +95,23 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             calf-file-picker/native/target
-          key: rust-windows-${{ hashFiles('calf-file-picker/native/Cargo.toml') }}
+            calf-share/native/target
+          key: rust-windows-${{ hashFiles('calf-file-picker/native/Cargo.toml', 'calf-share/native/Cargo.toml') }}
           restore-keys: rust-windows-
 
-      - name: Build Windows x64
+      - name: Stamp version in Cargo.toml
+        if: inputs.version != ''
+        shell: bash
+        run: |
+          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-file-picker/native/Cargo.toml
+          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-share/native/Cargo.toml
+
+      - name: Build file-picker Windows x64
         working-directory: calf-file-picker/native
+        run: cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Build share Windows x64
+        working-directory: calf-share/native
         run: cargo build --release --target x86_64-pc-windows-msvc
 
       - name: Prepare artifacts
@@ -78,6 +119,7 @@ jobs:
         run: |
           mkdir -p native-libs/native/windows-x64
           cp calf-file-picker/native/target/x86_64-pc-windows-msvc/release/calf_filepicker_native.dll native-libs/native/windows-x64/
+          cp calf-share/native/target/x86_64-pc-windows-msvc/release/calf_share_native.dll native-libs/native/windows-x64/
 
       - name: Upload Windows native libs
         uses: actions/upload-artifact@v7
@@ -107,17 +149,29 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             calf-file-picker/native/target
-          key: rust-linux-${{ hashFiles('calf-file-picker/native/Cargo.toml') }}
+            calf-share/native/target
+          key: rust-linux-${{ hashFiles('calf-file-picker/native/Cargo.toml', 'calf-share/native/Cargo.toml') }}
           restore-keys: rust-linux-
 
-      - name: Build Linux x64
+      - name: Stamp version in Cargo.toml
+        if: inputs.version != ''
+        run: |
+          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-file-picker/native/Cargo.toml
+          sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-share/native/Cargo.toml
+
+      - name: Build file-picker Linux x64
         working-directory: calf-file-picker/native
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+
+      - name: Build share Linux x64
+        working-directory: calf-share/native
         run: cargo build --release --target x86_64-unknown-linux-gnu
 
       - name: Prepare artifacts
         run: |
           mkdir -p native-libs/native/linux-x64
           cp calf-file-picker/native/target/x86_64-unknown-linux-gnu/release/libcalf_filepicker_native.so native-libs/native/linux-x64/
+          cp calf-share/native/target/x86_64-unknown-linux-gnu/release/libcalf_share_native.so native-libs/native/linux-x64/
 
       - name: Upload Linux native libs
         uses: actions/upload-artifact@v7

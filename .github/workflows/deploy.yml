@@ -1,16 +1,16 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-
 name: Deploy to central
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 0.11.0)'
+        required: true
+        type: string
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   build:
@@ -18,12 +18,15 @@ jobs:
 
   build-native:
     uses: ./.github/workflows/build-native-libs.yml
+    with:
+      version: ${{ inputs.version }}
 
   deploy:
     needs: [build, build-native]
     runs-on: macos-14
 
     env:
+      VERSION: ${{ inputs.version }}
       ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
       ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
       ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.OSSRH_GPG_SECRET_KEY_ID }}
@@ -66,8 +69,28 @@ jobs:
         name: native-libs-linux
         path: calf-file-picker/src/desktopMain/resources/
 
+    - name: Download macOS native libs (share)
+      uses: actions/download-artifact@v4
+      with:
+        name: native-libs-macos
+        path: calf-share/src/desktopMain/resources/
+
+    - name: Download Windows native libs (share)
+      uses: actions/download-artifact@v4
+      with:
+        name: native-libs-windows
+        path: calf-share/src/desktopMain/resources/
+
+    - name: Download Linux native libs (share)
+      uses: actions/download-artifact@v4
+      with:
+        name: native-libs-linux
+        path: calf-share/src/desktopMain/resources/
+
     - name: Verify native libs
-      run: ls -lhR calf-file-picker/src/desktopMain/resources/native/
+      run: |
+        ls -lhR calf-file-picker/src/desktopMain/resources/native/
+        ls -lhR calf-share/src/desktopMain/resources/native/
 
     - name: Setup gradle
       uses: gradle/actions/setup-gradle@v6
@@ -79,3 +102,58 @@ jobs:
 
     - name: Publish to Maven Central
       run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
+
+  update-version:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Read Kotlin and Compose versions from libs.versions.toml
+      id: versions
+      run: |
+        KOTLIN=$(grep '^kotlin = ' gradle/libs.versions.toml | sed 's/kotlin = "\(.*\)"/\1/')
+        COMPOSE=$(grep '^compose = ' gradle/libs.versions.toml | sed 's/compose = "\(.*\)"/\1/')
+        echo "kotlin=$KOTLIN" >> "$GITHUB_OUTPUT"
+        echo "compose=$COMPOSE" >> "$GITHUB_OUTPUT"
+
+    - name: Update version in libs.versions.toml
+      run: |
+        sed -i "s/^calf = .*/calf = \"${{ inputs.version }}\"/" gradle/libs.versions.toml
+
+    - name: Update version in Cargo.toml files
+      run: |
+        sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-file-picker/native/Cargo.toml
+        sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-share/native/Cargo.toml
+
+    - name: Update mkdocs.yml
+      run: |
+        sed -i "s/calf_version: .*/calf_version: '${{ inputs.version }}'/" mkdocs.yml
+
+    - name: Update compatibility tables
+      run: |
+        NEW_ROW="| ${{ steps.versions.outputs.kotlin }}         | ${{ steps.versions.outputs.compose }}          | ${{ inputs.version }}       |"
+        HEADER="| Kotlin version | Compose version | Calf version |"
+
+        for file in README.md docs/installation.md docs/ui.md; do
+          # Insert new row after the table header separator line
+          sed -i "/^|----------------|-----------------|--------------|$/a\\
+        $NEW_ROW" "$file"
+        done
+
+    - name: Create pull request
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        BRANCH="release/${{ inputs.version }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git checkout -b "$BRANCH"
+        git add -A
+        git commit -m "Update version to ${{ inputs.version }} after release"
+        git push -u origin "$BRANCH"
+        gh pr create \
+          --title "Update version to ${{ inputs.version }}" \
+          --body "Automated version update after successful deploy of ${{ inputs.version }} to Maven Central." \
+          --base main

@@ -100,15 +100,34 @@ jobs:
           name: native-libs-linux
           path: calf-file-picker/src/desktopMain/resources/
 
+      - name: Download macOS native libs (share)
+        uses: actions/download-artifact@v4
+        with:
+          name: native-libs-macos
+          path: calf-share/src/desktopMain/resources/
+
+      - name: Download Windows native libs (share)
+        uses: actions/download-artifact@v4
+        with:
+          name: native-libs-windows
+          path: calf-share/src/desktopMain/resources/
+
+      - name: Download Linux native libs (share)
+        uses: actions/download-artifact@v4
+        with:
+          name: native-libs-linux
+          path: calf-share/src/desktopMain/resources/
+
       - name: Verify native libs
-        run: ls -lhR calf-file-picker/src/desktopMain/resources/native/
+        run: |
+          ls -lhR calf-file-picker/src/desktopMain/resources/native/
+          ls -lhR calf-share/src/desktopMain/resources/native/
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
       - name: Deploy snapshot
         env:
-          VERSION: 0.11.0-SNAPSHOT
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.OSSRH_GPG_SECRET_KEY_ID }}

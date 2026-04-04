@@ -66,6 +66,7 @@ nav:
     - 'Top Bar': ui/adaptive-top-bar.md
   - 'WebView': webview.md
   - 'File Picker': filepicker.md
+  - 'Content Sharing': share.md
   - 'Permissions': permissions.md
   #- 'Change Log': changelog.md
   #- 'Contributing': contributing.md

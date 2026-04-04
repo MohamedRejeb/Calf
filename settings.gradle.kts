@@ -50,6 +50,7 @@ include(
     ":calf-geo",
     ":calf-maps",
     ":calf-camera-picker",
+    ":calf-share",
     ":external:backdrop",
     ":external:shapes",
     // Sample modules
