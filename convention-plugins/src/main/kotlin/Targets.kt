@@ -6,12 +6,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 fun KotlinMultiplatformExtension.applyTargets() {
     androidTarget {
         publishLibraryVariants("release")
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
     }
 
-    jvmToolchain(11)
     jvm("desktop")
 
     js().browser()
