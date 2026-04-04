@@ -33,6 +33,7 @@ kotlin {
         implementation(libs.jetbrains.navigation.compose)
         implementation(projects.calfNavigation)
         implementation(projects.calfCameraPicker)
+        implementation(projects.calfShare)
 
         // Coil
         implementation(libs.coil.compose)

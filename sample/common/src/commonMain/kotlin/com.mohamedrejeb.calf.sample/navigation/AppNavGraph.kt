@@ -21,6 +21,7 @@ import com.mohamedrejeb.calf.sample.screens.NavigationBarScreen
 import com.mohamedrejeb.calf.sample.screens.PermissionScreen
 import com.mohamedrejeb.calf.sample.screens.ProgressBarScreen
 import com.mohamedrejeb.calf.sample.screens.ScaffoldDemoScreen
+import com.mohamedrejeb.calf.sample.screens.ShareScreen
 import com.mohamedrejeb.calf.sample.screens.SliderScreen
 import com.mohamedrejeb.calf.sample.screens.SwitchScreen
 import com.mohamedrejeb.calf.sample.screens.TimePickerScreen
@@ -143,6 +144,13 @@ fun AppNavGraph(
         }
         composable(Screen.CameraPickerScreen.name) {
             CameraPickerScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.Share.name) {
+            ShareScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }

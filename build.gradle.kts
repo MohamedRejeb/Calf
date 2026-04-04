@@ -10,7 +10,9 @@ plugins {
     alias(libs.plugins.vanniktech.maven.publish).apply(false)
 }
 
+val calfVersion = System.getenv("VERSION") ?: "${libs.versions.calf.get()}-SNAPSHOT"
+
 allprojects {
     group = "com.mohamedrejeb.calf"
-    version = System.getenv("VERSION") ?: "0.11.0"
+    version = calfVersion
 }

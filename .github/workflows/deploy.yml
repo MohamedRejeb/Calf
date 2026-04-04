@@ -1,13 +1,12 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-
 name: Deploy to central
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 0.11.0)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -18,12 +17,15 @@ jobs:
 
   build-native:
     uses: ./.github/workflows/build-native-libs.yml
+    with:
+      version: ${{ inputs.version }}
 
   deploy:
     needs: [build, build-native]
     runs-on: macos-14
 
     env:
+      VERSION: ${{ inputs.version }}
       ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
       ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
       ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.OSSRH_GPG_SECRET_KEY_ID }}
@@ -66,8 +68,28 @@ jobs:
         name: native-libs-linux
         path: calf-file-picker/src/desktopMain/resources/
 
+    - name: Download macOS native libs (share)
+      uses: actions/download-artifact@v4
+      with:
+        name: native-libs-macos
+        path: calf-share/src/desktopMain/resources/
+
+    - name: Download Windows native libs (share)
+      uses: actions/download-artifact@v4
+      with:
+        name: native-libs-windows
+        path: calf-share/src/desktopMain/resources/
+
+    - name: Download Linux native libs (share)
+      uses: actions/download-artifact@v4
+      with:
+        name: native-libs-linux
+        path: calf-share/src/desktopMain/resources/
+
     - name: Verify native libs
-      run: ls -lhR calf-file-picker/src/desktopMain/resources/native/
+      run: |
+        ls -lhR calf-file-picker/src/desktopMain/resources/native/
+        ls -lhR calf-share/src/desktopMain/resources/native/
 
     - name: Setup gradle
       uses: gradle/actions/setup-gradle@v5

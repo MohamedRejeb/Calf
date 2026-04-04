@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.PunchClock
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SaveAlt
 import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.ToggleOn
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.ViewCompact
@@ -131,6 +132,12 @@ enum class Screen(
         description = "Camera capture with native platform camera APIs",
         icon = Icons.Outlined.Camera,
         category = ScreenCategory.Pickers,
+    ),
+    Share(
+        title = "Content Sharing",
+        description = "Share text, URLs, and files using platform-native share sheets",
+        icon = Icons.Outlined.Share,
+        category = ScreenCategory.PlatformAPIs,
     ),
     WebView(
         title = "Web View",

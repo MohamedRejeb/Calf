@@ -10,7 +10,7 @@ vanniktech-maven-publish = "0.36.0"
 documentfile = "1.1.0"
 coil = "3.4.0"
 
-calf = "0.10.0"
+calf = "0.11.0"
 
 android-minSdk = "23"
 android-compileSdk = "36"
