@@ -9,7 +9,8 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   build:
@@ -101,3 +102,58 @@ jobs:
 
     - name: Publish to Maven Central
       run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
+
+  update-version:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Read Kotlin and Compose versions from libs.versions.toml
+      id: versions
+      run: |
+        KOTLIN=$(grep '^kotlin = ' gradle/libs.versions.toml | sed 's/kotlin = "\(.*\)"/\1/')
+        COMPOSE=$(grep '^compose = ' gradle/libs.versions.toml | sed 's/compose = "\(.*\)"/\1/')
+        echo "kotlin=$KOTLIN" >> "$GITHUB_OUTPUT"
+        echo "compose=$COMPOSE" >> "$GITHUB_OUTPUT"
+
+    - name: Update version in libs.versions.toml
+      run: |
+        sed -i "s/^calf = .*/calf = \"${{ inputs.version }}\"/" gradle/libs.versions.toml
+
+    - name: Update version in Cargo.toml files
+      run: |
+        sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-file-picker/native/Cargo.toml
+        sed -i "s/^version = .*/version = \"${{ inputs.version }}\"/" calf-share/native/Cargo.toml
+
+    - name: Update mkdocs.yml
+      run: |
+        sed -i "s/calf_version: .*/calf_version: '${{ inputs.version }}'/" mkdocs.yml
+
+    - name: Update compatibility tables
+      run: |
+        NEW_ROW="| ${{ steps.versions.outputs.kotlin }}         | ${{ steps.versions.outputs.compose }}          | ${{ inputs.version }}       |"
+        HEADER="| Kotlin version | Compose version | Calf version |"
+
+        for file in README.md docs/installation.md docs/ui.md; do
+          # Insert new row after the table header separator line
+          sed -i "/^|----------------|-----------------|--------------|$/a\\
+        $NEW_ROW" "$file"
+        done
+
+    - name: Create pull request
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        BRANCH="release/${{ inputs.version }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git checkout -b "$BRANCH"
+        git add -A
+        git commit -m "Update version to ${{ inputs.version }} after release"
+        git push -u origin "$BRANCH"
+        gh pr create \
+          --title "Update version to ${{ inputs.version }}" \
+          --body "Automated version update after successful deploy of ${{ inputs.version }} to Maven Central." \
+          --base main
