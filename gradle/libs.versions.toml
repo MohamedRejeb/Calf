@@ -15,6 +15,8 @@ calf = "0.10.0"
 android-minSdk = "23"
 android-compileSdk = "36"
 
+java = "17"
+
 # For sample
 activity-compose = "1.13.0"
 android-navigation-compose = "2.9.7"

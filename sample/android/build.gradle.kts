@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
 }
 
+val javaVersionString = libs.versions.java.get()
+
 android {
     namespace = "com.mohamedrejeb.calf.android"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -24,11 +26,12 @@ android {
         compose = true
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        val javaVersion = JavaVersion.toVersion(javaVersionString.toInt())
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
     kotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.JVM_11)
+        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(javaVersionString))
     }
     packaging {
         resources {

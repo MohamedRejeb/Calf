@@ -16,8 +16,9 @@ fun Project.androidLibrarySetup() {
             minSdk = libs.versions.android.minSdk.get().toInt()
         }
         compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_1_8
-            targetCompatibility = JavaVersion.VERSION_1_8
+            val javaVersion = JavaVersion.toVersion(libs.versions.java.get().toInt())
+            sourceCompatibility = javaVersion
+            targetCompatibility = javaVersion
         }
     }
 }
