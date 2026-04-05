@@ -67,6 +67,7 @@ import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 
 @Composable
@@ -868,13 +869,13 @@ fun NavigationBarScreen(
                 iosLeadingItems = listOf(
                     UIKitUIBarButtonItem(
                         title = "Back",
-                        image = UIKitImage.SystemName("chevron.left"),
+                        image = UIKitImage.SystemName(SFSymbol.chevronLeft),
                         onClick = { navigateBack() },
                     ),
                 ),
                 iosTrailingItems = listOf(
                     UIKitUIBarButtonItem(
-                        image = UIKitImage.SystemName("magnifyingglass"),
+                        image = UIKitImage.SystemName(SFSymbol.magnifyingglass),
                         onClick = { /* search */ },
                     ),
                 ),
@@ -889,7 +890,7 @@ fun NavigationBarScreen(
                 iosItems = listOf(
                     UIKitUITabBarItem(
                         title = "Home",
-                        image = UIKitImage.SystemName("house.fill"),
+                        image = UIKitImage.SystemName(SFSymbol.houseFill),
                     ),
                     UIKitUITabBarItem(
                         title = "Favorite",

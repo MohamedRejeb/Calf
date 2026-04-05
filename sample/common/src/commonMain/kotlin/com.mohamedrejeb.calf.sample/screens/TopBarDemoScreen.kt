@@ -30,6 +30,7 @@ import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
 import com.mohamedrejeb.calf.ui.navigation.UIKitNavigationBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
 @Composable
@@ -65,11 +66,11 @@ fun TopBarDemoScreen(
                 ),
                 iosTrailingItems = listOf(
                     UIKitUIBarButtonItem(
-                        image = UIKitImage.SystemName("square.and.arrow.up"),
+                        image = UIKitImage.SystemName(SFSymbol.squareAndArrowUp),
                         onClick = { /* share */ },
                     ),
                     UIKitUIBarButtonItem(
-                        image = UIKitImage.SystemName("ellipsis.circle"),
+                        image = UIKitImage.SystemName(SFSymbol.ellipsisCircle),
                         onClick = { /* more */ },
                     ),
                 ),

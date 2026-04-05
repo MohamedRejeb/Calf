@@ -34,6 +34,7 @@ import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 
 @OptIn(ExperimentalCalfUiApi::class)
 @Composable
@@ -47,17 +48,17 @@ fun DropDownScreen(
     val topBarMenuItems = listOf(
         AdaptiveDropDownItem(
             title = "Edit",
-            iosIcon = UIKitImage.SystemName("pencil"),
+            iosIcon = UIKitImage.SystemName(SFSymbol.pencil),
             onClick = { selectedAction = "Editing!" },
         ),
         AdaptiveDropDownItem(
             title = "Duplicate",
-            iosIcon = UIKitImage.SystemName("doc.on.doc"),
+            iosIcon = UIKitImage.SystemName(SFSymbol.documentOnDocument),
             onClick = { selectedAction = "Duplicated!" },
         ),
         AdaptiveDropDownItem(
             title = "Delete",
-            iosIcon = UIKitImage.SystemName("trash"),
+            iosIcon = UIKitImage.SystemName(SFSymbol.trash),
             isDestructive = true,
             onClick = { selectedAction = "Deleted!" },
         ),
@@ -89,7 +90,7 @@ fun DropDownScreen(
         },
         iosTrailingItems = listOf(
             UIKitUIBarButtonItem.withMenu(
-                image = UIKitImage.SystemName("ellipsis.circle"),
+                image = UIKitImage.SystemName(SFSymbol.ellipsisCircle),
                 menuItems = topBarMenuItems,
             ),
         ),

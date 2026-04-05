@@ -43,6 +43,7 @@ import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 
 @OptIn(ExperimentalCalfUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -88,7 +89,7 @@ fun ScaffoldDemoScreen(
                 iosItems = listOf(
                     UIKitUITabBarItem(
                         title = "Home",
-                        image = UIKitImage.SystemName("house.fill"),
+                        image = UIKitImage.SystemName(SFSymbol.houseFill),
                     ),
                     UIKitUITabBarItem(
                         title = "Favorites",

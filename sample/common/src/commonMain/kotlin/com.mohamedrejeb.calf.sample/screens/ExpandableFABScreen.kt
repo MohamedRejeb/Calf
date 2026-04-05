@@ -25,6 +25,7 @@ package com.mohamedrejeb.calf.sample.screens
 //import com.mohamedrejeb.calf.ui.fab.AdaptiveExpandableFAB
 //import com.mohamedrejeb.calf.ui.fab.UIKitExpandableFABItem
 //import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+//import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 
 //@OptIn(ExperimentalCalfUiApi::class)
 //@Composable
@@ -61,20 +62,20 @@ package com.mohamedrejeb.calf.sample.screens
 //                    .padding(16.dp),
 //                iosMainImage = UIKitExpandableFABItem(
 //                    title = "",
-//                    image = UIKitImage.SystemName("plus"),
+//                    image = UIKitImage.SystemName(SFSymbol.plus),
 //                ),
 //                iosItems = listOf(
 //                    UIKitExpandableFABItem(
 //                        title = "",
-//                        image = UIKitImage.SystemName("square.and.pencil"),
+//                        image = UIKitImage.SystemName(SFSymbol.squareAndPencil),
 //                    ),
 //                    UIKitExpandableFABItem(
 //                        title = "",
-//                        image = UIKitImage.SystemName("envelope"),
+//                        image = UIKitImage.SystemName(SFSymbol.envelope),
 //                    ),
 //                    UIKitExpandableFABItem(
 //                        title = "",
-//                        image = UIKitImage.SystemName("square.and.arrow.up"),
+//                        image = UIKitImage.SystemName(SFSymbol.squareAndArrowUp),
 //                    ),
 //                ),
 //                iosOnItemSelected = { index ->
