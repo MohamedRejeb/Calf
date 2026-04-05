@@ -31,6 +31,7 @@ include(
     ":calf-ui",
     ":calf-webview",
     ":calf-sf-symbols",
+    ":calf-sf-symbols:core",
     ":calf-navigation",
     ":calf-io",
     ":calf-file-picker",

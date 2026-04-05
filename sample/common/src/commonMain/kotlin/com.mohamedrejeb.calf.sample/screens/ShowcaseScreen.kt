@@ -74,6 +74,7 @@ import com.mohamedrejeb.calf.ui.timepicker.AdaptiveTimePicker
 import com.mohamedrejeb.calf.ui.timepicker.rememberAdaptiveTimePickerState
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalCalfUiApi::class)
 @Composable
@@ -94,12 +95,12 @@ fun ShowcaseScreen(
     val topBarMenuItems = listOf(
         AdaptiveDropDownItem(
             title = "About Calf",
-            iosIcon = UIKitImage.SystemName("info.circle"),
+            iosIcon = UIKitImage.SystemName(SFSymbol.infoCircle),
             onClick = { showAboutDialog = true },
         ),
         AdaptiveDropDownItem(
             title = "View Source",
-            iosIcon = UIKitImage.SystemName("chevron.left.forwardslash.chevron.right"),
+            iosIcon = UIKitImage.SystemName(SFSymbol.chevronLeftForwardslashChevronRight),
             onClick = { showSourceDialog = true },
         ),
     )
@@ -156,11 +157,11 @@ fun ShowcaseScreen(
                 ),
                 iosTrailingItems = listOf(
                     UIKitUIBarButtonItem.image(
-                        image = UIKitImage.SystemName("square.and.arrow.up"),
+                        image = UIKitImage.SystemName(SFSymbol.squareAndArrowUp),
                         onClick = { showShareDialog = true },
                     ),
                     UIKitUIBarButtonItem.withMenu(
-                        image = UIKitImage.SystemName("ellipsis.circle"),
+                        image = UIKitImage.SystemName(SFSymbol.ellipsisCircle),
                         menuItems = topBarMenuItems,
                     ),
                 ),
@@ -171,15 +172,15 @@ fun ShowcaseScreen(
                 iosItems = listOf(
                     UIKitUITabBarItem(
                         title = "Controls",
-                        image = UIKitImage.SystemName("slider.horizontal.3"),
+                        image = UIKitImage.SystemName(SFSymbol.sliderHorizontal3),
                     ),
                     UIKitUITabBarItem(
                         title = "Pickers",
-                        image = UIKitImage.SystemName("calendar"),
+                        image = UIKitImage.SystemName(SFSymbol.calendar),
                     ),
                     UIKitUITabBarItem(
                         title = "Overlays",
-                        image = UIKitImage.SystemName("square.on.square"),
+                        image = UIKitImage.SystemName(SFSymbol.squareOnSquare),
                     ),
                 ),
                 iosSelectedIndex = selectedTabIndex,
@@ -571,17 +572,17 @@ private fun ShowcasePickersTab(paddingValues: PaddingValues) {
             val items = listOf(
                 AdaptiveDropDownItem(
                     title = "Copy",
-                    iosIcon = UIKitImage.SystemName("doc.on.doc"),
+                    iosIcon = UIKitImage.SystemName(SFSymbol.documentOnDocument),
                     onClick = { selectedAction = "Copied!" },
                 ),
                 AdaptiveDropDownItem(
                     title = "Share",
-                    iosIcon = UIKitImage.SystemName("square.and.arrow.up"),
+                    iosIcon = UIKitImage.SystemName(SFSymbol.squareAndArrowUp),
                     onClick = { selectedAction = "Shared!" },
                 ),
                 AdaptiveDropDownItem(
                     title = "Delete",
-                    iosIcon = UIKitImage.SystemName("trash"),
+                    iosIcon = UIKitImage.SystemName(SFSymbol.trash),
                     isDestructive = true,
                     onClick = { selectedAction = "Deleted!" },
                 ),

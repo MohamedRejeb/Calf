@@ -34,6 +34,7 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.toolbar.AdaptiveToolbar
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 
 private enum class SpacingPattern(val label: String) {
     Default("Default"),
@@ -53,19 +54,19 @@ fun ToolbarScreen(
     var selectedPattern by remember { mutableStateOf(SpacingPattern.Default) }
 
     val backItem = UIKitUIBarButtonItem.image(
-        image = UIKitImage.SystemName("chevron.left"),
+        image = UIKitImage.SystemName(SFSymbol.chevronLeft),
         onClick = { lastAction = "Back tapped" },
     )
     val forwardItem = UIKitUIBarButtonItem.image(
-        image = UIKitImage.SystemName("chevron.right"),
+        image = UIKitImage.SystemName(SFSymbol.chevronRight),
         onClick = { lastAction = "Forward tapped" },
     )
     val shareItem = UIKitUIBarButtonItem.image(
-        image = UIKitImage.SystemName("square.and.arrow.up"),
+        image = UIKitImage.SystemName(SFSymbol.squareAndArrowUp),
         onClick = { lastAction = "Share tapped" },
     )
     val bookmarkItem = UIKitUIBarButtonItem.image(
-        image = UIKitImage.SystemName("book"),
+        image = UIKitImage.SystemName(SFSymbol.book),
         onClick = { lastAction = "Bookmark tapped" },
     )
 

@@ -6,6 +6,7 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         implementation(projects.calfCore)
+        api(projects.calfSfSymbols.core)
         implementation(libs.compose.foundation)
         implementation(libs.compose.material3)
         implementation(libs.kotlinx.coroutines.core)

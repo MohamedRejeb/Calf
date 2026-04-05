@@ -19,6 +19,7 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.toolbar.AdaptiveToolbar
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 import com.mohamedrejeb.calf.ui.web.LoadingState
 import com.mohamedrejeb.calf.ui.web.WebView
 import com.mohamedrejeb.calf.ui.web.rememberWebViewNavigator
@@ -94,32 +95,32 @@ fun WebViewScreen(
         mutableStateOf(
             listOf(
                 UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName("chevron.left"),
+                    image = UIKitImage.SystemName(SFSymbol.chevronLeft),
                     enabled = navigator.canGoBack,
                     onClick = { navigator.navigateBack() },
                 ),
                 UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName("chevron.right"),
+                    image = UIKitImage.SystemName(SFSymbol.chevronRight),
                     enabled = navigator.canGoForward,
                     onClick = { navigator.navigateForward() },
                 ),
                 UIKitUIBarButtonItem.flexibleSpace(),
                 UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName("arrow.clockwise"),
+                    image = UIKitImage.SystemName(SFSymbol.arrowClockwise),
                     onClick = { navigator.reload() },
                 ),
                 UIKitUIBarButtonItem.flexibleSpace(),
                 UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName("xmark"),
+                    image = UIKitImage.SystemName(SFSymbol.xmark),
                     onClick = { navigator.stopLoading() },
                 ),
                 UIKitUIBarButtonItem.flexibleSpace(),
                 UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName("globe"),
+                    image = UIKitImage.SystemName(SFSymbol.globe),
                     onClick = { navigator.loadUrl(INITIAL_URL) },
                 ),
                 UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName("chevron.left.forwardslash.chevron.right"),
+                    image = UIKitImage.SystemName(SFSymbol.chevronLeftForwardslashChevronRight),
                     onClick = { navigator.loadHtml(DUMMY_HTML) },
                 ),
             )
