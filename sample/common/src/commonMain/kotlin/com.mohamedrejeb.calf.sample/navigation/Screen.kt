@@ -133,6 +133,12 @@ enum class Screen(
         icon = Icons.Outlined.Camera,
         category = ScreenCategory.Pickers,
     ),
+    CupertinoIconsCatalog(
+        title = "Cupertino Icons",
+        description = "Browse 1300+ Cupertino-style icons from the bundled SF Symbols font",
+        icon = Icons.Outlined.AutoAwesome,
+        category = ScreenCategory.UIComponents,
+    ),
     Share(
         title = "Content Sharing",
         description = "Share text, URLs, and files using platform-native share sheets",

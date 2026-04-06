@@ -43,11 +43,13 @@ fun HomeScreen(
         .filter { it != Screen.Home && it != Screen.Showcase }
         .groupBy { it.category }
 
+    val colorScheme = MaterialTheme.colorScheme
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars)
             .windowInsetsPadding(WindowInsets.ime)
     ) {
@@ -60,8 +62,6 @@ fun HomeScreen(
             modifier = Modifier
                 .padding(top = 16.dp, bottom = 4.dp)
         )
-
-        val colorScheme = MaterialTheme.colorScheme
 
         Text(
             text = buildAnnotatedString {

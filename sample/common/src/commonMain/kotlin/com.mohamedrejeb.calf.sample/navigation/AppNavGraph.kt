@@ -8,6 +8,7 @@ import com.mohamedrejeb.calf.sample.screens.AlertDialogScreen
 import com.mohamedrejeb.calf.sample.screens.BottomSheetScreen
 import com.mohamedrejeb.calf.sample.screens.ButtonScreen
 import com.mohamedrejeb.calf.sample.screens.CameraPickerScreen
+import com.mohamedrejeb.calf.sample.screens.CupertinoIconsCatalogScreen
 import com.mohamedrejeb.calf.sample.screens.DropDownScreen
 //import com.mohamedrejeb.calf.sample.screens.ExpandableFABScreen
 import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
@@ -144,6 +145,13 @@ fun AppNavGraph(
         }
         composable(Screen.CameraPickerScreen.name) {
             CameraPickerScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.CupertinoIconsCatalog.name) {
+            CupertinoIconsCatalogScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }

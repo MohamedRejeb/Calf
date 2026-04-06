@@ -76,12 +76,15 @@ Use `AdaptiveDropDownItem` to define menu items:
 ```kotlin
 AdaptiveDropDownItem(
     title = "Delete",
-    iosIcon = UIKitImage.systemName("trash"),
+    iosIcon = UIKitImage.SystemName(SFSymbol.trash),
     isDestructive = true,
     isDisabled = false,
     onClick = { /* handle */ },
 )
 ```
+
+!!! tip
+    Use type-safe `SFSymbol` constants from `calf-ui` instead of raw strings. See [SF Symbols & Cupertino Icons](../sf-symbols.md) for details.
 
 ## Sections
 

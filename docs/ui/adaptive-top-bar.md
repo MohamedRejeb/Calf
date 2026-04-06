@@ -107,6 +107,9 @@ UIKitUIBarButtonItem.flexibleSpace()
 UIKitUIBarButtonItem.fixedSpace(width = 16.0)
 ```
 
+!!! tip
+    Use type-safe `SFSymbol` constants from `calf-ui` instead of raw strings for icon names. See [SF Symbols & Cupertino Icons](../sf-symbols.md) for details.
+
 ### Bar Button Item with Menu
 
 You can attach a native drop-down menu to a bar button item on iOS using `UIKitUIBarButtonItem.withMenu()`.
@@ -151,16 +154,16 @@ fun MyScreen() {
         iosTitle = "My Screen",
         iosTrailingItems = listOf(
             UIKitUIBarButtonItem.withMenu(
-                image = UIKitImage.SystemName("ellipsis.circle"),
+                image = UIKitImage.SystemName(SFSymbol.ellipsisCircle),
                 menuItems = listOf(
                     AdaptiveDropDownItem(
                         title = "Edit",
-                        iosIcon = UIKitImage.SystemName("pencil"),
+                        iosIcon = UIKitImage.SystemName(SFSymbol.pencil),
                         onClick = { /* handle */ },
                     ),
                     AdaptiveDropDownItem(
                         title = "Delete",
-                        iosIcon = UIKitImage.SystemName("trash"),
+                        iosIcon = UIKitImage.SystemName(SFSymbol.trash),
                         isDestructive = true,
                         onClick = { /* handle */ },
                     ),
