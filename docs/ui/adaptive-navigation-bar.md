@@ -85,7 +85,10 @@ Use `UIKitUITabBarItem` to define items for the iOS UITabBar:
 ```kotlin
 UIKitUITabBarItem(
     title = "Home",
-    image = UIKitImage.systemName("house"),
-    selectedImage = UIKitImage.systemName("house.fill"),
+    image = UIKitImage.SystemName(SFSymbol.house),
+    selectedImage = UIKitImage.SystemName(SFSymbol.houseFill),
 )
 ```
+
+!!! tip
+    Use type-safe `SFSymbol` constants from `calf-ui` instead of raw strings. See [SF Symbols & Cupertino Icons](../sf-symbols.md) for details.

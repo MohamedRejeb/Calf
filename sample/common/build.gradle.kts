@@ -34,7 +34,7 @@ kotlin {
         implementation(projects.calfNavigation)
         implementation(projects.calfCameraPicker)
         implementation(projects.calfShare)
-        implementation(projects.calfSfSymbols.core)
+        implementation(projects.calfCupertinoIcons)
 
         // Coil
         implementation(libs.coil.compose)

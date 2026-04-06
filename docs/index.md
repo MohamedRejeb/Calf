@@ -26,7 +26,7 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 | **calf-map**          | Native Maps wrapper                       | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-media**        | Video/Audio player                        | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-notification** | Notification manager                      | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
-| **calf-sf-symbols**   | Apple SF Symbols icons                    | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
+| **calf-cupertino-icons** | Cross-platform Cupertino icons          | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
 
 > The main focus for now is Android and iOS, but more Desktop components are coming that allows you to create adaptive UIs for Desktop as well (Windows, macOS, Linux)
 

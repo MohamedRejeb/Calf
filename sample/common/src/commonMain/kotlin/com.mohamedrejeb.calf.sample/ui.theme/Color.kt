@@ -6,15 +6,21 @@ import androidx.compose.ui.graphics.Color
 val Blue400 = Color(0xFF4572E8)
 val Blue200 = Color(0xFF90B0F5)
 val Blue700 = Color(0xFF2B52B4)
+val Blue900 = Color(0xFF0D2260)
+val Blue100 = Color(0xFFD6E2FC)
 
 // Secondary
 val Teal400 = Color(0xFF26A69A)
 val Teal200 = Color(0xFF80CBC4)
 val Teal700 = Color(0xFF00796B)
+val Teal900 = Color(0xFF003D33)
+val Teal100 = Color(0xFFCCEEEB)
 
 // Tertiary
 val Purple400 = Color(0xFF7E57C2)
 val Purple200 = Color(0xFFB39DDB)
+val Purple700 = Color(0xFF4A2D80)
+val Purple100 = Color(0xFFE8DEFF)
 
 // Light theme surfaces
 val SurfaceLight = Color(0xFFFBFBFF)
