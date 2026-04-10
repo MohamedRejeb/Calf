@@ -1,6 +1,6 @@
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
-package com.mohamedrejeb.calf.sf.symbols
+package com.mohamedrejeb.calf.cupertino.icons
 
 /**
  * Cupertino icon codepoints for use with the bundled SF Symbols font.

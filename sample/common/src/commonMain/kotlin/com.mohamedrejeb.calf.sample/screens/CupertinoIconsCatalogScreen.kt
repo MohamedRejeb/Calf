@@ -45,7 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
-import com.mohamedrejeb.calf.sf.symbols.CupertinoIcon
+import com.mohamedrejeb.calf.cupertino.icons.CupertinoIcon
 
 private const val TAB_ALL = "All"
 

@@ -2,7 +2,7 @@
 
 package com.mohamedrejeb.calf.sample.screens
 
-import com.mohamedrejeb.calf.sf.symbols.CupertinoIcons
+import com.mohamedrejeb.calf.cupertino.icons.CupertinoIcons
 
 internal data class IconEntry(
     val name: String,
