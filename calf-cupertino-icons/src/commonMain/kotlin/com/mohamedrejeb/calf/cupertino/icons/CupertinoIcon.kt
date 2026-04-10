@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sf.symbols
+package com.mohamedrejeb.calf.cupertino.icons
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -10,6 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -43,13 +47,24 @@ fun CupertinoIcon(
     tint: Color = LocalContentColor.current,
     contentDescription: String? = null,
 ) {
-    val fontFamily = rememberSfSymbolsFontFamily()
+    val fontFamily = rememberCupertinoIconsFontFamily()
     val density = LocalDensity.current
     val fontSize = with(density) { size.toSp() }
     val iconChar = remember(iconCode) { Char(iconCode).toString() }
 
+    val semanticsModifier = if (contentDescription != null) {
+        Modifier.semantics {
+            this.contentDescription = contentDescription
+            this.role = Role.Image
+        }
+    } else {
+        Modifier
+    }
+
     Box(
-        modifier = modifier.size(size),
+        modifier = modifier
+            .size(size)
+            .then(semanticsModifier),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -70,7 +85,7 @@ fun CupertinoIcon(
 }
 
 @Composable
-private fun rememberSfSymbolsFontFamily(): FontFamily {
+private fun rememberCupertinoIconsFontFamily(): FontFamily {
     val font = Font(Res.font.sf_symbols)
     return remember(font) { FontFamily(font) }
 }
