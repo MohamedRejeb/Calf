@@ -69,6 +69,10 @@ Cross-platform Cupertino icon rendering using a bundled open-source font (MIT li
 
 Renders 1,322 icons on **all platforms** — Android, iOS, Desktop, and Web.
 
+| Android | iOS | Desktop | Web |
+|---------|-----|---------|-----|
+| ![Android](images/cupertino-icons-android.png) | ![iOS](images/cupertino-icons-ios.png) | ![Desktop](images/cupertino-icons-desktop.png) | ![Web](images/cupertino-icons-web.png) |
+
 ### Installation
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-cupertino-icons)](https://search.maven.org/search?q=g:com.mohamedrejeb.calf)
@@ -82,6 +86,9 @@ commonMain.dependencies {
 ### Usage
 
 ```kotlin
+import com.mohamedrejeb.calf.cupertino.icons.CupertinoIcon
+import com.mohamedrejeb.calf.cupertino.icons.CupertinoIcons
+
 // Basic usage
 CupertinoIcon(CupertinoIcons.houseFill)
 
@@ -90,6 +97,7 @@ CupertinoIcon(
     iconCode = CupertinoIcons.heartFill,
     size = 32.dp,
     tint = Color.Red,
+    contentDescription = "Favorite",
 )
 ```
 
@@ -104,7 +112,7 @@ fun CupertinoIcon(
     modifier: Modifier = Modifier,
     size: Dp = 24.dp,           // Icon size
     tint: Color = LocalContentColor.current,  // Icon color
-    contentDescription: String? = null,
+    contentDescription: String? = null,  // Accessibility description
 )
 ```
 

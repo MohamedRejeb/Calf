@@ -26,7 +26,7 @@ Calf stands for **C**ompose **A**daptive **L**ook & **F**eel
 | **calf-map**          | Native Maps wrapper                       | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-media**        | Video/Audio player                        | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
 | **calf-notification** | Notification manager                      | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
-| **calf-cupertino-icons** | Cross-platform Cupertino icons          | Coming soon... 🚧 🚧                 | Coming soon... 🚧 🚧                                                                                                                                                                              |
+| **calf-cupertino-icons** | Cross-platform Cupertino icons          | Android, iOS, Desktop, Web(Js, Wasm) | [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-cupertino-icons)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-cupertino-icons%22) |
 
 > The main focus for now is Android and iOS, but more Desktop components are coming that allows you to create adaptive UIs for Desktop as well (Windows, macOS, Linux)
 
