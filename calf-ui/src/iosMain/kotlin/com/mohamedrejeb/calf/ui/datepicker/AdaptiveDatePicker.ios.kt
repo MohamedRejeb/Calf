@@ -16,7 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
+import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.core.InternalCalfApi
+import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIDatePicker
@@ -49,6 +51,8 @@ actual fun AdaptiveDatePicker(
         )
     }
 
+    val layoutDirection = LocalLayoutDirection.current
+
     val absoluteElevation = LocalAbsoluteTonalElevation.current
 
     val containerColorAtElevation =
@@ -56,6 +60,10 @@ actual fun AdaptiveDatePicker(
             color = colors.containerColor,
             elevation = absoluteElevation
         )
+
+    LaunchedEffect(layoutDirection) {
+        datePicker.applyLayoutDirection(layoutDirection)
+    }
 
     LaunchedEffect(colors, containerColorAtElevation) {
         datePickerManager.applyColors(

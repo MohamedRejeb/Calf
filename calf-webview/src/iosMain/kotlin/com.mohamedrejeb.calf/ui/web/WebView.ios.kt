@@ -5,9 +5,13 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
+import platform.UIKit.UISemanticContentAttributeForceLeftToRight
+import platform.UIKit.UISemanticContentAttributeForceRightToLeft
 import com.mohamedrejeb.calf.ui.web.helper.NSKeyValueObservingProtocol
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.COpaquePointer
@@ -55,6 +59,7 @@ actual fun WebView(
     onCreated: () -> Unit,
     onDispose: () -> Unit,
 ) {
+    val layoutDirection = LocalLayoutDirection.current
     val webView = state.webView
 
     webView?.let { wv ->
@@ -109,6 +114,10 @@ actual fun WebView(
                 onCreated()
                 setUserInteractionEnabled(true)
                 allowsBackForwardNavigationGestures = captureBackPresses
+                semanticContentAttribute = when (layoutDirection) {
+                    LayoutDirection.Rtl -> UISemanticContentAttributeForceRightToLeft
+                    else -> UISemanticContentAttributeForceLeftToRight
+                }
                 applySettings(state.settings)
                 state.navigator = navigator
                 state.webView = this

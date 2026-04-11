@@ -2,6 +2,8 @@
 
 package com.mohamedrejeb.calf.ui.fab
 
+import androidx.compose.ui.unit.LayoutDirection
+import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import com.mohamedrejeb.calf.ui.utils.toUIImage
 import kotlinx.cinterop.BetaInteropApi
@@ -126,6 +128,10 @@ internal class ExpandableFABManager(
         layoutButtons()
 
         NSLog("[ExpandableFAB] updateItems: created ${items.size} item buttons + main button")
+    }
+
+    fun applyLayoutDirection(layoutDirection: LayoutDirection) {
+        containerView?.applyLayoutDirection(layoutDirection)
     }
 
     fun setExpanded(expanded: Boolean) {

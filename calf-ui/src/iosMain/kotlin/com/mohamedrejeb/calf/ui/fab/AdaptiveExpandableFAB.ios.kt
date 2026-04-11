@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 
@@ -86,6 +87,7 @@ private fun LiquidGlassExpandableFAB(
     iosOnItemSelected: (Int) -> Unit,
 ) {
     val viewController = LocalUIViewController.current
+    val layoutDirection = LocalLayoutDirection.current
     val onExpandedChangeState by rememberUpdatedState(onExpandedChange)
     val onItemSelectedState by rememberUpdatedState(iosOnItemSelected)
 
@@ -102,6 +104,10 @@ private fun LiquidGlassExpandableFAB(
         onDispose {
             fabManager.detach()
         }
+    }
+
+    LaunchedEffect(layoutDirection) {
+        fabManager.applyLayoutDirection(layoutDirection)
     }
 
     LaunchedEffect(mainImage, iosItems) {

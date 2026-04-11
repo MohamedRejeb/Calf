@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.Dp
 import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
@@ -43,6 +44,7 @@ actual fun AdaptiveBottomSheet(
 ) {
     val compositionLocalContext = rememberUpdatedState(currentCompositionLocalContext)
     val currentUIViewController = LocalUIViewController.current
+    val layoutDirection = LocalLayoutDirection.current
 
     val modifierState = rememberUpdatedState(modifier)
     val containerColorState = rememberUpdatedState(containerColor)
@@ -110,6 +112,10 @@ actual fun AdaptiveBottomSheet(
     /**
      * Update ios sheet manager properties
      */
+
+    LaunchedEffect(sheetManager, layoutDirection) {
+        sheetManager.layoutDirection = layoutDirection
+    }
 
     LaunchedEffect(sheetManager, isDark) {
         sheetManager.applyTheme(isDark)
