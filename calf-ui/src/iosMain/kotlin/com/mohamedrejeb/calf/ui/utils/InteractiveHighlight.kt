@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.util.fastCoerceIn
 import com.kyant.backdrop.RuntimeShader
-import com.kyant.backdrop.asComposeShader
 import com.kyant.backdrop.asSkikoRuntimeShader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -80,7 +79,7 @@ half4 main(float2 coord) {
                         )
                     }
                     drawRect(
-                        ShaderBrush(shader.asComposeShader()),
+                        ShaderBrush(shader.asSkikoRuntimeShader().makeShader()),
                         blendMode = BlendMode.Plus
                     )
                 } else {

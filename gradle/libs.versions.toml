@@ -9,6 +9,8 @@ kotlinx-browser = "0.5.0"
 vanniktech-maven-publish = "0.36.0"
 documentfile = "1.1.0"
 coil = "3.4.0"
+kyant-backdrop = "2.0.0-alpha03"
+kyant-shapes = "1.2.0"
 
 calf = "0.11.0"
 
@@ -57,6 +59,9 @@ compose-material3 = { group = "org.jetbrains.compose.material3", name = "materia
 compose-material-icons-extended = { group = "org.jetbrains.compose.material", name = "material-icons-extended", version.ref = "material-icons-extended" }
 
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
+
+kyant-backdrop = { module = "io.github.kyant0:backdrop", version.ref = "kyant-backdrop" }
+kyant-shapes = { module = "io.github.kyant0:shapes", version.ref = "kyant-shapes" }
 
 # Android
 documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
