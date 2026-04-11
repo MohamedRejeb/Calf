@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.dialog
 
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.*
 import com.mohamedrejeb.calf.core.*
 import com.mohamedrejeb.calf.ui.dialog.uikit.*
@@ -25,6 +26,7 @@ class AlertDialogManager internal constructor(
     internal var onDismissRequest: () -> Unit,
     internal var iosProperties: AlertDialogIosProperties,
     internal var properties: DialogProperties,
+    internal var layoutDirection: LayoutDirection = LayoutDirection.Ltr,
 ) : NSObject() {
 
     /**
@@ -126,6 +128,8 @@ class AlertDialogManager internal constructor(
     fun showAlertDialog() {
         if (isPresented || isAnimating) return
         isAnimating = true
+
+        dialogUIViewController.applyLayoutDirection(layoutDirection)
 
         parentUIViewController.presentViewController(
             viewControllerToPresent = dialogUIViewController,

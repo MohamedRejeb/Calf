@@ -28,7 +28,9 @@ import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -65,6 +67,7 @@ actual fun AdaptiveTopBar(
     iosConfiguration: UIKitNavigationBarConfiguration,
 ) {
     val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
     val viewController = LocalUIViewController.current
 
     // Write the measured navigation bar height to the CompositionLocal so AdaptiveScaffold
@@ -82,6 +85,10 @@ actual fun AdaptiveTopBar(
         TopBarManager(
             navBar = navBarView,
         )
+    }
+
+    LaunchedEffect(layoutDirection) {
+        navBarView.applyLayoutDirection(layoutDirection)
     }
 
     LaunchedEffect(iosTitle, iosLeadingItems, iosTrailingItems, iosConfiguration) {

@@ -31,7 +31,9 @@ import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -61,6 +63,7 @@ actual fun AdaptiveNavigationBar(
     content: @Composable RowScope.() -> Unit
 ) {
     val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
     val viewController = LocalUIViewController.current
 
     // Write the measured tab bar height to the CompositionLocal so AdaptiveScaffold
@@ -81,6 +84,10 @@ actual fun AdaptiveNavigationBar(
             tabBar = tabBarView,
             onItemSelected = { onItemSelectedState(it) },
         )
+    }
+
+    LaunchedEffect(layoutDirection) {
+        tabBarView.applyLayoutDirection(layoutDirection)
     }
 
     LaunchedEffect(iosItems, iosSelectedIndex) {

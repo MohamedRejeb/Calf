@@ -26,7 +26,9 @@ import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.toUIImage
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -67,6 +69,7 @@ actual fun BoxScope.AdaptiveDropDown(
     materialContent: @Composable ColumnScope.() -> Unit,
 ) {
     val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
     val viewController = LocalUIViewController.current
 
     val menuDelegate = remember { DropDownMenuDelegate() }
@@ -96,6 +99,10 @@ actual fun BoxScope.AdaptiveDropDown(
             button.removeFromSuperview()
             menuDelegate.button = null
         }
+    }
+
+    LaunchedEffect(layoutDirection) {
+        menuDelegate.button?.applyLayoutDirection(layoutDirection)
     }
 
     // Update button position and size based on compose layout

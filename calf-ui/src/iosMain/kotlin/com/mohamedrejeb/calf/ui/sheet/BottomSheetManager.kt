@@ -4,7 +4,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.ComposeUIViewController
+import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.applyTheme
 import com.mohamedrejeb.calf.ui.utils.toUIColor
 import platform.UIKit.UIAdaptivePresentationControllerDelegateProtocol
@@ -30,7 +32,8 @@ internal class BottomSheetManager(
     private var containerColor: Color,
     private var onDismiss: () -> Unit,
     private val confirmValueChange: (SheetValue) -> Boolean,
-    private val content: @Composable () -> Unit
+    private val content: @Composable () -> Unit,
+    internal var layoutDirection: LayoutDirection = LayoutDirection.Ltr,
 ) {
     private var isInitialized = false
 
@@ -109,6 +112,7 @@ internal class BottomSheetManager(
 
         applyTheme(isDark)
         applyContainerColor(containerColor)
+        bottomSheetUIViewController.applyLayoutDirection(layoutDirection)
 
         parentUIViewController.presentViewController(
             viewControllerToPresent = bottomSheetUIViewController,

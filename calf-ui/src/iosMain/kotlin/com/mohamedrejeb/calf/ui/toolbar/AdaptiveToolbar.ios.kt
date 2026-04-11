@@ -11,8 +11,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.uikit.LocalUIViewController
+import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
+import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 
 /**
@@ -37,6 +39,7 @@ actual fun AdaptiveToolbar(
         return
 
     val viewController = LocalUIViewController.current
+    val layoutDirection = LocalLayoutDirection.current
 
     val toolbarManager = remember {
         ToolbarManager()
@@ -45,6 +48,10 @@ actual fun AdaptiveToolbar(
     DisposableEffect(viewController) {
         toolbarManager.attachTo(viewController.view)
         onDispose { toolbarManager.detach() }
+    }
+
+    LaunchedEffect(layoutDirection) {
+        toolbarManager.applyLayoutDirection(layoutDirection)
     }
 
     LaunchedEffect(iosItems) {

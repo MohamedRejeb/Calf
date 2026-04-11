@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogProperties
@@ -44,6 +45,7 @@ actual fun AdaptiveAlertDialog(
     modifier: Modifier,
 ) {
     val currentUIViewController = LocalUIViewController.current
+    val layoutDirection = LocalLayoutDirection.current
 
     fun createIosDialogProperties(): AlertDialogIosProperties {
         return AlertDialogIosProperties(
@@ -72,6 +74,7 @@ actual fun AdaptiveAlertDialog(
             onDismissRequest = onConfirm,
             iosProperties = createIosDialogProperties(),
             properties = properties,
+            layoutDirection = layoutDirection,
         )
     }
 
@@ -87,10 +90,12 @@ actual fun AdaptiveAlertDialog(
         iosDismissButtonStyle,
         iosConfirmButtonIsPreferred,
         properties,
+        layoutDirection,
     ) {
         alertDialogManager.onDismissRequest = onDismiss
         alertDialogManager.iosProperties = createIosDialogProperties()
         alertDialogManager.properties = properties
+        alertDialogManager.layoutDirection = layoutDirection
     }
 
     DisposableEffect(Unit) {
@@ -112,6 +117,7 @@ actual fun AdaptiveBasicAlertDialog(
     materialContent: @Composable () -> Unit,
 ) {
     val currentUIViewController = LocalUIViewController.current
+    val layoutDirection = LocalLayoutDirection.current
 
     val alertDialogManager = remember(currentUIViewController) {
         AlertDialogManager(
@@ -119,13 +125,15 @@ actual fun AdaptiveBasicAlertDialog(
             onDismissRequest = onDismissRequest,
             iosProperties = iosProperties,
             properties = properties,
+            layoutDirection = layoutDirection,
         )
     }
 
-    LaunchedEffect(onDismissRequest, iosProperties, properties) {
+    LaunchedEffect(onDismissRequest, iosProperties, properties, layoutDirection) {
         alertDialogManager.onDismissRequest = onDismissRequest
         alertDialogManager.iosProperties = iosProperties
         alertDialogManager.properties = properties
+        alertDialogManager.layoutDirection = layoutDirection
     }
 
     DisposableEffect(Unit) {

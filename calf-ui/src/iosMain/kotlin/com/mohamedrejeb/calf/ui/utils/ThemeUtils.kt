@@ -1,6 +1,9 @@
 package com.mohamedrejeb.calf.ui.utils
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.LayoutDirection
+import platform.UIKit.UISemanticContentAttributeForceLeftToRight
+import platform.UIKit.UISemanticContentAttributeForceRightToLeft
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIView
 import platform.UIKit.UIViewController
@@ -21,6 +24,17 @@ internal fun UIView.applyTheme(dark : Boolean){
             else
                 UIUserInterfaceStyle.UIUserInterfaceStyleLight
     }
+}
+
+internal fun UIView.applyLayoutDirection(layoutDirection: LayoutDirection) {
+    semanticContentAttribute = when (layoutDirection) {
+        LayoutDirection.Rtl -> UISemanticContentAttributeForceRightToLeft
+        else -> UISemanticContentAttributeForceLeftToRight
+    }
+}
+
+internal fun UIViewController.applyLayoutDirection(layoutDirection: LayoutDirection) {
+    view.applyLayoutDirection(layoutDirection)
 }
 
 internal fun isDark(color: Color): Boolean {

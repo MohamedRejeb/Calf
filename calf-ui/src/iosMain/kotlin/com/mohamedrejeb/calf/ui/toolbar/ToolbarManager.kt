@@ -2,9 +2,11 @@
 
 package com.mohamedrejeb.calf.ui.toolbar
 
+import androidx.compose.ui.unit.LayoutDirection
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.navigation.BarButtonActionHandler
 import com.mohamedrejeb.calf.ui.navigation.toUIBarButtonItem
+import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIToolbar
@@ -50,6 +52,10 @@ internal class ToolbarManager {
         if (!isAttached) return
         toolbar.removeFromSuperview()
         isAttached = false
+    }
+
+    fun applyLayoutDirection(layoutDirection: LayoutDirection) {
+        toolbar.applyLayoutDirection(layoutDirection)
     }
 
     fun update(items: List<UIKitUIBarButtonItem>) {
