@@ -51,8 +51,6 @@ include(
     ":calf-maps",
     ":calf-camera-picker",
     ":calf-share",
-    ":external:backdrop",
-    ":external:shapes",
     // Sample modules
     ":sample:android",
     ":sample:desktop",

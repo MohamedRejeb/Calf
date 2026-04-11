@@ -21,7 +21,7 @@ kotlin {
     }
 
     sourceSets.iosMain.dependencies {
-        implementation(projects.external.backdrop)
-        implementation(projects.external.shapes)
+        implementation(libs.kyant.backdrop)
+        implementation(libs.kyant.shapes)
     }
 }

@@ -141,9 +141,7 @@ fun LiquidGlassButton(
                     )
                     .then(
                         if (enabled)
-                            Modifier
-                                .then(interactiveHighlight.modifier)
-                                .then(interactiveHighlight.gestureModifier)
+                            interactiveHighlight.gestureModifier
                         else
                             Modifier
                     )

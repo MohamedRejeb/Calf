@@ -65,6 +65,10 @@ venv/
 .claude
 
 plans
+tasks
+
+AGENTS.md
+CLAUDE.md
 
 kotlin-js-store
 
