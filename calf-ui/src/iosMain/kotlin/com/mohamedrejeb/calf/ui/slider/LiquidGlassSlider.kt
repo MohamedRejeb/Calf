@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -92,12 +93,14 @@ fun LiquidGlassSlider(
         contentAlignment = Alignment.CenterStart
     ) {
         val trackWidth = constraints.maxWidth
+        val thumbWidthPx = with(LocalDensity.current) { LiquidGlassSliderDefaults.ThumbWidth.toPx() }
 
         val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
         val animationScope = rememberCoroutineScope()
         val currentOnValueChange by rememberUpdatedState(onValueChange)
         val currentOnValueChangeFinished by rememberUpdatedState(onValueChangeFinished)
         var didDrag by remember { mutableStateOf(false) }
+        var dragStartTouchOffset by remember { mutableStateOf(0f) }
         val dampedDragAnimation = remember(animationScope) {
             DampedDragAnimation(
                 animationScope = animationScope,
@@ -106,7 +109,9 @@ fun LiquidGlassSlider(
                 visibilityThreshold = 0.05f,
                 initialScale = 1f,
                 pressedScale = LiquidGlassSliderDefaults.PressedScale,
-                onDragStarted = {},
+                onDragStarted = { position ->
+                    dragStartTouchOffset = position.x - thumbWidthPx / 2f
+                },
                 onDragStopped = {
                     if (didDrag) {
                         currentOnValueChange(targetValue)
@@ -118,12 +123,31 @@ fun LiquidGlassSlider(
                     if (!didDrag) {
                         didDrag = dragAmount.x != 0f
                     }
-                    val delta =
-                        (valueRange.endInclusive - valueRange.start) * (dragAmount.x / trackWidth)
+
+                    // Compute thumb's raw translationX (same formula as graphicsLayer, without RTL sign)
+                    val rawTranslationX = (-thumbWidthPx / 2f + trackWidth * progress)
+                        .fastCoerceIn(-thumbWidthPx / 4f, trackWidth - thumbWidthPx * 3f / 4f)
+
+                    // Compute finger's absolute position on the track
+                    // rawTranslationX + change.position.x cancels out animation-induced coordinate shifts,
+                    // giving the true finger position regardless of thumb animation lag
+                    val fingerOnTrack = if (isLtr) {
+                        rawTranslationX + change.position.x - dragStartTouchOffset
+                    } else {
+                        trackWidth - thumbWidthPx - rawTranslationX + change.position.x - dragStartTouchOffset
+                    }
+
+                    val newProgress = (fingerOnTrack / trackWidth).coerceIn(0f, 1f)
+
                     change.consume()
                     currentOnValueChange(
-                        if (isLtr) (targetValue + delta).coerceIn(valueRange)
-                        else (targetValue - delta).coerceIn(valueRange)
+                        if (isLtr) {
+                            (valueRange.start + newProgress * (valueRange.endInclusive - valueRange.start))
+                                .coerceIn(valueRange)
+                        } else {
+                            (valueRange.endInclusive - newProgress * (valueRange.endInclusive - valueRange.start))
+                                .coerceIn(valueRange)
+                        }
                     )
                 }
             )
