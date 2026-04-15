@@ -359,11 +359,9 @@ To request the post notifications permission, use `Permission.Notification`.
 
 ##### Android
 
-On Android API version 33 and up, add the following permission to your `AndroidManifest.xml` file:
+The `android.permission.POST_NOTIFICATIONS` permission is automatically included via manifest merger when you add the `calf-permissions-notifications` dependency. No manual manifest entry is needed.
 
-```xml
-<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-```
+This permission applies to Android API 33 and up. On older versions, notifications are allowed by default.
 
 ##### iOS
 
@@ -373,9 +371,7 @@ No `Info.plist` entry is required. iOS notifications are requested at runtime vi
 
 To request the remote notification permission, use `Permission.RemoteNotification`.
 
-##### Android
-
-This permission is always granted on Android.
+This permission is **iOS-only**. It requests authorization for remote (push) notifications via `UNUserNotificationCenter`. On Android, remote notifications (e.g. via FCM) do not require a separate permission — the `POST_NOTIFICATIONS` permission covers both local and remote notifications. Using `Permission.RemoteNotification` on Android will always return `PermissionStatus.Granted`.
 
 ##### iOS
 
