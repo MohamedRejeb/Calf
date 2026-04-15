@@ -13,11 +13,7 @@ internal actual fun registerNotificationPermission(permission: Permission) {
 }
 
 internal actual fun registerRemoteNotificationPermission(permission: Permission) {
-    AndroidPermissionRegistry.register(
-        permission,
-        AndroidPermissionMapping(
-            permissionString = Manifest.permission.RECEIVE_BOOT_COMPLETED,
-            alwaysGranted = true,
-        ),
-    )
+    // No-op on Android. Remote notification (push) doesn't require a separate
+    // permission, the POST_NOTIFICATIONS permission covers both local and remote.
+    // This permission is iOS-only (UNUserNotificationCenter).
 }
