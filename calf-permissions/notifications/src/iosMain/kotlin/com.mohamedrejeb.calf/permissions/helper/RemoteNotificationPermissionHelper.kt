@@ -2,7 +2,11 @@ package com.mohamedrejeb.calf.permissions.helper
 
 import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
 import com.mohamedrejeb.calf.permissions.PermissionStatus
+import platform.UIKit.UIApplication
+import platform.UIKit.registerForRemoteNotifications
 import platform.UserNotifications.UNAuthorizationOptionAlert
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import platform.UserNotifications.UNAuthorizationOptionBadge
 import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNAuthorizationStatusAuthorized
@@ -25,10 +29,14 @@ internal class RemoteNotificationPermissionHelper : PermissionHelper {
                             .or(UNAuthorizationOptionAlert)
                             .or(UNAuthorizationOptionBadge)
                     ) { isOk, error ->
-                        if (isOk && error == null)
+                        if (isOk && error == null) {
+                            dispatch_async(dispatch_get_main_queue()) {
+                                UIApplication.sharedApplication.registerForRemoteNotifications()
+                            }
                             onPermissionResult(true)
-                        else
+                        } else {
                             onPermissionResult(false)
+                        }
                     }
             }
         )
