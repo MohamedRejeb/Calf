@@ -91,7 +91,7 @@ actual fun AdaptiveNavigationBar(
     }
 
     LaunchedEffect(iosItems, iosSelectedIndex) {
-        tabBarManager.setItems(iosItems, iosSelectedIndex)
+        tabBarManager.setItems(iosItems, iosSelectedIndex, density.density)
     }
 
     SideEffect {

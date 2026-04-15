@@ -98,6 +98,7 @@ actual fun AdaptiveTopBar(
             trailingItems = iosTrailingItems,
             configuration = iosConfiguration,
             isLiquidGlassEnabled = isLiquidGlassEnabled,
+            density = density.density,
         )
     }
 

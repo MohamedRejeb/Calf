@@ -58,7 +58,7 @@ internal class ToolbarManager {
         toolbar.applyLayoutDirection(layoutDirection)
     }
 
-    fun update(items: List<UIKitUIBarButtonItem>) {
+    fun update(items: List<UIKitUIBarButtonItem>, density: Float) {
         if (items == currentItems) return
 
         // Create action handlers for each item (onClick is ignored when a menu is present)
@@ -68,7 +68,7 @@ internal class ToolbarManager {
 
         // Convert to UIBarButtonItems — no automatic spacing added
         val barItems = items.mapIndexed { index, item ->
-            item.toUIBarButtonItem(actionHandlers[index])
+            item.toUIBarButtonItem(actionHandlers[index], density)
         }
 
         toolbar.setItems(barItems, animated = currentItems.isNotEmpty())
