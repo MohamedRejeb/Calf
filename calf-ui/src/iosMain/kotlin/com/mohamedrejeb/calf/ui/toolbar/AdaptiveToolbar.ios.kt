@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.uikit.LocalUIViewController
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
@@ -39,6 +40,7 @@ actual fun AdaptiveToolbar(
         return
 
     val viewController = LocalUIViewController.current
+    val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
 
     val toolbarManager = remember {
@@ -55,6 +57,6 @@ actual fun AdaptiveToolbar(
     }
 
     LaunchedEffect(iosItems) {
-        toolbarManager.update(items = iosItems)
+        toolbarManager.update(items = iosItems, density = density.density)
     }
 }

@@ -3,6 +3,8 @@ package com.mohamedrejeb.calf.ui.uikit
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /**
  * Represents an image that can be converted to a UIImage on iOS.
@@ -27,13 +29,13 @@ sealed interface UIKitImage {
      * On iOS, this will be converted to a UIImage using rasterization.
      *
      * @param imageVector The Compose [ImageVector] to use.
-     * @param width The width in pixels for rasterization on iOS. Default is 24.
-     * @param height The height in pixels for rasterization on iOS. Default is 24.
+     * @param width The width in dp for rasterization on iOS. Default is 24.dp.
+     * @param height The height in dp for rasterization on iOS. Default is 24.dp.
      */
     data class Vector(
         val imageVector: ImageVector,
-        val width: Int = 24,
-        val height: Int = 24,
+        val width: Dp = 24.dp,
+        val height: Dp = 24.dp,
     ) : UIKitImage
 
     /**

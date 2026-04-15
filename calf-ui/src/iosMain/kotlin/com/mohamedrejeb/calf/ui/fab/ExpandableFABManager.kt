@@ -93,6 +93,7 @@ internal class ExpandableFABManager(
     fun updateItems(
         mainImage: UIKitExpandableFABItem,
         items: List<UIKitExpandableFABItem>,
+        density: Float,
     ) {
         val container = containerView ?: run {
             NSLog("[ExpandableFAB] updateItems: containerView is null, skipping")
@@ -112,7 +113,7 @@ internal class ExpandableFABManager(
 
         // Create item buttons (hidden initially, scaled down)
         val newItemButtons = items.mapIndexed { index, item ->
-            createItemButton(item, index).apply {
+            createItemButton(item, index, density).apply {
                 alpha = 0.0
                 setTransform(CGAffineTransformMakeScale(0.3, 0.3))
                 container.addSubview(this)
@@ -121,7 +122,7 @@ internal class ExpandableFABManager(
         itemButtons = newItemButtons
 
         // Create main button
-        val newMainButton = createMainButton(mainImage)
+        val newMainButton = createMainButton(mainImage, density)
         container.addSubview(newMainButton)
         mainButton = newMainButton
 
@@ -152,7 +153,7 @@ internal class ExpandableFABManager(
         onExpandedChange(false)
     }
 
-    private fun createMainButton(item: UIKitExpandableFABItem): UIButton {
+    private fun createMainButton(item: UIKitExpandableFABItem, density: Float): UIButton {
         val symbolConfig = UIImageSymbolConfiguration.configurationWithPointSize(20.0)
 
         val config = if (useGlass) {
@@ -161,7 +162,7 @@ internal class ExpandableFABManager(
             UIButtonConfiguration.filledButtonConfiguration()
         }.apply {
             setPreferredSymbolConfigurationForImage(symbolConfig)
-            item.image?.toUIImage()?.let { setImage(it) }
+            item.image?.toUIImage(density)?.let { setImage(it) }
         }
 
         val handler = mainActionHandler!!
@@ -175,7 +176,7 @@ internal class ExpandableFABManager(
         }
     }
 
-    private fun createItemButton(item: UIKitExpandableFABItem, index: Int): UIButton {
+    private fun createItemButton(item: UIKitExpandableFABItem, index: Int, density: Float): UIButton {
         val symbolConfig = UIImageSymbolConfiguration.configurationWithPointSize(18.0)
 
         val config = if (useGlass) {
@@ -184,7 +185,7 @@ internal class ExpandableFABManager(
             UIButtonConfiguration.filledButtonConfiguration()
         }.apply {
             setPreferredSymbolConfigurationForImage(symbolConfig)
-            item.image?.toUIImage()?.let { setImage(it) }
+            item.image?.toUIImage(density)?.let { setImage(it) }
         }
 
         val handler = itemActionHandlers[index]

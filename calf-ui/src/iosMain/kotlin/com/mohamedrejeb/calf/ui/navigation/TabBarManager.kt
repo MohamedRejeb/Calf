@@ -40,12 +40,13 @@ internal class TabBarManager(
     fun setItems(
         items: List<UIKitUITabBarItem>,
         selectedIndex: Int,
+        density: Float,
     ) {
         if (items.isEmpty()) return
 
         if (items != currentItems) {
             val uiKitItems = items.mapIndexed { index, item ->
-                item.toUITabBarItem(index.toLong())
+                item.toUITabBarItem(index.toLong(), density)
             }
             tabBar.setItems(uiKitItems)
             currentItems = items
@@ -84,13 +85,13 @@ internal class TabBarManager(
     }
 }
 
-private fun UIKitUITabBarItem.toUITabBarItem(tag: Long): UITabBarItem {
+private fun UIKitUITabBarItem.toUITabBarItem(tag: Long, density: Float): UITabBarItem {
     val item = UITabBarItem(
         title = title,
-        image = image?.toUIImage(),
+        image = image?.toUIImage(density),
         tag = tag,
     )
-    selectedImage?.toUIImage()?.let { item.selectedImage = it }
+    selectedImage?.toUIImage(density)?.let { item.selectedImage = it }
     return item
 }
 

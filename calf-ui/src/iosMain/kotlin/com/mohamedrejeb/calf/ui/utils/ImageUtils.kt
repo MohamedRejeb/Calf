@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asSkiaPath
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.vector.VectorGroup
 import androidx.compose.ui.graphics.vector.VectorNode
 import androidx.compose.ui.graphics.vector.VectorPath
@@ -24,30 +25,41 @@ import platform.CoreGraphics.CGColorSpaceRelease
 import platform.CoreGraphics.CGContextRelease
 import platform.CoreGraphics.CGImageAlphaInfo
 import platform.CoreGraphics.CGImageRelease
+import platform.UIKit.UIImageOrientation
 
 /**
  * Converts a [UIKitImage] to a native iOS [UIImage].
  *
+ * @param density The screen density (pixels per dp) used for rasterization of vector images.
  * @return The converted [UIImage], or null if the conversion fails.
  */
-fun UIKitImage.toUIImage(): UIImage? =
+internal fun UIKitImage.toUIImage(density: Float): UIImage? =
     when (this) {
         is UIKitImage.SystemName -> UIImage.systemImageNamed(name)
-        is UIKitImage.Vector -> imageVector.toUIImage(width, height)
+        is UIKitImage.Vector -> imageVector.toUIImage(width, height, density)
         is UIKitImage.Bitmap -> imageBitmap.toUIImage()
     }
 
-fun ImageVector.toUIImage(width: Int, height: Int): UIImage? =
-    this.toImageBitmap(width, height).toUIImage()
+private fun ImageVector.toUIImage(width: Dp, height: Dp, density: Float): UIImage? {
+    val pixelWidth = (width.value * density).toInt()
+    val pixelHeight = (height.value * density).toInt()
+    return this.toImageBitmap(pixelWidth, pixelHeight).toUIImage(scale = density.toDouble())
+}
 
 private fun ImageVector.toImageBitmap(width: Int, height: Int): ImageBitmap {
     val surface = Surface.makeRasterN32Premul(width, height)
     val canvas = surface.canvas
 
-    canvas.clear(Color.TRANSPARENT) // clear the canvas
-    with(canvas) { // draw the ImageVector
+    canvas.clear(Color.TRANSPARENT)
+
+    // Scale from viewport coordinates to pixel dimensions
+    val scaleX = width.toFloat() / viewportWidth
+    val scaleY = height.toFloat() / viewportHeight
+    canvas.scale(scaleX, scaleY)
+
+    with(canvas) {
         val paint = org.jetbrains.skia.Paint().apply {
-            color = Color.BLACK // Change color as needed
+            color = Color.BLACK
         }
         drawPath(toPath().asSkiaPath(), paint)
     }
@@ -56,7 +68,7 @@ private fun ImageVector.toImageBitmap(width: Int, height: Int): ImageBitmap {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun ImageBitmap.toUIImage(): UIImage? {
+internal fun ImageBitmap.toUIImage(scale: Double = 1.0): UIImage? {
     val pixelMap = toPixelMap()
     val width = pixelMap.width
     val height = pixelMap.height
@@ -77,7 +89,9 @@ fun ImageBitmap.toUIImage(): UIImage? {
     )
 
     val cgImage = CGBitmapContextCreateImage(context) ?: return null
-    val image = UIImage.imageWithCGImage(cgImage)
+    @Suppress("DEPRECATION")
+    val orientation = UIImageOrientation.UIImageOrientationUp
+    val image = UIImage(cGImage = cgImage, scale = scale, orientation = orientation)
 
     CGContextRelease(context)
     CGColorSpaceRelease(colorSpace)

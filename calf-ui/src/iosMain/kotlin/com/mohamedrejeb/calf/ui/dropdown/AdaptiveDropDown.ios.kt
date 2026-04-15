@@ -76,6 +76,7 @@ actual fun BoxScope.AdaptiveDropDown(
     menuDelegate.items = iosItems
     menuDelegate.sections = iosSections
     menuDelegate.onDismissRequest = onDismissRequest
+    menuDelegate.density = density.density
 
     var posX by remember { mutableStateOf(0.0) }
     var posY by remember { mutableStateOf(0.0) }
@@ -157,16 +158,17 @@ internal class DropDownMenuDelegate : NSObject() {
     var sections: List<AdaptiveDropDownSection> = emptyList()
     var onDismissRequest: () -> Unit = {}
     var button: UIButton? = null
+    var density: Float = 1f
 
     fun buildMenu(): UIMenu {
-        val allActions: List<UIMenuElement> = items.map { it.toUIAction() }
+        val allActions: List<UIMenuElement> = items.map { it.toUIAction(density) }
         val sectionMenus: List<UIMenuElement> = sections.map { section ->
             UIMenu.menuWithTitle(
                 title = section.title,
                 image = null,
                 identifier = null,
                 options = UIMenuOptionsDisplayInline,
-                children = section.items.map { it.toUIAction() },
+                children = section.items.map { it.toUIAction(density) },
             )
         }
         return UIMenu.menuWithTitle(
@@ -176,8 +178,8 @@ internal class DropDownMenuDelegate : NSObject() {
     }
 }
 
-private fun AdaptiveDropDownItem.toUIAction(): UIAction {
-    val image = iosIcon?.toUIImage()
+private fun AdaptiveDropDownItem.toUIAction(density: Float): UIAction {
+    val image = iosIcon?.toUIImage(density)
     val action = UIAction.actionWithTitle(
         title = title,
         image = image,

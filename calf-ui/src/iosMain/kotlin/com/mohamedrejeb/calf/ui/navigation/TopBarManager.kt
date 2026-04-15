@@ -58,6 +58,7 @@ internal class TopBarManager(
         trailingItems: List<UIKitUIBarButtonItem>,
         configuration: UIKitNavigationBarConfiguration,
         isLiquidGlassEnabled: Boolean,
+        density: Float,
     ) {
         val needsItemUpdate = title != currentTitle ||
             leadingItems != currentLeadingItems ||
@@ -71,7 +72,7 @@ internal class TopBarManager(
                 BarButtonActionHandler(if (item.hasMenu) ({}) else item.onClick)
             }
             navItem.leftBarButtonItems = leadingItems.mapIndexed { index, item ->
-                item.toUIBarButtonItem(leadingActionHandlers[index])
+                item.toUIBarButtonItem(leadingActionHandlers[index], density)
             }
 
             // Create trailing (right) bar button items (onClick is ignored when a menu is present)
@@ -79,7 +80,7 @@ internal class TopBarManager(
                 BarButtonActionHandler(if (item.hasMenu) ({}) else item.onClick)
             }
             navItem.rightBarButtonItems = trailingItems.mapIndexed { index, item ->
-                item.toUIBarButtonItem(trailingActionHandlers[index])
+                item.toUIBarButtonItem(trailingActionHandlers[index], density)
             }
 
             navBar.setItems(listOf(navItem), animated = false)
@@ -134,6 +135,7 @@ internal class BarButtonActionHandler(
 @OptIn(ExperimentalForeignApi::class)
 internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
     actionHandler: BarButtonActionHandler,
+    density: Float,
 ): UIBarButtonItem {
     val selector = sel_registerName("handleAction")
 
@@ -168,12 +170,12 @@ internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
         ).also {
             it.enabled = enabled
             it.selected = selected
-            if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections)
+            if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections, density)
         }
     }
 
     // If image is specified, use image constructor
-    val uiImage = image?.toUIImage()
+    val uiImage = image?.toUIImage(density)
     if (uiImage != null) {
         return UIBarButtonItem(
             image = uiImage,
@@ -183,7 +185,7 @@ internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
         ).also {
             it.enabled = enabled
             it.selected = selected
-            if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections)
+            if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections, density)
         }
     }
 
@@ -196,22 +198,23 @@ internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
     ).also {
         it.enabled = enabled
         it.selected = selected
-        if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections)
+        if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections, density)
     }
 }
 
 private fun buildUIMenu(
     items: List<AdaptiveDropDownItem>,
     sections: List<AdaptiveDropDownSection>,
+    density: Float,
 ): UIMenu {
-    val allActions: List<UIMenuElement> = items.map { it.toUIAction() }
+    val allActions: List<UIMenuElement> = items.map { it.toUIAction(density) }
     val sectionMenus: List<UIMenuElement> = sections.map { section ->
         UIMenu.menuWithTitle(
             title = section.title,
             image = null,
             identifier = null,
             options = UIMenuOptionsDisplayInline,
-            children = section.items.map { it.toUIAction() },
+            children = section.items.map { it.toUIAction(density) },
         )
     }
     return UIMenu.menuWithTitle(
@@ -220,8 +223,8 @@ private fun buildUIMenu(
     )
 }
 
-private fun AdaptiveDropDownItem.toUIAction(): UIAction {
-    val image = iosIcon?.toUIImage()
+private fun AdaptiveDropDownItem.toUIAction(density: Float): UIAction {
+    val image = iosIcon?.toUIImage(density)
     val action = UIAction.actionWithTitle(
         title = title,
         image = image,
