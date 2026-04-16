@@ -91,6 +91,28 @@ class AlertDialogManager internal constructor(
     }
 
     /**
+     * Updates the properties of the already-presented [UIAlertController]
+     * without dismissing and recreating it.
+     *
+     * Updatable properties:
+     * - [UIAlertController.title] and [UIAlertController.message]
+     * - [UIAlertAction.enabled] for each action
+     */
+    internal fun updateDialogProperties() {
+        val controller = dialogUIViewController as? UIAlertController ?: return
+
+        controller.title = iosProperties.title
+        controller.message = iosProperties.text
+
+        val actions = iosProperties.actions
+        for (i in actions.indices) {
+            if (i < controller.actions.size) {
+                (controller.actions[i] as? UIAlertAction)?.enabled = actions[i].enabled
+            }
+        }
+    }
+
+    /**
      * Lambda that dismisses the dialog.
      */
     private val onDismissLambda: (() -> Unit) = {

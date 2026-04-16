@@ -26,6 +26,8 @@ fun AlertDialogScreen(
     navigateBack: () -> Unit
 ) {
     var showSimpleDialog by remember { mutableStateOf(false) }
+    var showTextFieldDialog by remember { mutableStateOf(false) }
+    var textFieldValue by remember { mutableStateOf("") }
     var showComplexDialog by remember { mutableStateOf(false) }
     var showActionSheetDialog by remember { mutableStateOf(false) }
 
@@ -61,6 +63,29 @@ fun AlertDialogScreen(
             }
 
             if (currentPlatform.isIOS) {
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "Dialog with Text Field",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Confirm button is disabled until text is entered",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                AdaptiveButton(
+                    onClick = {
+                        textFieldValue = ""
+                        showTextFieldDialog = true
+                    },
+                ) {
+                    Text("Show Text Field Dialog")
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
@@ -104,6 +129,54 @@ fun AlertDialogScreen(
                 dismissText = "Cancel",
                 title = "Alert Dialog",
                 text = "This is a native alert dialog from Calf",
+            )
+        }
+
+        val textFieldDialogIosProperties = rememberAlertDialogIosProperties(
+            title = "Enter Name",
+            text = "Please type a name to enable the confirm button.",
+            style = AlertDialogIosStyle.Alert,
+            actions = listOf(
+                AlertDialogIosAction(
+                    title = "Confirm",
+                    style = AlertDialogIosActionStyle.Default,
+                    enabled = textFieldValue.isNotEmpty(),
+                    onClick = {
+                        showTextFieldDialog = false
+                    },
+                ),
+                AlertDialogIosAction(
+                    title = "Cancel",
+                    style = AlertDialogIosActionStyle.Cancel,
+                    onClick = {
+                        showTextFieldDialog = false
+                    },
+                ),
+            ),
+            textFields = listOf(
+                AlertDialogIosTextField(
+                    placeholder = "Name",
+                    initialValue = "",
+                    onValueChange = { textFieldValue = it },
+                ),
+            ),
+        )
+
+        if (showTextFieldDialog) {
+            AdaptiveBasicAlertDialog(
+                onDismissRequest = {
+                    showTextFieldDialog = false
+                },
+                iosProperties = textFieldDialogIosProperties,
+                materialContent = {
+                    Button(
+                        onClick = {
+                            showTextFieldDialog = false
+                        }
+                    ) {
+                        Text("Confirm")
+                    }
+                },
             )
         }
 
