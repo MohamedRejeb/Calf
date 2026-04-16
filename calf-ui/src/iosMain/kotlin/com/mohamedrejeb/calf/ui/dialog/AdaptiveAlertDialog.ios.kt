@@ -96,6 +96,7 @@ actual fun AdaptiveAlertDialog(
         alertDialogManager.iosProperties = createIosDialogProperties()
         alertDialogManager.properties = properties
         alertDialogManager.layoutDirection = layoutDirection
+        alertDialogManager.updateDialogProperties()
     }
 
     DisposableEffect(Unit) {
@@ -134,6 +135,7 @@ actual fun AdaptiveBasicAlertDialog(
         alertDialogManager.iosProperties = iosProperties
         alertDialogManager.properties = properties
         alertDialogManager.layoutDirection = layoutDirection
+        alertDialogManager.updateDialogProperties()
     }
 
     DisposableEffect(Unit) {
