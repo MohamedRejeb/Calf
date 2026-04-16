@@ -40,6 +40,14 @@ class AlertDialogManager internal constructor(
     private var isAnimating = false
 
     /**
+     * Strong references to text field delegate objects.
+     * UIKit's addTarget holds targets weakly, so without these
+     * the GC would collect the delegates and text change events
+     * would stop firing.
+     */
+    private val textFieldDelegates = mutableListOf<NSObject>()
+
+    /**
      * The ui view controller that is used to present the dialog.
      */
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
@@ -71,6 +79,9 @@ class AlertDialogManager internal constructor(
                                 textFieldState.onValueChange(sender.text.orEmpty())
                             }
                         }
+
+                        // Keep a strong reference so GC doesn't collect the delegate
+                        textFieldDelegates.add(textChangedDelegate)
 
                         textField.text = textFieldState.initialValue
                         textField.placeholder = textFieldState.placeholder
