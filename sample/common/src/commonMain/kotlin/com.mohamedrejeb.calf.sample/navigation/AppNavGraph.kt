@@ -27,6 +27,7 @@ import com.mohamedrejeb.calf.sample.screens.SliderScreen
 import com.mohamedrejeb.calf.sample.screens.SwitchScreen
 import com.mohamedrejeb.calf.sample.screens.TimePickerScreen
 import com.mohamedrejeb.calf.sample.screens.ToolbarScreen
+import com.mohamedrejeb.calf.sample.screens.AdaptiveNavigationDemoScreen
 import com.mohamedrejeb.calf.sample.screens.TopBarDemoScreen
 import com.mohamedrejeb.calf.sample.screens.WebViewScreen
 
@@ -215,6 +216,13 @@ fun AppNavGraph(
 //        }
         composable(Screen.Toolbar.name) {
             ToolbarScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.AdaptiveNavigation.name) {
+            AdaptiveNavigationDemoScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }

@@ -64,6 +64,7 @@ nav:
     - 'Time Picker': ui/adaptive-time-picker.md
     - 'Toolbar': ui/adaptive-toolbar.md
     - 'Top Bar': ui/adaptive-top-bar.md
+  - 'Adaptive Navigation': navigation.md
   - 'WebView': webview.md
   - 'File Picker': filepicker.md
   - 'Content Sharing': share.md

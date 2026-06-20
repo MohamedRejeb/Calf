@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Navigation
 import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.PunchClock
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SaveAlt
 import androidx.compose.material.icons.outlined.Security
@@ -179,6 +180,12 @@ enum class Screen(
         title = "Adaptive Top Bar",
         description = "Top app bar with native iOS UINavigationBar and Material3 TopAppBar",
         icon = Icons.Outlined.WebAsset,
+        category = ScreenCategory.Navigation,
+    ),
+    AdaptiveNavigation(
+        title = "Adaptive Navigation",
+        description = "Native iOS UINavigationController bridged to Compose Nav3 (push, swipe-back, large-title shrink)",
+        icon = Icons.Outlined.SwapHoriz,
         category = ScreenCategory.Navigation,
     ),
 //    ExpandableFAB(
