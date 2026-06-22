@@ -30,6 +30,9 @@ kotlin {
         implementation(projects.calfPermissions)
         implementation(projects.calfWebview)
         implementation(libs.jetbrains.navigation.compose)
+        // Nav3 — used only by the Issue #530 navigation-bar transition repro screen
+        implementation(libs.jetbrains.navigation3.ui)
+        implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)
         implementation(projects.calfNavigation)
         implementation(projects.calfCameraPicker)
         implementation(projects.calfShare)

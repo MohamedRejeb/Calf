@@ -15,6 +15,7 @@ import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
 import com.mohamedrejeb.calf.sample.screens.FilePickerScreen
 import com.mohamedrejeb.calf.sample.screens.HomeScreen
 import com.mohamedrejeb.calf.sample.screens.ImagePickerScreen
+import com.mohamedrejeb.calf.sample.screens.Issue530ReproScreen
 import com.mohamedrejeb.calf.sample.screens.FileSaverScreen
 import com.mohamedrejeb.calf.sample.screens.ShowcaseScreen
 //import com.mohamedrejeb.calf.sample.screens.MapScreen
@@ -201,6 +202,13 @@ fun AppNavGraph(
         }
         composable(Screen.TopBarDemo.name) {
             TopBarDemoScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.Issue530Repro.name) {
+            Issue530ReproScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }

@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdsClick
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.CheckBox
@@ -179,6 +180,12 @@ enum class Screen(
         title = "Adaptive Top Bar",
         description = "Top app bar with native iOS UINavigationBar and Material3 TopAppBar",
         icon = Icons.Outlined.WebAsset,
+        category = ScreenCategory.Navigation,
+    ),
+    Issue530Repro(
+        title = "Issue #530 Repro",
+        description = "NavigationBar transition glitch on iOS: native bottom bar lingers on push and reappears mid back-gesture",
+        icon = Icons.Outlined.BugReport,
         category = ScreenCategory.Navigation,
     ),
 //    ExpandableFAB(

@@ -29,6 +29,8 @@ compose-ui = "1.10.5"
 android-lifecycle = "2.2.0"
 play-services-location = "21.3.0"
 jetbrains-navigation-compose = "2.9.2"
+jetbrains-navigation3 = "1.1.1"
+jetbrains-lifecycle-navigation3 = "2.10.0"
 ktor = "3.4.1"
 
 [libraries]
@@ -72,6 +74,8 @@ kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.re
 # For sample
 android-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "android-navigation-compose" }
 jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-navigation-compose" }
+jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jetbrains-navigation3" }
+jetbrains-lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "jetbrains-lifecycle-navigation3" }
 
 calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
 calf-file-picker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
