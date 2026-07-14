@@ -1,7 +1,7 @@
 name: Improvement
 description: Suggest improvements to existing functionality
 title: "[Improvement]: "
-labels: [ "improvement" ]
+labels: ["improvement"]
 body:
   - type: textarea
     id: context
@@ -38,12 +38,9 @@ body:
   - type: input
     id: other_module
     attributes:
-      label: Specify Other Module
-      description: If you selected "other" above, please specify the module name.
+      label: Specify Other Module (if you selected "other" above)
+      description: Only fill this if you chose "other" in the Module dropdown.
       placeholder: e.g., calf-geo, calf-navigation
-    if:
-      field: module
-      equals: other
 
   - type: dropdown
     id: area
