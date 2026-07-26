@@ -16,6 +16,14 @@ private const val LIB_NAME = "calf_filepicker_native"
  * Called once from [NativeFilePickerBridge]'s object init block
  */
 internal fun loadNativeLibrary() {
+    // Try the system path first (packagers like Conveyor extract natives
+    // out of the jar), then fall back to the bundled resource.
+    try {
+        System.loadLibrary(LIB_NAME)
+        return
+    } catch (_: UnsatisfiedLinkError) {
+    }
+
     val osName = System.getProperty("os.name")?.lowercase().orEmpty()
     val osArch = System.getProperty("os.arch")?.lowercase().orEmpty()
 
