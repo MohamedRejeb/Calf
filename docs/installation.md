@@ -38,7 +38,7 @@ implementation("com.mohamedrejeb.calf:calf-permissions-camera:{{ calf_version }}
 
 If you are using `calf-ui` artifact, make sure to export it to binaries:
 
-### Regular Framewoek
+### Regular Framework
 ```kotlin
 ...
 kotlin {

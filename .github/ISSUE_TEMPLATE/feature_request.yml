@@ -1,0 +1,55 @@
+name: Feature Request
+description: Suggest a new feature
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this feature needed for cross-platform Compose?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe your idea (API, UI component, etc.)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: Which Calf module should this feature be added to?
+      options:
+        - calf-ui
+        - calf-file-picker
+        - calf-webview
+        - calf-permissions
+        - calf-cupertino-icons
+        - core
+        - other
+    validations:
+      required: true
+
+  - type: input
+    id: other_module
+    attributes:
+      label: Specify Other Module (if you selected "other" above)
+      description: Only fill this if you chose "other" in the Module dropdown.
+      placeholder: e.g., calf-geo, calf-navigation
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: Target Platform(s)
+      options:
+        - Android
+        - iOS
+        - Desktop
+        - Web
+    validations:
+      required: true

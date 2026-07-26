@@ -1,0 +1,55 @@
+name: Improvement
+description: Suggest improvements to existing functionality
+title: "[Improvement]: "
+labels: ["improvement"]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Current Behavior
+      description: What’s happening now?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Change
+      description: How should it be improved?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: Which Calf module does this improvement relate to?
+      options:
+        - calf-ui
+        - calf-file-picker
+        - calf-webview
+        - calf-permissions
+        - calf-cupertino-icons
+        - core
+        - other
+    validations:
+      required: true
+
+  - type: input
+    id: other_module
+    attributes:
+      label: Specify Other Module (if you selected "other" above)
+      description: Only fill this if you chose "other" in the Module dropdown.
+      placeholder: e.g., calf-geo, calf-navigation
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area of Improvement
+      options:
+        - UI Component
+        - Gradle/Build
+        - Documentation
+        - Performance
+    validations:
+      required: true

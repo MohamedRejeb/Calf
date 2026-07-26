@@ -1,0 +1,73 @@
+name: Bug Report
+description: Report a bug in Calf CMP UI Library
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: List the steps to reproduce the issue
+      placeholder: 1. Add component X to Android/iOS/Desktop...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: Which Calf module is affected?
+      options:
+        - calf-ui
+        - calf-file-picker
+        - calf-webview
+        - calf-permissions
+        - calf-cupertino-icons
+        - core
+        - other
+    validations:
+      required: true
+
+  - type: input
+    id: other_module
+    attributes:
+      label: Specify Other Module (if you selected "other" above)
+      description: Only fill this if you chose "other" in the Module dropdown.
+      placeholder: e.g., calf-geo, calf-navigation
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Android
+        - iOS
+        - Desktop
+        - Web
+    validations:
+      required: true
+
+  - type: dropdown
+    id: version
+    attributes:
+      label: Library Version
+      options:
+        - 0.12.0
+        - 0.11.0
+        - latest
