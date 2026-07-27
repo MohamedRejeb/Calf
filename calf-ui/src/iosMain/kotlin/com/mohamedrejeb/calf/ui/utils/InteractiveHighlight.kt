@@ -11,6 +11,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.asComposeShader
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.util.fastCoerceIn
 import com.kyant.backdrop.RuntimeShader
@@ -79,7 +80,7 @@ half4 main(float2 coord) {
                         )
                     }
                     drawRect(
-                        ShaderBrush(shader.asSkikoRuntimeShader().makeShader()),
+                        ShaderBrush(shader.asSkikoRuntimeShader().makeShader().asComposeShader()),
                         blendMode = BlendMode.Plus
                     )
                 } else {
