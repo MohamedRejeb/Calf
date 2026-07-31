@@ -156,6 +156,21 @@ Passing `null` (the default) allows unlimited selection. `FilePickerSelectionMod
 
 ## Desktop Setup
 
+#### Product-flavor usage
+
+A project producing multiple desktop applications can use a different namespace for each flavor:
+
+```kotlin
+val flavor = "default"
+compose.desktop {
+    application {
+        jvmArgs(
+            "-Dcalf.filepicker.cache.namespace=$flavor"
+        )
+    }
+}
+```
+
 #### macOS Dark Theme
 
 The file dialog follows the application's theme. To enable dark mode support on macOS, add this JVM argument to your Gradle configuration:
