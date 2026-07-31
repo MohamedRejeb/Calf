@@ -59,12 +59,11 @@ internal fun loadNativeLibrary() {
     val userHome = System.getProperty("user.home") ?: System.getProperty("java.io.tmpdir")
     val cacheNamespace = System.getProperty("calf.filepicker.cache.namespace")
         ?.takeIf { it.isNotBlank() }
-        ?: "default"
-
-    val cacheDir = File(
-        userHome,
-        ".cache/calf-filepicker/$cacheNamespace"
-    )
+    val cacheDir = if (cacheNamespace != null) {
+        File(userHome, ".cache/calf-filepicker/$cacheNamespace")
+    } else {
+        File(userHome, ".cache/calf-filepicker")
+    }
     cacheDir.mkdirs()
 
     val targetFile = File(cacheDir, libFileName)
