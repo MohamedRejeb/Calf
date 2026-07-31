@@ -57,7 +57,14 @@ internal fun loadNativeLibrary() {
 
     // Use a user-scoped cache directory to avoid shared /tmp security risks
     val userHome = System.getProperty("user.home") ?: System.getProperty("java.io.tmpdir")
-    val cacheDir = File(userHome, ".cache/calf-filepicker")
+    val cacheNamespace = System.getProperty("calf.filepicker.cache.namespace")
+        ?.takeIf { it.isNotBlank() }
+        ?: "default"
+
+    val cacheDir = File(
+        userHome,
+        ".cache/calf-filepicker/$cacheNamespace"
+    )
     cacheDir.mkdirs()
 
     val targetFile = File(cacheDir, libFileName)
