@@ -26,6 +26,7 @@ fun AlertDialogScreen(
     navigateBack: () -> Unit
 ) {
     var showSimpleDialog by remember { mutableStateOf(false) }
+    var showSingleButtonDialog by remember { mutableStateOf(false) }
     var showTextFieldDialog by remember { mutableStateOf(false) }
     var textFieldValue by remember { mutableStateOf("") }
     var showComplexDialog by remember { mutableStateOf(false) }
@@ -60,6 +61,26 @@ fun AlertDialogScreen(
                 onClick = { showSimpleDialog = true },
             ) {
                 Text("Show Alert Dialog")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Single Button Alert Dialog",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Omit dismissText to show only the confirm button",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            AdaptiveButton(
+                onClick = { showSingleButtonDialog = true },
+            ) {
+                Text("Show Single Button Dialog")
             }
 
             if (currentPlatform.isIOS) {
@@ -129,6 +150,20 @@ fun AlertDialogScreen(
                 dismissText = "Cancel",
                 title = "Alert Dialog",
                 text = "This is a native alert dialog from Calf",
+            )
+        }
+
+        if (showSingleButtonDialog) {
+            AdaptiveAlertDialog(
+                onConfirm = {
+                    showSingleButtonDialog = false
+                },
+                onDismiss = {
+                    showSingleButtonDialog = false
+                },
+                confirmText = "Got it",
+                title = "Single Button",
+                text = "This dialog only has a confirm button.",
             )
         }
 
