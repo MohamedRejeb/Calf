@@ -1,4 +1,4 @@
-@file:OptIn(BetaInteropApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.mohamedrejeb.calf.ui.datepicker
 
@@ -8,106 +8,64 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.applyTheme
-import com.mohamedrejeb.calf.ui.utils.datetime.KotlinxDatetimeCalendarModel
 import com.mohamedrejeb.calf.ui.utils.isDark
+import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
 import com.mohamedrejeb.calf.ui.utils.toUIColor
-import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.useContents
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.toNSTimeZone
-import platform.Foundation.NSCalendar
-import platform.Foundation.NSDate
-import platform.Foundation.NSDayCalendarUnit
-import platform.Foundation.NSMonthCalendarUnit
-import platform.Foundation.NSYearCalendarUnit
-import platform.Foundation.dateWithTimeIntervalSince1970
-import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UIDatePicker
 import platform.UIKit.UIDatePickerMode
 import platform.UIKit.UIDatePickerStyle
-import platform.darwin.NSObject
-import platform.objc.sel_registerName
-import kotlin.time.ExperimentalTime
+import platform.UIKit.UIView
 
-@OptIn(
-    ExperimentalForeignApi::class, ExperimentalTime::class,
-)
+private const val FIRST_IOS_WITH_CALENDAR_VIEW = 16
+
+/**
+ * Owns the native date picker view and keeps it in sync with [AdaptiveDatePickerState].
+ *
+ * The inline style uses `UICalendarView` on iOS 16+, which can grey out days the
+ * [isDaySelectable] rule rejects. The wheels style, and the inline style on older systems,
+ * use `UIDatePicker` and resolve rejected picks through [resolveSelection].
+ */
 @InternalCalfApi
 class DatePickerManager internal constructor(
     initialSelectedDateMillis: Long?,
-    private val datePicker: UIDatePicker,
     displayMode: UIKitDisplayMode,
-    private val onSelectionChanged: (dateMillis: Long?) -> Unit,
+    onSelectionChanged: (utcTimeMillis: Long?) -> Unit,
+    isDaySelectable: (utcTimeMillis: Long) -> Boolean,
+    resolveSelection: (pickedUtcTimeMillis: Long) -> Long,
 ) {
-    private val calendarModel = KotlinxDatetimeCalendarModel()
-
-    @OptIn(ExperimentalTime::class)
-    private val datePickerDelegate = object : NSObject() {
-        @Suppress("unused")
-        @ObjCAction
-        fun onDateChanged(sender: UIDatePicker) {
-            val components = NSCalendar.currentCalendar.components(
-                NSYearCalendarUnit or NSMonthCalendarUnit or NSDayCalendarUnit,
-                sender.date
+    private val backend: IosDatePickerBackend =
+        if (displayMode == UIKitDisplayMode.Picker && isIOSVersionAtLeast(FIRST_IOS_WITH_CALENDAR_VIEW)) {
+            CalendarDatePickerBackend(
+                initialSelectedDateMillis = initialSelectedDateMillis,
+                onSelectionChanged = onSelectionChanged,
+                isDaySelectable = isDaySelectable,
             )
-
-            val utcTimeMillis =
-                LocalDate(
-                    year = components.year.toInt(),
-                    month = components.month.toInt(),
-                    day = components.day.toInt()
-                )
-                    .atStartOfDayIn(TimeZone.UTC)
-                    .toEpochMilliseconds()
-
-            onSelectionChanged(utcTimeMillis)
+        } else {
+            WheelsDatePickerBackend(
+                initialSelectedDateMillis = initialSelectedDateMillis,
+                style = when (displayMode) {
+                    UIKitDisplayMode.Picker -> UIDatePickerStyle.UIDatePickerStyleInline
+                    else -> UIDatePickerStyle.UIDatePickerStyleWheels
+                },
+                onSelectionChanged = onSelectionChanged,
+                resolveSelection = resolveSelection,
+            )
         }
-    }
 
+    /** The native view to embed. */
+    val view: UIView
+        get() = backend.view
+
+    /** Width divided by height of the native view, or 0 when it has no intrinsic size yet. */
     internal var aspectRatio by mutableFloatStateOf(0f)
         private set
 
     init {
-        val date =
-            if (initialSelectedDateMillis != null) {
-                val canonicalDate = calendarModel.getCanonicalDate(initialSelectedDateMillis)
-                val currentTimeZoneTimeMillis =
-                    LocalDate(
-                        year = canonicalDate.year,
-                        month = canonicalDate.month,
-                        day = canonicalDate.dayOfMonth
-                    )
-                        .atStartOfDayIn(TimeZone.currentSystemDefault())
-                        .toEpochMilliseconds()
-
-                NSDate.dateWithTimeIntervalSince1970(currentTimeZoneTimeMillis / 1000.0)
-            } else {
-                NSDate()
-            }
-
-        datePicker.setDate(date, animated = false)
-        datePicker.locale = getCalendarLocalDefault()
-        datePicker.timeZone = TimeZone.currentSystemDefault().toNSTimeZone()
-        datePicker.datePickerMode = UIDatePickerMode.UIDatePickerModeDate
-        datePicker.preferredDatePickerStyle = when (displayMode) {
-            UIKitDisplayMode.Picker -> UIDatePickerStyle.UIDatePickerStyleInline
-            else -> UIDatePickerStyle.UIDatePickerStyleWheels
-        }
-
-        // Add target using NSObject delegate
-        datePicker.addTarget(
-            target = datePickerDelegate,
-            action = sel_registerName("onDateChanged:"),
-            forControlEvents = UIControlEventValueChanged
-        )
-
-        datePicker.frame.useContents {
-            aspectRatio = this.size.width.toFloat() / this.size.height.toFloat()
-        }
+        aspectRatio = backend.view.aspectRatioOrZero()
+            .takeIf { it > 0f }
+            ?: inlineDatePickerAspectRatio()
     }
 
     internal fun applyColors(
@@ -116,11 +74,38 @@ class DatePickerManager internal constructor(
         selectedDayContainerColor: Color,
     ) {
         applyTheme(isDark = !isDark(dayContentColor))
-        datePicker.tintColor = selectedDayContainerColor.toUIColor()
-        datePicker.backgroundColor = containerColor.toUIColor()
+        backend.applyColors(
+            containerColor = containerColor.toUIColor(),
+            selectedDayContainerColor = selectedDayContainerColor.toUIColor(),
+        )
     }
 
     internal fun applyTheme(isDark: Boolean) {
-        datePicker.applyTheme(isDark)
+        backend.view.applyTheme(isDark)
+    }
+
+    internal fun applyDateBounds(minDateMillis: Long?, maxDateMillis: Long?) {
+        backend.applyDateBounds(minDateMillis, maxDateMillis)
+        backend.updateSelectableDates()
+    }
+
+    internal fun updateSelectableDates() {
+        backend.updateSelectableDates()
+    }
+
+    internal fun setSelectedDate(utcTimeMillis: Long?) {
+        backend.setSelectedDate(utcTimeMillis)
     }
 }
+
+private fun UIView.aspectRatioOrZero(): Float =
+    frame.useContents {
+        if (size.height > 0.0) (size.width / size.height).toFloat() else 0f
+    }
+
+/** Size of a stock inline `UIDatePicker`, used when the calendar view reports no size yet. */
+private fun inlineDatePickerAspectRatio(): Float =
+    UIDatePicker().apply {
+        datePickerMode = UIDatePickerMode.UIDatePickerModeDate
+        preferredDatePickerStyle = UIDatePickerStyle.UIDatePickerStyleInline
+    }.aspectRatioOrZero()

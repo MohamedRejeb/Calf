@@ -21,7 +21,6 @@ import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.UIKit.UIDatePicker
 
 @OptIn(ExperimentalForeignApi::class, ExperimentalMaterial3Api::class, InternalCalfApi::class,
     ExperimentalComposeUiApi::class
@@ -36,18 +35,29 @@ actual fun AdaptiveDatePicker(
     showModeToggle: Boolean,
     colors: DatePickerColors
 ) {
-    val datePicker = remember {
-        UIDatePicker()
-    }
-
     val datePickerManager = remember {
         DatePickerManager(
             initialSelectedDateMillis = state.selectedDateMillis,
-            datePicker = datePicker,
             displayMode = state.initialUIKitDisplayMode,
             onSelectionChanged = { dateMillis ->
                 state.selectedDateMillis = dateMillis
-            }
+            },
+            isDaySelectable = { dateMillis ->
+                state.isDaySelectable(dateMillis)
+            },
+            resolveSelection = { pickedMillis ->
+                if (state.isDaySelectable(pickedMillis)) {
+                    pickedMillis
+                } else {
+                    val bounds = state.dateBounds
+                    nearestSelectableDay(
+                        utcTimeMillis = pickedMillis,
+                        minDateMillis = bounds.minDateMillis,
+                        maxDateMillis = bounds.maxDateMillis,
+                        selectableDates = state.selectableDates,
+                    ) ?: pickedMillis
+                }
+            },
         )
     }
 
@@ -62,7 +72,20 @@ actual fun AdaptiveDatePicker(
         )
 
     LaunchedEffect(layoutDirection) {
-        datePicker.applyLayoutDirection(layoutDirection)
+        datePickerManager.view.applyLayoutDirection(layoutDirection)
+    }
+
+    LaunchedEffect(state.selectableDates) {
+        val bounds = state.dateBounds
+        datePickerManager.applyDateBounds(
+            minDateMillis = bounds.minDateMillis,
+            maxDateMillis = bounds.maxDateMillis,
+        )
+        datePickerManager.updateSelectableDates()
+    }
+
+    LaunchedEffect(state.selectedDateMillis) {
+        datePickerManager.setSelectedDate(state.selectedDateMillis)
     }
 
     LaunchedEffect(colors, containerColorAtElevation) {
@@ -78,7 +101,7 @@ actual fun AdaptiveDatePicker(
     ) {
         UIKitView(
             factory = {
-                datePicker
+                datePickerManager.view
             },
             properties = UIKitInteropProperties(
                 interactionMode = UIKitInteropInteractionMode.NonCooperative,
