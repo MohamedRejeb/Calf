@@ -156,6 +156,12 @@ Passing `null` (the default) allows unlimited selection. `FilePickerSelectionMod
 
 ## Desktop Setup
 
+#### Native library cache
+
+The desktop file picker relies on a small native library bundled inside the JAR. On first use it is extracted to `~/.cache/calf-filepicker/`. The cached file name includes a hash of the library's content, so several applications, product flavors, or Calf versions running on the same machine never overwrite each other's copy, and an identical library that is already present is reused as is.
+
+Packagers that place the library on the system library path (for example Conveyor) skip the extraction entirely, since the loader tries `System.loadLibrary` first.
+
 #### macOS Dark Theme
 
 The file dialog follows the application's theme. To enable dark mode support on macOS, add this JVM argument to your Gradle configuration:

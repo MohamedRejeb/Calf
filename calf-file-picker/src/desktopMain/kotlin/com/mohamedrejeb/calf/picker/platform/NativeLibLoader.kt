@@ -1,84 +1,70 @@
 package com.mohamedrejeb.calf.picker.platform
 
 import java.io.File
-import java.io.InputStream
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 
 private const val LIB_NAME = "calf_filepicker_native"
+private const val CACHE_DIR = ".cache/calf-filepicker"
 
 /**
- * Loads the native file picker library from JAR resources.
+ * Loads the native file picker library.
  *
- * The library is expected at: native/<os>-<arch>/<libFileName>
- * It is extracted to a user-scoped cache directory and loaded via [System.load].
+ * The system library path is tried first (packagers like Conveyor extract natives
+ * out of the jar). Otherwise the library is read from JAR resources at
+ * `native/<os>-<arch>/<libFileName>`, cached under a content-hashed name in a
+ * user-scoped directory, and loaded via [System.load].
  *
- * Called once from [NativeFilePickerBridge]'s object init block
+ * Called once from [NativeFilePickerBridge]'s object init block.
  */
 internal fun loadNativeLibrary() {
-    // Try the system path first (packagers like Conveyor extract natives
-    // out of the jar), then fall back to the bundled resource.
     try {
         System.loadLibrary(LIB_NAME)
         return
     } catch (_: UnsatisfiedLinkError) {
     }
 
+    val (resourcePath, libFileName) = bundledLibraryLocation()
+    val bytes = NativeFilePickerBridge::class.java.classLoader
+        ?.getResourceAsStream(resourcePath)
+        ?.use { it.readBytes() }
+        ?: error(
+            "Native library not found in JAR resources at '$resourcePath'. " +
+                "Ensure the native library is built for this platform."
+        )
+
+    val cacheFileName = nativeLibraryCacheFileName(libFileName, nativeLibraryContentHash(bytes))
+    val libraryFile = try {
+        extractNativeLibrary(bytes, userCacheDir(), cacheFileName)
+    } catch (e: Exception) {
+        error("Failed to extract native file picker library '$cacheFileName': ${e.message}")
+    }
+
+    @Suppress("UnsafeDynamicallyLoadedCode")
+    System.load(libraryFile.absolutePath)
+}
+
+/** Resource path inside the JAR and the platform file name of the bundled library. */
+private fun bundledLibraryLocation(): Pair<String, String> {
     val osName = System.getProperty("os.name")?.lowercase().orEmpty()
     val osArch = System.getProperty("os.arch")?.lowercase().orEmpty()
 
     val (osPart, libFileName) = when {
-        "mac" in osName || "darwin" in osName ->
-            "macos" to "lib$LIB_NAME.dylib"
-
-        "win" in osName ->
-            "windows" to "$LIB_NAME.dll"
-
-        "nux" in osName || "nix" in osName ->
-            "linux" to "lib$LIB_NAME.so"
-
+        "mac" in osName || "darwin" in osName -> "macos" to "lib$LIB_NAME.dylib"
+        "win" in osName -> "windows" to "$LIB_NAME.dll"
+        "nux" in osName || "nix" in osName -> "linux" to "lib$LIB_NAME.so"
         else -> error("Unsupported OS: $osName")
     }
 
-    val archPart = when {
-        osArch == "aarch64" || osArch == "arm64" -> "arm64"
-        osArch == "amd64" || osArch == "x86_64" -> "x64"
+    val archPart = when (osArch) {
+        "aarch64", "arm64" -> "arm64"
+        "amd64", "x86_64" -> "x64"
         else -> error("Unsupported architecture: $osArch")
     }
 
-    val resourcePath = "native/$osPart-$archPart/$libFileName"
+    return "native/$osPart-$archPart/$libFileName" to libFileName
+}
 
-    val inputStream: InputStream = NativeFilePickerBridge::class.java.classLoader
-        ?.getResourceAsStream(resourcePath)
-        ?: error(
-            "Native library not found in JAR resources at '$resourcePath'. " +
-                "Ensure the native library is built for $osPart-$archPart."
-        )
-
-    // Use a user-scoped cache directory to avoid shared /tmp security risks
+/** User-scoped cache directory, avoiding the security risks of a shared /tmp. */
+private fun userCacheDir(): File {
     val userHome = System.getProperty("user.home") ?: System.getProperty("java.io.tmpdir")
-    val cacheDir = File(userHome, ".cache/calf-filepicker")
-    cacheDir.mkdirs()
-
-    val targetFile = File(cacheDir, libFileName)
-
-    inputStream.use { input ->
-        val bytes = input.readBytes()
-        val tempFile = Files.createTempFile(cacheDir.toPath(), "calf-native-", ".tmp")
-        try {
-            Files.write(tempFile, bytes)
-            try {
-                Files.move(tempFile, targetFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-            } catch (_: Exception) {
-                // ATOMIC_MOVE not supported on this filesystem, fallback to regular move
-                Files.move(tempFile, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            }
-        } catch (e: Exception) {
-            Files.deleteIfExists(tempFile)
-            error("Failed to extract native file picker library to '$targetFile': ${e.message}")
-        }
-    }
-
-    @Suppress("UnsafeDynamicallyLoadedCode")
-    System.load(targetFile.absolutePath)
+    return File(userHome, CACHE_DIR)
 }
