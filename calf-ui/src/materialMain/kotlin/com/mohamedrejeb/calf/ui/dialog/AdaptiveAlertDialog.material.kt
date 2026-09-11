@@ -21,7 +21,7 @@ actual fun AdaptiveAlertDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     confirmText: String,
-    dismissText: String,
+    dismissText: String?,
     title: String,
     text: String,
     materialConfirmButton: @Composable (() -> Unit)?,
@@ -42,6 +42,17 @@ actual fun AdaptiveAlertDialog(
     properties: DialogProperties,
     modifier: Modifier,
 ) {
+    val dismissButton: (@Composable () -> Unit)? = materialDismissButton
+        ?: dismissLabelOrNull(dismissText)?.let { label ->
+            {
+                Button(
+                    onClick = onDismiss,
+                ) {
+                    Text(label)
+                }
+            }
+        }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = materialConfirmButton ?: {
@@ -51,13 +62,7 @@ actual fun AdaptiveAlertDialog(
                 Text(confirmText)
             }
         },
-        dismissButton = materialDismissButton ?: {
-            Button(
-                onClick = onDismiss,
-            ) {
-                Text(dismissText)
-            }
-        },
+        dismissButton = dismissButton,
         icon = materialIcon,
         title = materialTitle ?: {
             Text(title)

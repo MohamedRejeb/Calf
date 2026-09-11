@@ -28,8 +28,11 @@ import com.mohamedrejeb.calf.ui.dialog.uikit.rememberAlertDialogIosProperties
  * If materialDismissButton is provided, this lambda will not be used for non-iOS platforms.
  * @param confirmText The text of the confirm button.
  * if materialConfirmButton is provided, this text will not be used for non-iOS platforms.
- * @param dismissText The text of the dismiss button.
+ * @param dismissText The text of the dismiss button. Pass null, or a blank string, to show a
+ * single-button dialog with only the confirm button.
  * if materialDismissButton is provided, this text will not be used for non-iOS platforms.
+ * On iOS the set of buttons is fixed when the dialog is first presented, so switching
+ * between null and a value while the dialog is shown only takes effect once it is shown again.
  * @param title The title of the dialog.
  * if materialTitle is provided, this text will not be used for non-iOS platforms.
  * @param text The text of the dialog.
@@ -63,7 +66,7 @@ expect fun AdaptiveAlertDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     confirmText: String,
-    dismissText: String,
+    dismissText: String? = null,
     title: String,
     text: String,
 
