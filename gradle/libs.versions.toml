@@ -5,6 +5,7 @@ compose = "1.11.1"
 material3 = "1.11.0-alpha07"
 material-icons-extended = "1.7.3"
 kotlinx-datetime = "0.7.1"
+kotlinx-io = "0.9.1"
 kotlinx-browser = "0.5.0"
 vanniktech-maven-publish = "0.36.0"
 documentfile = "1.1.0"
@@ -49,6 +50,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-javafx = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-javafx", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
 vanniktech-maven-publish = { module = "com.vanniktech.maven.publish:com.vanniktech.maven.publish.gradle.plugin", version.ref = "vanniktech-maven-publish" }
 
 compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "compose" }
