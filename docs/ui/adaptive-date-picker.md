@@ -1,57 +1,98 @@
 # Date Picker
 
-`AdaptiveDatePicker` is a date picker that adapts to the platform it is running on. It is a wrapper around `DatePicker` on Android and `UIDatePicker` on iOS, providing a native date selection experience on each platform.
-
-| Material (Android, Desktop, Web)                              | Cupertino (iOS)                                       |
-|---------------------------------------------------------------|-------------------------------------------------------|
-| ![Date Picker Android](../images/AdaptiveDatePicker-android.png) | ![Date Picker iOS](../images/AdaptiveDatePicker-ios.png) |
+`AdaptiveDatePicker` is a date picker that adapts to the platform it is running on. It is a wrapper around the Material3 `DatePicker` on Android, Desktop and Web, and around `UICalendarView` (iOS 16+) or `UIDatePicker` on iOS, providing a native date selection experience on each platform.
 
 ## Usage
 
-The `AdaptiveDatePicker` uses a state object to manage and track the selected date. You can observe changes to the selected date through the state.
+The `AdaptiveDatePicker` uses a state object to manage and track the selected date. You can observe changes to the selected date through the state. Timestamps are UTC milliseconds at the start of the selected day.
 
 ```kotlin
-// Create and remember the date picker state
-val state = rememberAdaptiveDatePickerState()
-
-// Optional: Set initial date (default is current date)
-LaunchedEffect(Unit) {
-    state.setSelection(Calendar.getInstance().apply {
-        set(2023, 0, 1) // January 1, 2023
-    }.timeInMillis)
-}
+// Create and remember the date picker state, optionally with an initial selection
+val state = rememberAdaptiveDatePickerState(
+    initialSelectedDateMillis = LocalDate(2026, 1, 1)
+        .atStartOfDayIn(TimeZone.UTC)
+        .toEpochMilliseconds(),
+)
 
 // React to date changes
 LaunchedEffect(state.selectedDateMillis) {
     val selectedDate = state.selectedDateMillis?.let { millis ->
-        Calendar.getInstance().apply {
-            timeInMillis = millis
-        }
+        Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC).date
     }
-
-    // Do something with the selected date
-    selectedDate?.let {
-        val year = it.get(Calendar.YEAR)
-        val month = it.get(Calendar.MONTH) + 1 // Calendar months are 0-based
-        val day = it.get(Calendar.DAY_OF_MONTH)
-        println("Selected date: $year-$month-$day")
-    }
+    println("Selected date: $selectedDate")
 }
 
 // Display the date picker
 AdaptiveDatePicker(
     state = state,
     modifier = Modifier.fillMaxWidth(),
-    // Optional: Customize date constraints
-    dateValidator = { timestamp ->
-        // Example: Only allow dates from today forward
-        timestamp >= Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-    }
 )
 ```
 
+The examples use [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime) for date math. Any source of UTC epoch milliseconds works.
+
+## Restricting selectable dates
+
+Every picker takes a Material3 `SelectableDates` rule through `selectableDates`. Calf ships `DateBounds` for the common case of a minimum and maximum day, and an infix `and` to combine rules.
+
+### Bounds
+
+```kotlin
+val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+
+val state = rememberAdaptiveDatePickerState(
+    selectableDates = DateBounds(
+        minDateMillis = today.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
+        maxDateMillis = today.plus(30, DateTimeUnit.DAY)
+            .atStartOfDayIn(TimeZone.UTC)
+            .toEpochMilliseconds(),
+    ),
+)
+```
+
+Both bounds are inclusive and compared per UTC day, so any timestamp inside the first or last day keeps that whole day selectable. A `null` bound is open on that side. Besides greying out days, bounds are applied natively: the iOS wheels stop at the range and the calendars hide the months outside it, using the same calendar day in the device time zone. If the current selection falls outside a new range, it is moved to the nearest selectable day on every platform.
+
+The rule is an observable property of the state, so it can depend on other state. A typical case is a date range where the end date cannot come before the start date:
+
+```kotlin
+val startState = rememberAdaptiveDatePickerState()
+val endState = rememberAdaptiveDatePickerState(
+    selectableDates = DateBounds(minDateMillis = startState.selectedDateMillis),
+)
+```
+
+`DateBounds` is a data class, so passing an equal value on recomposition changes nothing.
+
+### Rules for individual days
+
+Rules that a min/max range cannot express, such as excluding weekends, are plain `SelectableDates` implementations. Combine them with bounds using `and`:
+
+```kotlin
+val weekdaysOnly = remember {
+    object : SelectableDates {
+        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+            val day = Instant.fromEpochMilliseconds(utcTimeMillis)
+                .toLocalDateTime(TimeZone.UTC)
+                .date
+                .dayOfWeek
+            return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY
+        }
+    }
+}
+
+val state = rememberAdaptiveDatePickerState(
+    selectableDates = DateBounds(minDateMillis = todayMillis) and weekdaysOnly,
+)
+```
+
+Pass a stable instance, such as an `object`, a data class or a remembered value, so the picker is not re-evaluated on every recomposition.
+
+| Platform | Behaviour |
+|---|---|
+| Material (Android, Desktop, Web) | Rejected days are disabled in the calendar grid. `isSelectableYear` disables years in the year picker. |
+| iOS 16+ inline calendar (`UIKitDisplayMode.Picker`) | Backed by `UICalendarView`: rejected days are greyed out and cannot be tapped. Bounds coming from a `DateBounds` also hide the months outside the range. |
+| iOS wheels (`UIKitDisplayMode.Wheels`) and inline below iOS 16 | Backed by `UIDatePicker`, which cannot grey out days. Bounds coming from a `DateBounds` stop the wheels at the range; picking any other rejected day snaps the wheels to the nearest selectable day. |
+
+On every platform, a current selection that a new rule rejects is moved to the nearest selectable day. `isSelectableYear` has no effect on iOS.
+
+> `AdaptiveDatePicker` has no `dateValidator` parameter. An earlier version of this page documented one that never existed. Use `selectableDates` with `DateBounds` as described above instead.

@@ -3,8 +3,11 @@ package com.mohamedrejeb.calf.ui.datepicker
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SelectableDates
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
 
 /**
  * A state object that can be hoisted to observe the date picker state. See
@@ -23,6 +26,8 @@ import androidx.compose.runtime.saveable.Saver
  * @param yearRange an [IntRange] that holds the year range that the date picker will be limited
  * to
  * @param initialMaterialDisplayMode an initial [DisplayMode] that this state will hold
+ * @param initialUIKitDisplayMode an initial [UIKitDisplayMode] used by the iOS picker
+ * @param selectableDates initial value of [selectableDates]
  * @see rememberAdaptiveDatePickerState
  * @throws [IllegalArgumentException] if the initial selected date or displayed month represent
  * a year out of the year range.
@@ -35,11 +40,18 @@ actual class AdaptiveDatePickerState actual constructor(
     val yearRange: IntRange,
     val initialMaterialDisplayMode: DisplayMode,
     val initialUIKitDisplayMode: UIKitDisplayMode,
+    selectableDates: SelectableDates,
 ) {
-    /**
-     * The date picker state that this state holds.
-     */
-    val datePickerState: DatePickerState =
+    private val selectableDatesState = mutableStateOf(selectableDates)
+
+    actual var selectableDates: SelectableDates
+        get() = selectableDatesState.value
+        set(value) {
+            selectableDatesState.value = value
+            snapSelectionToSelectable()
+        }
+
+    private val materialState: DatePickerState =
         DatePickerState(
             locale = getCalendarLocalDefault(),
             initialSelectedDateMillis = initialSelectedDateMillis,
@@ -47,6 +59,14 @@ actual class AdaptiveDatePickerState actual constructor(
             yearRange = yearRange,
             initialDisplayMode = initialMaterialDisplayMode,
         )
+
+    /**
+     * The Material3 date picker state that this state delegates to. It reports
+     * [selectableDates] as its rule, so the Material3 picker follows every change.
+     */
+    // `this.` is required: the constructor parameter of the same name would be captured otherwise.
+    val datePickerState: DatePickerState =
+        RuleTrackingDatePickerState(materialState) { this.selectableDates }
 
     /**
      * A timestamp that represents the _start_ of the day of the selected date in _UTC_ milliseconds
@@ -93,10 +113,12 @@ actual class AdaptiveDatePickerState actual constructor(
 
     actual companion object {
         /**
-         * The default [Saver] implementation for [DatePickerState].
+         * The default [Saver] implementation for [AdaptiveDatePickerState].
+         *
+         * @param selectableDates the rule to re-attach on restore, since it cannot be saved.
          */
-        actual fun Saver(): Saver<AdaptiveDatePickerState, *> =
-            Saver(
+        actual fun Saver(selectableDates: SelectableDates): Saver<AdaptiveDatePickerState, Any> =
+            listSaver(
                 save = {
                     listOf(
                         it.selectedDateMillis,
@@ -113,6 +135,7 @@ actual class AdaptiveDatePickerState actual constructor(
                         yearRange = IntRange(value[1] as Int, value[2] as Int),
                         initialMaterialDisplayMode = displayModeFromValue(value[3] as Int),
                         initialUIKitDisplayMode = uiKitDisplayModeFromValue(value[4] as Int),
+                        selectableDates = selectableDates,
                     )
                 },
             )
