@@ -6,6 +6,15 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         api(projects.calfCore)
+        api(libs.kotlinx.io.core)
+    }
+
+    sourceSets.commonTest.dependencies {
+        implementation(libs.kotlin.test)
+    }
+
+    sourceSets.desktopTest.dependencies {
+        implementation(libs.kotlinx.coroutines.core)
     }
 
     sourceSets.androidMain.dependencies {

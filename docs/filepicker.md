@@ -245,7 +245,7 @@ LaunchedEffect(file) {
 
 > The `readByteArray` extension function is a suspending function, so you need to call it from a coroutine scope.
 
-> It's not recommended to use `readByteArray` extension function on large files, as it reads the entire file into memory.
+> It's not recommended to use `readByteArray` extension function on large files, as it reads the entire file into memory. See [Streaming with kotlinx-io](#streaming-with-kotlinx-io) to read it as a stream instead.
 > For large files, it's recommended to use the platform-specific APIs to read the file.
 > You can read more about accessing the platform-specific APIs below.
 
@@ -363,6 +363,43 @@ val file: java.io.File = kmpFile.file
 ##### Web
 ```kotlin
 val file: org.w3c.files.File = kmpFile.file
+```
+
+## Streaming with kotlinx-io
+
+Reading a large file with `readByteArray` loads it fully into memory. To stream it instead, for example to feed a zip reader or a parser, use the `source()` extension. It opens the file as a [kotlinx-io](https://github.com/Kotlin/kotlinx-io) `RawSource`; kotlinx-io is a dependency of `calf-io`, so nothing extra needs to be added:
+
+```kotlin
+import com.mohamedrejeb.calf.io.source
+
+suspend fun importFile(file: KmpFile) {
+    file.source().buffered().use { source ->
+        val header = source.readByteArray(4)
+        // keep reading from `source` in chunks
+    }
+}
+```
+
+`source()` is a suspending function. Like the other extensions it has an overload that takes a `PlatformContext` for Android code that runs outside a Calf composable. Always close the returned source.
+
+| Platform | How the file is opened |
+|---|---|
+| Android | `ContentResolver.openInputStream`, so content URIs from the Storage Access Framework, Google Drive or Downloads stream directly. `getPath()` returns the URI string on Android, not a file system path, so use `source()` rather than opening the path yourself. |
+| iOS, Desktop | From the file system through `SystemFileSystem`. |
+| JS, Wasm | Browsers offer no synchronous file reads, so the whole file is read into memory first and served from a `Buffer`. |
+
+### Using okio
+
+If your code is built on [okio](https://square.github.io/okio/), convert the source with the official [kotlinx-io-okio](https://github.com/Kotlin/kotlinx-io) bridge:
+
+```kotlin
+implementation("org.jetbrains.kotlinx:kotlinx-io-okio:<kotlinx-io version>")
+```
+
+```kotlin
+import kotlinx.io.okio.asOkioSource
+
+val okioSource: okio.Source = file.source().asOkioSource()
 ```
 
 ## Coil Extensions

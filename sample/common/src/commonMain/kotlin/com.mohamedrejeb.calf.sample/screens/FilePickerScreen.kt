@@ -21,12 +21,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.io.getPath
+import com.mohamedrejeb.calf.io.source
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.FilePickerSettings
@@ -38,6 +41,13 @@ import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 import com.mohamedrejeb.calf.sample.currentPlatform
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.io.Buffer
+import kotlinx.io.RawSource
 
 private data class FileTypeOption(
     val label: String,
@@ -54,9 +64,15 @@ private val fileTypeOptions = listOf(
     FileTypeOption("Text", FilePickerFileType.Text),
 )
 
+private const val STREAM_CHUNK_SIZE = 64L * 1024
+private const val STREAMING_IN_PROGRESS = "Streaming with kotlinx-io…"
+private const val DIRECTORY_NOT_STREAMED = "Directory, not streamed"
+
 private data class PickedFileInfo(
+    val file: KmpFile,
     val name: String,
     val path: String,
+    val streamingSummary: String,
 )
 
 @Composable
@@ -69,6 +85,24 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
 
     val selectedFileType = fileTypeOptions[selectedTypeIndex].type
 
+    val scope = rememberCoroutineScope()
+    var streamingJob: Job? by remember { mutableStateOf(null) }
+
+    val onFilesPicked: (List<KmpFile>) -> Unit = { files ->
+        pickedFiles = files.map { file -> file.toPickedFileInfo(STREAMING_IN_PROGRESS) }
+        streamingJob?.cancel()
+        streamingJob = scope.launch {
+            pickedFiles = pickedFiles.map { info ->
+                info.copy(streamingSummary = info.file.describeStreaming())
+            }
+        }
+    }
+
+    val onDirectoryPicked: (List<KmpFile>) -> Unit = { files ->
+        streamingJob?.cancel()
+        pickedFiles = files.map { file -> file.toPickedFileInfo(DIRECTORY_NOT_STREAMED) }
+    }
+
     val settings = rememberFilePickerSettings(
         title = dialogTitle,
         initialDirectory = initialDirectory,
@@ -79,42 +113,21 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         type = selectedFileType,
         selectionMode = FilePickerSelectionMode.Single,
         settings = settings,
-        onResult = { files ->
-            pickedFiles = files.map { file ->
-                PickedFileInfo(
-                    name = file.getName().orEmpty(),
-                    path = file.getPath() ?: "Unknown path",
-                )
-            }
-        },
+        onResult = onFilesPicked,
     )
 
     val multiplePickerLauncher = rememberFilePickerLauncher(
         type = selectedFileType,
         selectionMode = FilePickerSelectionMode.Multiple,
         settings = settings,
-        onResult = { files ->
-            pickedFiles = files.map { file ->
-                PickedFileInfo(
-                    name = file.getName().orEmpty(),
-                    path = file.getPath() ?: "Unknown path",
-                )
-            }
-        },
+        onResult = onFilesPicked,
     )
 
     val directoryPickerLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Folder,
         selectionMode = FilePickerSelectionMode.Single,
         settings = FilePickerSettings(title = "Pick a directory"),
-        onResult = { files ->
-            pickedFiles = files.map { file ->
-                PickedFileInfo(
-                    name = file.getName().orEmpty(),
-                    path = file.getPath() ?: "Unknown path",
-                )
-            }
-        },
+        onResult = onDirectoryPicked,
     )
 
     val initialDirectoryPickerLauncher = rememberFilePickerLauncher(
@@ -286,8 +299,47 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    Text(
+                        text = fileInfo.streamingSummary,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
         }
+    }
+}
+
+/**
+ * Reads the whole file through the kotlinx-io [source] extension in fixed-size chunks, so the
+ * file never has to fit in memory, and describes the outcome for the results list.
+ */
+private suspend fun KmpFile.describeStreaming(): String = withContext(Dispatchers.Default) {
+    try {
+        val bytes = source().use { source -> source.countBytes() }
+        "$bytes bytes read in ${STREAM_CHUNK_SIZE / 1024} KB chunks with kotlinx-io"
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        "Not streamable: ${e.message}"
+    }
+}
+
+private fun KmpFile.toPickedFileInfo(streamingSummary: String): PickedFileInfo =
+    PickedFileInfo(
+        file = this,
+        name = getName().orEmpty(),
+        path = getPath() ?: "Unknown path",
+        streamingSummary = streamingSummary,
+    )
+
+private fun RawSource.countBytes(): Long {
+    val chunk = Buffer()
+    var total = 0L
+    while (true) {
+        val read = readAtMostTo(chunk, STREAM_CHUNK_SIZE)
+        if (read == -1L) return total
+        total += read
+        chunk.clear()
     }
 }
