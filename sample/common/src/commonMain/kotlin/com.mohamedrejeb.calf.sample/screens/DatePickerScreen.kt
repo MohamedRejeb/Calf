@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 import com.mohamedrejeb.calf.sample.currentPlatform
+import com.mohamedrejeb.calf.ui.datepicker.AdaptiveCompactDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.DateBounds
 import com.mohamedrejeb.calf.ui.datepicker.UIKitDisplayMode
@@ -93,6 +94,7 @@ fun DatePickerScreen(
     }
 
     val inlineState = rememberAdaptiveDatePickerState(selectableDates = selectableDates)
+    val compactState = rememberAdaptiveDatePickerState(selectableDates = selectableDates)
     val wheelsState = rememberAdaptiveDatePickerState(
         initialUIKitDisplayMode = UIKitDisplayMode.Wheels,
         selectableDates = selectableDates,
@@ -110,8 +112,8 @@ fun DatePickerScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Date selection using the native iOS controls and the Material3 DatePicker. " +
-                    "The controls below restrict which days can be picked on both platforms.",
+                text = "Inline and compact date pickers backed by the native iOS controls " +
+                    "and the Material3 pickers. The controls below restrict every picker on this screen.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -152,6 +154,28 @@ fun DatePickerScreen(
                 AdaptiveSwitch(
                     checked = weekdaysOnly,
                     onCheckedChange = { weekdaysOnly = it },
+                )
+            }
+
+            SectionDivider()
+
+            SectionTitle(
+                title = "Compact picker",
+                description = "A field that opens the calendar on tap.",
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Selected: ${compactState.selectedDateMillis.toDateLabel()}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f),
+                )
+                AdaptiveCompactDatePicker(
+                    state = compactState,
+                    colors = sampleDatePickerColors(),
                 )
             }
 

@@ -99,7 +99,7 @@ enum class Screen(
     ),
     DatePicker(
         title = "Adaptive Date Picker",
-        description = "Date selection with native iOS UIDatePicker and Material3 DatePicker",
+        description = "Inline and compact date pickers with the native iOS calendar and Material3",
         icon = Icons.Outlined.CalendarMonth,
         category = ScreenCategory.Pickers,
     ),

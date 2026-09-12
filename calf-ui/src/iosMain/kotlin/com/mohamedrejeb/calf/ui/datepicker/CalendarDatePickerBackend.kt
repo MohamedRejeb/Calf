@@ -108,6 +108,10 @@ internal class CalendarDatePickerBackend(
         refresh()
     }
 
+    override fun setEnabled(enabled: Boolean) {
+        calendarView.userInteractionEnabled = enabled
+    }
+
     /**
      * Rebuilds the days around the visible month, so bounds and rule changes show right away
      * instead of on the next scroll or tap.
