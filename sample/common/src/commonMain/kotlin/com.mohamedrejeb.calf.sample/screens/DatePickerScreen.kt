@@ -32,10 +32,12 @@ import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 import com.mohamedrejeb.calf.sample.currentPlatform
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveCompactDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
+import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDateRangePicker
 import com.mohamedrejeb.calf.ui.datepicker.DateBounds
 import com.mohamedrejeb.calf.ui.datepicker.UIKitDisplayMode
 import com.mohamedrejeb.calf.ui.datepicker.and
 import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
+import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDateRangePickerState
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
@@ -95,6 +97,7 @@ fun DatePickerScreen(
 
     val inlineState = rememberAdaptiveDatePickerState(selectableDates = selectableDates)
     val compactState = rememberAdaptiveDatePickerState(selectableDates = selectableDates)
+    val rangeState = rememberAdaptiveDateRangePickerState(selectableDates = selectableDates)
     val wheelsState = rememberAdaptiveDatePickerState(
         initialUIKitDisplayMode = UIKitDisplayMode.Wheels,
         selectableDates = selectableDates,
@@ -112,7 +115,7 @@ fun DatePickerScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Inline and compact date pickers backed by the native iOS controls " +
+                text = "Inline, compact and range date pickers backed by the native iOS controls " +
                     "and the Material3 pickers. The controls below restrict every picker on this screen.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -178,6 +181,27 @@ fun DatePickerScreen(
                     colors = sampleDatePickerColors(),
                 )
             }
+
+            SectionDivider()
+
+            SectionTitle(
+                title = "Range picker",
+                description = "Tap a start day, then an end day. Tap again to start a new range.",
+            )
+
+            Text(
+                text = "Range: ${rangeState.selectedStartDateMillis.toDateLabel()} " +
+                    "to ${rangeState.selectedEndDateMillis.toDateLabel()}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            AdaptiveDateRangePicker(
+                state = rangeState,
+                colors = sampleDatePickerColors(),
+            )
 
             SectionDivider()
 
