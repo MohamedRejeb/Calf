@@ -2,8 +2,11 @@ package com.mohamedrejeb.calf.ui.utils
 
 import platform.UIKit.UIDevice
 
-internal fun isIOS26OrAbove(): Boolean {
+/** True when the device runs iOS [major] or newer. */
+internal fun isIOSVersionAtLeast(major: Int): Boolean {
     val systemVersion = UIDevice.currentDevice.systemVersion
-    val major = systemVersion.split(".").firstOrNull()?.toIntOrNull() ?: 0
-    return major >= 26
+    val current = systemVersion.split(".").firstOrNull()?.toIntOrNull() ?: 0
+    return current >= major
 }
+
+internal fun isIOS26OrAbove(): Boolean = isIOSVersionAtLeast(26)

@@ -13,7 +13,7 @@ Both composables use native `UIAlertController` on iOS and Material dialogs on o
 
 ## AdaptiveAlertDialog
 
-The `AdaptiveAlertDialog` composable provides a simple API with predefined confirm and dismiss buttons. It's ideal for common dialog scenarios where you just need to show a message with two action buttons.
+The `AdaptiveAlertDialog` composable provides a simple API with predefined confirm and dismiss buttons. It's ideal for common dialog scenarios where you just need to show a message with one or two action buttons.
 
 ```kotlin
 // State to control dialog visibility
@@ -48,6 +48,24 @@ if (showDialog) {
     )
 }
 ```
+
+### Single-button dialog
+
+`dismissText` is optional. Leave it out, pass `null`, or pass a blank string to show only the confirm button. On iOS this presents a single `UIAlertAction`; on Material platforms the `AlertDialog` is rendered without a dismiss button.
+
+```kotlin
+if (showInfoDialog) {
+    AdaptiveAlertDialog(
+        onConfirm = { showInfoDialog = false },
+        onDismiss = { showInfoDialog = false },
+        confirmText = "OK",
+        title = "Saved",
+        text = "Your changes have been saved.",
+    )
+}
+```
+
+`onDismiss` is still invoked when the user taps outside the dialog or presses back, so it stays required. On iOS the set of buttons is fixed when the dialog is first presented: toggling `dismissText` between `null` and a value while the dialog is visible takes effect the next time it is shown.
 
 ## AdaptiveBasicAlertDialog
 

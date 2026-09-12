@@ -12,7 +12,6 @@ import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogProperties
 import com.mohamedrejeb.calf.core.InternalCalfApi
-import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosAction
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosProperties
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosStyle
@@ -23,7 +22,7 @@ actual fun AdaptiveAlertDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     confirmText: String,
-    dismissText: String,
+    dismissText: String?,
     title: String,
     text: String,
     materialConfirmButton: @Composable (() -> Unit)?,
@@ -52,18 +51,14 @@ actual fun AdaptiveAlertDialog(
             title = title,
             text = text,
             style = iosDialogStyle,
-            actions = listOf(
-                AlertDialogIosAction(
-                    title = confirmText,
-                    style = iosConfirmButtonStyle,
-                    onClick = onConfirm,
-                    isPreferred = iosConfirmButtonIsPreferred,
-                ),
-                AlertDialogIosAction(
-                    title = dismissText,
-                    style = iosDismissButtonStyle,
-                    onClick = onDismiss,
-                )
+            actions = adaptiveAlertDialogIosActions(
+                confirmText = confirmText,
+                dismissText = dismissText,
+                onConfirm = onConfirm,
+                onDismiss = onDismiss,
+                confirmStyle = iosConfirmButtonStyle,
+                dismissStyle = iosDismissButtonStyle,
+                confirmIsPreferred = iosConfirmButtonIsPreferred,
             ),
         )
     }

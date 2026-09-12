@@ -5,6 +5,23 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 
+/**
+ * Creates and remembers an [AdaptiveDatePickerState].
+ *
+ * @param initialSelectedDateMillis timestamp in _UTC_ milliseconds from the epoch that
+ * represents an initial selection of a date. Provide a `null` to indicate no selection.
+ * @param initialDisplayedMonthMillis timestamp in _UTC_ milliseconds from the epoch that
+ * represents an initial selection of a month to be displayed to the user. In case `null` is
+ * provided, the displayed month would be the current one.
+ * @param yearRange an [IntRange] that holds the year range that the date picker will be limited
+ * to
+ * @param initialMaterialDisplayMode an initial [DisplayMode] that this state will hold
+ * @param initialUIKitDisplayMode an initial [UIKitDisplayMode] used by the iOS picker
+ * @param selectableDates the rule deciding which days can be picked, see
+ * [AdaptiveDatePickerState.selectableDates]. Use [DateBounds] for a minimum and maximum day and
+ * [and] to combine rules. Pass a stable instance (for example an `object`, a `data class` or a
+ * remembered value) so the picker does not re-evaluate on every recomposition.
+ */
 @Composable
 @ExperimentalMaterial3Api
 fun rememberAdaptiveDatePickerState(
@@ -13,9 +30,10 @@ fun rememberAdaptiveDatePickerState(
     yearRange: IntRange = DatePickerDefaults.YearRange,
     initialMaterialDisplayMode: DisplayMode = DisplayMode.Picker,
     initialUIKitDisplayMode: UIKitDisplayMode = UIKitDisplayMode.Picker,
+    selectableDates: SelectableDates = DatePickerDefaults.AllDates,
 ): AdaptiveDatePickerState =
     rememberSaveable(
-        saver = AdaptiveDatePickerState.Saver(),
+        saver = AdaptiveDatePickerState.Saver(selectableDates),
     ) {
         AdaptiveDatePickerState(
             initialSelectedDateMillis = initialSelectedDateMillis,
@@ -23,7 +41,11 @@ fun rememberAdaptiveDatePickerState(
             yearRange = yearRange,
             initialMaterialDisplayMode = initialMaterialDisplayMode,
             initialUIKitDisplayMode = initialUIKitDisplayMode,
+            selectableDates = selectableDates,
         )
+    }.apply {
+        // Keep the rule in sync when the caller passes a new one on recomposition.
+        this.selectableDates = selectableDates
     }
 
 /**
@@ -43,6 +65,8 @@ fun rememberAdaptiveDatePickerState(
  * @param yearRange an [IntRange] that holds the year range that the date picker will be limited
  * to
  * @param initialMaterialDisplayMode an initial [DisplayMode] that this state will hold
+ * @param initialUIKitDisplayMode an initial [UIKitDisplayMode] used by the iOS picker
+ * @param selectableDates initial value of [AdaptiveDatePickerState.selectableDates]
  * @see rememberAdaptiveDatePickerState
  * @throws [IllegalArgumentException] if the initial selected date or displayed month represent
  * a year that is out of the year range.
@@ -55,6 +79,7 @@ expect class AdaptiveDatePickerState(
     yearRange: IntRange,
     initialMaterialDisplayMode: DisplayMode,
     initialUIKitDisplayMode: UIKitDisplayMode,
+    selectableDates: SelectableDates = DatePickerDefaults.AllDates,
 ) {
     /**
      * A timestamp that represents the _start_ of the day of the selected date in _UTC_ milliseconds
@@ -87,11 +112,26 @@ expect class AdaptiveDatePickerState(
      */
     var displayMode: DisplayMode
 
+    /**
+     * The [SelectableDates] rule deciding which days can be picked. Use [DateBounds] for a
+     * minimum and maximum day, and [and] to combine rules.
+     *
+     * Honoured by the Material picker and by the iOS 16+ calendars, where rejected days are
+     * greyed out; bounds coming from a [DateBounds] are also applied natively, so the iOS wheels
+     * stop at the range. The iOS wheels picker, and the inline picker below iOS 16, cannot grey
+     * out days: a rejected day is snapped to the nearest selectable one instead. Observable:
+     * changing it updates the displayed picker, and a selection the new rule rejects is moved
+     * to the nearest selectable day. [SelectableDates.isSelectableYear] only affects Material.
+     */
+    var selectableDates: SelectableDates
+
     companion object {
         /**
          * The default [Saver] implementation for [AdaptiveDatePickerState].
+         *
+         * @param selectableDates the rule to re-attach on restore, since it cannot be saved.
          */
-        fun Saver(): Saver<AdaptiveDatePickerState, *>
+        fun Saver(selectableDates: SelectableDates = DatePickerDefaults.AllDates): Saver<AdaptiveDatePickerState, Any>
     }
 }
 
