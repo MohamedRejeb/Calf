@@ -1,6 +1,11 @@
 # Date Picker
 
-`AdaptiveDatePicker` is a date picker that adapts to the platform it is running on. It is a wrapper around the Material3 `DatePicker` on Android, Desktop and Web, and around `UICalendarView` (iOS 16+) or `UIDatePicker` on iOS, providing a native date selection experience on each platform.
+Calf provides two date pickers that adapt to the platform they run on:
+
+1. **AdaptiveDatePicker**: the full calendar, always visible. Material3 `DatePicker` on Android, Desktop and Web; `UICalendarView` (iOS 16+) or `UIDatePicker` on iOS.
+2. **AdaptiveCompactDatePicker**: a field showing the selected date that opens the calendar on tap. A `DatePickerDialog` on Material platforms; the system compact `UIDatePicker` on iOS.
+
+Both share `AdaptiveDatePickerState` and support the same [selectable rules](#restricting-selectable-dates).
 
 ## Usage
 
@@ -91,8 +96,30 @@ Pass a stable instance, such as an `object`, a data class or a remembered value,
 |---|---|
 | Material (Android, Desktop, Web) | Rejected days are disabled in the calendar grid. `isSelectableYear` disables years in the year picker. |
 | iOS 16+ inline calendar (`UIKitDisplayMode.Picker`) | Backed by `UICalendarView`: rejected days are greyed out and cannot be tapped. Bounds coming from a `DateBounds` also hide the months outside the range. |
-| iOS wheels (`UIKitDisplayMode.Wheels`) and inline below iOS 16 | Backed by `UIDatePicker`, which cannot grey out days. Bounds coming from a `DateBounds` stop the wheels at the range; picking any other rejected day snaps the wheels to the nearest selectable day. |
+| iOS compact picker, wheels (`UIKitDisplayMode.Wheels`) and inline below iOS 16 | Backed by `UIDatePicker`, which cannot grey out days. Bounds coming from a `DateBounds` apply natively; picking any other rejected day snaps the control to the nearest selectable day. |
 
 On every platform, a current selection that a new rule rejects is moved to the nearest selectable day. `isSelectableYear` has no effect on iOS.
+
+## Compact picker
+
+`AdaptiveCompactDatePicker` takes the same state as `AdaptiveDatePicker`, so the bounds and rules apply unchanged. It is the right choice for forms and for anything that should not take the full height of a calendar.
+
+```kotlin
+val state = rememberAdaptiveDatePickerState()
+
+AdaptiveCompactDatePicker(
+    state = state,
+    enabled = true,
+    // Material only: the field placeholder and the dialog buttons.
+    materialPlaceholder = "Select date",
+    materialConfirmText = "OK",
+    materialDismissText = "Cancel",
+)
+```
+
+| Platform | Behaviour |
+|---|---|
+| Material (Android, Desktop, Web) | An outlined button with the formatted date opens a `DatePickerDialog`. The day picked in the dialog reaches the state only on confirm; dismiss, or tapping outside, discards it. |
+| iOS | The system compact `UIDatePicker`, which pops its calendar over the content. Changes apply immediately, as they do everywhere in iOS. Bounds coming from a `DateBounds` apply natively; the control cannot grey out days any other rule rejects, so such a pick snaps to the nearest selectable day. |
 
 > `AdaptiveDatePicker` has no `dateValidator` parameter. An earlier version of this page documented one that never existed. Use `selectableDates` with `DateBounds` as described above instead.

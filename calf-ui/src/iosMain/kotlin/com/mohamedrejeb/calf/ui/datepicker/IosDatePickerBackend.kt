@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.datepicker
 
+import com.mohamedrejeb.calf.ui.utils.applyTheme
 import platform.UIKit.UIColor
 import platform.UIKit.UIView
 
@@ -19,5 +20,11 @@ internal interface IosDatePickerBackend {
     /** Re-evaluates which days can be picked after the rule or the bounds changed. */
     fun updateSelectableDates()
 
+    fun setEnabled(enabled: Boolean)
+
     fun applyColors(containerColor: UIColor, selectedDayContainerColor: UIColor)
+
+    fun applyTheme(isDark: Boolean) {
+        view.applyTheme(isDark)
+    }
 }

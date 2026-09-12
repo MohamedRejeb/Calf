@@ -18,11 +18,11 @@ import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
 /**
- * Picker backed by `UIDatePicker`, used for the wheels style and as the inline fallback below
+ * Picker backed by `UIDatePicker`: the wheels and compact styles, and the inline fallback below
  * iOS 16. `UIDatePicker` can only enforce a minimum and a maximum date, so a picked day the
- * rule rejects is replaced by [resolveSelection] and the wheels move to that day.
+ * rule rejects is replaced by [resolveSelection] and the control moves to that day.
  */
-internal class WheelsDatePickerBackend(
+internal class UIDatePickerBackend(
     initialSelectedDateMillis: Long?,
     style: UIDatePickerStyle,
     private val onSelectionChanged: (utcTimeMillis: Long?) -> Unit,
@@ -53,6 +53,7 @@ internal class WheelsDatePickerBackend(
         datePicker.timeZone = TimeZone.currentSystemDefault().toNSTimeZone()
         datePicker.datePickerMode = UIDatePickerMode.UIDatePickerModeDate
         datePicker.preferredDatePickerStyle = style
+        datePicker.sizeToFit()
         datePicker.addTarget(
             target = valueChangedTarget,
             action = sel_registerName("onDateChanged:"),
@@ -74,6 +75,10 @@ internal class WheelsDatePickerBackend(
 
     override fun updateSelectableDates() {
         // UIDatePicker cannot grey out individual days; rejected picks are resolved on change.
+    }
+
+    override fun setEnabled(enabled: Boolean) {
+        datePicker.enabled = enabled
     }
 
     override fun applyColors(containerColor: UIColor, selectedDayContainerColor: UIColor) {
