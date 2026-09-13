@@ -64,7 +64,7 @@ if (!hasPrebuiltNativeLibs) {
         }
     }
 
-    val buildNativeLib by tasks.registering(Exec::class) {
+    val buildNativeLib = tasks.register<Exec>("buildNativeLib") {
         group = "native"
         description = "Build the Rust native file picker library for the current host."
 
@@ -77,7 +77,7 @@ if (!hasPrebuiltNativeLibs) {
         outputs.upToDateWhen { false }
     }
 
-    val copyNativeLib by tasks.registering(Copy::class) {
+    val copyNativeLib = tasks.register<Copy>("copyNativeLib") {
         group = "native"
         description = "Copy the built native library into JAR resources."
 

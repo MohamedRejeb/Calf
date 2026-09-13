@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-26
 
     steps:
     - uses: actions/checkout@v6
@@ -67,7 +67,7 @@ jobs:
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [build, build-native]
-    runs-on: macos-14
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v6
 

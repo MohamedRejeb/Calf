@@ -3,3 +3,5 @@ plugins {
     id("org.jetbrains.compose")
     `kotlin-composecompiler`
 }
+
+skipComposeUiTestCheckWithoutTestSources()
