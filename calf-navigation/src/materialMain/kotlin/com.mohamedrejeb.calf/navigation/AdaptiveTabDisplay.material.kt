@@ -18,6 +18,7 @@ import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -29,7 +30,10 @@ import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.mohamedrejeb.calf.navigation.internal.LocalNavTransitionTracker
 import com.mohamedrejeb.calf.navigation.internal.MaterialTabScope
+import com.mohamedrejeb.calf.navigation.internal.NavTransitionGuardEffect
+import com.mohamedrejeb.calf.navigation.internal.NavTransitionTracker
 import com.mohamedrejeb.calf.navigation.internal.adaptiveMetadata
 import com.mohamedrejeb.calf.navigation.internal.rememberMaterialTabScopes
 import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration
@@ -131,7 +135,12 @@ private fun <T : NavKey> TabContent(
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 ) {
     val backStack = state.backStackOf(tab)
-    CompositionLocalProvider(LocalViewModelStoreOwner provides scope.viewModelStoreOwner) {
+    val tracker = remember { NavTransitionTracker() }
+    NavTransitionGuardEffect(backStack, tracker)
+    CompositionLocalProvider(
+        LocalViewModelStoreOwner provides scope.viewModelStoreOwner,
+        LocalNavTransitionTracker provides tracker,
+    ) {
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },

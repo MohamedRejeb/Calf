@@ -8,12 +8,12 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ObjCSignatureOverride
 import platform.UIKit.UIGestureRecognizer
 import platform.UIKit.UIGestureRecognizerDelegateProtocol
 import platform.UIKit.UINavigationController
 import platform.UIKit.UINavigationControllerDelegateProtocol
 import platform.UIKit.UIViewController
-import platform.UIKit.transitionCoordinator
 import platform.darwin.NSObject
 
 /**
@@ -30,8 +30,12 @@ import platform.darwin.NSObject
  *    listening for single pops handles multi-pops and cancelled swipes alike.
  *
  * UIKit does not allow `viewControllers` to change while a transition is in
- * flight (an interactive swipe, or a push still animating), so a Compose
- * change arriving mid-transition is deferred and applied from `didShow`.
+ * flight (an interactive swipe, or a push still animating). A Compose change
+ * arriving mid-transition is therefore *dropped*: the back stack is reverted
+ * to what is on screen, the way Flutter ignores navigation while animating.
+ * Transitions are tracked from this controller's own `willShow` / `didShow`
+ * rather than `transitionCoordinator`, which also reports ancestors'
+ * transitions and stays non-nil inside `didShow`.
  */
 internal class IosNavController(
     private val backStack: NavBackStack<NavKey>,
@@ -40,7 +44,10 @@ internal class IosNavController(
     private val density: Float,
 ) {
     private val gestureDelegate = PopGestureDelegate(::canPopInteractively)
-    private val navigationDelegate = NavigationDelegate(::onUiKitDidShow)
+    private val navigationDelegate = NavigationDelegate(
+        onWillShow = { isTransitioning = true },
+        onDidShow = ::onUiKitDidShow,
+    )
 
     val uiNavigationController: UINavigationController = object : UINavigationController(
         nibName = null,
@@ -59,8 +66,8 @@ internal class IosNavController(
     private var entryControllers: List<Pair<NavKey, EntryHostingController>> = emptyList()
     private var lastSyncedSnapshot: List<NavKey> = emptyList()
 
-    /** A Compose change arrived during a transition; re-sync from the next `didShow`. */
-    private var syncPending: Boolean = false
+    /** True between this controller's `willShow` and `didShow`, including an interactive pop in flight. */
+    private var isTransitioning: Boolean = false
 
     init {
         uiNavigationController.delegate = navigationDelegate
@@ -85,10 +92,12 @@ internal class IosNavController(
 
     /** Makes the UIKit stack match [snapshot], the current Compose back stack. */
     fun syncToUiStack(snapshot: List<NavKey>) {
-        if (snapshot == lastSyncedSnapshot) return
-        if (uiNavigationController.transitionCoordinator != null) {
-            syncPending = true
-            return
+        when (val decision = decideNavChange(lastSyncedSnapshot, snapshot, isTransitioning, allowPops = false)) {
+            is NavChangeDecision.Revert -> {
+                revertBackStack(decision.stack)
+                return
+            }
+            NavChangeDecision.Accept -> if (snapshot == lastSyncedSnapshot) return
         }
 
         val diff = reconcileNavStack(entryControllers, snapshot, ::createController)
@@ -125,19 +134,25 @@ internal class IosNavController(
      * that prefix was popped natively and is mirrored into the Compose stack.
      */
     private fun onUiKitDidShow() {
+        isTransitioning = false
         refreshPopGesture()
         mirrorNativePops()
-        if (syncPending) {
-            syncPending = false
-            syncToUiStack(backStack.toList())
-        }
     }
 
     /**
-     * Trims the Compose back stack to what UIKit kept. If Compose changed the
-     * stack during the transition, the native pop still wins for the entries
-     * UIKit removed; the deferred sync then pushes whatever Compose added on
-     * top of the kept prefix.
+     * Drops a change made while a transition runs by restoring the Compose
+     * back stack to what UIKit shows. The resulting snapshot equals
+     * [lastSyncedSnapshot], so the next sync is a no-op.
+     */
+    private fun revertBackStack(stack: List<NavKey>) {
+        if (backStack.toList() == stack) return
+        backStack.clear()
+        backStack.addAll(stack)
+    }
+
+    /**
+     * Trims the Compose back stack to what UIKit kept after a native pop
+     * (back button, edge swipe, pop to root).
      */
     private fun mirrorNativePops() {
         val shown = uiNavigationController.viewControllers.filterIsInstance<UIViewController>().toSet()
@@ -173,8 +188,21 @@ private class PopGestureDelegate(
 }
 
 private class NavigationDelegate(
+    private val onWillShow: () -> Unit,
     private val onDidShow: () -> Unit,
 ) : NSObject(), UINavigationControllerDelegateProtocol {
+    // Both selectors map to the same Kotlin signature; the annotation keeps
+    // them distinct for the Objective-C bridge.
+    @ObjCSignatureOverride
+    override fun navigationController(
+        navigationController: UINavigationController,
+        willShowViewController: UIViewController,
+        animated: Boolean,
+    ) {
+        onWillShow()
+    }
+
+    @ObjCSignatureOverride
     override fun navigationController(
         navigationController: UINavigationController,
         didShowViewController: UIViewController,

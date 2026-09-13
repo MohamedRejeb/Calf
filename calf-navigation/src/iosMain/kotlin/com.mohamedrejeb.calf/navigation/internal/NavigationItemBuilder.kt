@@ -11,7 +11,6 @@ import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIBarButtonItem
 import platform.UIKit.UIBarButtonItemStyle
-import platform.UIKit.UINavigationBar
 import platform.UIKit.UINavigationBarAppearance
 import platform.UIKit.UINavigationItem
 import platform.UIKit.UINavigationItemLargeTitleDisplayMode
@@ -60,26 +59,19 @@ internal fun applyEntryMetadataToItem(
             action = null,
         )
     }
+    item.applyAppearance(metadata.iosConfiguration)
     return NavBarItemBindings(leading, trailing)
 }
 
 /**
- * Applies an entry's bar configuration to the navigation controller's bar.
- * Called from `viewWillAppear` so it changes together with the transition.
- *
- * With no title color the system appearances are restored, keeping the
- * transparent scroll-edge look large titles rely on. With a title color the
- * standard appearance carries it, and a transparent scroll-edge variant keeps
- * the same colors so the bar does not change look when content scrolls.
+ * Per-item bar appearance, which UIKit animates together with the push
+ * transition (unlike mutating the bar's own appearance from `viewWillAppear`,
+ * which snaps). Only a specified title color needs one; otherwise the item
+ * inherits the bar's system appearance, keeping the transparent scroll-edge
+ * look large titles rely on.
  */
-internal fun UINavigationBar.applyEntryConfiguration(configuration: UIKitNavigationBarConfiguration) {
-    translucent = configuration.isTranslucent
-    if (!configuration.titleColor.isSpecified) {
-        standardAppearance = UINavigationBarAppearance()
-        compactAppearance = null
-        scrollEdgeAppearance = null
-        return
-    }
+private fun UINavigationItem.applyAppearance(configuration: UIKitNavigationBarConfiguration) {
+    if (!configuration.titleColor.isSpecified) return
     val standard = configuration.toNavigationBarAppearance(isLiquidGlassEnabled = isIOS26OrAbove())
     val scrollEdge = UINavigationBarAppearance().apply {
         configureWithTransparentBackground()

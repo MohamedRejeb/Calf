@@ -7,6 +7,7 @@ import androidx.compose.runtime.CompositionLocalContext
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.State
+import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.unit.dp
@@ -88,14 +89,22 @@ internal class EntryHostingController(
                 onFocusBehavior = OnFocusBehavior.DoNothing
             },
         ) {
+            // Locals this surface provides itself (its UIViewController, interop
+            // container, window info, …) must win over the parent's captured
+            // context: otherwise UIKit interop inside the entry (a nested
+            // AdaptiveTabDisplay, a WebView, …) attaches to the parent surface,
+            // whose Compose layer has no node for it, and never gets touches.
+            val surfaceLocals = currentCompositionLocalContext
             CompositionLocalProvider(parentLocals.value) {
-                CompositionLocalProvider(
-                    LocalLifecycleOwner provides entryScope,
-                    LocalViewModelStoreOwner provides entryScope,
-                    LocalSavedStateRegistryOwner provides entryScope,
-                    LocalNavEntrySafeArea provides safeAreaPadding.value,
-                ) {
-                    entry.Content()
+                CompositionLocalProvider(surfaceLocals) {
+                    CompositionLocalProvider(
+                        LocalLifecycleOwner provides entryScope,
+                        LocalViewModelStoreOwner provides entryScope,
+                        LocalSavedStateRegistryOwner provides entryScope,
+                        LocalNavEntrySafeArea provides safeAreaPadding.value,
+                    ) {
+                        entry.Content()
+                    }
                 }
             }
         }
@@ -115,7 +124,7 @@ internal class EntryHostingController(
             // setNavigationBarHidden(animated:) coordinates with the push/pop
             // transition, so per-entry barShown animates cleanly.
             nav.setNavigationBarHidden(!metadata.barShown, animated)
-            nav.navigationBar.applyEntryConfiguration(metadata.iosConfiguration)
+            nav.navigationBar.translucent = metadata.iosConfiguration.isTranslucent
         }
     }
 

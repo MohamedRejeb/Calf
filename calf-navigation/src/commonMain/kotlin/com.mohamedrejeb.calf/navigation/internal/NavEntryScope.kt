@@ -30,7 +30,8 @@ internal class NavEntryScope :
     ViewModelStoreOwner,
     SavedStateRegistryOwner {
 
-    private val lifecycleRegistry = LifecycleRegistry(this)
+    // Unsafe = no main-thread enforcement; UIKit drives it from the main thread anyway.
+    private val lifecycleRegistry = LifecycleRegistry.createUnsafe(this)
 
     private val savedStateRegistryController = SavedStateRegistryController.create(this).also {
         it.performAttach()
@@ -56,11 +57,18 @@ internal class NavEntryScope :
         }
     }
 
-    /** Called from `EntryHostingController.viewDidDisappear` when `isMovingFromParentViewController()` is true. */
+    /**
+     * Called when the entry leaves the stack for good. Idempotent. A scope that
+     * never appeared (pushed and covered before `viewDidAppear`) is still
+     * `INITIALIZED`, and the lifecycle registry only allows `DESTROYED` from
+     * `CREATED` or above, so it is stepped through `CREATED` first.
+     */
     fun markDestroyed() {
-        if (lifecycleRegistry.currentState != Lifecycle.State.DESTROYED) {
-            lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        if (lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return
+        if (lifecycleRegistry.currentState == Lifecycle.State.INITIALIZED) {
+            lifecycleRegistry.currentState = Lifecycle.State.CREATED
         }
+        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         viewModelStore.clear()
     }
 }

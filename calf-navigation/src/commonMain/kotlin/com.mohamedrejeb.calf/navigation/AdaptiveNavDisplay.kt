@@ -24,6 +24,10 @@ import androidx.navigation3.ui.NavDisplay
  * user pops natively on iOS (back button, swipe, pop-to-root), the back stack
  * is trimmed to match UIKit, so it never disagrees with what is on screen.
  *
+ * A change made while a transition is still animating is dropped and the
+ * stack reverted, so a double tap pushes once (on Android, pops made during
+ * the animation are still applied so predictive back completes).
+ *
  * Each entry gets its own `ViewModelStoreOwner`: `viewModel()` inside an
  * entry is scoped to that entry and cleared when it leaves the back stack,
  * through [entryDecorators] on Material and the per-entry controller scope

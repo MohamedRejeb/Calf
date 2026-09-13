@@ -142,6 +142,10 @@ fun App() {
 - **Android**: back pops the current tab's stack; at the root of a tab other than the start tab it returns to the start tab, then exits the app. This is the platform convention.
 - **Desktop / Web**: back is only what your UI offers (a back button in the bar).
 
+**Rapid taps and in-flight transitions**
+
+A back-stack change that arrives while a transition is still animating is dropped and the stack reverted to what is on screen, the way Flutter ignores navigation during an animation. A double tap on a list row therefore pushes once. On iOS any change made mid-transition is dropped; on Android only pushes are dropped, so a predictive-back pop still completes. Desktop and web have no transitions and are unaffected.
+
 **Screens above the tabs**
 
 Put the tab display inside an entry of an outer `AdaptiveNavDisplay` (with `barShown = false`) to push a screen over the whole tab UI, for example a sign-out screen. On iOS the tab bar rides the push transition and returns with the back swipe, because it belongs to the view controller being covered.
@@ -208,7 +212,7 @@ val tabs = rememberAdaptiveTabState(Home, Search, Profile, configuration = confi
 
 ## Platform notes
 
-- **iOS**: `entryDecorators` are not applied; the native per-entry scopes provide lifecycle, ViewModel and saved-state owners. `onBack` is not used; UIKit performs pops itself. Custom `iosConfiguration.titleColor` keeps a transparent scroll edge so large titles look native.
+- **iOS**: `entryDecorators` are not applied; the native per-entry scopes provide lifecycle, ViewModel and saved-state owners. `onBack` is not used; UIKit performs pops itself. A custom `iosConfiguration.titleColor` is applied per `UINavigationItem`, so the bar animates with the push and keeps a transparent scroll edge for large titles. Tab switches are instant on iOS, as in every native app; pushes inside a tab animate.
 - **iPhone Duo / iPad**: the inner display is a regular-width, regular-height size class. `UITabBarController` adapts on its own; set `iosSidebarAdaptable = true` to allow the sidebar placement Apple recommends for richer navigation. Bars and toolbars are the system's, so they pick up iOS 27.1's vertical button layout without changes.
 - **Android foldables and tablets**: the Material side uses `NavigationSuiteScaffold`, so a bottom bar becomes a rail on wide windows.
 
