@@ -3,7 +3,6 @@
 package com.mohamedrejeb.calf.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
@@ -23,17 +22,13 @@ import com.mohamedrejeb.calf.navigation.internal.IosNavController
 import kotlinx.cinterop.ExperimentalForeignApi
 
 /**
- * iOS actual: hosts a real [platform.UIKit.UINavigationController] *inside*
- * a Compose composable via [UIKitViewController]. Each entry in [backStack]
- * becomes a child UIViewController; mutating the back stack (push/pop)
- * triggers UIKit's native push/pop animation, swipe-back, and large-title
- * shrink-on-scroll.
+ * iOS actual: hosts a real `UINavigationController` inside the composable via
+ * [UIKitViewController]. Each entry in [backStack] becomes a child view
+ * controller; mutating the back stack triggers UIKit's native push/pop.
  *
- * The `entryDecorators` parameter is currently **not** applied on iOS — the
- * built-in lifecycle / `ViewModelStore` / `SavedStateRegistry` providers
- * cover the 90% case. Custom decorator support is a tracked follow-up
- * (see `docs/superpowers/specs/2026-05-09-adaptive-navigation-design.md`
- * § 11).
+ * [onBack] is unused here: UIKit performs pops itself and the host trims the
+ * back stack to match. [entryDecorators] are not applied either; the native
+ * per-entry scopes provide lifecycle, ViewModel and saved-state owners.
  */
 @ExperimentalCalfNavigationApi
 @Composable
@@ -44,40 +39,33 @@ actual fun AdaptiveNavDisplay(
     entryDecorators: List<NavEntryDecorator<NavKey>>,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 ) {
-    val updatedOnBack = rememberUpdatedState(onBack)
     val updatedEntryProvider = rememberUpdatedState(entryProvider)
     val density = LocalDensity.current.density
+    // Each child Compose surface re-applies this context so theme, density and
+    // any app-provided locals cross the UIKit boundary.
+    val parentLocals = rememberUpdatedState(currentCompositionLocalContext)
 
-    // Provide LocalNavBackPress *before* capturing currentCompositionLocalContext
-    // — the captured context is what each child Compose surface re-applies to
-    // propagate theme, density, and these locals across the UIKit boundary.
-    CompositionLocalProvider(LocalNavBackPress provides { updatedOnBack.value() }) {
-        val parentLocals = rememberUpdatedState(currentCompositionLocalContext)
-
-        val nav = remember(backStack) {
-            IosNavController(
-                backStack = backStack,
-                onBack = { updatedOnBack.value() },
-                parentLocals = parentLocals,
-                entryProvider = { updatedEntryProvider.value(it) },
-                density = density,
-            )
-        }
-
-        LaunchedEffect(nav, backStack) {
-            snapshotFlow { backStack.toList() }
-                .collect { snapshot -> nav.syncToUiStack(snapshot) }
-        }
-
-        UIKitViewController(
-            factory = { nav.uiNavigationController },
-            modifier = modifier,
-            properties = UIKitInteropProperties(
-                isInteractive = true,
-                isNativeAccessibilityEnabled = true,
-            ),
+    val host = remember(backStack) {
+        IosNavController(
+            backStack = backStack,
+            parentLocals = parentLocals,
+            entryProvider = { updatedEntryProvider.value(it) },
+            density = density,
         )
-
-        DisposableEffect(nav) { onDispose { nav.release() } }
     }
+
+    LaunchedEffect(host) {
+        snapshotFlow { backStack.toList() }.collect { snapshot -> host.syncToUiStack(snapshot) }
+    }
+
+    UIKitViewController(
+        factory = { host.uiNavigationController },
+        modifier = modifier,
+        properties = UIKitInteropProperties(
+            isInteractive = true,
+            isNativeAccessibilityEnabled = true,
+        ),
+    )
+
+    DisposableEffect(host) { onDispose { host.release() } }
 }

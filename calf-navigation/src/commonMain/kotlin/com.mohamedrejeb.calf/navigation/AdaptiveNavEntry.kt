@@ -11,54 +11,56 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
-import com.mohamedrejeb.calf.navigation.internal.IosNavBarData
-import com.mohamedrejeb.calf.navigation.internal.IosNavBarDataKey
+import androidx.navigation3.runtime.metadata
+import com.mohamedrejeb.calf.navigation.internal.AdaptiveNavEntryMetadata
+import com.mohamedrejeb.calf.navigation.internal.AdaptiveNavEntryMetadataKey
 import com.mohamedrejeb.calf.ui.navigation.UIKitNavigationBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 
 /**
- * Build a [NavEntry] with adaptive bar options. The navigator paints the top bar
- * from these options on every platform; the screen's [content] should render only
- * the body, applying the received [PaddingValues] — the Material `Scaffold`
- * padding, or the safe-drawing insets on iOS, where the translucent native bar
- * sits over edge-to-edge content. Pass it as `contentPadding` on lazy
- * containers so content scrolls under the bar but starts below it.
+ * Builds a [NavEntry] whose bar is painted by the navigator on every platform.
+ * The screen's [content] renders only the body and applies the received
+ * [PaddingValues]: the Material `Scaffold` padding, or the safe-area insets on
+ * iOS, where the translucent native bars sit over edge-to-edge content. Pass
+ * them as `contentPadding` on lazy containers so content scrolls under the
+ * bars but starts below them.
  *
- * The signature deliberately mirrors `AdaptiveTopBar`'s expect function:
- * composable slots for Material; structured `iosTitle` / `iosLeadingItems` /
- * `iosTrailingItems` / `iosConfiguration` for iOS. iOS values are stuffed into
- * [NavEntry.metadata] under [IosNavBarDataKey] so the iOS adapter can apply them
- * to `UINavigationItem` *before* the child VC is pushed — that's what makes the
- * native cross-fade animation work correctly.
+ * The signature mirrors `AdaptiveTopBar`: composable slots for Material and
+ * structured `ios*` data for iOS. Structured data is required on iOS because
+ * it is applied to `UINavigationItem` *before* the push animation starts,
+ * which is what makes the native title cross-fade animate with the right
+ * content.
  *
- * **Material defaults note:** parameters with composable defaults
- * ([expandedHeight], [windowInsets], [colors]) are nullable here because this
- * builder is invoked from a non-composable `entryProvider` lambda passed to
- * [AdaptiveNavDisplay]. Pass `null` to use the platform default; the value is
- * resolved inside the entry's @Composable content scope.
+ * Parameters with composable defaults ([expandedHeight], [windowInsets],
+ * [colors]) are nullable because this builder runs inside the non-composable
+ * `entryProvider` lambda; `null` resolves to the platform default inside the
+ * entry's composition.
  *
- * @param key the typed route ([NavKey]). Must be `@Serializable`.
+ * @param key the typed route. Make it `@Serializable` if the back stack is
+ *   persisted through a `SavedStateConfiguration`.
  * @param title Material `TopAppBar` title slot.
  * @param navigationIcon Material `TopAppBar` navigation-icon slot.
  * @param actions Material `TopAppBar` actions slot.
- * @param expandedHeight Material `TopAppBar` expanded height (`null` → default).
- * @param windowInsets Material `TopAppBar` window insets (`null` → default).
- * @param colors Material `TopAppBar` colors (`null` → default).
+ * @param expandedHeight Material `TopAppBar` expanded height (`null` = default).
+ * @param windowInsets Material `TopAppBar` window insets (`null` = default).
+ * @param colors Material `TopAppBar` colors (`null` = default).
  * @param scrollBehavior Material `TopAppBar` scroll behavior. When `null` and
  *   [largeTitle] is true, an exit-until-collapsed behavior is created so the
  *   large title collapses on scroll.
- * @param largeTitle on Material renders a collapsing `LargeTopAppBar`; on iOS sets
- *   `navigationItem.largeTitleDisplayMode = .always` so the title shrinks on scroll.
+ * @param largeTitle renders a collapsing `LargeTopAppBar` on Material and a
+ *   large title that shrinks on scroll on iOS. This is the only large-title
+ *   switch; `iosConfiguration.prefersLargeTitles` is ignored by the navigator.
  * @param iosTitle the title shown in the iOS `UINavigationBar`.
- * @param iosBackTitle title used by the back button on the *next* pushed screen
- *   (sets `navigationItem.backBarButtonItem.title`).
+ * @param iosBackTitle label of the back button shown on the *next* pushed screen.
  * @param iosLeadingItems left-aligned bar items on iOS.
  * @param iosTrailingItems right-aligned bar items on iOS.
- * @param iosConfiguration appearance config for the iOS nav bar (translucency, tint, …).
- * @param barShown when false, the navigator hides its bar for this entry.
- * @param iosPresentation reserved for future modal-presentation styles; currently
- *   only [NavPresentation.Card] is implemented and other values fall back to it.
- * @param iosGestureEnabled when false, disables iOS swipe-back from the edge.
+ * @param iosConfiguration appearance of the iOS bar (translucency, title color).
+ * @param barShown when false, the navigator hides its top bar for this entry.
+ * @param tabBarShown when false, a hosting [AdaptiveTabDisplay] hides its tab
+ *   bar while this entry is on top: `hidesBottomBarWhenPushed` on iOS, an
+ *   animated hide of the Material navigation bar elsewhere. Ignored outside
+ *   tabs.
+ * @param iosGestureEnabled when false, disables iOS swipe-back for this entry.
  * @param content the screen body, receiving the bar-inset [PaddingValues].
  */
 @ExperimentalCalfNavigationApi
@@ -82,25 +84,25 @@ fun <T : NavKey> adaptiveNavEntry(
     iosConfiguration: UIKitNavigationBarConfiguration = UIKitNavigationBarConfiguration(),
     // ── Cross-platform behavior ──
     barShown: Boolean = true,
-    iosPresentation: NavPresentation = NavPresentation.Card,
+    tabBarShown: Boolean = true,
     iosGestureEnabled: Boolean = true,
     content: @Composable (PaddingValues) -> Unit,
 ): NavEntry<NavKey> {
-    val iosData = IosNavBarData(
-        title = iosTitle,
-        backTitle = iosBackTitle,
-        leadingItems = iosLeadingItems,
-        trailingItems = iosTrailingItems,
-        configuration = iosConfiguration,
+    val entryMetadata = AdaptiveNavEntryMetadata(
+        iosTitle = iosTitle,
+        iosBackTitle = iosBackTitle,
+        iosLeadingItems = iosLeadingItems,
+        iosTrailingItems = iosTrailingItems,
+        iosConfiguration = iosConfiguration,
         largeTitle = largeTitle,
         barShown = barShown,
-        gestureEnabled = iosGestureEnabled,
-        presentation = iosPresentation,
+        tabBarShown = tabBarShown,
+        iosGestureEnabled = iosGestureEnabled,
     )
 
     return NavEntry(
         key = key,
-        metadata = mapOf(IosNavBarDataKey to iosData),
+        metadata = metadata { put(AdaptiveNavEntryMetadataKey, entryMetadata) },
     ) {
         AdaptiveBarHostScope(
             title = title,

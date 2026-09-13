@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.vector.VectorGroup
 import androidx.compose.ui.graphics.vector.VectorNode
 import androidx.compose.ui.graphics.vector.VectorPath
 import androidx.compose.ui.graphics.vector.toPath
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import platform.UIKit.UIImage
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -33,7 +34,8 @@ import platform.UIKit.UIImageOrientation
  * @param density The screen density (pixels per dp) used for rasterization of vector images.
  * @return The converted [UIImage], or null if the conversion fails.
  */
-internal fun UIKitImage.toUIImage(density: Float): UIImage? =
+@InternalCalfApi
+public fun UIKitImage.toUIImage(density: Float): UIImage? =
     when (this) {
         is UIKitImage.SystemName -> UIImage.systemImageNamed(name)
         is UIKitImage.Vector -> imageVector.toUIImage(width, height, density)

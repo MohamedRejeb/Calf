@@ -3,6 +3,7 @@
 package com.mohamedrejeb.calf.ui.navigation
 
 import androidx.compose.ui.graphics.isSpecified
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
 import com.mohamedrejeb.calf.ui.utils.toUIColor
@@ -44,9 +45,9 @@ internal class TopBarManager(
     private var currentTrailingItems: List<UIKitUIBarButtonItem> = emptyList()
     private var currentConfiguration: UIKitNavigationBarConfiguration = UIKitNavigationBarConfiguration()
 
-    // Hold strong references to action handlers to prevent GC
-    private var leadingActionHandlers: List<BarButtonActionHandler> = emptyList()
-    private var trailingActionHandlers: List<BarButtonActionHandler> = emptyList()
+    // Bindings retain the action handlers: UIKit holds bar-button targets weakly.
+    private var leadingBinding: UIBarButtonItemsBinding = UIBarButtonItemsBinding.Empty
+    private var trailingBinding: UIBarButtonItemsBinding = UIBarButtonItemsBinding.Empty
 
     init {
         navBar.delegate = delegate
@@ -67,21 +68,10 @@ internal class TopBarManager(
         if (needsItemUpdate) {
             val navItem = UINavigationItem(title = title)
 
-            // Create leading (left) bar button items (onClick is ignored when a menu is present)
-            leadingActionHandlers = leadingItems.map { item ->
-                BarButtonActionHandler(if (item.hasMenu) ({}) else item.onClick)
-            }
-            navItem.leftBarButtonItems = leadingItems.mapIndexed { index, item ->
-                item.toUIBarButtonItem(leadingActionHandlers[index], density)
-            }
-
-            // Create trailing (right) bar button items (onClick is ignored when a menu is present)
-            trailingActionHandlers = trailingItems.map { item ->
-                BarButtonActionHandler(if (item.hasMenu) ({}) else item.onClick)
-            }
-            navItem.rightBarButtonItems = trailingItems.mapIndexed { index, item ->
-                item.toUIBarButtonItem(trailingActionHandlers[index], density)
-            }
+            leadingBinding = leadingItems.toUIBarButtonItems(density)
+            trailingBinding = trailingItems.toUIBarButtonItems(density)
+            navItem.leftBarButtonItems = leadingBinding.items
+            navItem.rightBarButtonItems = trailingBinding.items
 
             navBar.setItems(listOf(navItem), animated = false)
 
@@ -94,21 +84,7 @@ internal class TopBarManager(
             navBar.prefersLargeTitles = configuration.prefersLargeTitles
             navBar.translucent = configuration.isTranslucent
 
-            val appearance = UINavigationBarAppearance().apply {
-                if (!isLiquidGlassEnabled) {
-                    configureWithDefaultBackground()
-                }
-
-                if (configuration.titleColor.isSpecified) {
-                    val uiColor = configuration.titleColor.toUIColor()
-                    // "NSColor" is the raw key for NSForegroundColorAttributeName
-                    val textAttributes = mapOf<Any?, Any?>(
-                        "NSColor" to uiColor,
-                    )
-                    titleTextAttributes = textAttributes
-                    largeTitleTextAttributes = textAttributes
-                }
-            }
+            val appearance = configuration.toNavigationBarAppearance(isLiquidGlassEnabled)
             navBar.standardAppearance = appearance
             navBar.scrollEdgeAppearance = appearance
             navBar.compactAppearance = appearance
@@ -119,10 +95,59 @@ internal class TopBarManager(
 }
 
 /**
+ * Builds a [UINavigationBarAppearance] from [UIKitNavigationBarConfiguration].
+ * Only explicitly specified colors are applied; everything else keeps the
+ * system default. Shared with `calf-navigation`, which applies the same
+ * configuration to a `UINavigationController`'s bar.
+ */
+@InternalCalfApi
+public fun UIKitNavigationBarConfiguration.toNavigationBarAppearance(
+    isLiquidGlassEnabled: Boolean,
+): UINavigationBarAppearance = UINavigationBarAppearance().apply {
+    if (!isLiquidGlassEnabled) {
+        configureWithDefaultBackground()
+    }
+    if (titleColor.isSpecified) {
+        // "NSColor" is the raw key for NSForegroundColorAttributeName
+        val textAttributes = mapOf<Any?, Any?>("NSColor" to titleColor.toUIColor())
+        titleTextAttributes = textAttributes
+        largeTitleTextAttributes = textAttributes
+    }
+}
+
+/**
+ * Native bar button items plus the action handlers they point at. UIKit holds
+ * bar-button targets weakly, so the owner must keep this binding alive for as
+ * long as the items are installed or clicks silently become no-ops.
+ */
+@InternalCalfApi
+public class UIBarButtonItemsBinding internal constructor(
+    public val items: List<UIBarButtonItem>,
+    @Suppress("unused") private val handlers: List<BarButtonActionHandler>,
+) {
+    public companion object {
+        public val Empty: UIBarButtonItemsBinding = UIBarButtonItemsBinding(emptyList(), emptyList())
+    }
+}
+
+/**
+ * Converts Calf bar button items to native ones, wiring each `onClick` to a
+ * retained target/action handler. Items with a menu get no action: the menu
+ * owns the interaction.
+ */
+@InternalCalfApi
+public fun List<UIKitUIBarButtonItem>.toUIBarButtonItems(density: Float): UIBarButtonItemsBinding {
+    val handlers = map { item -> BarButtonActionHandler(if (item.hasMenu) ({}) else item.onClick) }
+    val items = mapIndexed { index, item -> item.toUIBarButtonItem(handlers[index], density) }
+    return UIBarButtonItemsBinding(items, handlers)
+}
+
+/**
  * Action handler for UIBarButtonItem that invokes a callback when the item is clicked.
  */
+@InternalCalfApi
 @OptIn(ExperimentalForeignApi::class)
-internal class BarButtonActionHandler(
+public class BarButtonActionHandler(
     private val onClick: () -> Unit,
 ) : NSObject() {
     @Suppress("unused")
@@ -133,7 +158,8 @@ internal class BarButtonActionHandler(
 }
 
 @OptIn(ExperimentalForeignApi::class)
-internal fun UIKitUIBarButtonItem.toUIBarButtonItem(
+@InternalCalfApi
+public fun UIKitUIBarButtonItem.toUIBarButtonItem(
     actionHandler: BarButtonActionHandler,
     density: Float,
 ): UIBarButtonItem {
@@ -239,7 +265,8 @@ private fun AdaptiveDropDownItem.toUIAction(density: Float): UIAction {
     return action
 }
 
-internal fun UIKitUIBarButtonSystemItem.toUIBarButtonSystemItem(): UIBarButtonSystemItem =
+@InternalCalfApi
+public fun UIKitUIBarButtonSystemItem.toUIBarButtonSystemItem(): UIBarButtonSystemItem =
     when (this) {
         UIKitUIBarButtonSystemItem.Done -> UIBarButtonSystemItem.UIBarButtonSystemItemDone
         UIKitUIBarButtonSystemItem.Cancel -> UIBarButtonSystemItem.UIBarButtonSystemItemCancel

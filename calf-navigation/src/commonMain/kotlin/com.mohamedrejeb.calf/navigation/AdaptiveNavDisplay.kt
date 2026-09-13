@@ -11,27 +11,34 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 
 /**
- * Renders a navigation stack adaptively per platform.
+ * Renders a navigation stack natively per platform.
  *
- *  - On Material platforms (Android / Desktop / Web), this delegates to
- *    Compose Multiplatform's [NavDisplay] with default predictive-back
- *    transitions.
- *  - On iOS, this hosts a real `UINavigationController` *inside* a Compose
- *    composable, so each backstack entry becomes a child `UIViewController`
- *    and you get native push/pop animations, large-title shrink, swipe-back
- *    from edge, and bar-tint transitions for free.
+ *  - On Material platforms (Android / Desktop / Web) this delegates to Nav3's
+ *    [NavDisplay] with its default predictive-back transitions.
+ *  - On iOS it hosts a real `UINavigationController` inside the composable:
+ *    each back-stack entry becomes a child `UIViewController`, so push/pop
+ *    animations, edge swipe-back and large-title shrink are the system's.
  *
- * Mutating [backStack] from a screen (`backStack.add(...)`,
- * `backStack.removeLastOrNull()`) is what triggers navigation on every
- * platform. The same Kotlin call-site works everywhere.
+ * [backStack] is the single source of truth everywhere: `backStack.add(...)`
+ * pushes and `backStack.removeLastOrNull()` pops, on every platform. When the
+ * user pops natively on iOS (back button, swipe, pop-to-root), the back stack
+ * is trimmed to match UIKit, so it never disagrees with what is on screen.
  *
- * Each entry gets its own `ViewModelStoreOwner`: `viewModel()` calls inside
- * an entry's content are scoped to that entry and cleared when it leaves the
- * back stack — via the default decorators on Material platforms, and via the
- * per-entry UIViewController scope on iOS.
+ * Each entry gets its own `ViewModelStoreOwner`: `viewModel()` inside an
+ * entry is scoped to that entry and cleared when it leaves the back stack,
+ * through [entryDecorators] on Material and the per-entry controller scope
+ * on iOS.
  *
- * Use [adaptiveNavEntry] to define each route's bar (Material composable
- * slots + iOS structured data + cross-platform behaviour).
+ * Use [adaptiveNavEntry] to define each route's bar.
+ *
+ * @param backStack the stack to render; see [rememberAdaptiveNavBackStack].
+ * @param onBack handles Android's system back and predictive back on Material
+ *   platforms. Not used on iOS, where the system performs the pop itself;
+ *   veto swipe-back per entry with `iosGestureEnabled` instead.
+ * @param entryDecorators Nav3 decorators applied on Material platforms. Not
+ *   applied on iOS, whose native per-entry scopes provide lifecycle,
+ *   ViewModel and saved-state owners.
+ * @param entryProvider builds the entry for a key; use [adaptiveNavEntry].
  */
 @ExperimentalCalfNavigationApi
 @Composable

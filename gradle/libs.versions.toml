@@ -17,6 +17,7 @@ kyant-shapes = "1.2.1"
 nav3-runtime = "1.2.0-alpha04"
 nav3-ui = "1.2.0-alpha02"
 jetbrains-lifecycle = "2.11.0"
+jetbrains-savedstate = "1.4.0"
 
 calf = "0.14.0"
 
@@ -64,12 +65,15 @@ compose-ui-graphics = { group = "org.jetbrains.compose.ui", name = "ui-graphics"
 compose-ui-test = { group = "org.jetbrains.compose.ui", name = "ui-test", version.ref = "compose" }
 compose-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "compose" }
 compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "material3" }
+compose-material3-adaptive-navigation-suite = { group = "org.jetbrains.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "material3" }
+compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "compose" }
 
 # Navigation
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3-runtime" }
 androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "nav3-ui" }
 jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "jetbrains-lifecycle" }
 jetbrains-lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "jetbrains-lifecycle" }
+jetbrains-savedstate = { module = "org.jetbrains.androidx.savedstate:savedstate", version.ref = "jetbrains-savedstate" }
 compose-material-icons-extended = { group = "org.jetbrains.compose.material", name = "material-icons-extended", version.ref = "material-icons-extended" }
 
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }

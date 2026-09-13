@@ -4,21 +4,41 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.savedstate.serialization.SavedStateConfiguration
 
 /**
- * Remembers a [NavBackStack] seeded with [startEntries] across recomposition.
+ * Remembers a [NavBackStack] seeded with [startEntries].
  *
- * **State persistence:** the upstream multiplatform `rememberNavBackStack(configuration, *elements)`
- * requires an explicitly-configured `SavedStateConfiguration` with a serializers
- * module that registers every [NavKey] subtype, which is necessary on non-Android
- * platforms because there's no reflection-based discovery. To keep the walking-skeleton
- * prototype call-site simple, [rememberAdaptiveNavBackStack] uses a plain `remember`
- * that survives recompositions but **not** process death or configuration changes
- * on Android. For full process-death survival, call upstream's
- * `rememberNavBackStack(configuration, *startEntries)` directly with your serializers
- * module — its return type is `NavBackStack<NavKey>`, the same as ours.
+ * With a [configuration], the stack is persisted through saved state, so it
+ * survives Android configuration changes and process death. The configuration
+ * must register every [NavKey] subtype the stack can hold, exactly as Nav3's
+ * own `rememberNavBackStack(configuration, …)` requires:
+ *
+ * ```kotlin
+ * val config = SavedStateConfiguration {
+ *     serializersModule = SerializersModule {
+ *         polymorphic(NavKey::class) {
+ *             subclass(Home::class)
+ *             subclass(Detail::class)
+ *         }
+ *     }
+ * }
+ * val backStack = rememberAdaptiveNavBackStack(Home, configuration = config)
+ * ```
+ *
+ * Without a configuration the stack only survives recomposition. Pass the
+ * same value on every call: switching between `null` and a configuration
+ * recreates the stack.
  */
 @ExperimentalCalfNavigationApi
 @Composable
-fun rememberAdaptiveNavBackStack(vararg startEntries: NavKey): NavBackStack<NavKey> =
-    remember { NavBackStack(*startEntries) }
+fun rememberAdaptiveNavBackStack(
+    vararg startEntries: NavKey,
+    configuration: SavedStateConfiguration? = null,
+): NavBackStack<NavKey> =
+    if (configuration != null) {
+        rememberNavBackStack(configuration, *startEntries)
+    } else {
+        remember { NavBackStack(*startEntries) }
+    }

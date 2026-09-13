@@ -7,6 +7,11 @@ kotlin {
     // commonTest runs in the browser, which needs the Skiko runtime bundled by webpack.
     withBrowserTestBundling()
 
+    // Calf modules share iOS helpers marked @InternalCalfApi; opt in module-wide.
+    sourceSets.all {
+        languageSettings.optIn("com.mohamedrejeb.calf.core.InternalCalfApi")
+    }
+
     sourceSets.commonMain.dependencies {
         implementation(projects.calfCore)
         implementation(libs.compose.foundation)

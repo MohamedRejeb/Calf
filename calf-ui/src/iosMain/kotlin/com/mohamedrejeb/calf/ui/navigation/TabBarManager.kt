@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.ui.navigation
 
 import androidx.compose.ui.graphics.isSpecified
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.toUIColor
 import com.mohamedrejeb.calf.ui.utils.toUIImage
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -63,29 +64,36 @@ internal class TabBarManager(
         configuration: UIKitTabBarConfiguration,
     ) {
         if (configuration == currentConfiguration) return
-
-        tabBar.translucent = configuration.isTranslucent
-
-        // Selected item tint — UITabBar.tintColor controls the selected icon+label color
-        tabBar.tintColor =
-            if (configuration.selectedItemColor.isSpecified)
-                configuration.selectedItemColor.toUIColor()
-            else
-                defaultTintColor
-
-        // Unselected item color works on pre-Liquid Glass iOS via unselectedItemTintColor.
-        // Note: Liquid Glass (iOS 26+) ignores this property; not yet supported.
-        tabBar.unselectedItemTintColor =
-            if (configuration.unselectedItemColor.isSpecified)
-                configuration.unselectedItemColor.toUIColor()
-            else
-                defaultUnselectedItemTintColor
-
+        tabBar.applyTabBarConfiguration(configuration, defaultTintColor, defaultUnselectedItemTintColor)
         currentConfiguration = configuration
     }
 }
 
-private fun UIKitUITabBarItem.toUITabBarItem(tag: Long, density: Float): UITabBarItem {
+/**
+ * Applies [configuration] to a native tab bar. Unspecified colors restore the
+ * captured defaults so switching back to `Color.Unspecified` returns to the
+ * system look. Shared with `calf-navigation`'s `UITabBarController` host.
+ *
+ * Liquid Glass (iOS 26+) ignores `unselectedItemTintColor`.
+ */
+@InternalCalfApi
+public fun UITabBar.applyTabBarConfiguration(
+    configuration: UIKitTabBarConfiguration,
+    defaultTintColor: UIColor,
+    defaultUnselectedItemTintColor: UIColor?,
+) {
+    translucent = configuration.isTranslucent
+    tintColor =
+        if (configuration.selectedItemColor.isSpecified) configuration.selectedItemColor.toUIColor()
+        else defaultTintColor
+    unselectedItemTintColor =
+        if (configuration.unselectedItemColor.isSpecified) configuration.unselectedItemColor.toUIColor()
+        else defaultUnselectedItemTintColor
+}
+
+/** Converts a Calf tab bar item to a native one; [tag] identifies the tab index. */
+@InternalCalfApi
+public fun UIKitUITabBarItem.toUITabBarItem(tag: Long, density: Float): UITabBarItem {
     val item = UITabBarItem(
         title = title,
         image = image?.toUIImage(density),

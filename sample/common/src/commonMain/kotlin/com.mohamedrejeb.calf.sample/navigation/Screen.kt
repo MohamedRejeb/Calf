@@ -184,7 +184,7 @@ enum class Screen(
     ),
     AdaptiveNavigation(
         title = "Adaptive Navigation",
-        description = "Native iOS UINavigationController bridged to Compose Nav3 (push, swipe-back, large-title shrink)",
+        description = "Native tabs and stacks: UITabBarController + UINavigationController on iOS, Nav3 + navigation suite elsewhere",
         icon = Icons.Outlined.SwapHoriz,
         category = ScreenCategory.Navigation,
     ),

@@ -1,7 +1,7 @@
 # Adaptive Navigation
 
 !!! warning "Experimental"
-    The `AdaptiveNavDisplay` API is experimental (`@ExperimentalCalfNavigationApi`) and may change in a future release.
+    The `AdaptiveNavDisplay` and `AdaptiveTabDisplay` APIs are experimental (`@ExperimentalCalfNavigationApi`) and may change in a future release.
 
 ## Installation
 
@@ -15,17 +15,19 @@ implementation("com.mohamedrejeb.calf:calf-navigation:{{ calf_version }}")
 
 ## Overview
 
-`AdaptiveNavDisplay` wraps [Jetpack Navigation 3](https://kotlinlang.org/docs/multiplatform/compose-navigation-3.html) with one API surface and per-platform rendering:
+`calf-navigation` wraps [Navigation 3](https://kotlinlang.org/docs/multiplatform/compose-navigation-3.html) with one API surface and native rendering per platform:
 
-- **Android / Desktop / Web** — delegates to Nav3's `NavDisplay`, with each entry's top bar rendered as a Material 3 `TopAppBar` (or `LargeTopAppBar`).
-- **iOS** — hosts a real `UINavigationController` inside the Compose surface. Every back-stack entry becomes a child `UIViewController`, so you get native push/pop animations, swipe-back from the edge, large-title shrink-on-scroll, and title cross-fade for free — without writing any Swift.
+| | Android / Desktop / Web | iOS |
+|---|---|---|
+| `AdaptiveNavDisplay` | Nav3 `NavDisplay` with predictive back; each entry's top bar is a Material 3 `TopAppBar` or `LargeTopAppBar` | A real `UINavigationController`: native push/pop, edge swipe-back, large-title shrink, title cross-fade |
+| `AdaptiveTabDisplay` | Material 3 `NavigationSuiteScaffold`: bottom bar, rail or drawer chosen from the window size | A real `UITabBarController` with one `UINavigationController` per tab; adapts to iPad and iPhone Duo poses, optional sidebar |
 
-The Compose `NavBackStack` is the single source of truth on every platform: mutate it (`backStack.add(...)`, `backStack.removeLastOrNull()`) and the platform renderer follows.
+The Compose `NavBackStack` is the single source of truth on every platform: mutate it (`backStack.add(...)`, `backStack.removeLastOrNull()`) and the platform follows. When the user pops natively on iOS, the back stack is trimmed to match.
 
 !!! tip "Give the navigator the whole screen"
-    `AdaptiveNavDisplay` draws its own top bar per entry — mount it as the root of the screen (typically with `Modifier.fillMaxSize()`) rather than inside another `Scaffold` that has its own top bar. Nesting two bars stacks them on top of each other, which hides the navigator's bar and back button.
+    Both displays paint their own bars. Mount them as the root of the screen (typically `Modifier.fillMaxSize()`) rather than inside another `Scaffold` with its own bars.
 
-## Quick start
+## Quick start: a stack
 
 ```kotlin
 @Serializable
@@ -69,6 +71,81 @@ fun App() {
 }
 ```
 
+## Quick start: tabs
+
+Each tab is a navigation stack whose root entry is the tab's own key. One `entryProvider` serves every tab.
+
+```kotlin
+@Serializable data object Home : NavKey
+@Serializable data object Search : NavKey
+@Serializable data object Profile : NavKey
+@Serializable data class Detail(val itemId: Int) : NavKey
+
+@OptIn(ExperimentalCalfNavigationApi::class)
+@Composable
+fun App() {
+    val tabs = rememberAdaptiveTabState(Home, Search, Profile)
+
+    AdaptiveTabDisplay(
+        state = tabs,
+        tabs = listOf(
+            adaptiveTab(
+                key = Home,
+                icon = { Icon(Icons.Outlined.Home, null) },
+                label = { Text("Home") },
+                iosTitle = "Home",
+                iosImage = UIKitImage.SystemName("house"),
+                iosSelectedImage = UIKitImage.SystemName("house.fill"),
+            ),
+            adaptiveTab(
+                key = Search,
+                icon = { Icon(Icons.Outlined.Search, null) },
+                label = { Text("Search") },
+                badge = "3",
+                iosTitle = "Search",
+                iosImage = UIKitImage.SystemName("magnifyingglass"),
+            ),
+            adaptiveTab(
+                key = Profile,
+                icon = { Icon(Icons.Outlined.Person, null) },
+                label = { Text("Profile") },
+                iosTitle = "Profile",
+                iosImage = UIKitImage.SystemName("person"),
+            ),
+        ),
+        iosSidebarAdaptable = true, // sidebar on iPad and the iPhone Duo inner display
+    ) { key ->
+        when (key) {
+            is Home -> adaptiveNavEntry(key, title = { Text("Home") }, iosTitle = "Home", largeTitle = true) { padding ->
+                HomeList(padding) { id -> tabs.backStack.add(Detail(id)) }
+            }
+            is Detail -> adaptiveNavEntry(
+                key = key,
+                title = { Text("Item ${key.itemId}") },
+                navigationIcon = { BackButton { tabs.backStack.removeLastOrNull() } },
+                iosTitle = "Item ${key.itemId}",
+                tabBarShown = false,             // tab bar leaves with the push
+            ) { padding -> DetailScreen(key.itemId, padding) }
+            is Search -> adaptiveNavEntry(key, title = { Text("Search") }, iosTitle = "Search") { padding -> SearchScreen(padding) }
+            is Profile -> adaptiveNavEntry(key, title = { Text("Profile") }, iosTitle = "Profile") { padding -> ProfileScreen(padding) }
+            else -> error("Unknown key: $key")
+        }
+    }
+}
+```
+
+`AdaptiveTabState` exposes the selected tab, `backStack` (the selected tab's stack), `backStackOf(tab)`, `select(tab)` and `popToRoot(tab)`. Every tab keeps its stack, scroll positions and ViewModels while another tab is shown, on every platform. Selecting the already selected tab pops it to its root, as a native tab bar does.
+
+**Back behavior**
+
+- **iOS**: the system back button and edge swipe pop the current tab's stack. There is no back between tabs.
+- **Android**: back pops the current tab's stack; at the root of a tab other than the start tab it returns to the start tab, then exits the app. This is the platform convention.
+- **Desktop / Web**: back is only what your UI offers (a back button in the bar).
+
+**Screens above the tabs**
+
+Put the tab display inside an entry of an outer `AdaptiveNavDisplay` (with `barShown = false`) to push a screen over the whole tab UI, for example a sign-out screen. On iOS the tab bar rides the push transition and returns with the back swipe, because it belongs to the view controller being covered.
+
 ## `adaptiveNavEntry`
 
 Each route is declared with `adaptiveNavEntry`, which mirrors `AdaptiveTopBar`'s split between Material composable slots and iOS structured data:
@@ -76,17 +153,18 @@ Each route is declared with `adaptiveNavEntry`, which mirrors `AdaptiveTopBar`'s
 | Parameter group | Parameters | Used on |
 |---|---|---|
 | Material slots | `title`, `navigationIcon`, `actions`, `expandedHeight`, `windowInsets`, `colors`, `scrollBehavior` | Android / Desktop / Web |
-| iOS structured data | `iosTitle`, `iosBackTitle`, `iosLeadingItems`, `iosTrailingItems`, `iosConfiguration` | iOS |
-| Cross-platform behavior | `largeTitle`, `barShown`, `iosGestureEnabled`, `iosPresentation` | All / iOS |
+| iOS structured data | `iosTitle`, `iosBackTitle`, `iosLeadingItems`, `iosTrailingItems`, `iosConfiguration`, `iosGestureEnabled` | iOS |
+| Cross-platform behavior | `largeTitle`, `barShown`, `tabBarShown` | All |
 
-iOS bar options are structured data (not composables) because they are applied to `UINavigationItem` *before* the push animation starts — that's what makes the native title cross-fade animate with the correct content.
+iOS bar options are structured data (not composables) because they are applied to `UINavigationItem` *before* the push animation starts. That is what makes the native title cross-fade animate with the right content.
 
-- `largeTitle = true` renders a collapsing `LargeTopAppBar` on Material (an exit-until-collapsed scroll behavior is wired automatically) and sets `largeTitleDisplayMode = .always` on iOS — the title shrinks on scroll on both.
-- `barShown = false` hides the bar for that entry on every platform.
+- `largeTitle = true` renders a collapsing `LargeTopAppBar` on Material (an exit-until-collapsed scroll behavior is wired automatically) and a large title that shrinks on scroll on iOS. It is the only large-title switch.
+- `barShown = false` hides the top bar for that entry on every platform.
+- `tabBarShown = false` hides the tab bar of a hosting `AdaptiveTabDisplay` while the entry is on top: `hidesBottomBarWhenPushed` on iOS, an animated hide of the Material navigation bar elsewhere.
 - `iosGestureEnabled = false` disables swipe-back from the edge for that entry.
-- The screen `content` receives `PaddingValues` — the Material `Scaffold` padding, or the safe-drawing insets on iOS where content is laid out edge-to-edge under the translucent native bar. Apply it as `contentPadding` on a `LazyColumn` so the list scrolls under the bar but starts below it.
+- The screen `content` receives `PaddingValues`: the Material `Scaffold` padding, or the safe-area insets on iOS where content is laid out edge-to-edge under the translucent bars. Apply it as `contentPadding` on a `LazyColumn` so the list scrolls under the bars but starts below them.
 
-Bar items reuse the same `UIKitUIBarButtonItem` / `UIKitNavigationBarConfiguration` types as [`AdaptiveTopBar`](ui/adaptive-top-bar.md):
+Bar items reuse the `UIKitUIBarButtonItem` / `UIKitNavigationBarConfiguration` types of [`AdaptiveTopBar`](ui/adaptive-top-bar.md), including SF Symbols, Compose vectors and bitmaps, dropdown menus and `titleColor`:
 
 ```kotlin
 adaptiveNavEntry(
@@ -100,23 +178,45 @@ adaptiveNavEntry(
 ) { padding -> /* ... */ }
 ```
 
-## Back navigation
+## `adaptiveTab`
 
-- **iOS** renders the system back button automatically for every pushed entry (with `iosBackTitle` controlling the label shown on the *next* screen) and supports swipe-back from the edge out of the box.
-- **Material platforms** show whatever you pass as `navigationIcon` — typically an arrow icon button that calls `backStack.removeLastOrNull()`. Android's system back is handled by Nav3's `NavDisplay` via the `onBack` parameter.
+| Parameter | Used on |
+|---|---|
+| `icon`, `label`, `alwaysShowLabel` | Material navigation item slots |
+| `badge` | Both: a Material badge, the native `badgeValue` on iOS |
+| `iosTitle`, `iosImage`, `iosSelectedImage` | Native `UITabBarItem` |
 
-## State and ViewModels
+`AdaptiveTabDisplay` takes `iosConfiguration` (`UIKitTabBarConfiguration`: item tint colors, translucency), `iosSidebarAdaptable`, and on Material `materialLayoutType` (force a bottom bar, rail or drawer) and `materialColors`.
 
-- Each entry gets its own `ViewModelStoreOwner`: on Material platforms via the default `rememberViewModelStoreNavEntryDecorator()`, on iOS via the per-entry `UIViewController` scope. `viewModel<MyVm>()` inside an entry is scoped to that entry and cleared exactly when the entry leaves the back stack (including swipe-back, but not a cancelled swipe).
-- `rememberAdaptiveNavBackStack` survives recomposition but **not** process death or Android configuration changes. For full state restoration, use upstream's `rememberNavBackStack(configuration, *entries)` with a serializers module that registers your `NavKey` types — its return type is the same `NavBackStack<NavKey>`.
+## State, ViewModels and persistence
+
+- Each entry gets its own `ViewModelStoreOwner`: `viewModel<MyVm>()` inside an entry is scoped to that entry and cleared exactly when the entry leaves the back stack (including swipe-back, but not a cancelled swipe). On Material the default decorators do this; on iOS the per-entry view controller does.
+- Inside tabs, each tab also gets its own ViewModel scope, so two tabs showing the same key never share a ViewModel.
+- `rememberAdaptiveNavBackStack` and `rememberAdaptiveTabState` survive recomposition. Pass a `SavedStateConfiguration` whose serializers module registers your `NavKey` types to also survive Android configuration changes and process death:
+
+```kotlin
+val config = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(NavKey::class) {
+            subclass(Home::class)
+            subclass(Detail::class)
+        }
+    }
+}
+val tabs = rememberAdaptiveTabState(Home, Search, Profile, configuration = config)
+```
+
+## Platform notes
+
+- **iOS**: `entryDecorators` are not applied; the native per-entry scopes provide lifecycle, ViewModel and saved-state owners. `onBack` is not used; UIKit performs pops itself. Custom `iosConfiguration.titleColor` keeps a transparent scroll edge so large titles look native.
+- **iPhone Duo / iPad**: the inner display is a regular-width, regular-height size class. `UITabBarController` adapts on its own; set `iosSidebarAdaptable = true` to allow the sidebar placement Apple recommends for richer navigation. Bars and toolbars are the system's, so they pick up iOS 27.1's vertical button layout without changes.
+- **Android foldables and tablets**: the Material side uses `NavigationSuiteScaffold`, so a bottom bar becomes a rail on wide windows.
 
 ## Current limitations
 
-- `iosPresentation` values other than `NavPresentation.Card` (form sheet, page sheet, full-screen modal) fall back to `Card`. Modal presentation is a planned follow-up.
-- Custom `entryDecorators` are not executed on iOS; the built-in lifecycle / ViewModel / saved-state behavior is provided instead.
-- Bar item images on iOS support SF Symbols (`UIKitImage.SystemName`); `Vector` / `Bitmap` images are not rendered yet.
-- `UIKitNavigationBarConfiguration.titleColor` is not applied by the navigator yet.
-- Tabs (`UITabBarController`) and deep links are planned follow-ups.
+- Modal presentation styles (sheets, full-screen modals) are not available yet; every entry is pushed.
+- iOS 26's tab bar minimize-on-scroll needs a `UIScrollView` and does not trigger with Compose content.
+- Deep links are not handled by the displays; drive the back stacks yourself.
 
 ## Relationship to `AdaptiveNavHost`
 

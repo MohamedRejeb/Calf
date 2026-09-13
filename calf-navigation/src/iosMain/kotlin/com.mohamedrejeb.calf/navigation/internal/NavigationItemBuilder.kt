@@ -1,210 +1,92 @@
-@file:OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package com.mohamedrejeb.calf.navigation.internal
 
+import androidx.compose.ui.graphics.isSpecified
+import com.mohamedrejeb.calf.ui.navigation.UIBarButtonItemsBinding
 import com.mohamedrejeb.calf.ui.navigation.UIKitNavigationBarConfiguration
-import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
-import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonSystemItem
-import com.mohamedrejeb.calf.ui.uikit.UIKitImage
-import kotlinx.cinterop.BetaInteropApi
+import com.mohamedrejeb.calf.ui.navigation.toNavigationBarAppearance
+import com.mohamedrejeb.calf.ui.navigation.toUIBarButtonItems
+import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.ObjCAction
 import platform.UIKit.UIBarButtonItem
 import platform.UIKit.UIBarButtonItemStyle
-import platform.UIKit.UIBarButtonSystemItem
-import platform.UIKit.UIImage
+import platform.UIKit.UINavigationBar
+import platform.UIKit.UINavigationBarAppearance
 import platform.UIKit.UINavigationItem
 import platform.UIKit.UINavigationItemLargeTitleDisplayMode
-import platform.darwin.NSObject
-import platform.objc.sel_registerName
 
 /**
- * Holds the strong references to bar-button action handlers so they aren't
- * garbage-collected while the parent [EntryHostingController] is alive.
- * Returned from [applyNavBarDataToItem] so the caller can keep the references.
+ * Keeps the bar-button action handlers of one entry alive. UIKit holds
+ * bar-button targets weakly, so the hosting controller must retain this for
+ * as long as its `navigationItem` shows the items.
  */
-internal data class NavBarItemHandlers(
-    val leading: List<BarButtonActionHandler>,
-    val trailing: List<BarButtonActionHandler>,
+internal class NavBarItemBindings(
+    @Suppress("unused") private val leading: UIBarButtonItemsBinding,
+    @Suppress("unused") private val trailing: UIBarButtonItemsBinding,
 )
 
 /**
- * Configures the given [UINavigationItem] from the supplied [IosNavBarData].
- * The returned [NavBarItemHandlers] must be retained by the caller — UIKit
- * holds only weak references to bar-button targets, so without strong
- * retention the handlers are GC'd and clicks become no-ops.
+ * Populates [item] from the entry's metadata. Call it from the hosting
+ * controller's `init`, before the controller is pushed: UIKit reads the item
+ * during `setViewControllers(_:animated:)` to animate the title cross-fade.
  *
- * Call this in the controller's `init` block so `navigationItem` is fully
- * populated *before* `setViewControllers(_, animated:)` runs the push
- * animation — that's what makes the title cross-fade animate correctly.
+ * Bar items go through calf-ui's converters, so SF Symbols, Compose vectors,
+ * bitmaps and dropdown menus all work exactly as in `AdaptiveTopBar`.
  */
-internal fun applyNavBarDataToItem(
+internal fun applyEntryMetadataToItem(
     item: UINavigationItem,
-    data: IosNavBarData,
+    metadata: AdaptiveNavEntryMetadata,
     density: Float,
-): NavBarItemHandlers {
-    item.title = data.title
-
-    // The parent bar keeps `prefersLargeTitles = true`; per-entry visibility is
-    // driven entirely by this display mode, which is what lets UIKit animate the
-    // large-title shrink between a large-title screen and a regular one.
-    item.largeTitleDisplayMode = if (data.largeTitle || data.configuration.prefersLargeTitles) {
+): NavBarItemBindings {
+    item.title = metadata.iosTitle
+    // The bar keeps `prefersLargeTitles = true`; the per-entry display mode is
+    // what lets UIKit animate the shrink between a large-title screen and a
+    // regular one.
+    item.largeTitleDisplayMode = if (metadata.largeTitle) {
         UINavigationItemLargeTitleDisplayMode.UINavigationItemLargeTitleDisplayModeAlways
     } else {
         UINavigationItemLargeTitleDisplayMode.UINavigationItemLargeTitleDisplayModeNever
     }
-
-    val leadingHandlers = data.leadingItems.map { BarButtonActionHandler(it.onClick) }
-    item.leftBarButtonItems = data.leadingItems.mapIndexed { index, source ->
-        source.toUIBarButtonItem(leadingHandlers[index], density)
-    }
-
-    val trailingHandlers = data.trailingItems.map { BarButtonActionHandler(it.onClick) }
-    item.rightBarButtonItems = data.trailingItems.mapIndexed { index, source ->
-        source.toUIBarButtonItem(trailingHandlers[index], density)
-    }
-
-    data.backTitle?.let {
+    val leading = metadata.iosLeadingItems.toUIBarButtonItems(density)
+    val trailing = metadata.iosTrailingItems.toUIBarButtonItems(density)
+    item.leftBarButtonItems = leading.items
+    item.rightBarButtonItems = trailing.items
+    metadata.iosBackTitle?.let { backTitle ->
         item.backBarButtonItem = UIBarButtonItem(
-            title = it,
+            title = backTitle,
             style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
             target = null,
             action = null,
         )
     }
-
-    return NavBarItemHandlers(leadingHandlers, trailingHandlers)
+    return NavBarItemBindings(leading, trailing)
 }
 
 /**
- * Bar-button click handler that wraps a Kotlin lambda in an Objective-C
- * target/action selector. The class must be retained for as long as the
- * `UIBarButtonItem` that points to it.
- */
-internal class BarButtonActionHandler(
-    private val onClick: () -> Unit,
-) : NSObject() {
-    @Suppress("unused")
-    @ObjCAction
-    fun handleAction() {
-        onClick()
-    }
-}
-
-/**
- * Convert a [UIKitUIBarButtonItem] to a real [UIBarButtonItem]. Minimal
- * implementation supporting `title`, `image`, `systemItem`, and the
- * `FlexibleSpace` / `FixedSpace` system items.
+ * Applies an entry's bar configuration to the navigation controller's bar.
+ * Called from `viewWillAppear` so it changes together with the transition.
  *
- * Menu/dropdown support is intentionally not in this prototype — if you need
- * it, use `AdaptiveTopBar` standalone for now and we'll consolidate the
- * conversion logic with `calf-ui`'s in a follow-up.
+ * With no title color the system appearances are restored, keeping the
+ * transparent scroll-edge look large titles rely on. With a title color the
+ * standard appearance carries it, and a transparent scroll-edge variant keeps
+ * the same colors so the bar does not change look when content scrolls.
  */
-private fun UIKitUIBarButtonItem.toUIBarButtonItem(
-    actionHandler: BarButtonActionHandler,
-    density: Float,
-): UIBarButtonItem {
-    val selector = sel_registerName("handleAction")
-    val capturedSystemItem = systemItem
-
-    if (capturedSystemItem == UIKitUIBarButtonSystemItem.FlexibleSpace) {
-        return UIBarButtonItem(
-            barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace,
-            target = null,
-            action = null,
-        )
+internal fun UINavigationBar.applyEntryConfiguration(configuration: UIKitNavigationBarConfiguration) {
+    translucent = configuration.isTranslucent
+    if (!configuration.titleColor.isSpecified) {
+        standardAppearance = UINavigationBarAppearance()
+        compactAppearance = null
+        scrollEdgeAppearance = null
+        return
     }
-    if (capturedSystemItem == UIKitUIBarButtonSystemItem.FixedSpace) {
-        return UIBarButtonItem(
-            barButtonSystemItem = UIBarButtonSystemItem.UIBarButtonSystemItemFixedSpace,
-            target = null,
-            action = null,
-        ).also {
-            it.width = width ?: 16.0
-        }
+    val standard = configuration.toNavigationBarAppearance(isLiquidGlassEnabled = isIOS26OrAbove())
+    val scrollEdge = UINavigationBarAppearance().apply {
+        configureWithTransparentBackground()
+        titleTextAttributes = standard.titleTextAttributes
+        largeTitleTextAttributes = standard.largeTitleTextAttributes
     }
-
-    if (capturedSystemItem != null) {
-        return UIBarButtonItem(
-            barButtonSystemItem = capturedSystemItem.toUIBarButtonSystemItem(),
-            target = actionHandler,
-            action = selector,
-        ).also {
-            it.enabled = enabled
-            it.selected = selected
-        }
-    }
-
-    val uiImage = image?.toUIImageOrNull(density)
-    if (uiImage != null) {
-        return UIBarButtonItem(
-            image = uiImage,
-            style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
-            target = actionHandler,
-            action = selector,
-        ).also {
-            it.enabled = enabled
-            it.selected = selected
-        }
-    }
-
-    return UIBarButtonItem(
-        title = title ?: "",
-        style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
-        target = actionHandler,
-        action = selector,
-    ).also {
-        it.enabled = enabled
-        it.selected = selected
-    }
-}
-
-private fun UIKitImage.toUIImageOrNull(@Suppress("UNUSED_PARAMETER") density: Float): UIImage? =
-    when (this) {
-        is UIKitImage.SystemName -> UIImage.systemImageNamed(name)
-        // UIKitImage.Vector / UIKitImage.Bitmap need calf-ui's internal toUIImage(density)
-        // which uses platform-specific rasterization. Not exposed cross-module today —
-        // for the prototype, callers should pass SF Symbols (UIKitImage.SystemName).
-        // Vector / Bitmap support will be added by exposing calf-ui's toUIImage helper
-        // or duplicating the rasterization logic here.
-        is UIKitImage.Vector,
-        is UIKitImage.Bitmap -> null
-    }
-
-private fun UIKitUIBarButtonSystemItem.toUIBarButtonSystemItem(): UIBarButtonSystemItem =
-    when (this) {
-        UIKitUIBarButtonSystemItem.Done -> UIBarButtonSystemItem.UIBarButtonSystemItemDone
-        UIKitUIBarButtonSystemItem.Cancel -> UIBarButtonSystemItem.UIBarButtonSystemItemCancel
-        UIKitUIBarButtonSystemItem.Edit -> UIBarButtonSystemItem.UIBarButtonSystemItemEdit
-        UIKitUIBarButtonSystemItem.Save -> UIBarButtonSystemItem.UIBarButtonSystemItemSave
-        UIKitUIBarButtonSystemItem.Add -> UIBarButtonSystemItem.UIBarButtonSystemItemAdd
-        UIKitUIBarButtonSystemItem.Compose -> UIBarButtonSystemItem.UIBarButtonSystemItemCompose
-        UIKitUIBarButtonSystemItem.Reply -> UIBarButtonSystemItem.UIBarButtonSystemItemReply
-        UIKitUIBarButtonSystemItem.Action -> UIBarButtonSystemItem.UIBarButtonSystemItemAction
-        UIKitUIBarButtonSystemItem.Organize -> UIBarButtonSystemItem.UIBarButtonSystemItemOrganize
-        UIKitUIBarButtonSystemItem.Trash -> UIBarButtonSystemItem.UIBarButtonSystemItemTrash
-        UIKitUIBarButtonSystemItem.Search -> UIBarButtonSystemItem.UIBarButtonSystemItemSearch
-        UIKitUIBarButtonSystemItem.Close -> UIBarButtonSystemItem.UIBarButtonSystemItemClose
-        UIKitUIBarButtonSystemItem.FlexibleSpace -> UIBarButtonSystemItem.UIBarButtonSystemItemFlexibleSpace
-        UIKitUIBarButtonSystemItem.FixedSpace -> UIBarButtonSystemItem.UIBarButtonSystemItemFixedSpace
-    }
-
-/**
- * Apply the [UIKitNavigationBarConfiguration] to the parent
- * `UINavigationController`'s `navigationBar`. Called from each wrapper VC's
- * `viewWillAppear` so the active entry's config wins as the user navigates.
- *
- * `prefersLargeTitles` is deliberately *not* set here: the bar-wide flag stays
- * `true` (set once by `IosNavController`) and per-entry large titles are
- * controlled via `navigationItem.largeTitleDisplayMode` in
- * [applyNavBarDataToItem] — toggling the bar-wide flag per entry would break
- * UIKit's shrink animation between large-title and regular screens.
- */
-internal fun platform.UIKit.UINavigationBar.applyConfiguration(
-    config: UIKitNavigationBarConfiguration,
-) {
-    translucent = config.isTranslucent
-    // titleColor is intentionally not applied here in v1 — appearance config
-    // is a parent-bar-wide concern. Per-VC tinting via UIKitNavigationBarConfiguration
-    // can be added in a follow-up; for the prototype the bar uses default tint.
+    standardAppearance = standard
+    compactAppearance = standard
+    scrollEdgeAppearance = scrollEdge
 }

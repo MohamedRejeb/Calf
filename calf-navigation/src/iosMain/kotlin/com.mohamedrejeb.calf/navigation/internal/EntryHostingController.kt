@@ -25,6 +25,7 @@ import platform.UIKit.UIViewController
 import platform.UIKit.addChildViewController
 import platform.UIKit.childViewControllers
 import platform.UIKit.didMoveToParentViewController
+import platform.UIKit.hidesBottomBarWhenPushed
 import platform.UIKit.navigationController
 import platform.UIKit.navigationItem
 import platform.UIKit.removeFromParentViewController
@@ -33,37 +34,33 @@ import platform.UIKit.willMoveToParentViewController
 /**
  * Per-entry child UIViewController. Three responsibilities:
  *
- *  1. **Populate `navigationItem` in `init`** — before the controller is added to
- *     the navigation stack. UIKit reads it during `setViewControllers(animated:)` to
- *     animate the title cross-fade and trailing-item transition. If we deferred to
- *     `viewDidLoad` or worse to a Compose effect inside the child runtime, the
- *     title would lag the push transition. Bar-wide state (hidden, translucency)
- *     is applied in `viewWillAppear` so it coordinates with the push transition.
+ *  1. **Populate `navigationItem` and `hidesBottomBarWhenPushed` in `init`**,
+ *     before the controller joins the navigation stack: UIKit reads both
+ *     during `setViewControllers(animated:)` to animate the title cross-fade
+ *     and the tab bar. Bar-wide state (hidden, appearance) is applied in
+ *     `viewWillAppear` so it changes together with the transition.
  *
- *  2. **In `loadView`, instantiate a [ComposeUIViewController]** as a child VC
- *     whose content re-applies the parent composition's locals (theme, density,
- *     `LocalNavBackPress`, …) plus per-entry `LifecycleOwner` /
- *     `ViewModelStoreOwner` / `SavedStateRegistryOwner`.
+ *  2. **In `loadView`, host a [ComposeUIViewController]** whose content
+ *     re-applies the parent composition's locals (theme, density, …) plus the
+ *     per-entry `LifecycleOwner` / `ViewModelStoreOwner` / `SavedStateRegistryOwner`.
  *
  *  3. **In `viewDidDisappear(animated:)`**, when `isMovingFromParentViewController()`
- *     is true (i.e. this VC was popped for real, not just covered by another
- *     push), tear down state: clear the per-entry `ViewModelStore`, mark
- *     lifecycle DESTROYED, and notify the navigator via [onPermanentPop] so
- *     it can update the Compose backstack.
+ *     is true (popped for real, not merely covered by a push), tear the entry
+ *     down: clear its `ViewModelStore` and mark its lifecycle destroyed. The
+ *     navigation host mirrors the pop into the Compose back stack from its
+ *     delegate, so no callback is needed here.
  */
 internal class EntryHostingController(
     private val entry: NavEntry<NavKey>,
-    private val barData: IosNavBarData,
     private val parentLocals: State<CompositionLocalContext>,
     density: Float,
-    private val onPermanentPop: (EntryHostingController) -> Unit,
-    private val onAppeared: () -> Unit,
 ) : UIViewController(nibName = null, bundle = null) {
 
+    private val metadata = entry.adaptiveMetadata
     private val entryScope = NavEntryScope()
 
-    /** Read by the navigator's pop-gesture delegate to honour `iosGestureEnabled`. */
-    val gestureEnabled: Boolean get() = barData.gestureEnabled
+    /** Read by the host's pop-gesture delegate to honour `iosGestureEnabled`. */
+    val gestureEnabled: Boolean get() = metadata.iosGestureEnabled
 
     /**
      * UIKit-measured safe-area insets of this controller's view, exposed to
@@ -74,13 +71,15 @@ internal class EntryHostingController(
      */
     private val safeAreaPadding = mutableStateOf(PaddingValues(0.dp))
 
-    /**
-     * Strong references to the bar-button action handlers, retained so UIKit's
-     * weak target reference doesn't get cleared and clicks become no-ops.
-     */
+    /** Retained so UIKit's weak bar-button targets stay alive and clicks keep working. */
     @Suppress("unused")
-    private val itemHandlers: NavBarItemHandlers =
-        applyNavBarDataToItem(this.navigationItem, barData, density)
+    private val itemBindings: NavBarItemBindings =
+        applyEntryMetadataToItem(this.navigationItem, metadata, density)
+
+    init {
+        // Read by UIKit when this controller is pushed inside a UITabBarController.
+        hidesBottomBarWhenPushed = !metadata.tabBarShown
+    }
 
     override fun loadView() {
         super.loadView()
@@ -115,8 +114,8 @@ internal class EntryHostingController(
         navigationController?.let { nav ->
             // setNavigationBarHidden(animated:) coordinates with the push/pop
             // transition, so per-entry barShown animates cleanly.
-            nav.setNavigationBarHidden(!barData.barShown, animated)
-            nav.navigationBar.applyConfiguration(barData.configuration)
+            nav.setNavigationBarHidden(!metadata.barShown, animated)
+            nav.navigationBar.applyEntryConfiguration(metadata.iosConfiguration)
         }
     }
 
@@ -141,25 +140,23 @@ internal class EntryHostingController(
     override fun viewDidAppear(animated: Boolean) {
         super.viewDidAppear(animated)
         entryScope.markStarted()
-        onAppeared()
     }
 
     override fun viewDidDisappear(animated: Boolean) {
         super.viewDidDisappear(animated)
         if (isMovingFromParentViewController()) {
-            entryScope.markDestroyed()
-            onPermanentPop(this)
-            cleanupChildren()
+            disposeEntry()
         } else {
             entryScope.markStopped()
         }
     }
 
     /**
-     * Tears down the entry when it leaves the stack without ever receiving
-     * `viewDidDisappear` — dropped from the middle of the stack, or the whole
-     * navigator left the composition. Without this, the entry's
-     * `ViewModelStore` would never be cleared and `onCleared` never called.
+     * Tears the entry down. Idempotent: called from `viewDidDisappear` after a
+     * native pop, and by the host for entries that leave the stack without
+     * ever disappearing (dropped from the middle, popped while covered, or the
+     * whole navigator leaving the composition). Without it the entry's
+     * `ViewModelStore` would never be cleared.
      */
     fun disposeEntry() {
         entryScope.markDestroyed()

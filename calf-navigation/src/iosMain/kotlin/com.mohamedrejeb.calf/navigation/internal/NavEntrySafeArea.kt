@@ -11,7 +11,7 @@ import androidx.compose.runtime.compositionLocalOf
  * navigation bar (plus status bar and home indicator): it includes the
  * nav-bar extension `UINavigationController` applies to its children — which
  * the child Compose runtime's own `WindowInsets` does not reliably reflect —
- * and it updates when the bar hides ([IosNavBarData.barShown]) or changes
+ * and it updates when the bar hides ([AdaptiveNavEntryMetadata.barShown]) or changes
  * height.
  *
  * `null` when the entry is not hosted by an `EntryHostingController`
