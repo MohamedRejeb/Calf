@@ -59,6 +59,8 @@ You can try the web demo [here](https://calf-library.netlify.app/)
 | 1.9.20         | 1.5.10          | 0.2.0        |
 | 1.9.0          | 1.5.0           | 0.1.1        |
 
+> **Android:** Calf 0.14.0+ is built on Compose Multiplatform 1.12, whose Android artifacts require `compileSdk = 37` (Android Gradle Plugin 9.4 is the first release that supports it). Calf's Android `minSdk` stays 23.
+
 ## Documentation
 
 For more information, check the documentation:

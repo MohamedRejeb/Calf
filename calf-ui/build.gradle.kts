@@ -4,6 +4,9 @@ plugins {
 }
 
 kotlin {
+    // commonTest runs in the browser, which needs the Skiko runtime bundled by webpack.
+    withBrowserTestBundling()
+
     sourceSets.commonMain.dependencies {
         implementation(projects.calfCore)
         implementation(libs.compose.foundation)

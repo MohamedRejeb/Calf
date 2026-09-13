@@ -1,5 +1,0 @@
-plugins {
-    `android-library`
-}
-
-androidLibrarySetup()

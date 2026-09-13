@@ -1,6 +1,6 @@
 plugins {
     `kotlin-multiplatform`
-    id("android.library")
+    id("com.android.kotlin.multiplatform.library")
 }
 
 kotlin {
@@ -8,4 +8,5 @@ kotlin {
     applyTargets()
 }
 
+androidLibrarySetup()
 setJvmTarget()

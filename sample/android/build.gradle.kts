@@ -1,13 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeMultiplatform)
 }
-
-val javaVersionString = libs.versions.java.get()
 
 android {
     namespace = "com.mohamedrejeb.calf.android"
@@ -26,24 +21,23 @@ android {
         compose = true
     }
     compileOptions {
-        val javaVersion = JavaVersion.toVersion(javaVersionString.toInt())
+        // AGP's built-in Kotlin support derives the Kotlin jvmTarget from targetCompatibility.
+        val javaVersion = JavaVersion.toVersion(libs.versions.java.get().toInt())
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
-    }
-    kotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.fromTarget(javaVersionString))
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    dependencies {
-        implementation(projects.sample.common)
+}
 
-        implementation(libs.activity.compose)
-        implementation(libs.compose.tooling.preview)
-        implementation(libs.appcompat)
-        debugImplementation(libs.compose.tooling)
-    }
+dependencies {
+    implementation(projects.sample.common)
+
+    implementation(libs.activity.compose)
+    implementation(libs.compose.tooling.preview)
+    implementation(libs.appcompat)
+    debugImplementation(libs.compose.tooling)
 }
