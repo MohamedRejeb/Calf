@@ -23,7 +23,7 @@ jobs:
 
   deploy:
     needs: [build, build-native]
-    runs-on: macos-14
+    runs-on: macos-26
 
     env:
       VERSION: ${{ inputs.version }}

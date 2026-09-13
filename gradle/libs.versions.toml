@@ -1,36 +1,38 @@
 [versions]
-agp = "8.13.2"
-kotlin = "2.4.10"
-compose = "1.11.1"
-material3 = "1.11.0-alpha07"
+agp = "9.4.0"
+kotlin = "2.4.20"
+compose = "1.12.0"
+material3 = "1.12.0-alpha03"
 material-icons-extended = "1.7.3"
-kotlinx-datetime = "0.7.1"
+kotlinx-datetime = "0.8.0"
 kotlinx-io = "0.9.1"
 kotlinx-browser = "0.5.0"
-vanniktech-maven-publish = "0.36.0"
+vanniktech-maven-publish = "0.37.0"
 documentfile = "1.1.0"
-coil = "3.5.0"
-kyant-backdrop = "2.0.0"
-kyant-shapes = "1.2.0"
+coil = "3.6.2"
+kyant-backdrop = "2.0.1"
+kyant-shapes = "1.2.1"
 
-calf = "0.13.0"
+calf = "0.14.0"
 
 android-minSdk = "23"
-android-compileSdk = "36"
+android-compileSdk = "37"
 
 java = "17"
 
 # For sample
 activity-compose = "1.13.0"
+# androidx.navigation 2.10+ declares minSdk 24; 2.9.x is the last line that keeps calf-navigation at minSdk 23.
 android-navigation-compose = "2.9.7"
-android-sample-minSdk = "23"
+# The sample pairs CMP 1.12 with JetBrains navigation 2.10, whose Android artifact requires minSdk 24.
+android-sample-minSdk = "24"
 kotlinx-coroutines = "1.11.0"
-appcompat = "1.7.1"
-compose-ui = "1.11.2"
+appcompat = "1.8.0"
+compose-ui = "1.12.1"
 android-lifecycle = "2.2.0"
 play-services-location = "21.4.0"
-jetbrains-navigation-compose = "2.9.2"
-ktor = "3.5.1"
+jetbrains-navigation-compose = "2.10.0-alpha02"
+ktor = "3.5.2"
 
 [libraries]
 gradlePlugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -92,9 +94,8 @@ ktor-client-wasm = { module = "io.ktor:ktor-client-js-wasm-js", version.ref = "k
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }

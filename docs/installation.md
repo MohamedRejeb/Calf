@@ -4,6 +4,7 @@
 
 | Kotlin version | Compose version | Calf version |
 |----------------|-----------------|--------------|
+| 2.4.20         | 1.12.0          | 0.14.0       |
 | 2.4.10         | 1.11.1          | 0.13.0       |
 | 2.3.20         | 1.10.3          | 0.12.0       |
 | 2.3.20         | 1.10.3          | 0.11.0       |
@@ -18,6 +19,8 @@
 | 1.9.21         | 1.5.11          | 0.3.1        |
 | 1.9.20         | 1.5.10          | 0.2.0        |
 | 1.9.0          | 1.5.0           | 0.1.1        |
+
+> **Android:** Calf 0.14.0+ is built on Compose Multiplatform 1.12, whose Android artifacts require `compileSdk = 37` (Android Gradle Plugin 9.4 is the first release that supports it). Calf's Android `minSdk` stays 23.
 
 Add the following dependencies to your module `build.gradle.kts` file:
 
