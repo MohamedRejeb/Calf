@@ -162,7 +162,7 @@ Each route is declared with `adaptiveNavEntry`, which mirrors `AdaptiveTopBar`'s
 
 iOS bar options are structured data (not composables) because they are applied to `UINavigationItem` *before* the push animation starts. That is what makes the native title cross-fade animate with the right content.
 
-- `largeTitle = true` renders a collapsing `LargeTopAppBar` on Material (an exit-until-collapsed scroll behavior is wired automatically) and a large title that shrinks on scroll on iOS. It is the only large-title switch.
+- `largeTitle = true` renders a collapsing `LargeTopAppBar` on Material (an exit-until-collapsed scroll behavior is wired automatically) and a native large title on iOS that collapses as the content scrolls. Both work through nested scrolling, so a `LazyColumn` or `verticalScroll` inside the entry needs no extra setup. It is the only large-title switch.
 - `barShown = false` hides the top bar for that entry on every platform.
 - `tabBarShown = false` hides the tab bar of a hosting `AdaptiveTabDisplay` while the entry is on top: `hidesBottomBarWhenPushed` on iOS, an animated hide of the Material navigation bar elsewhere.
 - `iosGestureEnabled = false` disables swipe-back from the edge for that entry.
@@ -212,7 +212,7 @@ val tabs = rememberAdaptiveTabState(Home, Search, Profile, configuration = confi
 
 ## Platform notes
 
-- **iOS**: `entryDecorators` are not applied; the native per-entry scopes provide lifecycle, ViewModel and saved-state owners. `onBack` is not used; UIKit performs pops itself. A custom `iosConfiguration.titleColor` is applied per `UINavigationItem`, so the bar animates with the push and keeps a transparent scroll edge for large titles. Tab switches are instant on iOS, as in every native app; pushes inside a tab animate.
+- **iOS**: `entryDecorators` are not applied; the native per-entry scopes provide lifecycle, ViewModel and saved-state owners. `onBack` is not used; UIKit performs pops itself. A custom `iosConfiguration.titleColor` is applied per `UINavigationItem`, so the bar animates with the push and keeps a transparent scroll edge for large titles. UIKit drives large-title collapse and the bar's scroll-edge appearance from a scroll view, so each entry host keeps an invisible one fed by the content's nested scroll. Tab switches are instant on iOS, as in every native app; pushes inside a tab animate.
 - **iPhone Duo / iPad**: the inner display is a regular-width, regular-height size class. `UITabBarController` adapts on its own; set `iosSidebarAdaptable = true` to allow the sidebar placement Apple recommends for richer navigation. Bars and toolbars are the system's, so they pick up iOS 27.1's vertical button layout without changes.
 - **Android foldables and tablets**: the Material side uses `NavigationSuiteScaffold`, so a bottom bar becomes a rail on wide windows.
 
