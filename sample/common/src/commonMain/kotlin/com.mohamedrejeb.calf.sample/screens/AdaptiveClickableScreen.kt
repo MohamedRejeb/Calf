@@ -43,6 +43,9 @@ fun AdaptiveClickableScreen(
                 modifier = Modifier
                     .adaptiveClickable(
                         shape = MaterialTheme.shapes.medium,
+                        onLongClick = {
+                            // Handle long click
+                        },
                     ) {
                         // Handle click
                     }

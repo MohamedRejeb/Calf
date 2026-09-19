@@ -18,5 +18,7 @@ expect fun Modifier.adaptiveClickable(
     onClickLabel: String? = null,
     role: Role? = null,
     shape: Shape = RectangleShape,
+    onLongClickLabel: String? = null,
+    onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ): Modifier
