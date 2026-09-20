@@ -19,7 +19,9 @@ actual fun Modifier.adaptiveClickable(
     shape: Shape,
     onLongClickLabel: String?,
     onLongClick: (() -> Unit)?,
-    onClick: () -> Unit
+    onDoubleClick: (() -> Unit)?,
+    hapticFeedbackEnabled: Boolean,
+    onClick: () -> Unit,
 ): Modifier =
     this
         .clip(shape)
@@ -31,5 +33,7 @@ actual fun Modifier.adaptiveClickable(
             role = role,
             onLongClickLabel = onLongClickLabel,
             onLongClick = onLongClick,
+            onDoubleClick = onDoubleClick,
+            hapticFeedbackEnabled = hapticFeedbackEnabled,
             onClick = onClick
         )

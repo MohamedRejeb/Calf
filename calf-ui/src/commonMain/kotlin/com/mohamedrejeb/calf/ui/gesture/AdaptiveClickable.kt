@@ -20,5 +20,7 @@ expect fun Modifier.adaptiveClickable(
     shape: Shape = RectangleShape,
     onLongClickLabel: String? = null,
     onLongClick: (() -> Unit)? = null,
+    onDoubleClick: (() -> Unit)? = null,
+    hapticFeedbackEnabled: Boolean = true,
     onClick: () -> Unit,
 ): Modifier
