@@ -38,6 +38,8 @@ import platform.UIKit.navigationController
 import platform.UIKit.navigationItem
 import platform.UIKit.removeFromParentViewController
 import platform.UIKit.willMoveToParentViewController
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 
 /**
  * Per-entry child UIViewController. Three responsibilities:
@@ -78,6 +80,18 @@ internal class EntryHostingController(
      * to be piped through from UIKit.
      */
     private val safeAreaPadding = mutableStateOf(PaddingValues(0.dp))
+
+    /**
+     * Whether the entry's content is part of the composition yet. Compose renders a surface's
+     * first frame synchronously, in the same main-thread turn in which UIKit sets up the push,
+     * and UIKit can only hand the animation to the render server once that turn ends. With the
+     * content in that first frame, a tap was followed by nothing for as long as the screen took
+     * to compose and draw, and only then by the transition. An animated push therefore starts
+     * with an empty surface and attaches the content one turn later: the animation is already
+     * running (in the render server, so a busy main thread does not stall it) while the screen
+     * loads.
+     */
+    private val contentAttached = mutableStateOf(false)
 
     /**
      * Invisible, non-interactive scroll view registered as this controller's
@@ -130,7 +144,9 @@ internal class EntryHostingController(
                         LocalNavEntrySafeArea provides safeAreaPadding.value,
                         LocalNavEntryScrollReporter provides ::reportScrollOffset,
                     ) {
-                        entry.Content()
+                        if (contentAttached.value) {
+                            entry.Content()
+                        }
                     }
                 }
             }
@@ -225,11 +241,22 @@ internal class EntryHostingController(
 
     override fun viewWillAppear(animated: Boolean) {
         super.viewWillAppear(animated)
+        attachContent(deferred = animated)
         navigationController?.let { nav ->
             // setNavigationBarHidden(animated:) coordinates with the push/pop
             // transition, so per-entry barShown animates cleanly.
             nav.setNavigationBarHidden(!metadata.barShown, animated)
             nav.navigationBar.translucent = metadata.iosConfiguration.isTranslucent
+        }
+    }
+
+    private fun attachContent(deferred: Boolean) {
+        if (contentAttached.value) return
+        if (deferred) {
+            dispatch_async(dispatch_get_main_queue()) { contentAttached.value = true }
+        } else {
+            // Nothing animates (root entry, tab switch): the first frame should be complete.
+            contentAttached.value = true
         }
     }
 
@@ -316,4 +343,3 @@ private const val OFFSET_EPSILON = 0.5
 
 /** Points past the inset; anything taller than a large title's extra height works. */
 private const val EXPANSION_PULL_DOWN = 200.0
-
