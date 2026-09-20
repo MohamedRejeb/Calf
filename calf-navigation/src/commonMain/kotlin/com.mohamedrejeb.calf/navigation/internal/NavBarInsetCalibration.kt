@@ -32,6 +32,15 @@ internal data class NavBarInsetCalibration(
         maxOf(liveTopInset, expandedTopInset)
 
     /**
+     * The content is at its top but the bar is smaller than its expanded size. UIKit never leaves
+     * that state on its own: the rest offset sits on the *current* inset, and resting on a
+     * collapsed bar's inset is stable. It happens whenever the bar was collapsed in one step
+     * instead of following the scroll back up (see [mirroredScrollPoints]).
+     */
+    fun isCollapsedAtTop(atTop: Boolean, currentTopInset: Double): Boolean =
+        atTop && currentTopInset < expandedTopInset - INSET_EPSILON
+
+    /**
      * Offset to mirror into the host's scroll view. At the top it must sit
      * exactly on the current inset: UIKit expands the bar from there, and
      * anything past it counts as a pull-down (iOS 26 then moves the large title
@@ -41,3 +50,28 @@ internal data class NavBarInsetCalibration(
     fun mirroredOffsetY(atTop: Boolean, currentTopInset: Double, scrolledPoints: Double): Double =
         if (atTop) -currentTopInset else -expandedTopInset + scrolledPoints
 }
+
+private const val INSET_EPSILON = 0.5
+
+/**
+ * Scroll distance past which a classic large title is certainly collapsed. The title itself is
+ * 52 points tall; the margin covers larger text sizes, and a bigger value costs nothing because
+ * the mirrored scroll view is invisible.
+ */
+private const val SNAPPING_TITLE_COLLAPSE_POINTS = 100.0
+
+/**
+ * Scroll distance to mirror into the host's scroll view.
+ *
+ * iOS 26 draws the large title in the scroll view's space, so it travels with the content and
+ * the real distance is right ([titleMovesWithContent]). Earlier systems only collapse the title
+ * progressively for a finger-driven `UIScrollView`; from a mirrored offset the title stays fully
+ * expanded until the scroll passes its height and then snaps, so the content slid over it. There
+ * the collapse is requested as soon as scrolling starts, which gets the title out of the way
+ * before the content reaches it.
+ */
+internal fun mirroredScrollPoints(scrolledPoints: Double, titleMovesWithContent: Boolean): Double =
+    when {
+        titleMovesWithContent || scrolledPoints <= 0.0 -> scrolledPoints
+        else -> maxOf(scrolledPoints, SNAPPING_TITLE_COLLAPSE_POINTS)
+    }

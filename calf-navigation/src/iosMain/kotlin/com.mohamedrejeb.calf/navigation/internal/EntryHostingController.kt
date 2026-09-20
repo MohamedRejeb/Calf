@@ -96,6 +96,7 @@ internal class EntryHostingController(
     private var contentScrollView: UIScrollView? = null
     private var trackedScrollPx: Float = 0f
     private var calibration = NavBarInsetCalibration()
+    private val titleMovesWithContent = isIOSVersionAtLeast(LIQUID_GLASS_MIN_IOS)
 
     /** Retained so UIKit's weak bar-button targets stay alive and clicks keep working. */
     @Suppress("unused")
@@ -179,7 +180,8 @@ internal class EntryHostingController(
         calibration = recalibrated
 
         val atTop = trackedScrollPx == 0f
-        if (atTop && isRecalibrating) {
+        val topInsetBefore = scrollView.adjustedContentInset.useContents { top }
+        if ((atTop && isRecalibrating) || calibration.isCollapsedAtTop(atTop, topInsetBefore)) {
             expandCollapsedBar(scrollView)
         }
         // Changing the offset can change the bar height, and UIKit then shifts
@@ -193,7 +195,10 @@ internal class EntryHostingController(
             val offsetY = calibration.mirroredOffsetY(
                 atTop = atTop,
                 currentTopInset = currentTopInset,
-                scrolledPoints = (trackedScrollPx / density).toDouble(),
+                scrolledPoints = mirroredScrollPoints(
+                    scrolledPoints = (trackedScrollPx / density).toDouble(),
+                    titleMovesWithContent = titleMovesWithContent,
+                ),
             )
             scrollView.setContentOffset(CGPointMake(0.0, offsetY), animated = false)
             val applied = scrollView.contentOffset.useContents { y }
@@ -202,10 +207,11 @@ internal class EntryHostingController(
     }
 
     /**
-     * A size change can leave the bar collapsed although the content is at its top: iPhone
-     * landscape shows the title inline, and rotating back to portrait keeps it inline because
-     * the rest offset, which sits exactly on the *current* inset, then rests on the collapsed
-     * one. That is a stable state for UIKit, so nothing would ever expand the bar again.
+     * The bar can be collapsed although the content is at its top: after a size change (iPhone
+     * landscape shows the title inline, and rotating back to portrait keeps it inline) and
+     * after a one-step collapse on systems whose title only snaps. The rest offset sits exactly
+     * on the *current* inset, which is then the collapsed one, and that is a stable state for
+     * UIKit, so nothing would ever expand the bar again.
      * Pulling the offset past the inset once makes UIKit expand it (synchronously, the inset
      * grows with it), and the regular passes then settle the offset on the expanded inset.
      */
@@ -303,6 +309,7 @@ private class ContentScrollView(
 }
 
 private const val CONTENT_SCROLL_VIEW_MIN_IOS = 15
+private const val LIQUID_GLASS_MIN_IOS = 26
 private const val CONTENT_SCROLL_EXTENT = 100_000.0
 private const val OFFSET_APPLY_PASSES = 2
 private const val OFFSET_EPSILON = 0.5
