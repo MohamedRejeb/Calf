@@ -27,6 +27,7 @@ import platform.UIKit.tabBarItem
 import platform.darwin.NSObject
 
 private const val SIDEBAR_MIN_IOS_VERSION = 18
+private const val LIQUID_GLASS_MIN_IOS_VERSION = 26
 
 /**
  * Hosts a real [UITabBarController] with one [IosNavController] per tab — the
@@ -68,6 +69,7 @@ internal class IosTabController<T : NavKey>(
             animated = false,
         )
         uiTabBarController.delegate = delegate
+        keepClassicBarBackground()
         setSidebarAdaptable(sidebarAdaptable)
         select(state.selectedTab)
     }
@@ -77,6 +79,19 @@ internal class IosTabController<T : NavKey>(
         items.forEachIndexed { index, item ->
             navControllers.getValue(state.tabs[index]).uiNavigationController.tabBarItem = item.toUITabBarItem(index, density)
         }
+    }
+
+    /**
+     * A classic (pre Liquid Glass) tab bar drops its background whenever UIKit believes the
+     * content ends above it, which it decides from a scroll view reaching the bottom edge.
+     * Compose content has no such scroll view, so the bar stayed transparent with the content
+     * showing through the items. Using the standard appearance at the scroll edge too keeps
+     * the background. iOS 26 draws its own glass bar and needs nothing.
+     */
+    private fun keepClassicBarBackground() {
+        if (isIOSVersionAtLeast(LIQUID_GLASS_MIN_IOS_VERSION)) return
+        val tabBar = uiTabBarController.tabBar
+        tabBar.scrollEdgeAppearance = tabBar.standardAppearance
     }
 
     /** iOS 18+: lets the tab bar become a sidebar on wide displays. Older systems ignore it. */
