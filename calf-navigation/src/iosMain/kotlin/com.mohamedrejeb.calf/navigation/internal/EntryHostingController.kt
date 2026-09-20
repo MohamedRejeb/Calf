@@ -95,8 +95,7 @@ internal class EntryHostingController(
      */
     private var contentScrollView: UIScrollView? = null
     private var trackedScrollPx: Float = 0f
-    private var expandedTopInset: Double = 0.0
-    private var calibratedWidth: Double = 0.0
+    private var calibration = NavBarInsetCalibration()
 
     /** Retained so UIKit's weak bar-button targets stay alive and clicks keep working. */
     @Suppress("unused")
@@ -174,14 +173,13 @@ internal class EntryHostingController(
     private fun applyScrollOffset() {
         val scrollView = contentScrollView ?: return
         val width = view.bounds.useContents { size.width }
-        val recalibrate = width != calibratedWidth
-        if (recalibrate) {
-            // Bar heights differ per orientation; recalibrate after a size change.
-            calibratedWidth = width
-            expandedTopInset = 0.0
-        }
+        // Bar heights differ per orientation; recalibrate after a size change.
+        val recalibrated = calibration.forWidth(width)
+        val isRecalibrating = recalibrated !== calibration
+        calibration = recalibrated
+
         val atTop = trackedScrollPx == 0f
-        if (atTop && recalibrate) {
+        if (atTop && isRecalibrating) {
             expandCollapsedBar(scrollView)
         }
         // Changing the offset can change the bar height, and UIKit then shifts
@@ -190,13 +188,13 @@ internal class EntryHostingController(
         repeat(OFFSET_APPLY_PASSES) {
             val currentTopInset = scrollView.adjustedContentInset.useContents { top }
             if (atTop) {
-                expandedTopInset = maxOf(expandedTopInset, currentTopInset)
+                calibration = calibration.sampledAtTop(currentTopInset)
             }
-            // At the top the offset must sit exactly on the current inset:
-            // UIKit expands the bar from there. Anything past it counts as a
-            // pull-down, and iOS 26 moves the large title with the content,
-            // out of the bar.
-            val offsetY = if (atTop) -currentTopInset else -expandedTopInset + trackedScrollPx / density
+            val offsetY = calibration.mirroredOffsetY(
+                atTop = atTop,
+                currentTopInset = currentTopInset,
+                scrolledPoints = (trackedScrollPx / density).toDouble(),
+            )
             scrollView.setContentOffset(CGPointMake(0.0, offsetY), animated = false)
             val applied = scrollView.contentOffset.useContents { y }
             if (kotlin.math.abs(applied - offsetY) < OFFSET_EPSILON) return
@@ -234,20 +232,22 @@ internal class EntryHostingController(
     // expandCollapsedBar(); ContentScrollView reports those.
     override fun viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        updateSafeAreaPadding()
         // Tall enough that any mirrored offset is a valid position.
         contentScrollView?.setContentSize(
             view.bounds.useContents { CGSizeMake(size.width, size.height + CONTENT_SCROLL_EXTENT) },
         )
         // Keeps the rest position on the expanded bar as insets settle.
         applyScrollOffset()
+        // After the offset: that is what (re)calibrates the inset the padding is built from.
+        updateSafeAreaPadding()
     }
 
     private fun updateSafeAreaPadding() {
         safeAreaPadding.value = view.safeAreaInsets.useContents {
             PaddingValues.Absolute(
                 left = left.dp,
-                top = top.dp,
+                // Not the live inset: it shrinks with the large title, see NavBarInsetCalibration.
+                top = calibration.contentTopInset(liveTopInset = top).dp,
                 right = right.dp,
                 bottom = bottom.dp,
             )

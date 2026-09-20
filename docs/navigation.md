@@ -166,7 +166,7 @@ iOS bar options are structured data (not composables) because they are applied t
 - `barShown = false` hides the top bar for that entry on every platform.
 - `tabBarShown = false` hides the tab bar of a hosting `AdaptiveTabDisplay` while the entry is on top: `hidesBottomBarWhenPushed` on iOS, an animated hide of the Material navigation bar elsewhere.
 - `iosGestureEnabled = false` disables swipe-back for that entry: the edge swipe, and on iOS 26+ the swipe from anywhere in the content. The back button still works.
-- The screen `content` receives `PaddingValues`: the Material `Scaffold` padding, or the safe-area insets on iOS where content is laid out edge-to-edge under the translucent bars. Apply it as `contentPadding` on a `LazyColumn` so the list scrolls under the bars but starts below them.
+- The screen `content` receives `PaddingValues`: the Material `Scaffold` padding, or the safe-area insets on iOS where content is laid out edge-to-edge under the translucent bars. Apply it as `contentPadding` on a `LazyColumn` so the list scrolls under the bars but starts below them. On iOS the top value is the bar's resting height (large title expanded) and stays the same while the title collapses, exactly like the content inset of a native scroll view, so the content moves only with its own scroll. For a `verticalScroll` column put the padding inside the scroll (`Modifier.verticalScroll(state).padding(padding)`), not around it, so the content can scroll under the collapsed bar.
 
 Bar items reuse the `UIKitUIBarButtonItem` / `UIKitNavigationBarConfiguration` types of [`AdaptiveTopBar`](ui/adaptive-top-bar.md), including SF Symbols, Compose vectors and bitmaps, dropdown menus and `titleColor`:
 
