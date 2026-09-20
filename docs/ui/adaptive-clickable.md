@@ -25,6 +25,15 @@ Box(
             interactionSource = remember { MutableInteractionSource() },
             indication = rememberRipple(), // Used on Android only
             enabled = true,
+            onLongClick = {
+                // Handle long click
+                println("Long clicked!")
+            },
+            onDoubleClick = {
+                // Handle double click
+                println("Double clicked!")
+            },
+            hapticFeedbackEnabled = true, // Used for long click only
         ) {
             // Handle click
             println("Clicked!")

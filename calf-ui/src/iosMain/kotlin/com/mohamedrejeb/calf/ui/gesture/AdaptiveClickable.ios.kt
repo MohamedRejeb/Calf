@@ -2,7 +2,7 @@ package com.mohamedrejeb.calf.ui.gesture
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Indication
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
@@ -21,6 +21,10 @@ actual fun Modifier.adaptiveClickable(
     onClickLabel: String?,
     role: Role?,
     shape: Shape,
+    onLongClickLabel: String?,
+    onLongClick: (() -> Unit)?,
+    onDoubleClick: (() -> Unit)?,
+    hapticFeedbackEnabled: Boolean,
     onClick: () -> Unit
 ): Modifier {
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -33,12 +37,16 @@ actual fun Modifier.adaptiveClickable(
             scaleY = scale
         }
         .clip(shape)
-        .clickable(
+        .combinedClickable(
             interactionSource = interactionSource,
             indication = null,
             enabled = enabled,
             onClickLabel = onClickLabel,
             role = role,
+            onLongClickLabel = onLongClickLabel,
+            onLongClick = onLongClick,
+            onDoubleClick = onDoubleClick,
+            hapticFeedbackEnabled = hapticFeedbackEnabled,
             onClick = onClick
         )
 }
