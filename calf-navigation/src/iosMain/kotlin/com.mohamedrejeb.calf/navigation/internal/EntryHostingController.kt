@@ -19,8 +19,10 @@ import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
+import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSizeMake
 import platform.UIKit.NSDirectionalRectEdgeTop
 import platform.UIKit.UIScrollView
@@ -145,7 +147,7 @@ internal class EntryHostingController(
     }
 
     private fun installContentScrollView() {
-        val scrollView = UIScrollView().apply {
+        val scrollView = ContentScrollView(onSafeAreaInsetsChange = ::updateSafeAreaPadding).apply {
             // Transparent and touch-transparent: it only exists to be observed.
             userInteractionEnabled = false
             opaque = false
@@ -172,12 +174,16 @@ internal class EntryHostingController(
     private fun applyScrollOffset() {
         val scrollView = contentScrollView ?: return
         val width = view.bounds.useContents { size.width }
-        if (width != calibratedWidth) {
+        val recalibrate = width != calibratedWidth
+        if (recalibrate) {
             // Bar heights differ per orientation; recalibrate after a size change.
             calibratedWidth = width
             expandedTopInset = 0.0
         }
         val atTop = trackedScrollPx == 0f
+        if (atTop && recalibrate) {
+            expandCollapsedBar(scrollView)
+        }
         // Changing the offset can change the bar height, and UIKit then shifts
         // the offset by the inset delta to keep content still. Re-applying once
         // puts the title where the scroll says instead of one frame later.
@@ -197,6 +203,21 @@ internal class EntryHostingController(
         }
     }
 
+    /**
+     * A size change can leave the bar collapsed although the content is at its top: iPhone
+     * landscape shows the title inline, and rotating back to portrait keeps it inline because
+     * the rest offset, which sits exactly on the *current* inset, then rests on the collapsed
+     * one. That is a stable state for UIKit, so nothing would ever expand the bar again.
+     * Pulling the offset past the inset once makes UIKit expand it (synchronously, the inset
+     * grows with it), and the regular passes then settle the offset on the expanded inset.
+     */
+    private fun expandCollapsedBar(scrollView: UIScrollView) {
+        val collapsedTopInset = scrollView.adjustedContentInset.useContents { top }
+        scrollView.setContentOffset(
+            CGPointMake(0.0, -(collapsedTopInset + EXPANSION_PULL_DOWN)),
+            animated = false,
+        )
+    }
 
     override fun viewWillAppear(animated: Boolean) {
         super.viewWillAppear(animated)
@@ -208,8 +229,9 @@ internal class EntryHostingController(
         }
     }
 
-    // Safe-area changes (bar shown/hidden, large-title collapse, rotation)
-    // always trigger a layout pass, so this keeps the padding current.
+    // Safe-area changes (bar shown/hidden, large-title collapse, rotation) normally come
+    // with a layout pass. The exception is a change made from inside one, like
+    // expandCollapsedBar(); ContentScrollView reports those.
     override fun viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateSafeAreaPadding()
@@ -267,8 +289,24 @@ internal class EntryHostingController(
     }
 }
 
+/**
+ * The mirrored scroll view fills the entry's view, so it has the same safe-area insets.
+ * `viewSafeAreaInsetsDidChange` cannot be overridden from Kotlin, this can.
+ */
+private class ContentScrollView(
+    private val onSafeAreaInsetsChange: () -> Unit,
+) : UIScrollView(frame = CGRectZero.readValue()) {
+    override fun safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
+        onSafeAreaInsetsChange()
+    }
+}
+
 private const val CONTENT_SCROLL_VIEW_MIN_IOS = 15
 private const val CONTENT_SCROLL_EXTENT = 100_000.0
 private const val OFFSET_APPLY_PASSES = 2
 private const val OFFSET_EPSILON = 0.5
+
+/** Points past the inset; anything taller than a large title's extra height works. */
+private const val EXPANSION_PULL_DOWN = 200.0
 
