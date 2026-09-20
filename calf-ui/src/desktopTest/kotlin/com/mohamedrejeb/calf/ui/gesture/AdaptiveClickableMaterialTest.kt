@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -102,5 +103,51 @@ class AdaptiveClickableMaterialTest {
         onNodeWithText("Target").performTouchInput { longClick() }
 
         assertEquals(1, clickCount)
+    }
+
+    @Test
+    fun `invokes onDoubleClick when double clicked`() = runComposeUiTest {
+        var clickCount = 0
+        var doubleClickCount = 0
+
+        setContent {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .adaptiveClickable(
+                        onDoubleClick = { doubleClickCount++ },
+                        onClick = { clickCount++ },
+                    )
+            ) {
+                Text("Target")
+            }
+        }
+
+        onNodeWithText("Target").performTouchInput { doubleClick() }
+
+        assertEquals(1, doubleClickCount)
+        assertEquals(0, clickCount)
+    }
+
+    @Test
+    fun `when onDoubleClick is null, invoke onClick when double clicked`() = runComposeUiTest {
+        var clickCount = 0
+
+        setContent {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .adaptiveClickable(
+                        onDoubleClick = null,
+                        onClick = { clickCount++ },
+                    )
+            ) {
+                Text("Target")
+            }
+        }
+
+        onNodeWithText("Target").performTouchInput { doubleClick() }
+
+        assertEquals(2, clickCount)
     }
 }

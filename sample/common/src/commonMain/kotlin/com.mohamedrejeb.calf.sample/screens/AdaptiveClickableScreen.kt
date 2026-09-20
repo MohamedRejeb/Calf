@@ -46,6 +46,9 @@ fun AdaptiveClickableScreen(
                         onLongClick = {
                             // Handle long click
                         },
+                        onDoubleClick = {
+                            // Handle double click
+                        }
                     ) {
                         // Handle click
                     }
