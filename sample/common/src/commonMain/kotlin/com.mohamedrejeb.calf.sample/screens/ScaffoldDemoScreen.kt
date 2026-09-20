@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
@@ -129,15 +131,27 @@ fun ScaffoldDemoScreen(
             modifier = Modifier.fillMaxSize(),
         ) { tabIndex ->
             Box(
-                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
+                    .padding(padding),
             ) {
+                // The markers sit exactly on the edges of the padded content, so a stale bar
+                // padding (e.g. after rotating the device) shows up as a gap or an overlap.
+                ContentEdgeMarker(
+                    text = "Content top edge: must touch the top bar",
+                    modifier = Modifier.align(Alignment.TopCenter),
+                )
+                ContentEdgeMarker(
+                    text = "Content bottom edge: must touch the tab bar",
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(16.dp),
                 ) {
                     Text(
                         text = tabs[tabIndex],
@@ -145,7 +159,7 @@ fun ScaffoldDemoScreen(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
-                        text = "This demonstrates AdaptiveScaffold + AdaptiveTopBar + AdaptiveNavigationBar working together. On iOS, native UINavigationBar and UITabBar are used.",
+                        text = "This demonstrates AdaptiveScaffold + AdaptiveTopBar + AdaptiveNavigationBar working together. On iOS, native UINavigationBar and UITabBar are used. Rotate the device: the markers must stay glued to the bars.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -153,4 +167,21 @@ fun ScaffoldDemoScreen(
             }
         }
     }
+}
+
+@Composable
+private fun ContentEdgeMarker(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+        textAlign = TextAlign.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(vertical = 2.dp),
+    )
 }

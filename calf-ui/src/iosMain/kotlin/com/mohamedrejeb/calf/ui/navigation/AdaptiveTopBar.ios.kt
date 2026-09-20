@@ -1,41 +1,22 @@
 package com.mohamedrejeb.calf.ui.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onPlaced
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
-import platform.UIKit.NSLayoutConstraint
-import platform.UIKit.UIDevice
 import platform.UIKit.UINavigationBar
 
 /**
@@ -68,7 +49,6 @@ actual fun AdaptiveTopBar(
 ) {
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
-    val viewController = LocalUIViewController.current
 
     // Write the measured navigation bar height to the CompositionLocal so AdaptiveScaffold
     // can automatically adjust content padding on iOS.
@@ -102,102 +82,19 @@ actual fun AdaptiveTopBar(
         )
     }
 
-    val initialSafeAreaTop = remember {
-        viewController.view.safeAreaInsets.useContents { top.dp }
-    }
-    val cachedNavBarHeight = remember(iosConfiguration.prefersLargeTitles) {
-        if (iosConfiguration.prefersLargeTitles)
-            IosBarHeightCache.lastLargeTitleNavBarHeight
+    // Pins the bar under the status bar and re-measures it whenever UIKit lays it out again
+    // (rotation, large title, safe-area change). The measured height goes to the
+    // CompositionLocal above, so AdaptiveScaffold keeps the content below the bar.
+    val navBarLayout = rememberIosBarLayout(
+        barView = navBarView,
+        edge = IosBarEdge.Top,
+        kind = if (iosConfiguration.prefersLargeTitles)
+            IosBarKind.LargeTitleNavigationBar
         else
-            IosBarHeightCache.lastNavBarHeight
-    }
-
-    var topLeft by remember { mutableStateOf(DpOffset.Zero) }
-    var positionInRoot by remember { mutableStateOf(DpOffset.Zero) }
-    var navBarWidth by remember { mutableStateOf(0.dp) }
-    var navBarHeight by remember {
-        val navBarHeight = initialSafeAreaTop + cachedNavBarHeight
-        if (navBarHeight.value > 0f) {
-            iosTopBarPaddingState.value = PaddingValues(top = navBarHeight)
-        }
-        mutableStateOf(navBarHeight)
-    }
-
-    DisposableEffect(navBarView, viewController) {
-        viewController.view.addSubview(navBarView)
-
-        NSLayoutConstraint.activateConstraints(
-            listOf(
-                navBarView.leadingAnchor.constraintEqualToAnchor(viewController.view.leadingAnchor),
-                navBarView.trailingAnchor.constraintEqualToAnchor(viewController.view.trailingAnchor),
-                navBarView.topAnchor.constraintEqualToAnchor(
-                    viewController.view.safeAreaLayoutGuide.topAnchor
-                ),
-            )
-        )
-
-        onDispose {
-            navBarView.removeFromSuperview()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        var navBarHeightConsistencyCounter = 0
-
-        while (true) {
-            navBarView.frame.useContents {
-                topLeft = DpOffset(
-                    x = origin.x.dp,
-                    y = origin.y.dp,
-                )
-                navBarWidth = size.width.dp
-                val safeAreaTop = viewController.view.safeAreaInsets.useContents { top.dp }
-                val newNavBarHeight = size.height.dp + safeAreaTop
-
-                IosBarHeightCache.updateNavBarHeight(size.height.dp, iosConfiguration.prefersLargeTitles)
-
-                if (navBarHeight != newNavBarHeight) {
-                    navBarHeight = newNavBarHeight
-                    navBarHeightConsistencyCounter = 0
-
-                    if (newNavBarHeight.value > 0f) {
-                        iosTopBarPaddingState.value = PaddingValues(top = newNavBarHeight)
-                    }
-                } else {
-                    navBarHeightConsistencyCounter++
-                }
-            }
-
-            if (navBarHeight.value > 0f && navBarHeightConsistencyCounter > 6)
-                break
-
-            withFrameMillis { }
-        }
-    }
-
-    // Clean up the padding when this composable leaves the composition
-    DisposableEffect(Unit) {
-        onDispose {
-            iosTopBarPaddingState.value = PaddingValues()
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .onPlaced {
-                val positionInRootPx = it.positionInRoot()
-                positionInRoot = with(density) {
-                    DpOffset(
-                        x = positionInRootPx.x.toDp(),
-                        y = positionInRootPx.y.toDp(),
-                    )
-                }
-            }
-            .graphicsLayer {
-                translationX = (topLeft.x - positionInRoot.x).toPx()
-                translationY = (topLeft.y - positionInRoot.y).toPx()
-            }
-            .width(navBarWidth)
-            .height(navBarHeight)
+            IosBarKind.NavigationBar,
+        barCoversSafeArea = false,
+        contentPaddingState = iosTopBarPaddingState,
     )
+
+    IosBarPlaceholder(layout = { navBarLayout.value })
 }
