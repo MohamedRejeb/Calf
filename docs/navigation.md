@@ -165,7 +165,7 @@ iOS bar options are structured data (not composables) because they are applied t
 - `largeTitle = true` renders a collapsing `LargeTopAppBar` on Material (an exit-until-collapsed scroll behavior is wired automatically) and a native large title on iOS that collapses as the content scrolls. Both work through nested scrolling, so a `LazyColumn` or `verticalScroll` inside the entry needs no extra setup. It is the only large-title switch.
 - `barShown = false` hides the top bar for that entry on every platform.
 - `tabBarShown = false` hides the tab bar of a hosting `AdaptiveTabDisplay` while the entry is on top: `hidesBottomBarWhenPushed` on iOS, an animated hide of the Material navigation bar elsewhere.
-- `iosGestureEnabled = false` disables swipe-back from the edge for that entry.
+- `iosGestureEnabled = false` disables swipe-back for that entry: the edge swipe, and on iOS 26+ the swipe from anywhere in the content. The back button still works.
 - The screen `content` receives `PaddingValues`: the Material `Scaffold` padding, or the safe-area insets on iOS where content is laid out edge-to-edge under the translucent bars. Apply it as `contentPadding` on a `LazyColumn` so the list scrolls under the bars but starts below them.
 
 Bar items reuse the `UIKitUIBarButtonItem` / `UIKitNavigationBarConfiguration` types of [`AdaptiveTopBar`](ui/adaptive-top-bar.md), including SF Symbols, Compose vectors and bitmaps, dropdown menus and `titleColor`:

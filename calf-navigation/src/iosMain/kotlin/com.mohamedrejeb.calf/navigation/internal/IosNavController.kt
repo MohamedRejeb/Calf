@@ -7,6 +7,7 @@ import androidx.compose.runtime.State
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCSignatureOverride
 import platform.UIKit.UIGestureRecognizer
@@ -43,7 +44,9 @@ internal class IosNavController(
     private val entryProvider: (NavKey) -> NavEntry<NavKey>,
     private val density: Float,
 ) {
-    private val gestureDelegate = PopGestureDelegate(::canPopInteractively)
+    /** Resolved once: the OS version cannot change while the app runs. */
+    private val managedGestures: List<PopGestureKind> = managedPopGestures(::isIOSVersionAtLeast)
+    private val gestureDelegate = PopGestureDelegate(::canPopTopEntry)
     private val navigationDelegate = NavigationDelegate(
         onWillShow = { isTransitioning = true },
         onDidShow = ::onUiKitDidShow,
@@ -73,21 +76,34 @@ internal class IosNavController(
         uiNavigationController.delegate = navigationDelegate
     }
 
-    private fun canPopInteractively(): Boolean =
-        uiNavigationController.viewControllers.size > 1 &&
-            (uiNavigationController.topViewController as? EntryHostingController)?.gestureEnabled != false
+    private fun canPopTopEntry(): Boolean =
+        canPopInteractively(
+            stackSize = uiNavigationController.viewControllers.size,
+            topGestureEnabled = (uiNavigationController.topViewController as? EntryHostingController)?.gestureEnabled,
+        )
 
     /**
-     * Re-asserts swipe-back configuration. UIKit re-claims the recognizer's
-     * delegate around transitions, so a one-time assignment ends up ignored:
-     * "gesture disabled" entries would swipe back, and hidden-bar entries
-     * would lose the gesture (UIKit's default delegate refuses it when the
-     * bar is hidden; ours allows it).
+     * Re-asserts swipe-back configuration on every recognizer the system has.
+     * UIKit re-claims the edge recognizer's delegate around transitions, so a
+     * one-time assignment ends up ignored: "gesture disabled" entries would
+     * swipe back, and hidden-bar entries would lose the gesture (UIKit's
+     * default delegate refuses it when the bar is hidden; ours allows it).
+     *
+     * The iOS 26 content recognizer is only switched on and off. It keeps
+     * UIKit's delegate, which decides where in the content a swipe may start.
      */
     private fun refreshPopGesture() {
-        val recognizer = uiNavigationController.interactivePopGestureRecognizer ?: return
-        recognizer.delegate = gestureDelegate
-        recognizer.enabled = canPopInteractively()
+        val canPop = canPopTopEntry()
+        managedGestures.forEach { kind ->
+            when (kind) {
+                PopGestureKind.Edge -> uiNavigationController.interactivePopGestureRecognizer?.let { recognizer ->
+                    recognizer.delegate = gestureDelegate
+                    recognizer.enabled = canPop
+                }
+                PopGestureKind.Content ->
+                    uiNavigationController.interactiveContentPopGestureRecognizer?.enabled = canPop
+            }
+        }
     }
 
     /** Makes the UIKit stack match [snapshot], the current Compose back stack. */
