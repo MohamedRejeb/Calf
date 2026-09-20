@@ -94,6 +94,9 @@ actual fun AdaptiveTopBar(
             IosBarKind.NavigationBar,
         barCoversSafeArea = false,
         contentPaddingState = iosTopBarPaddingState,
+        // With no status bar above it (iPhone landscape) a Liquid Glass bar floats below the
+        // screen edge, like UINavigationController's does.
+        minimumEdgeOffset = iosTopBarMinimumOffset(isLiquidGlassEnabled),
     )
 
     IosBarPlaceholder(layout = { navBarLayout.value })

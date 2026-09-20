@@ -103,22 +103,44 @@ class IosBarLayoutPolicyTest {
 
     // endregion
 
-    // region content padding
+    // region edge offset
 
     @Test
-    fun `bar below the safe area claims its height plus the inset`() {
+    fun `bar sits below the safe area inset`() {
         assertEquals(
-            91.dp,
-            iosBarContentPadding(barHeight = 44.dp, safeAreaInset = 47.dp, barCoversSafeArea = false),
+            47.dp,
+            iosBarEdgeOffset(safeAreaInset = 47.dp, barCoversSafeArea = false, minimumOffset = 0.dp),
         )
     }
 
     @Test
-    fun `bar that covers the safe area claims only its own height`() {
+    fun `bar that covers the safe area sits on the host edge`() {
         assertEquals(
-            83.dp,
-            iosBarContentPadding(barHeight = 83.dp, safeAreaInset = 34.dp, barCoversSafeArea = true),
+            0.dp,
+            iosBarEdgeOffset(safeAreaInset = 34.dp, barCoversSafeArea = true, minimumOffset = 0.dp),
         )
+    }
+
+    @Test
+    fun `bar keeps the minimum offset when there is no safe area inset`() {
+        assertEquals(
+            24.dp,
+            iosBarEdgeOffset(safeAreaInset = 0.dp, barCoversSafeArea = false, minimumOffset = 24.dp),
+        )
+    }
+
+    @Test
+    fun `minimum offset is not added on top of a larger safe area inset`() {
+        assertEquals(
+            47.dp,
+            iosBarEdgeOffset(safeAreaInset = 47.dp, barCoversSafeArea = false, minimumOffset = 24.dp),
+        )
+    }
+
+    @Test
+    fun `only the liquid glass top bar floats below the screen edge`() {
+        assertEquals(24.dp, iosTopBarMinimumOffset(isLiquidGlassEnabled = true))
+        assertEquals(0.dp, iosTopBarMinimumOffset(isLiquidGlassEnabled = false))
     }
 
     // endregion
@@ -127,37 +149,36 @@ class IosBarLayoutPolicyTest {
 
     @Test
     fun `estimated layout gives the first frame its padding`() {
-        val layout = IosBarLayout.estimated(
-            cachedBarHeight = 44.dp,
-            safeAreaInset = 47.dp,
-            barCoversSafeArea = false,
-        )
+        val layout = IosBarLayout.estimated(cachedBarHeight = 44.dp, edgeOffset = 47.dp)
 
         assertEquals(91.dp, layout.contentPadding)
     }
 
     @Test
     fun `measurement of a bar that is not laid out yet keeps the estimate`() {
-        val estimated = IosBarLayout.estimated(
-            cachedBarHeight = 44.dp,
-            safeAreaInset = 47.dp,
-            barCoversSafeArea = false,
-        )
-        val notLaidOut = IosBarMeasurement(x = 0.dp, y = 0.dp, width = 0.dp, barHeight = 0.dp, safeAreaInset = 47.dp)
+        val estimated = IosBarLayout.estimated(cachedBarHeight = 44.dp, edgeOffset = 47.dp)
+        val notLaidOut = IosBarMeasurement(x = 0.dp, y = 0.dp, width = 0.dp, barHeight = 0.dp, edgeOffset = 0.dp)
 
-        assertSame(estimated, estimated.measured(notLaidOut, barCoversSafeArea = false))
+        assertSame(estimated, estimated.measured(notLaidOut))
+    }
+
+    @Test
+    fun `measurement of a bar that has a height but no width yet keeps the estimate`() {
+        val estimated = IosBarLayout.estimated(cachedBarHeight = 49.dp, edgeOffset = 34.dp)
+        // Sized by its items, not yet positioned by Auto Layout: still at the host's origin.
+        val notPositioned = IosBarMeasurement(x = 0.dp, y = 0.dp, width = 0.dp, barHeight = 49.dp, edgeOffset = 341.dp)
+
+        assertSame(estimated, estimated.measured(notPositioned))
     }
 
     @Test
     fun `rotating to landscape replaces the portrait padding`() {
-        val portrait = IosBarLayout.estimated(44.dp, 47.dp, barCoversSafeArea = false).measured(
-            IosBarMeasurement(x = 0.dp, y = 47.dp, width = 375.dp, barHeight = 44.dp, safeAreaInset = 47.dp),
-            barCoversSafeArea = false,
+        val portrait = IosBarLayout.estimated(cachedBarHeight = 44.dp, edgeOffset = 47.dp).measured(
+            IosBarMeasurement(x = 0.dp, y = 47.dp, width = 375.dp, barHeight = 44.dp, edgeOffset = 47.dp),
         )
 
         val landscape = portrait.measured(
-            IosBarMeasurement(x = 0.dp, y = 0.dp, width = 812.dp, barHeight = 32.dp, safeAreaInset = 0.dp),
-            barCoversSafeArea = false,
+            IosBarMeasurement(x = 0.dp, y = 0.dp, width = 812.dp, barHeight = 32.dp, edgeOffset = 0.dp),
         )
 
         assertEquals(91.dp, portrait.contentPadding)
@@ -169,11 +190,19 @@ class IosBarLayoutPolicyTest {
         val landscape = IosBarLayout(x = 0.dp, y = 0.dp, width = 812.dp, contentPadding = 32.dp)
 
         val portrait = landscape.measured(
-            IosBarMeasurement(x = 0.dp, y = 47.dp, width = 375.dp, barHeight = 44.dp, safeAreaInset = 47.dp),
-            barCoversSafeArea = false,
+            IosBarMeasurement(x = 0.dp, y = 47.dp, width = 375.dp, barHeight = 44.dp, edgeOffset = 47.dp),
         )
 
         assertEquals(IosBarLayout(x = 0.dp, y = 47.dp, width = 375.dp, contentPadding = 91.dp), portrait)
+    }
+
+    @Test
+    fun `floating liquid glass bar in landscape pushes content below the bar`() {
+        val landscape = IosBarLayout.estimated(cachedBarHeight = 54.dp, edgeOffset = 47.dp).measured(
+            IosBarMeasurement(x = 0.dp, y = 24.dp, width = 874.dp, barHeight = 54.dp, edgeOffset = 24.dp),
+        )
+
+        assertEquals(78.dp, landscape.contentPadding)
     }
 
     // endregion

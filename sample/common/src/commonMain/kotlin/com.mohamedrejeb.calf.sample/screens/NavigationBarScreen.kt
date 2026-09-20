@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -57,6 +59,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
@@ -69,6 +72,23 @@ import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
+
+private val ContentMargin = 16.dp
+
+/**
+ * The scaffold's padding on all four edges plus the screen's own margin. Start and end matter
+ * too: in landscape they keep the content clear of the display cutout.
+ */
+@Composable
+private fun PaddingValues.withContentMargin(): PaddingValues {
+    val layoutDirection = LocalLayoutDirection.current
+    return PaddingValues(
+        start = ContentMargin + calculateStartPadding(layoutDirection),
+        top = ContentMargin + calculateTopPadding(),
+        end = ContentMargin + calculateEndPadding(layoutDirection),
+        bottom = ContentMargin + calculateBottomPadding(),
+    )
+}
 
 @Composable
 private fun HomeTabContent(
@@ -113,12 +133,7 @@ private fun HomeTabContent(
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(
-            top = 16.dp + paddingValues.calculateTopPadding(),
-            start = 16.dp,
-            end = 16.dp,
-            bottom = 16.dp + paddingValues.calculateBottomPadding()
-        ),
+        contentPadding = paddingValues.withContentMargin(),
         modifier = Modifier
             .fillMaxSize()
     ) {
@@ -374,12 +389,7 @@ private fun FavoriteTabContent(
             .fillMaxSize()
         , // iOS background color
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(
-            top = 16.dp + paddingValues.calculateTopPadding(),
-            start = 16.dp,
-            end = 16.dp,
-            bottom = 16.dp + paddingValues.calculateBottomPadding()
-        )
+        contentPadding = paddingValues.withContentMargin(),
     ) {
         item {
             // iOS-style header
@@ -584,12 +594,7 @@ private fun ProfileTabContent(
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(
-            top = 16.dp + paddingValues.calculateTopPadding(),
-            start = 16.dp,
-            end = 16.dp,
-            bottom = 16.dp + paddingValues.calculateBottomPadding()
-        ),
+        contentPadding = paddingValues.withContentMargin(),
         modifier = Modifier
             .fillMaxSize()
     ) {

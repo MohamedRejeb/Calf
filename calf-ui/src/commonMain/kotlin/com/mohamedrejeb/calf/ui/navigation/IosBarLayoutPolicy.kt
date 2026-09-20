@@ -83,27 +83,45 @@ private fun defaultIosBarHeight(key: IosBarHeightKey, isLiquidGlassEnabled: Bool
     }
 
 /**
- * Space the content has to leave for a bar: the bar itself plus the safe-area
- * inset it sits against. A bar that already extends under that inset
- * ([barCoversSafeArea], the Liquid Glass tab bar) includes it in its height.
+ * How far below the host view's top edge `UINavigationController` keeps a Liquid Glass bar when
+ * there is no top safe-area inset (iPhone landscape): its bar sits at `max(safeAreaTop, 24)`.
+ * No public API exposes the value; measured on iOS 26.2 (iPhone 17 and iPhone 16e). Classic
+ * bars are attached to the edge instead.
  */
-internal fun iosBarContentPadding(
-    barHeight: Dp,
+private val LIQUID_GLASS_TOP_BAR_MIN_OFFSET = 24.dp
+
+/** Smallest distance a standalone top bar keeps from the host view's top edge. */
+internal fun iosTopBarMinimumOffset(isLiquidGlassEnabled: Boolean): Dp =
+    if (isLiquidGlassEnabled) LIQUID_GLASS_TOP_BAR_MIN_OFFSET else 0.dp
+
+/**
+ * Distance between the host view's edge and the bar. The bar sits next to the safe-area inset
+ * of its edge, but never closer to the edge than [minimumOffset]. A bar that extends under
+ * the inset ([barCoversSafeArea], the Liquid Glass tab bar) starts at the edge itself.
+ */
+internal fun iosBarEdgeOffset(
     safeAreaInset: Dp,
     barCoversSafeArea: Boolean,
+    minimumOffset: Dp,
 ): Dp =
-    if (barCoversSafeArea) barHeight else barHeight + safeAreaInset
+    if (barCoversSafeArea) 0.dp else maxOf(safeAreaInset, minimumOffset)
 
-/** One reading of the native bar's frame (in its host view) and the inset on the bar's edge. */
+/**
+ * One reading of the native bar's frame in its host view. [edgeOffset] is the measured distance
+ * between the host view's edge and the bar.
+ */
 internal data class IosBarMeasurement(
     val x: Dp,
     val y: Dp,
     val width: Dp,
     val barHeight: Dp,
-    val safeAreaInset: Dp,
+    val edgeOffset: Dp,
 )
 
-/** Where the native bar sits and how much room the Compose content leaves for it. */
+/**
+ * Where the native bar sits and how much room the Compose content leaves for it:
+ * [contentPadding] is everything between the host view's edge and the far side of the bar.
+ */
 @Immutable
 internal data class IosBarLayout(
     val x: Dp,
@@ -112,37 +130,29 @@ internal data class IosBarLayout(
     val contentPadding: Dp,
 ) {
     /**
-     * Layout after a new [measurement]. A bar that UIKit has not laid out yet
-     * measures zero; applying that would drop the estimate and make the
-     * content jump twice, so it is ignored.
+     * Layout after a new [measurement]. A bar that Auto Layout has not placed yet
+     * has no width (its items may already have given it a height); applying that
+     * would drop the estimate and make the content jump twice, so it is ignored.
      */
-    fun measured(measurement: IosBarMeasurement, barCoversSafeArea: Boolean): IosBarLayout =
-        if (measurement.barHeight <= 0.dp)
+    fun measured(measurement: IosBarMeasurement): IosBarLayout =
+        if (measurement.barHeight <= 0.dp || measurement.width <= 0.dp)
             this
         else
             IosBarLayout(
                 x = measurement.x,
                 y = measurement.y,
                 width = measurement.width,
-                contentPadding = iosBarContentPadding(
-                    barHeight = measurement.barHeight,
-                    safeAreaInset = measurement.safeAreaInset,
-                    barCoversSafeArea = barCoversSafeArea,
-                ),
+                contentPadding = measurement.edgeOffset + measurement.barHeight,
             )
 
     companion object {
         /** First-frame layout, before UIKit measured anything. */
-        fun estimated(
-            cachedBarHeight: Dp,
-            safeAreaInset: Dp,
-            barCoversSafeArea: Boolean,
-        ): IosBarLayout =
+        fun estimated(cachedBarHeight: Dp, edgeOffset: Dp): IosBarLayout =
             IosBarLayout(
                 x = 0.dp,
                 y = 0.dp,
                 width = 0.dp,
-                contentPadding = iosBarContentPadding(cachedBarHeight, safeAreaInset, barCoversSafeArea),
+                contentPadding = edgeOffset + cachedBarHeight,
             )
     }
 }
