@@ -4,6 +4,9 @@ plugins {
 }
 
 kotlin {
+    // commonTest runs in the browser, which needs the Skiko runtime bundled by webpack.
+    withBrowserTestBundling()
+
     // calf-navigation reuses calf-ui's iOS bridge helpers, which are @InternalCalfApi.
     sourceSets.all {
         languageSettings.optIn("com.mohamedrejeb.calf.core.InternalCalfApi")
