@@ -209,8 +209,10 @@ val config = SavedStateConfiguration {
         }
     }
 }
-val tabs = rememberAdaptiveTabState(Home, Search, Profile, configuration = config)
+val tabs = rememberAdaptiveTabState<NavKey>(Home, Search, Profile, configuration = config)
 ```
+
+Pass `<NavKey>` explicitly when the tabs are `@Serializable` objects: on iOS and Web the serialization plugin gives them an extra supertype, and the inferred tab type (`NavKey & SerializerFactory`) no longer matches an `AdaptiveTabState<NavKey>` parameter.
 
 ## Platform notes
 

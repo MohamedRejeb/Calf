@@ -1,5 +1,7 @@
 plugins {
     id("compose.multiplatform")
+    // Generates the serializers of the Adaptive Navigation demo's @Serializable NavKeys.
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {

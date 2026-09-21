@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import androidx.savedstate.serialization.SavedStateConfiguration
 import com.mohamedrejeb.calf.navigation.AdaptiveNavDisplay
 import com.mohamedrejeb.calf.navigation.AdaptiveTabDisplay
 import com.mohamedrejeb.calf.navigation.adaptiveNavEntry
@@ -34,6 +35,9 @@ import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonSystemItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
 // Outer stack: the tabs, and a screen pushed over them (sign-out flow).
 @Serializable
@@ -63,6 +67,25 @@ internal data object NavDemoCover : NavKey
 internal data object NavDemoLocked : NavKey
 
 /**
+ * Persists the demo's back stacks across Android configuration changes and
+ * process death. Every [NavKey] that can be on a stack has to be registered.
+ */
+private val NavDemoSavedState = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(NavKey::class) {
+            subclass(NavDemoRoot::class)
+            subclass(NavDemoSignedOut::class)
+            subclass(NavDemoHome::class)
+            subclass(NavDemoExplore::class)
+            subclass(NavDemoSettings::class)
+            subclass(NavDemoDetail::class)
+            subclass(NavDemoCover::class)
+            subclass(NavDemoLocked::class)
+        }
+    }
+}
+
+/**
  * Full-screen showcase for [AdaptiveTabDisplay] and [AdaptiveNavDisplay]. It
  * owns the whole screen: the navigators paint the only bars, so it is not
  * nested inside the sample app's scaffold.
@@ -82,7 +105,7 @@ internal data object NavDemoLocked : NavKey
  */
 @Composable
 fun AdaptiveNavigationDemoScreen(navigateBack: () -> Unit) {
-    val rootStack = rememberAdaptiveNavBackStack(NavDemoRoot)
+    val rootStack = rememberAdaptiveNavBackStack(NavDemoRoot, configuration = NavDemoSavedState)
 
     AdaptiveNavDisplay(
         backStack = rootStack,
@@ -121,7 +144,14 @@ private fun NavDemoTabs(
     onExit: () -> Unit,
     onSignOut: () -> Unit,
 ) {
-    val tabs = rememberAdaptiveTabState(NavDemoHome, NavDemoExplore, NavDemoSettings)
+    // <NavKey>: on Native and JS the serialization plugin adds a supertype to @Serializable
+    // objects, and the inferred tab type would no longer be plain NavKey.
+    val tabs = rememberAdaptiveTabState<NavKey>(
+        NavDemoHome,
+        NavDemoExplore,
+        NavDemoSettings,
+        configuration = NavDemoSavedState,
+    )
     var itemCount by remember { mutableIntStateOf(5) }
 
     AdaptiveTabDisplay(
@@ -199,6 +229,7 @@ private fun NavDemoTabs(
                     itemId = key.itemId,
                     contentPadding = padding,
                     backStack = tabs.backStack,
+                    onPopToRoot = { tabs.popToRoot() },
                 )
             }
 

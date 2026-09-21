@@ -127,6 +127,7 @@ internal fun NavDemoDetailContent(
     itemId: Int,
     contentPadding: PaddingValues,
     backStack: NavBackStack<NavKey>,
+    onPopToRoot: () -> Unit,
 ) {
     val counterViewModel = viewModel(key = "nav-demo-counter") { NavDemoCounterViewModel() }
 
@@ -175,7 +176,7 @@ internal fun NavDemoDetailContent(
             Text("Push this screen again (duplicate entry)")
         }
         OutlinedButton(
-            onClick = { while (backStack.size > 1) backStack.removeAt(backStack.lastIndex) },
+            onClick = onPopToRoot,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text("Pop to root")
