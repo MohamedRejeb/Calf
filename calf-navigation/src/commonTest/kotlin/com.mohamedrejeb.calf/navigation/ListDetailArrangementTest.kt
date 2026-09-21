@@ -161,11 +161,21 @@ class ListDetailArrangementTest {
     }
 
     @Test
-    fun twoPanes_withoutAList_haveNoPlaceholder() {
-        val arrangement = arrangeListDetail(listOf("Home"), ::roleOf, paneCount = 2)
+    fun twoPanes_withoutAList_areNotSplit_everythingTakesTheWideSide() {
+        // A detail needs a list to sit next to. Without one the stack is shown as one full-width
+        // stack: squeezed into the list column next to an empty detail pane it would be unusable.
+        val arrangement = arrangeListDetail(listOf("Home", "Detail1"), ::roleOf, paneCount = 2)
 
-        assertEquals(listOf("Home"), arrangement.primary)
+        assertFalse(arrangement.isSplit)
+        assertTrue(arrangement.primary.isEmpty())
+        assertEquals(listOf("Home", "Detail1"), arrangement.secondary)
         assertNull(arrangement.placeholderList)
+    }
+
+    @Test
+    fun twoPanes_withAList_areSplit_andOnePaneNeverIs() {
+        assertTrue(arrangeListDetail(listOf("List"), ::roleOf, paneCount = 2).isSplit)
+        assertFalse(arrangeListDetail(listOf("List", "Detail1"), ::roleOf, paneCount = 1).isSplit)
     }
 
     @Test

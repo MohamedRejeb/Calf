@@ -62,3 +62,20 @@ internal fun <H> entriesKeptAfterNativePop(
     shown: Set<H>,
     acknowledged: Set<H>,
 ): List<H> = entries.takeWhile { host -> host in shown || host !in acknowledged }
+
+/**
+ * [entriesKeptAfterNativePop] for a split view, whose two columns are navigation controllers that
+ * pop on their own: each side of [partition] is cut by itself, so popping a screen that was pushed
+ * over the list leaves an open detail alone. Only when the list the detail side belongs to is gone
+ * does the detail side go with it.
+ */
+internal fun <H> entriesKeptAfterSplitPop(
+    partition: ListDetailPartition<H>,
+    shown: Set<H>,
+    acknowledged: Set<H>,
+): List<H> {
+    val listSide = entriesKeptAfterNativePop(partition.primary, shown, acknowledged)
+    val list = partition.list ?: return listSide
+    if (list !in listSide) return listSide
+    return listSide + entriesKeptAfterNativePop(partition.secondary, shown, acknowledged)
+}

@@ -80,6 +80,11 @@ internal fun <T> paneSidesOf(
  * the two sides and [compact] is empty. Together they always hold every entry exactly once: a
  * pane count change re-arranges entries and never adds or drops one.
  *
+ * A stack without a list entry is not split even when there is room: it is one stack on the wide
+ * side ([secondary]), and the list side stays empty and hidden. A detail squeezed into the list
+ * column next to an empty detail pane would be unusable.
+ *
+ * @property isSplit whether the two sides are shown next to each other.
  * @property placeholderList the list entry whose placeholder fills the empty detail pane, `null`
  *   when no placeholder is shown.
  */
@@ -87,6 +92,7 @@ internal data class ListDetailArrangement<T>(
     val primary: List<T>,
     val secondary: List<T>,
     val compact: List<T>,
+    val isSplit: Boolean,
     val placeholderList: T?,
 )
 
@@ -101,15 +107,27 @@ internal fun <T> arrangeListDetail(
             primary = emptyList(),
             secondary = emptyList(),
             compact = stack,
+            isSplit = false,
             placeholderList = null,
         )
     }
 
     val partition = partitionListDetail(stack, roleOf)
+    if (partition.list == null) {
+        return ListDetailArrangement(
+            primary = emptyList(),
+            secondary = stack,
+            compact = emptyList(),
+            isSplit = false,
+            placeholderList = null,
+        )
+    }
+
     return ListDetailArrangement(
         primary = partition.primary,
         secondary = partition.secondary,
         compact = emptyList(),
+        isSplit = true,
         placeholderList = partition.list.takeIf { partition.secondary.isEmpty() },
     )
 }

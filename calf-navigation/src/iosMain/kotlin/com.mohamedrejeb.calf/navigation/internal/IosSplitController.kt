@@ -17,6 +17,7 @@ import platform.UIKit.UISplitViewController
 import platform.UIKit.UISplitViewControllerColumn
 import platform.UIKit.UISplitViewControllerDelegateProtocol
 import platform.UIKit.UISplitViewControllerDisplayMode
+import platform.UIKit.UISplitViewControllerDisplayModeButtonVisibility
 import platform.UIKit.UISplitViewControllerStyle
 import platform.UIKit.UIViewController
 import platform.darwin.NSObject
@@ -90,6 +91,12 @@ internal class IosSplitController(
 
     private val deferredDisposal = DeferredEntryDisposal()
 
+    /**
+     * True while the list column is hidden by us because the stack has no list entry. Tracked so that
+     * showing it again only undoes our own hiding, never the user's (the sidebar button, a swipe).
+     */
+    private var isListColumnHiddenForMissingList: Boolean = false
+
     init {
         uiSplitViewController.delegate = splitDelegate
         uiSplitViewController.setViewController(primary.uiNavigationController, forColumn = UISplitViewControllerColumn.UISplitViewControllerColumnPrimary)
@@ -144,6 +151,7 @@ internal class IosSplitController(
             roleOf = { controller -> controller.paneRole.kind },
             paneCount = if (isCollapsed) ONE_PANE else TWO_PANES,
         )
+        if (isCollapsed) releasePlaceholder() else showListColumnOnlyWhenSplit(arrangement.isSplit)
         val targets: List<Pair<IosNavColumn, List<UIViewController>>> =
             if (isCollapsed) {
                 listOf(
@@ -165,6 +173,29 @@ internal class IosSplitController(
         isArranging = false
         // Nothing animates: no didShow is coming for what was just replaced.
         if (animatedColumns == 0) disposeControllersThatLeft()
+    }
+
+    /** The placeholder has no column while collapsed; it is rebuilt when two panes come back. */
+    private fun releasePlaceholder() {
+        placeholder?.second?.let { deferredDisposal.defer(listOf(it)) }
+        placeholder = null
+    }
+
+    /**
+     * Without a list entry the stack is not split: the wide column shows it, the list column hides,
+     * and so does the bar button that would bring an empty list column back.
+     */
+    private fun showListColumnOnlyWhenSplit(isSplit: Boolean) {
+        val listColumn = UISplitViewControllerColumn.UISplitViewControllerColumnPrimary
+        if (!isSplit && !isListColumnHiddenForMissingList) {
+            uiSplitViewController.hideColumn(listColumn)
+            uiSplitViewController.displayModeButtonVisibility = UISplitViewControllerDisplayModeButtonVisibility.UISplitViewControllerDisplayModeButtonVisibilityNever
+            isListColumnHiddenForMissingList = true
+        } else if (isSplit && isListColumnHiddenForMissingList) {
+            uiSplitViewController.displayModeButtonVisibility = UISplitViewControllerDisplayModeButtonVisibility.UISplitViewControllerDisplayModeButtonVisibilityAutomatic
+            uiSplitViewController.showColumn(listColumn)
+            isListColumnHiddenForMissingList = false
+        }
     }
 
     /**
@@ -243,29 +274,34 @@ internal class IosSplitController(
     }
 
     /**
-     * A transition finished. If UIKit removed controllers on its own (back button, edge swipe), the
-     * back stack is cut at the first entry UIKit no longer shows. For a pop in the primary column
-     * that also drops the detail side, which belonged to the list that was just left.
+     * A transition finished. If UIKit removed controllers on its own (back button, edge swipe), they
+     * leave the back stack. The two columns pop on their own, so with two panes each side is cut by
+     * itself ([entriesKeptAfterSplitPop]): popping a screen pushed over the list keeps an open
+     * detail, popping the list takes its detail side with it.
      */
     private fun mirrorNativePops() {
         val shown = visibleColumns().flatMap { it.controllers }.filterIsInstance<EntryHostingController>().toSet()
-        val kept = entriesKeptAfterNativePop(entryControllers.map { it.second }, shown, acknowledged)
-        val remaining = entryControllers.take(kept.size)
-        acknowledged = (acknowledged + shown).intersect(kept.toSet())
-        if (remaining.size == entryControllers.size) return
+        val controllers = entryControllers.map { it.second }
+        val kept = if (isCollapsed) {
+            entriesKeptAfterNativePop(controllers, shown, acknowledged)
+        } else {
+            entriesKeptAfterSplitPop(partitionListDetail(controllers) { it.paneRole.kind }, shown, acknowledged)
+        }.toSet()
+        acknowledged = (acknowledged + shown).intersect(kept)
+        if (kept.size == entryControllers.size) return
 
-        entryControllers.drop(remaining.size).forEach { (_, controller) -> controller.disposeEntry() }
-        entryControllers = remaining
+        val previousKeys = entryControllers.map { it.first }
+        val droppedIndices = entryControllers.indices.filter { entryControllers[it].second !in kept }
+        droppedIndices.forEach { entryControllers[it].second.disposeEntry() }
+        entryControllers = entryControllers.filter { (_, controller) -> controller in kept }
 
-        val keys = remaining.map { it.first }
-        // Trim only if Compose still holds what UIKit kept as a prefix;
-        // otherwise Compose already moved on and the next sync reconciles.
-        if (backStack.size > keys.size && backStack.take(keys.size) == keys) {
-            while (backStack.size > keys.size) {
-                backStack.removeAt(backStack.lastIndex)
-            }
+        // Only if Compose still holds what was on screen; otherwise it already
+        // moved on and the next sync reconciles.
+        if (backStack.toList() == previousKeys) {
+            droppedIndices.asReversed().forEach { backStack.removeAt(it) }
         }
-        // The trimmed stack is what UIKit shows, so its snapshot must no-op.
+        val keys = entryControllers.map { it.first }
+        // What is left is what UIKit shows, so its snapshot must no-op.
         lastSyncedSnapshot = keys
         // The other column may still hold what was cut, or now needs the placeholder.
         arrange(animated = false)
@@ -288,6 +324,7 @@ internal class IosSplitController(
         placeholder?.second?.disposeEntry()
         entryControllers = emptyList()
         acknowledged = emptySet()
+        isListColumnHiddenForMissingList = false
         placeholder = null
         lastSyncedSnapshot = emptyList()
     }
