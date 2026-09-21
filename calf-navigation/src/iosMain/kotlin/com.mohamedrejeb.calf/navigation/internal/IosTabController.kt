@@ -6,10 +6,12 @@ import androidx.compose.runtime.CompositionLocalContext
 import androidx.compose.runtime.State
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import com.mohamedrejeb.calf.navigation.AdaptivePaneRole
 import com.mohamedrejeb.calf.navigation.AdaptiveTab
 import com.mohamedrejeb.calf.navigation.IosTabItem
 import com.mohamedrejeb.calf.navigation.AdaptiveTabState
 import com.mohamedrejeb.calf.navigation.ExperimentalCalfNavigationApi
+import com.mohamedrejeb.calf.navigation.IosSplitViewConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
 import com.mohamedrejeb.calf.ui.navigation.applyTabBarConfiguration
@@ -37,13 +39,21 @@ private const val LIQUID_GLASS_MIN_IOS_VERSION = 26
  *
  * Selection flows both ways: Compose sets `selectedIndex` through [select],
  * and a native tab tap reaches the state through the tab controller delegate.
- * Each tab's stack is mirrored by its own [IosNavController].
+ * Each tab's stack is mirrored by its own [IosStackHost].
+ *
+ * With [listDetail], a tab whose root entry is a list gets an [IosSplitController] instead: the
+ * split view goes *inside* the tab. That is the nesting UIKit adapts: on iPhone Duo the tab bar
+ * joins the detail's bar items in the vertical strip, open and closed. Tabs inside a split view's
+ * primary column keep a horizontal bar over the list and lose it altogether when the split view
+ * collapses. The other tabs stay plain stacks, which would otherwise be squeezed into the narrow
+ * list column on a wide screen.
  */
 @OptIn(ExperimentalCalfNavigationApi::class)
 internal class IosTabController<T : NavKey>(
     private val state: AdaptiveTabState<T>,
     tabs: List<AdaptiveTab<T>>,
     sidebarAdaptable: Boolean,
+    listDetail: Boolean,
     parentLocals: State<CompositionLocalContext>,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
     private val density: Float,
@@ -51,13 +61,23 @@ internal class IosTabController<T : NavKey>(
     val uiTabBarController = UITabBarController()
 
     private val delegate = TabBarControllerDelegate(::onUiKitSelected)
-    private val navControllers: Map<T, IosNavController> = state.tabs.associateWith { tab ->
-        IosNavController(
-            backStack = state.backStackOf(tab),
-            parentLocals = parentLocals,
-            entryProvider = entryProvider,
-            density = density,
-        )
+    private val hosts: Map<T, IosStackHost> = state.tabs.associateWith { tab ->
+        val isListTab = listDetail && entryProvider(tab).adaptiveMetadata.paneRole is AdaptivePaneRole.List
+        if (isListTab) {
+            IosSplitController(
+                backStack = state.backStackOf(tab),
+                parentLocals = parentLocals,
+                entryProvider = entryProvider,
+                density = density,
+            )
+        } else {
+            IosNavController(
+                backStack = state.backStackOf(tab),
+                parentLocals = parentLocals,
+                entryProvider = entryProvider,
+                density = density,
+            )
+        }
     }
     private val defaultTintColor: UIColor = uiTabBarController.tabBar.tintColor
     private val defaultUnselectedItemTintColor: UIColor? = uiTabBarController.tabBar.unselectedItemTintColor
@@ -65,7 +85,7 @@ internal class IosTabController<T : NavKey>(
     init {
         updateTabs(tabs.map { it.iosItem })
         uiTabBarController.setViewControllers(
-            state.tabs.map { navControllers.getValue(it).uiNavigationController },
+            state.tabs.map { hosts.getValue(it).rootViewController },
             animated = false,
         )
         uiTabBarController.delegate = delegate
@@ -77,7 +97,7 @@ internal class IosTabController<T : NavKey>(
     /** Rebuilds the native tab bar items (titles, images, badges), in [AdaptiveTabState.tabs] order. */
     fun updateTabs(items: List<IosTabItem>) {
         items.forEachIndexed { index, item ->
-            navControllers.getValue(state.tabs[index]).uiNavigationController.tabBarItem = item.toUITabBarItem(index, density)
+            hosts.getValue(state.tabs[index]).rootViewController.tabBarItem = item.toUITabBarItem(index, density)
         }
     }
 
@@ -118,17 +138,28 @@ internal class IosTabController<T : NavKey>(
 
     /** Compose → UIKit stack of one tab. */
     fun syncStack(tab: T, snapshot: List<NavKey>) {
-        navControllers.getValue(tab).syncToUiStack(snapshot)
+        hosts.getValue(tab).syncToUiStack(snapshot)
     }
 
-    /** UIKit → Compose: the user tapped a tab. Re-selecting pops natively; the nav host mirrors it. */
+    /** Applies the split view configuration to every list-detail tab. */
+    fun applySplitViewConfiguration(configuration: IosSplitViewConfiguration) {
+        hosts.values.filterIsInstance<IosSplitController>().forEach { it.applyConfiguration(configuration) }
+    }
+
+    /**
+     * UIKit → Compose: the user tapped a tab. Re-selecting a navigation controller pops it natively
+     * and the nav host mirrors that. UIKit has no such rule for a split view, so that pop is ours.
+     */
     private fun onUiKitSelected(selected: UIViewController) {
-        val tab = navControllers.entries.firstOrNull { it.value.uiNavigationController === selected }?.key ?: return
-        if (tab != state.selectedTab) state.selectFromPlatform(tab)
+        val (tab, host) = hosts.entries.firstOrNull { it.value.rootViewController === selected } ?: return
+        when {
+            tab != state.selectedTab -> state.selectFromPlatform(tab)
+            host is IosSplitController -> state.popToRoot(tab)
+        }
     }
 
     fun release() {
-        navControllers.values.forEach { it.release() }
+        hosts.values.forEach { it.release() }
     }
 }
 

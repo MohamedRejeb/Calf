@@ -9,6 +9,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UINavigationController
+import platform.UIKit.UIViewController
 
 /**
  * Hosts a real [UINavigationController] whose `viewControllers` mirror a
@@ -36,17 +37,19 @@ internal class IosNavController(
     private val parentLocals: State<CompositionLocalContext>,
     private val entryProvider: (NavKey) -> NavEntry<NavKey>,
     private val density: Float,
-) {
+) : IosStackHost {
     private val column = IosNavColumn(onDidShow = ::mirrorNativePops)
 
     val uiNavigationController: UINavigationController get() = column.uiNavigationController
+
+    override val rootViewController: UIViewController get() = uiNavigationController
 
     /** Wrapper controllers in stack order. A list, not a map: the same key may appear twice. */
     private var entryControllers: List<Pair<NavKey, EntryHostingController>> = emptyList()
     private var lastSyncedSnapshot: List<NavKey> = emptyList()
 
     /** Makes the UIKit stack match [snapshot], the current Compose back stack. */
-    fun syncToUiStack(snapshot: List<NavKey>) {
+    override fun syncToUiStack(snapshot: List<NavKey>) {
         when (val decision = decideNavChange(lastSyncedSnapshot, snapshot, column.isTransitioning)) {
             is NavChangeDecision.Revert -> {
                 revertBackStack(decision.stack)
@@ -116,7 +119,7 @@ internal class IosNavController(
         lastSyncedSnapshot = keys
     }
 
-    fun release() {
+    override fun release() {
         entryControllers.forEach { (_, controller) -> controller.disposeEntry() }
         entryControllers = emptyList()
         lastSyncedSnapshot = emptyList()

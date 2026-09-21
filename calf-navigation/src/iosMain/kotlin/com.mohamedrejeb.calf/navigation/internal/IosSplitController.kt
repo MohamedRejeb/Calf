@@ -52,8 +52,10 @@ internal class IosSplitController(
     private val parentLocals: State<CompositionLocalContext>,
     private val entryProvider: (NavKey) -> NavEntry<NavKey>,
     private val density: Float,
-) {
+) : IosStackHost {
     val uiSplitViewController = UISplitViewController(style = UISplitViewControllerStyle.UISplitViewControllerStyleDoubleColumn)
+
+    override val rootViewController: UIViewController get() = uiSplitViewController
 
     private val primary = IosNavColumn(onDidShow = ::onColumnDidShow)
     private val secondary = IosNavColumn(onDidShow = ::onColumnDidShow)
@@ -98,7 +100,7 @@ internal class IosSplitController(
     }
 
     /** Makes the columns match [snapshot], the current Compose back stack. */
-    fun syncToUiStack(snapshot: List<NavKey>) {
+    override fun syncToUiStack(snapshot: List<NavKey>) {
         val isTransitioning = isArranging || columns.any { it.isTransitioning }
         when (val decision = decideNavChange(lastSyncedSnapshot, snapshot, isTransitioning)) {
             is NavChangeDecision.Revert -> {
@@ -274,7 +276,7 @@ internal class IosSplitController(
         backStack.addAll(stack)
     }
 
-    fun release() {
+    override fun release() {
         entryControllers.forEach { (_, controller) -> controller.disposeEntry() }
         pendingDisposal.forEach { it.disposeEntry() }
         placeholder?.second?.disposeEntry()
