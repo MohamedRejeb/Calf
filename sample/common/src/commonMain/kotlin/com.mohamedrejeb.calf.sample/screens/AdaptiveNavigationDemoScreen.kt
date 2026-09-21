@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
@@ -29,6 +30,7 @@ import com.mohamedrejeb.calf.navigation.AdaptiveNavDisplay
 import com.mohamedrejeb.calf.navigation.AdaptiveTabDisplay
 import com.mohamedrejeb.calf.navigation.adaptiveNavEntry
 import com.mohamedrejeb.calf.navigation.adaptiveTab
+import com.mohamedrejeb.calf.navigation.rememberAdaptiveListDetailSettings
 import com.mohamedrejeb.calf.navigation.rememberAdaptiveNavBackStack
 import com.mohamedrejeb.calf.navigation.rememberAdaptiveTabState
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
@@ -81,6 +83,9 @@ private val NavDemoSavedState = SavedStateConfiguration {
             subclass(NavDemoDetail::class)
             subclass(NavDemoCover::class)
             subclass(NavDemoLocked::class)
+            subclass(NavDemoInbox::class)
+            subclass(NavDemoMessage::class)
+            subclass(NavDemoAttachment::class)
         }
     }
 }
@@ -102,6 +107,9 @@ private val NavDemoSavedState = SavedStateConfiguration {
  *    tab bar rides the transition and the back swipe (issue #530).
  *  - `iosSidebarAdaptable`: the tab bar becomes a sidebar on iPad and on the
  *    inner display of iPhone Duo.
+ *  - `listDetail`: the Mail tab is one back stack shown as two panes when there
+ *    is room and as a normal push when there is not; see
+ *    `AdaptiveNavigationDemoListDetail.kt`.
  */
 @Composable
 fun AdaptiveNavigationDemoScreen(navigateBack: () -> Unit) {
@@ -148,6 +156,7 @@ private fun NavDemoTabs(
     // objects, and the inferred tab type would no longer be plain NavKey.
     val tabs = rememberAdaptiveTabState<NavKey>(
         NavDemoHome,
+        NavDemoInbox,
         NavDemoExplore,
         NavDemoSettings,
         configuration = NavDemoSavedState,
@@ -164,6 +173,14 @@ private fun NavDemoTabs(
                 iosTitle = "Home",
                 iosImage = UIKitImage.SystemName("house"),
                 iosSelectedImage = UIKitImage.SystemName("house.fill"),
+            ),
+            adaptiveTab(
+                key = NavDemoInbox,
+                icon = { Icon(Icons.Outlined.Email, contentDescription = null) },
+                label = { Text("Mail") },
+                iosTitle = "Mail",
+                iosImage = UIKitImage.SystemName("envelope"),
+                iosSelectedImage = UIKitImage.SystemName("envelope.fill"),
             ),
             adaptiveTab(
                 key = NavDemoExplore,
@@ -185,6 +202,7 @@ private fun NavDemoTabs(
         ),
         modifier = Modifier.fillMaxSize(),
         iosSidebarAdaptable = true,
+        listDetail = rememberAdaptiveListDetailSettings(),
     ) { key ->
         when (key) {
             is NavDemoHome -> adaptiveNavEntry(
@@ -285,7 +303,7 @@ private fun NavDemoTabs(
                 )
             }
 
-            else -> error("Unexpected tab key: $key")
+            else -> navDemoListDetailEntry(key, tabs.backStack) ?: error("Unexpected tab key: $key")
         }
     }
 }
@@ -309,5 +327,8 @@ private fun NavKey.demoLabel(): String =
         is NavDemoDetail -> "Item $itemId"
         is NavDemoCover -> "Cover"
         is NavDemoLocked -> "Locked"
+        is NavDemoInbox -> "Inbox"
+        is NavDemoMessage -> "Message $messageId"
+        is NavDemoAttachment -> "Attachment"
         else -> toString()
     }
