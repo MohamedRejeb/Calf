@@ -119,7 +119,7 @@ private fun NavDemoInboxContent(
         contentPadding = contentPadding,
         modifier = Modifier.fillMaxSize(),
     ) {
-        items(MESSAGE_COUNT) { index ->
+        items(count = MESSAGE_COUNT, key = { index -> index }) { index ->
             val id = index + 1
             ListItem(
                 headlineContent = { Text("Message $id") },

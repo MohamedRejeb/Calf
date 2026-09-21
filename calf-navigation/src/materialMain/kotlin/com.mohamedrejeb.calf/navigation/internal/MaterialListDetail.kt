@@ -55,7 +55,9 @@ internal fun materialListDetail(
     )
 
     val keys = backStack.toList()
-    val roles = keys.associateWith { key -> entryProvider(key).adaptiveMetadata.paneRole }
+    // Built once per recomposition and handed to NavDisplay below, instead of being built twice.
+    val entries = keys.associateWith(entryProvider)
+    val roles = entries.mapValues { (_, entry) -> entry.adaptiveMetadata.paneRole }
     val roleKindOf = { key: NavKey -> roles.getValue(key).kind }
     val sides = paneSidesOf(keys, roleKindOf)
     val listRole = partitionListDetail(keys, roleKindOf).list?.let(roles::get) as? AdaptivePaneRole.List
@@ -64,7 +66,7 @@ internal fun materialListDetail(
     return MaterialListDetail(
         sceneStrategies = listOf(strategy),
         entryProvider = { key ->
-            val entry = entryProvider(key)
+            val entry = entries[key] ?: entryProvider(key)
             when (sides[key]) {
                 PaneSide.List -> entry.withMetadata(key, ListDetailSceneStrategy.listPane(detailPlaceholder = { placeholder() }))
                 PaneSide.Detail -> entry.withMetadata(key, ListDetailSceneStrategy.detailPane())
