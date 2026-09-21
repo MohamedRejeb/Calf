@@ -29,6 +29,7 @@ import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.mohamedrejeb.calf.navigation.internal.materialListDetail
 import com.mohamedrejeb.calf.navigation.internal.MaterialTabScope
 import com.mohamedrejeb.calf.navigation.internal.adaptiveMetadata
 import com.mohamedrejeb.calf.navigation.internal.rememberMaterialTabScopes
@@ -62,6 +63,7 @@ actual fun <T : NavKey> AdaptiveTabDisplay(
     materialColors: NavigationSuiteColors?,
     iosConfiguration: UIKitTabBarConfiguration,
     iosSidebarAdaptable: Boolean,
+    listDetail: AdaptiveListDetailSettings?,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 ) {
     state.requireMatching(tabs)
@@ -114,6 +116,7 @@ actual fun <T : NavKey> AdaptiveTabDisplay(
                     state = state,
                     tab = tab,
                     entryDecorators = entryDecorators,
+                    listDetail = listDetail != null,
                     entryProvider = entryProvider,
                 )
             }
@@ -128,18 +131,32 @@ private fun <T : NavKey> TabContent(
     state: AdaptiveTabState<T>,
     tab: T,
     entryDecorators: List<NavEntryDecorator<NavKey>>?,
+    listDetail: Boolean,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 ) {
     val backStack = state.backStackOf(tab)
+    // A tab without a list entry makes the list-detail scene decline, which leaves a plain stack.
+    val material = if (listDetail) materialListDetail(backStack, entryProvider) else null
     CompositionLocalProvider(LocalViewModelStoreOwner provides scope.viewModelStoreOwner) {
-        NavDisplay(
-            backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            entryDecorators = entryDecorators ?: listOf(
-                rememberSaveableStateHolderNavEntryDecorator(scope.entryStateHolder),
-                rememberViewModelStoreNavEntryDecorator(),
-            ),
-            entryProvider = entryProvider,
+        val decorators = entryDecorators ?: listOf(
+            rememberSaveableStateHolderNavEntryDecorator(scope.entryStateHolder),
+            rememberViewModelStoreNavEntryDecorator(),
         )
+        if (material == null) {
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                entryDecorators = decorators,
+                entryProvider = entryProvider,
+            )
+        } else {
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                entryDecorators = decorators,
+                sceneStrategies = material.sceneStrategies,
+                entryProvider = material.entryProvider,
+            )
+        }
     }
 }

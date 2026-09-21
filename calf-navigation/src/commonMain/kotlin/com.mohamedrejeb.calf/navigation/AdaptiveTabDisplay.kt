@@ -39,6 +39,10 @@ import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration
  * @param iosConfiguration appearance of the native iOS tab bar.
  * @param iosSidebarAdaptable lets the iOS tab bar become a sidebar on wide
  *   displays (iOS 18+). No effect on a compact phone screen.
+ * @param listDetail lays out every tab whose root entry is an [AdaptivePaneRole.List] as
+ *   list-detail, see [AdaptiveListDetailSettings]; the other tabs stay plain stacks. On iOS
+ *   the split view sits inside the tab, so the tab bar stays reachable in both layouts.
+ *   `null` keeps plain stacks everywhere.
  * @param entryProvider builds the entry for any key on any tab's stack; use
  *   [adaptiveNavEntry] so bars are painted natively.
  */
@@ -53,5 +57,6 @@ expect fun <T : NavKey> AdaptiveTabDisplay(
     materialColors: NavigationSuiteColors? = null,
     iosConfiguration: UIKitTabBarConfiguration = UIKitTabBarConfiguration(),
     iosSidebarAdaptable: Boolean = false,
+    listDetail: AdaptiveListDetailSettings? = null,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 )

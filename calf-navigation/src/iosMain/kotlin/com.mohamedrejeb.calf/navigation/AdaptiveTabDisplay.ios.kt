@@ -20,6 +20,7 @@ import androidx.compose.ui.viewinterop.UIKitViewController
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
+import com.mohamedrejeb.calf.core.CalfIosOnlyApi
 import com.mohamedrejeb.calf.navigation.internal.IosTabController
 import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -30,9 +31,11 @@ import kotlinx.cinterop.ExperimentalForeignApi
  * mirrored from Compose; native taps and pops flow back into [state].
  *
  * [entryDecorators], [materialLayoutType] and [materialColors] are Material
- * only and ignored here.
+ * only and ignored here. With [listDetail], tabs whose root entry is a list
+ * are hosted in a `UISplitViewController` inside the tab.
  */
 @ExperimentalCalfNavigationApi
+@OptIn(CalfIosOnlyApi::class)
 @Composable
 actual fun <T : NavKey> AdaptiveTabDisplay(
     state: AdaptiveTabState<T>,
@@ -43,6 +46,7 @@ actual fun <T : NavKey> AdaptiveTabDisplay(
     materialColors: NavigationSuiteColors?,
     iosConfiguration: UIKitTabBarConfiguration,
     iosSidebarAdaptable: Boolean,
+    listDetail: AdaptiveListDetailSettings?,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 ) {
     state.requireMatching(tabs)
@@ -51,11 +55,13 @@ actual fun <T : NavKey> AdaptiveTabDisplay(
     val density = LocalDensity.current.density
     val parentLocals = rememberUpdatedState(currentCompositionLocalContext)
 
-    val host = remember(state) {
+    val isListDetail = listDetail != null
+    val host = remember(state, isListDetail) {
         IosTabController(
             state = state,
             tabs = tabs,
             sidebarAdaptable = iosSidebarAdaptable,
+            listDetail = isListDetail,
             parentLocals = parentLocals,
             entryProvider = { updatedEntryProvider.value(it) },
             density = density,
@@ -66,6 +72,10 @@ actual fun <T : NavKey> AdaptiveTabDisplay(
     LaunchedEffect(host, iosItems) { host.updateTabs(iosItems) }
     LaunchedEffect(host, iosSidebarAdaptable) { host.setSidebarAdaptable(iosSidebarAdaptable) }
     LaunchedEffect(host, iosConfiguration) { host.applyConfiguration(iosConfiguration) }
+    val splitViewConfiguration = listDetail?.iosSplitView
+    LaunchedEffect(host, splitViewConfiguration) {
+        if (splitViewConfiguration != null) host.applySplitViewConfiguration(splitViewConfiguration)
+    }
 
     LaunchedEffect(host) {
         snapshotFlow { state.selectedTab }.collect { tab -> host.select(tab) }

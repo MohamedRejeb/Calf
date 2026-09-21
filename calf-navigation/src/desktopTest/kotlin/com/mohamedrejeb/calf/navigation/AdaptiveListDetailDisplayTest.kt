@@ -152,6 +152,44 @@ class AdaptiveListDetailDisplayTest {
         onNodeWithText("inbox 1").assertIsDisplayed()
     }
 
+    @Test
+    fun `tabs lay out the tab that starts at a list as list-detail and leave the others plain`() = runComposeUiTest {
+        lateinit var state: AdaptiveTabState<NavKey>
+        setContent {
+            state = rememberAdaptiveTabState<NavKey>(Inbox, Home)
+            CompositionLocalProvider(
+                LocalWindowInfo provides FakeWindow(WIDE),
+                LocalDensity provides Density(1f),
+            ) {
+                AdaptiveTabDisplay(
+                    state = state,
+                    tabs = listOf(
+                        adaptiveTab(Inbox, icon = {}, label = { Text("Inbox tab") }),
+                        adaptiveTab(Home, icon = {}, label = { Text("Home tab") }),
+                    ),
+                    listDetail = rememberAdaptiveListDetailSettings(),
+                    entryProvider = ::entryFor,
+                )
+            }
+        }
+        waitForIdle()
+        onNodeWithText("select a message").assertIsDisplayed()
+
+        state.backStack.selectDetail(list = Inbox, detail = Message(3))
+        waitForIdle()
+        onNodeWithText("inbox 0").assertIsDisplayed()
+        onNodeWithText("message 3: 0").assertIsDisplayed()
+
+        state.select(Home)
+        waitForIdle()
+        onNodeWithText("home 0").assertIsDisplayed()
+        onNodeWithText("select a message").assertDoesNotExist()
+
+        state.select(Inbox)
+        waitForIdle()
+        onNodeWithText("message 3: 0").assertIsDisplayed()
+    }
+
     @Composable
     private fun ListDetail(window: FakeWindow, backStack: NavBackStack<NavKey>) {
         CompositionLocalProvider(
@@ -162,23 +200,25 @@ class AdaptiveListDetailDisplayTest {
                 backStack = backStack,
                 modifier = Modifier.fillMaxSize(),
                 listDetail = rememberAdaptiveListDetailSettings(),
-            ) { key ->
-                when (key) {
-                    is Inbox -> adaptiveNavEntry(
-                        key = key,
-                        paneRole = AdaptivePaneRole.List { Text("select a message") },
-                    ) { padding -> Counter("inbox", "inbox", Modifier.padding(padding)) }
-
-                    is Message -> adaptiveNavEntry(key, paneRole = AdaptivePaneRole.Detail) { padding ->
-                        Counter("message ${key.id}:", "message", Modifier.padding(padding))
-                    }
-
-                    is Attachment -> adaptiveNavEntry(key) { padding -> Counter("attachment", "attachment", Modifier.padding(padding)) }
-                    else -> adaptiveNavEntry(key) { padding -> Counter("home", "home", Modifier.padding(padding)) }
-                }
-            }
+                entryProvider = ::entryFor,
+            )
         }
     }
+
+    private fun entryFor(key: NavKey) =
+        when (key) {
+            is Inbox -> adaptiveNavEntry(
+                key = key,
+                paneRole = AdaptivePaneRole.List { Text("select a message") },
+            ) { padding -> Counter("inbox", "inbox", Modifier.padding(padding)) }
+
+            is Message -> adaptiveNavEntry(key, paneRole = AdaptivePaneRole.Detail) { padding ->
+                Counter("message ${key.id}:", "message", Modifier.padding(padding))
+            }
+
+            is Attachment -> adaptiveNavEntry(key) { padding -> Counter("attachment", "attachment", Modifier.padding(padding)) }
+            else -> adaptiveNavEntry(key) { padding -> Counter("home", "home", Modifier.padding(padding)) }
+        }
 
     /**
      * Counts clicks twice. The button label uses saveable state, which also survives being covered
