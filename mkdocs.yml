@@ -65,6 +65,7 @@ nav:
     - 'Toolbar': ui/adaptive-toolbar.md
     - 'Top Bar': ui/adaptive-top-bar.md
   - 'Adaptive Navigation': navigation.md
+  - 'Foldable': foldable.md
   - 'WebView': webview.md
   - 'File Picker': filepicker.md
   - 'Content Sharing': share.md
