@@ -7,4 +7,4 @@ import androidx.compose.runtime.remember
 @OptIn(ExperimentalCalfFoldableApi::class)
 @Composable
 internal actual fun rememberPlatformFoldState(): FoldState =
-    remember { FoldState() }
+    remember { nonIosFoldState() }

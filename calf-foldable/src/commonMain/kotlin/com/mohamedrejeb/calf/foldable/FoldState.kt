@@ -128,3 +128,14 @@ fun FoldState(
         iosHingeAngle = iosHingeAngle,
         iosDebugDumpProvider = { current -> "Calf FoldState with fixed values, not reading the platform.\n$current" },
     )
+
+/**
+ * The state of a platform other than iOS: [snapshot] is updated by the platform's actual, or
+ * stays [FoldSnapshot.NoFold] where there is no fold API at all.
+ */
+internal fun nonIosFoldState(): FoldState =
+    FoldState(
+        initialSnapshot = FoldSnapshot.NoFold,
+        iosHingeAngle = emptyFlow(),
+        iosDebugDumpProvider = { current -> "Calf FoldState: not running on iOS, the ios members keep their empty values.\n$current" },
+    )

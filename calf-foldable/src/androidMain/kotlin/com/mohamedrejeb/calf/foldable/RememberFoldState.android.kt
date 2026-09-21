@@ -18,7 +18,7 @@ import androidx.window.layout.WindowLayoutInfo
 @Composable
 internal actual fun rememberPlatformFoldState(): FoldState {
     val context = LocalContext.current
-    val state = remember { FoldState() }
+    val state = remember { nonIosFoldState() }
 
     LaunchedEffect(context, state) {
         WindowInfoTracker.getOrCreate(context)

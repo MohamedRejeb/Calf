@@ -84,4 +84,12 @@ class FoldStateTest {
 
         assertContains(dump, "posture=Flat")
     }
+
+    @Test
+    fun `debug dump outside iOS says so`() {
+        val dump = nonIosFoldState().iosDebugDump()
+
+        assertContains(dump, "not running on iOS")
+        assertContains(dump, "posture=NoFold")
+    }
 }

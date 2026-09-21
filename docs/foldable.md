@@ -146,7 +146,7 @@ is clearly marked: the name starts with `ios`, and using it needs `@OptIn(CalfIo
 | `iosHorizontalSizeClass`, `iosVerticalSizeClass` | `Unspecified` | UIKit size classes | `Unspecified` |
 | `iosHingeAngle` | never emits | degrees, 0 (shut) to 180 (flat) | never emits |
 | `iosCapabilities` | `Unavailable` | which APIs the running iOS has | `Unavailable` |
-| `iosDebugDump()` | a note that the platform is not read | what iOS exposes and reports | same as Android |
+| `iosDebugDump()` | a note that this is not iOS, plus the snapshot | what iOS exposes and reports | same as Android |
 
 ### The hinge angle
 
