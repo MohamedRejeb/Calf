@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class, ExperimentalComposeApi::class)
+@file:OptIn(ExperimentalForeignApi::class, ExperimentalComposeApi::class, ExperimentalCalfNavigationApi::class)
 
 package com.mohamedrejeb.calf.navigation.internal
 
@@ -17,6 +17,8 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
+import com.mohamedrejeb.calf.navigation.AdaptivePaneRole
+import com.mohamedrejeb.calf.navigation.ExperimentalCalfNavigationApi
 import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.readValue
@@ -71,6 +73,11 @@ internal class EntryHostingController(
 
     /** Read by the host's pop-gesture delegate to honour `iosGestureEnabled`. */
     val gestureEnabled: Boolean get() = metadata.iosGestureEnabled
+
+    /** Read by a split view host to decide which column shows this entry. */
+    val paneRole: AdaptivePaneRole get() = metadata.paneRole
+
+    private var isDisposed: Boolean = false
 
     /**
      * UIKit-measured safe-area insets of this controller's view, exposed to
@@ -302,6 +309,19 @@ internal class EntryHostingController(
     }
 
     /**
+     * Sets the lifecycle from whether the view is on screen. A split view moves controllers between
+     * its columns when it collapses or expands, and UIKit's appearance callbacks are not balanced
+     * around such a move (it logs "Unbalanced calls to begin/end appearance transitions"), so an
+     * entry that is visible afterwards can be left stopped. The host calls this once the move has
+     * settled.
+     */
+    fun refreshLifecycle() {
+        if (isDisposed) return
+        val isOnScreen = isViewLoaded() && view.window != null
+        if (isOnScreen) entryScope.markStarted() else entryScope.markStopped()
+    }
+
+    /**
      * Tears the entry down. Idempotent: called from `viewDidDisappear` after a
      * native pop, and by the host for entries that leave the stack without
      * ever disappearing (dropped from the middle, popped while covered, or the
@@ -309,6 +329,7 @@ internal class EntryHostingController(
      * `ViewModelStore` would never be cleared.
      */
     fun disposeEntry() {
+        isDisposed = true
         entryScope.markDestroyed()
         if (isViewLoaded()) {
             cleanupChildren()

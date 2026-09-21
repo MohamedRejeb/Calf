@@ -18,13 +18,17 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
+import com.mohamedrejeb.calf.core.CalfIosOnlyApi
 import com.mohamedrejeb.calf.navigation.internal.IosNavController
+import com.mohamedrejeb.calf.navigation.internal.IosSplitController
 import kotlinx.cinterop.ExperimentalForeignApi
 
 /**
  * iOS actual: hosts a real `UINavigationController` inside the composable via
- * [UIKitViewController]. Each entry in [backStack] becomes a child view
- * controller; mutating the back stack triggers UIKit's native push/pop.
+ * [UIKitViewController], or with [listDetail] a real `UISplitViewController`
+ * whose columns are navigation controllers. Each entry in [backStack] becomes
+ * a child view controller; mutating the back stack triggers UIKit's native
+ * push/pop.
  *
  * [onBack] is unused here: UIKit performs pops itself and the host trims the
  * back stack to match. [entryDecorators] are not applied either; the native
@@ -38,6 +42,19 @@ actual fun AdaptiveNavDisplay(
     onBack: () -> Unit,
     entryDecorators: List<NavEntryDecorator<NavKey>>,
     listDetail: AdaptiveListDetailSettings?,
+    entryProvider: (NavKey) -> NavEntry<NavKey>,
+) {
+    if (listDetail == null) {
+        StackDisplay(backStack, modifier, entryProvider)
+    } else {
+        SplitDisplay(backStack, modifier, listDetail, entryProvider)
+    }
+}
+
+@Composable
+private fun StackDisplay(
+    backStack: NavBackStack<NavKey>,
+    modifier: Modifier,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 ) {
     val updatedEntryProvider = rememberUpdatedState(entryProvider)
@@ -62,11 +79,49 @@ actual fun AdaptiveNavDisplay(
     UIKitViewController(
         factory = { host.uiNavigationController },
         modifier = modifier,
-        properties = UIKitInteropProperties(
-            isInteractive = true,
-            isNativeAccessibilityEnabled = true,
-        ),
+        properties = NativeHostProperties,
     )
 
     DisposableEffect(host) { onDispose { host.release() } }
 }
+
+@OptIn(CalfIosOnlyApi::class)
+@Composable
+private fun SplitDisplay(
+    backStack: NavBackStack<NavKey>,
+    modifier: Modifier,
+    listDetail: AdaptiveListDetailSettings,
+    entryProvider: (NavKey) -> NavEntry<NavKey>,
+) {
+    val updatedEntryProvider = rememberUpdatedState(entryProvider)
+    val density = LocalDensity.current.density
+    val parentLocals = rememberUpdatedState(currentCompositionLocalContext)
+
+    val host = remember(backStack) {
+        IosSplitController(
+            backStack = backStack,
+            parentLocals = parentLocals,
+            entryProvider = { updatedEntryProvider.value(it) },
+            density = density,
+        )
+    }
+
+    val configuration = listDetail.iosSplitView
+    LaunchedEffect(host, configuration) { host.applyConfiguration(configuration) }
+    LaunchedEffect(host) {
+        snapshotFlow { backStack.toList() }.collect { snapshot -> host.syncToUiStack(snapshot) }
+    }
+
+    UIKitViewController(
+        factory = { host.uiSplitViewController },
+        modifier = modifier,
+        properties = NativeHostProperties,
+    )
+
+    DisposableEffect(host) { onDispose { host.release() } }
+}
+
+private val NativeHostProperties = UIKitInteropProperties(
+    isInteractive = true,
+    isNativeAccessibilityEnabled = true,
+)
