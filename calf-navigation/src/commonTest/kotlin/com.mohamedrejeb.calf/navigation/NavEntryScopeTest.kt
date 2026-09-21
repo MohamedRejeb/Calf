@@ -66,4 +66,17 @@ class NavEntryScopeTest {
 
         assertEquals(Lifecycle.State.DESTROYED, scope.lifecycle.currentState)
     }
+
+    @Test
+    fun `starting a destroyed scope is ignored`() {
+        // UIKit can still send viewDidAppear to a controller whose entry was torn down in the same
+        // turn; the lifecycle registry throws on DESTROYED -> RESUMED.
+        val scope = NavEntryScope()
+        scope.markStarted()
+        scope.markDestroyed()
+
+        scope.markStarted()
+
+        assertEquals(Lifecycle.State.DESTROYED, scope.lifecycle.currentState)
+    }
 }

@@ -46,3 +46,19 @@ internal fun <K, H> reconcileNavStack(
     val dropped = reusable.values.flatten()
     return NavStackDiff(stack = stack, dropped = dropped)
 }
+
+/**
+ * The entries that stay after UIKit reported, at the end of a transition, which hosts it [shown]:
+ * the stack is cut at the first host UIKit dropped on its own (back button, edge swipe, pop to
+ * root).
+ *
+ * A host only counts as dropped if UIKit had it before, that is if it was [acknowledged] by an
+ * earlier report. A navigation controller that is not on screen defers `setViewControllers` and
+ * still reports its old stack meanwhile, so a push it has not taken up yet must not be read as a
+ * pop: that tore down the entry being pushed.
+ */
+internal fun <H> entriesKeptAfterNativePop(
+    entries: List<H>,
+    shown: Set<H>,
+    acknowledged: Set<H>,
+): List<H> = entries.takeWhile { host -> host in shown || host !in acknowledged }

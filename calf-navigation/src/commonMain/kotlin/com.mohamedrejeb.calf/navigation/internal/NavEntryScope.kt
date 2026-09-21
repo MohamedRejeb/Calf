@@ -45,12 +45,17 @@ internal class NavEntryScope :
     override val savedStateRegistry: SavedStateRegistry get() =
         savedStateRegistryController.savedStateRegistry
 
-    /** Called from `EntryHostingController.viewDidAppear`. */
+    /**
+     * Called from `EntryHostingController.viewDidAppear`. Ignored once destroyed: UIKit can still
+     * report an appearance for a controller whose entry was torn down in the same turn, and the
+     * registry throws on `DESTROYED` → `RESUMED`.
+     */
     fun markStarted() {
+        if (lifecycleRegistry.currentState == Lifecycle.State.DESTROYED) return
         lifecycleRegistry.currentState = Lifecycle.State.RESUMED
     }
 
-    /** Called from `EntryHostingController.viewDidDisappear` when the VC is *not* permanently popped. */
+    /** Called from `EntryHostingController.viewDidDisappear`: covered, or on its way out. Ignored once destroyed. */
     fun markStopped() {
         if (lifecycleRegistry.currentState != Lifecycle.State.DESTROYED) {
             lifecycleRegistry.currentState = Lifecycle.State.CREATED
