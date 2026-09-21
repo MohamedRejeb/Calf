@@ -1,10 +1,10 @@
 package com.mohamedrejeb.calf.ui.navigation
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.RememberObserver
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,8 +66,8 @@ private class IosBarLayoutProbeView(
 /**
  * Adds [barView] to the hosting view controller's view, pinned to [edge], and
  * keeps the returned layout in sync with UIKit for as long as the caller stays
- * in the composition. The bar's content padding is mirrored into
- * [contentPaddingState] for [AdaptiveScaffold].
+ * in the composition. What the bar claims from the content is published to
+ * [LocalIosNativeBarInsets] for [AdaptiveScaffold].
  *
  * @param barCoversSafeArea the bar extends under the safe-area inset of its
  *   edge instead of sitting next to it.
@@ -81,13 +81,14 @@ internal fun rememberIosBarLayout(
     edge: IosBarEdge,
     kind: IosBarKind,
     barCoversSafeArea: Boolean,
-    contentPaddingState: MutableState<PaddingValues>,
     minimumEdgeOffset: Dp = 0.dp,
 ): State<IosBarLayout> {
     val hostView = LocalUIViewController.current.view
     val currentKind by rememberUpdatedState(kind)
+    val nativeBarInsetsState = LocalIosNativeBarInsets.current
+    val contribution = remember(nativeBarInsetsState) { IosBarContribution(nativeBarInsetsState) }
 
-    val layoutState = remember(barView, hostView, edge, barCoversSafeArea, minimumEdgeOffset) {
+    val layoutState = remember(barView, hostView, edge, barCoversSafeArea, minimumEdgeOffset, contribution) {
         val estimatedLayout = IosBarLayout.estimated(
             cachedBarHeight = IosBarHeightCache.heightFor(hostView.barHeightKey(kind)),
             edgeOffset = iosBarEdgeOffset(
@@ -98,17 +99,11 @@ internal fun rememberIosBarLayout(
         )
         // Published while composing, not from an effect: the scaffold composes its content
         // after its bars, so the content's very first frame already has this padding.
-        contentPaddingState.value = edge.paddingValues(estimatedLayout.contentPadding)
+        contribution.publish(edge.insets(estimatedLayout.contentPadding))
         mutableStateOf(estimatedLayout)
     }
 
-    DisposableEffect(layoutState, contentPaddingState) {
-        // The padding state belongs to the scaffold and outlives this bar. A bar that this one
-        // replaces is disposed after this one composed, so it must not wipe what this one wrote:
-        // publish again now that the old bar is gone, and only ever clear a value of our own.
-        var publishedPadding = edge.paddingValues(layoutState.value.contentPadding)
-        contentPaddingState.value = publishedPadding
-
+    DisposableEffect(layoutState, contribution) {
         val probeView = IosBarLayoutProbeView(
             onLayoutChanged = {
                 val measurement = barView.measureIn(hostView, edge)
@@ -116,8 +111,7 @@ internal fun rememberIosBarLayout(
 
                 val measuredLayout = layoutState.value.measured(measurement)
                 layoutState.value = measuredLayout
-                publishedPadding = edge.paddingValues(measuredLayout.contentPadding)
-                contentPaddingState.value = publishedPadding
+                contribution.publish(edge.insets(measuredLayout.contentPadding))
             },
         ).apply {
             translatesAutoresizingMaskIntoConstraints = false
@@ -133,13 +127,34 @@ internal fun rememberIosBarLayout(
         onDispose {
             probeView.removeFromSuperview()
             barView.removeFromSuperview()
-            if (contentPaddingState.value == publishedPadding) {
-                contentPaddingState.value = PaddingValues()
-            }
         }
     }
 
     return layoutState
+}
+
+/**
+ * One bar's entry in its scaffold's [IosNativeBarInsets], and the key of that entry. The insets
+ * belong to the scaffold and outlive the bar, so the entry is withdrawn when the bar leaves the
+ * composition, also when the composition that first published it is abandoned.
+ */
+private class IosBarContribution(
+    private val nativeBarInsetsState: MutableState<IosNativeBarInsets>,
+) : RememberObserver {
+
+    fun publish(insets: IosBarEdgeInsets) {
+        nativeBarInsetsState.value = nativeBarInsetsState.value.with(barKey = this, insets = insets)
+    }
+
+    private fun withdraw() {
+        nativeBarInsetsState.value = nativeBarInsetsState.value.without(barKey = this)
+    }
+
+    override fun onRemembered() = Unit
+
+    override fun onForgotten() = withdraw()
+
+    override fun onAbandoned() = withdraw()
 }
 
 /**
@@ -238,10 +253,10 @@ private fun barEdgeConstraints(
     }
 }
 
-private fun IosBarEdge.paddingValues(contentPadding: Dp): PaddingValues =
+private fun IosBarEdge.insets(contentPadding: Dp): IosBarEdgeInsets =
     when (this) {
-        IosBarEdge.Top -> PaddingValues(top = contentPadding)
-        IosBarEdge.Bottom -> PaddingValues(bottom = contentPadding)
+        IosBarEdge.Top -> IosBarEdgeInsets(top = contentPadding)
+        IosBarEdge.Bottom -> IosBarEdgeInsets(bottom = contentPadding)
     }
 
 private fun UIView.barHeightKey(kind: IosBarKind): IosBarHeightKey =

@@ -44,10 +44,6 @@ actual fun AdaptiveNavigationBar(
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
 
-    // Write the measured tab bar height to the CompositionLocal so AdaptiveScaffold
-    // can automatically adjust content padding on iOS.
-    val iosTabBarPaddingState = LocalIosTabBarPadding.current
-
     val tabBarView = remember {
         UITabBar().apply {
             translatesAutoresizingMaskIntoConstraints = false
@@ -86,7 +82,6 @@ actual fun AdaptiveNavigationBar(
         edge = IosBarEdge.Bottom,
         kind = IosBarKind.TabBar,
         barCoversSafeArea = isLiquidGlassEnabled,
-        contentPaddingState = iosTabBarPaddingState,
     )
 
     IosBarPlaceholder(layout = { tabBarLayout.value })

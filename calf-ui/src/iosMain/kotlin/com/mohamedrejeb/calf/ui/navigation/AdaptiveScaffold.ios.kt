@@ -1,16 +1,11 @@
 package com.mohamedrejeb.calf.ui.navigation
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -35,12 +30,10 @@ actual fun AdaptiveScaffold(
     content: @Composable ((PaddingValues) -> Unit)
 ) {
     val backdrop = LocalBackdrop.current ?: rememberLayerBackdrop()
-    val iosTabBarPaddingState = remember { mutableStateOf(PaddingValues()) }
-    val iosTopBarPaddingState = remember { mutableStateOf(PaddingValues()) }
+    val nativeBarInsetsState = remember { mutableStateOf(IosNativeBarInsets()) }
 
     CompositionLocalProvider(
-        LocalIosTabBarPadding provides iosTabBarPaddingState,
-        LocalIosTopBarPadding provides iosTopBarPaddingState,
+        LocalIosNativeBarInsets provides nativeBarInsetsState,
         LocalBackdrop provides backdrop
     ) {
         Scaffold(
@@ -54,29 +47,13 @@ actual fun AdaptiveScaffold(
             contentColor = contentColor,
             contentWindowInsets = contentWindowInsets,
         ) { scaffoldPadding ->
-            val iosTabBarPadding = iosTabBarPaddingState.value
-            val layoutDirection = LocalLayoutDirection.current
-
-            // Merge scaffold padding with the native iOS bar padding.
-            // The native UITabBar/UINavigationBar heights replace scaffold's
-            // bottom/top padding when present, since the bars are added as
-            // native UIKit subviews and are not measured by the Compose Scaffold layout.
-            val iosTopBarPadding = iosTopBarPaddingState.value
-            val iosBottomPadding = iosTabBarPadding.calculateBottomPadding()
-            val iosTopPadding = iosTopBarPadding.calculateTopPadding()
-
-            val animatedTopPadding by animateDpAsState(
-                targetValue = maxOf(scaffoldPadding.calculateTopPadding(), iosTopPadding),
-            )
-            val animatedBottomPadding by animateDpAsState(
-                targetValue = maxOf(scaffoldPadding.calculateBottomPadding(), iosBottomPadding),
-            )
-
-            val mergedPadding = PaddingValues(
-                start = scaffoldPadding.calculateStartPadding(layoutDirection),
-                top = animatedTopPadding,
-                end = scaffoldPadding.calculateEndPadding(layoutDirection),
-                bottom = animatedBottomPadding,
+            // The native UINavigationBar / UITabBar are UIKit subviews the Compose Scaffold never
+            // measures, so on each of the four edges the larger of the two claims wins.
+            // Not animated: UIKit moves the bars on its own clock (rotation, fold), and a padding
+            // that eases in on Compose's clock leaves the content under the bar meanwhile.
+            val mergedPadding = scaffoldPadding.withNativeBarInsets(
+                insets = nativeBarInsetsState.value.total,
+                layoutDirection = LocalLayoutDirection.current,
             )
 
             content(mergedPadding)

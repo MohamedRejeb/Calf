@@ -50,10 +50,6 @@ actual fun AdaptiveTopBar(
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
 
-    // Write the measured navigation bar height to the CompositionLocal so AdaptiveScaffold
-    // can automatically adjust content padding on iOS.
-    val iosTopBarPaddingState = LocalIosTopBarPadding.current
-
     val navBarView = remember {
         UINavigationBar().apply {
             translatesAutoresizingMaskIntoConstraints = false
@@ -83,8 +79,8 @@ actual fun AdaptiveTopBar(
     }
 
     // Pins the bar under the status bar and re-measures it whenever UIKit lays it out again
-    // (rotation, large title, safe-area change). The measured height goes to the
-    // CompositionLocal above, so AdaptiveScaffold keeps the content below the bar.
+    // (rotation, large title, safe-area change). What it claims is published to
+    // LocalIosNativeBarInsets, so AdaptiveScaffold keeps the content below the bar.
     val navBarLayout = rememberIosBarLayout(
         barView = navBarView,
         edge = IosBarEdge.Top,
@@ -93,7 +89,6 @@ actual fun AdaptiveTopBar(
         else
             IosBarKind.NavigationBar,
         barCoversSafeArea = false,
-        contentPaddingState = iosTopBarPaddingState,
         // With no status bar above it (iPhone landscape) a Liquid Glass bar floats below the
         // screen edge, like UINavigationController's does.
         minimumEdgeOffset = iosTopBarMinimumOffset(isLiquidGlassEnabled),
