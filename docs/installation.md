@@ -28,6 +28,9 @@ Add the following dependencies to your module `build.gradle.kts` file:
 // For Adaptive UI components
 api("com.mohamedrejeb.calf:calf-ui:{{ calf_version }}")
 
+// For Adaptive Navigation (Navigation 3 with native iOS stacks and tabs)
+implementation("com.mohamedrejeb.calf:calf-navigation:{{ calf_version }}")
+
 // For WebView
 implementation("com.mohamedrejeb.calf:calf-webview:{{ calf_version }}")
 

@@ -61,6 +61,12 @@ fun MyScreen() {
 | `iosTrailingItems`   | The list of bar button items on the trailing side of the iOS navigation bar. See `UIKitUIBarButtonItem`.         |
 | `iosConfiguration`   | Configuration for the iOS UINavigationBar appearance. See `UIKitNavigationBarConfiguration`.                     |
 
+## Content padding on iOS
+
+On iOS the bar is a native `UINavigationBar` that Compose never measures. Inside an `AdaptiveScaffold`, the bar reports the room it takes and the scaffold adds it to the `PaddingValues` it hands to `content`, so apply that padding as you would with a Material `Scaffold`.
+
+The padding follows the bar: it is updated when the device rotates, when the safe area changes (iPad Split View, a foldable changing pose) and when the bar's height changes. Side insets are part of it, so content also stays clear of the camera housing in landscape. The change is applied in one step, not animated, because UIKit moves the bar on its own clock.
+
 ## iOS Configuration
 
 You can customize the iOS navigation bar appearance using `UIKitNavigationBarConfiguration`:

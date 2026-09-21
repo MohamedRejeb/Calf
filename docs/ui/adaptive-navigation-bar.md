@@ -57,6 +57,10 @@ fun MyNavigationBar() {
 | `iosConfiguration`   | Configuration for the iOS UITabBar appearance (item tint colors, translucency). See `UIKitTabBarConfiguration`. |
 | `content`            | The content of the navigation bar on Material platforms, typically `NavigationBarItem`s within a `RowScope`.  |
 
+## Content padding on iOS
+
+On iOS the bar is a native `UITabBar` that Compose never measures. Inside an `AdaptiveScaffold`, the bar reports the room it takes and the scaffold adds it to the bottom of the `PaddingValues` it hands to `content`. The padding is updated when the device rotates and when the safe area changes. See [Top Bar](adaptive-top-bar.md#content-padding-on-ios).
+
 ## iOS Configuration
 
 You can customize the iOS tab bar appearance using `UIKitTabBarConfiguration`:

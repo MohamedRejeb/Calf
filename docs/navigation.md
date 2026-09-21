@@ -224,6 +224,86 @@ val tabs = rememberAdaptiveTabState(Home, Search, Profile, configuration = confi
 - iOS 26's tab bar minimize-on-scroll needs a `UIScrollView` and does not trigger with Compose content.
 - Deep links are not handled by the displays; drive the back stacks yourself.
 
+## API reference
+
+Everything below needs `@OptIn(ExperimentalCalfNavigationApi::class)`.
+
+### `rememberAdaptiveNavBackStack`
+
+| Parameter | Description |
+|---|---|
+| `vararg startEntries` | The keys the stack starts with; the last one is the screen shown first. |
+| `configuration` | `SavedStateConfiguration` used to persist the stack. `null` (default): the stack survives recomposition only. |
+
+### `AdaptiveNavDisplay`
+
+| Parameter | Description |
+|---|---|
+| `backStack` | The Nav3 back stack to render. Add and remove keys to navigate. |
+| `modifier` | Modifier for the display. |
+| `onBack` | Called for a back event on Material platforms. Default: removes the last key. Not used on iOS, where UIKit pops and the stack follows. |
+| `entryDecorators` | Nav3 entry decorators. Default: saveable state + per-entry ViewModel store. Not applied on iOS. |
+| `entryProvider` | Maps a key to its entry. Build entries with `adaptiveNavEntry`. |
+
+### `adaptiveNavEntry`
+
+| Parameter | Description |
+|---|---|
+| `key` | The `NavKey` this entry renders. |
+| `title`, `navigationIcon`, `actions` | Material `TopAppBar` slots. Ignored on iOS. |
+| `expandedHeight`, `windowInsets`, `colors`, `scrollBehavior` | Material `TopAppBar` overrides. `null` (default) keeps Material's defaults. Ignored on iOS. |
+| `largeTitle` | `LargeTopAppBar` on Material, a large `UINavigationBar` title on iOS. Default `false`. |
+| `iosTitle` | Title of the native navigation bar. |
+| `iosBackTitle` | Title of the back button shown by the *next* screen. `null` (default): UIKit's default. |
+| `iosLeadingItems`, `iosTrailingItems` | Native bar button items. |
+| `iosConfiguration` | Native bar appearance (`UIKitNavigationBarConfiguration`). |
+| `barShown` | Shows the top bar. Default `true`. |
+| `tabBarShown` | Inside `AdaptiveTabDisplay`: keeps the tab bar while this entry is on top. Default `true`. |
+| `iosGestureEnabled` | Allows the interactive swipe back, both the edge swipe and iOS 26's content swipe. Default `true`. |
+| `content` | The screen. Apply the `PaddingValues` it receives. |
+
+### `rememberAdaptiveTabState` and `AdaptiveTabState`
+
+| Parameter | Description |
+|---|---|
+| `vararg tabs` | The tab keys in bar order. Distinct, at least one. Each is the root of its own stack. |
+| `startTab` | The tab selected first, and the one Android's back returns to. Default: the first tab. |
+| `configuration` | Persists every tab's stack, as for `rememberAdaptiveNavBackStack`. The selected tab is always saved. |
+
+| Member | Description |
+|---|---|
+| `tabs`, `startTab` | What the state was created with. |
+| `selectedTab` | The selected tab. |
+| `backStack` | The selected tab's stack. |
+| `backStackOf(tab)` | The stack of any tab. |
+| `select(tab)` | Selects a tab; selecting the selected tab pops it to its root. |
+| `popToRoot(tab)` | Trims a tab's stack to its root. Default: the selected tab. |
+
+If the tab list changes while the state is remembered, the selection restarts from `startTab`.
+
+### `adaptiveTab`
+
+| Parameter | Description |
+|---|---|
+| `key` | The tab's key; must be one of the state's tabs. |
+| `icon`, `label`, `alwaysShowLabel` | Material navigation item slots. `label` defaults to `null`, `alwaysShowLabel` to `true`. |
+| `badge` | Badge text on both platforms. `null` (default): no badge. |
+| `iosTitle`, `iosImage`, `iosSelectedImage` | The native `UITabBarItem`. |
+
+### `AdaptiveTabDisplay`
+
+| Parameter | Description |
+|---|---|
+| `state` | The `AdaptiveTabState`. |
+| `tabs` | One `adaptiveTab` per state tab, in the same order. |
+| `modifier` | Modifier for the display. |
+| `entryDecorators` | Nav3 entry decorators for every tab's stack. `null` (default): saveable state + per-entry ViewModel store, scoped per tab. Not applied on iOS. |
+| `materialLayoutType` | Forces bottom bar, rail or drawer. `null` (default): chosen from the window size. |
+| `materialColors` | `NavigationSuiteColors`. `null` (default): Material's defaults. |
+| `iosConfiguration` | Native tab bar appearance (`UIKitTabBarConfiguration`). |
+| `iosSidebarAdaptable` | iOS 18+: lets the tab bar become a sidebar on wide displays. Default `false`. |
+| `entryProvider` | Maps a key to its entry, for every tab. |
+
 ## Relationship to `AdaptiveNavHost`
 
 The older string-route `AdaptiveNavHost` / `AdaptiveNavHostController` API is still available and unchanged. It will be deprecated in favor of `AdaptiveNavDisplay` once the new API stabilizes.
