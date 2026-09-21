@@ -6,6 +6,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
@@ -103,7 +104,16 @@ fun <T : NavKey> rememberAdaptiveTabState(
     configuration: SavedStateConfiguration? = null,
 ): AdaptiveTabState<T> {
     val tabList = tabs.toList()
-    val selectedIndex = rememberSaveable { mutableIntStateOf(tabList.indexOf(startTab)) }
+    val startIndex = tabList.indexOf(startTab)
+    // Tied to the tab list: an index saved for another list (a tab removed at runtime, or before
+    // the process was restored) may be out of range, so the selection restarts from startTab.
+    val selectedIndex = rememberSaveable(
+        tabList,
+        saver = Saver(
+            save = { it.intValue },
+            restore = { saved -> mutableIntStateOf(if (saved in tabList.indices) saved else startIndex) },
+        ),
+    ) { mutableIntStateOf(startIndex) }
     val backStacks = tabList.associateWith { tab ->
         key(tab) { rememberAdaptiveNavBackStack(tab, configuration = configuration) }
     }

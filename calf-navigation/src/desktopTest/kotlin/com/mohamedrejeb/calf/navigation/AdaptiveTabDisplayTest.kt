@@ -109,6 +109,23 @@ class AdaptiveTabDisplayTest {
         onNodeWithText("Search tab").assertIsDisplayed()
     }
 
+    @Test
+    fun `removing the selected tab falls back to the start tab`() = runComposeUiTest {
+        var tabs by mutableStateOf(listOf<NavKey>(Home, Search))
+        lateinit var state: AdaptiveTabState<NavKey>
+        setContent {
+            state = rememberAdaptiveTabState(*tabs.toTypedArray(), startTab = Home)
+        }
+        waitForIdle()
+        state.select(Search)
+        waitForIdle()
+
+        tabs = listOf(Home)
+        waitForIdle()
+
+        assertEquals(Home, state.selectedTab)
+    }
+
     @Composable
     private fun Tabs(state: AdaptiveTabState<NavKey>) {
         val owner = remember {
