@@ -108,7 +108,7 @@ internal class IosNavController(
 
     /** Makes the UIKit stack match [snapshot], the current Compose back stack. */
     fun syncToUiStack(snapshot: List<NavKey>) {
-        when (val decision = decideNavChange(lastSyncedSnapshot, snapshot, isTransitioning, allowPops = false)) {
+        when (val decision = decideNavChange(lastSyncedSnapshot, snapshot, isTransitioning)) {
             is NavChangeDecision.Revert -> {
                 revertBackStack(decision.stack)
                 return
