@@ -72,6 +72,7 @@ compose-material3 = { group = "org.jetbrains.compose.material3", name = "materia
 compose-material3-adaptive-navigation-suite = { group = "org.jetbrains.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "material3" }
 compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "compose" }
 compose-material3-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "material3-adaptive" }
+compose-material3-adaptive-navigation3 = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-navigation3", version.ref = "material3-adaptive" }
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
 
 # Navigation

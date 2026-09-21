@@ -20,10 +20,18 @@ kotlin {
         api(libs.jetbrains.savedstate)
         api(libs.compose.material3.adaptive.navigation.suite)
         api(projects.calfUi)
-        implementation(projects.calfCore)
+        // api: @CalfIosOnlyApi is part of the public list-detail API.
+        api(projects.calfCore)
         implementation(libs.compose.foundation)
         implementation(libs.compose.material3)
         implementation(libs.compose.ui.backhandler)
+    }
+
+    // Material 3's list-detail scene for Navigation 3. iOS uses a UISplitViewController instead.
+    sourceSets.named("materialMain") {
+        dependencies {
+            implementation(libs.compose.material3.adaptive.navigation3)
+        }
     }
 
     sourceSets.commonTest.dependencies {
