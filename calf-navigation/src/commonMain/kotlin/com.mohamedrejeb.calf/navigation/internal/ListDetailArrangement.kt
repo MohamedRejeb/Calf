@@ -48,6 +48,30 @@ internal fun <T> partitionListDetail(
     )
 }
 
+/** The pane a key is shown in while two panes are visible. */
+internal enum class PaneSide { List, Detail }
+
+/**
+ * The pane of every key of [stack], for a host that is told about entries one key at a time (the
+ * Material scene reads a role from each entry's metadata).
+ *
+ * Entries below the first list entry have no side, and a stack without a list entry has none at
+ * all: such entries are shown full screen. A key that is on both sides counts as detail, the side
+ * of its topmost occurrence.
+ */
+internal fun <T> paneSidesOf(
+    stack: List<T>,
+    roleOf: (T) -> PaneRoleKind,
+): Map<T, PaneSide> {
+    val partition = partitionListDetail(stack, roleOf)
+    if (partition.list == null) return emptyMap()
+
+    val firstList = partition.primary.indexOfFirst { roleOf(it) == PaneRoleKind.List }
+    val listSide = partition.primary.drop(firstList).associateWith { PaneSide.List }
+    val detailSide = partition.secondary.associateWith { PaneSide.Detail }
+    return listSide + detailSide
+}
+
 /**
  * Which container shows which entries for a pane count.
  *

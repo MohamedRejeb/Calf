@@ -1,7 +1,9 @@
 package com.mohamedrejeb.calf.navigation
 
 import com.mohamedrejeb.calf.navigation.internal.PaneRoleKind
+import com.mohamedrejeb.calf.navigation.internal.PaneSide
 import com.mohamedrejeb.calf.navigation.internal.arrangeListDetail
+import com.mohamedrejeb.calf.navigation.internal.paneSidesOf
 import com.mohamedrejeb.calf.navigation.internal.partitionListDetail
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -192,5 +194,34 @@ class ListDetailArrangementTest {
         assertEquals(listOf("List"), arrangement.primary)
         assertEquals(listOf("Detail1"), arrangement.secondary)
         assertFalse(arrangement.compact.isNotEmpty())
+    }
+
+    // ── sides (what the Material scene is told about each key) ──
+
+    @Test
+    fun sides_entriesBelowTheList_haveNone_soTheyStayFullScreen() {
+        val sides = paneSidesOf(listOf("Home", "List", "Detail1", "Child"), ::roleOf)
+
+        assertNull(sides["Home"])
+        assertEquals(PaneSide.List, sides["List"])
+        assertEquals(PaneSide.Detail, sides["Detail1"])
+        assertEquals(PaneSide.Detail, sides["Child"])
+    }
+
+    @Test
+    fun sides_plainEntryOverTheList_isOnTheListSide() {
+        assertEquals(PaneSide.List, paneSidesOf(listOf("List", "Filter"), ::roleOf)["Filter"])
+    }
+
+    @Test
+    fun sides_withoutAList_areEmpty() {
+        assertTrue(paneSidesOf(listOf("Home", "Detail1"), ::roleOf).isEmpty())
+    }
+
+    @Test
+    fun sides_keyOnBothSides_countsAsDetail() {
+        val sides = paneSidesOf(listOf("List", "Shared", "Detail1", "Shared"), ::roleOf)
+
+        assertEquals(PaneSide.Detail, sides["Shared"])
     }
 }
