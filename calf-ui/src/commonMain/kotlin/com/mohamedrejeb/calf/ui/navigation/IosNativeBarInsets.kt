@@ -83,6 +83,10 @@ internal class IosNativeBarInsets private constructor(
 /**
  * The scaffold's own padding with the native bars taken into account. The native bars are
  * UIKit subviews the Compose scaffold never measures, so on each edge the larger claim wins.
+ *
+ * The result is absolute because the native insets are physical edges. Start and end are
+ * therefore resolved here, with [layoutDirection]: content that overrides
+ * `LocalLayoutDirection` further down does not flip them again.
  */
 internal fun PaddingValues.withNativeBarInsets(
     insets: IosBarEdgeInsets,

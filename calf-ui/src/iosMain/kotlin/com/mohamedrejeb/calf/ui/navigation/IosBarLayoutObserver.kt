@@ -142,11 +142,18 @@ private class IosBarContribution(
     private val nativeBarInsetsState: MutableState<IosNativeBarInsets>,
 ) : RememberObserver {
 
+    // A UIKit layout callback that arrives after the bar left must not publish again: nothing
+    // would withdraw that entry any more. Today the probe view is detached first, but only
+    // because Compose happens to dispose effects before it forgets this object.
+    private var isWithdrawn = false
+
     fun publish(insets: IosBarEdgeInsets) {
+        if (isWithdrawn) return
         nativeBarInsetsState.value = nativeBarInsetsState.value.with(barKey = this, insets = insets)
     }
 
     private fun withdraw() {
+        isWithdrawn = true
         nativeBarInsetsState.value = nativeBarInsetsState.value.without(barKey = this)
     }
 
