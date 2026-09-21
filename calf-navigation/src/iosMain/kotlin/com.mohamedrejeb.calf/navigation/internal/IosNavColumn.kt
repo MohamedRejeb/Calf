@@ -19,9 +19,12 @@ import platform.darwin.NSObject
  *
  *  - **Swipe-back policy**: every pop recognizer the system has follows the top entry's
  *    `iosGestureEnabled` (see [canPopInteractively]).
- *  - **Transition tracking**: [isTransitioning] is true between this controller's own `willShow`
- *    and `didShow`, including an interactive pop in flight. `transitionCoordinator` is not used:
- *    it also reports ancestors' transitions and stays non-nil inside `didShow`.
+ *  - **Transition tracking**: [isTransitioning] is true between this controller's own animated
+ *    `willShow` and its `didShow`, including an interactive pop in flight. A `willShow` that is
+ *    not animated is an appearance (the tab was selected, a split view column came on screen), not
+ *    a transition UIKit could not interrupt: counting it dropped navigation requested together
+ *    with a tab switch, which is what a deep link does. `transitionCoordinator` is not used: it
+ *    also reports ancestors' transitions and stays non-nil inside `didShow`.
  *  - **Large titles**: the bar-wide flag stays on; each entry's `navigationItem` decides whether
  *    its own title is large.
  *
@@ -35,7 +38,7 @@ internal class IosNavColumn(
     private val managedGestures: List<PopGestureKind> = managedPopGestures(::isIOSVersionAtLeast)
     private val gestureDelegate = PopGestureDelegate(::canPopTopEntry)
     private val navigationDelegate = NavigationDelegate(
-        onWillShow = { isTransitioning = true },
+        onWillShow = { animated -> if (animated) isTransitioning = true },
         onDidShow = ::onUiKitDidShow,
     )
 
@@ -122,7 +125,7 @@ private class PopGestureDelegate(
 }
 
 private class NavigationDelegate(
-    private val onWillShow: () -> Unit,
+    private val onWillShow: (animated: Boolean) -> Unit,
     private val onDidShow: () -> Unit,
 ) : NSObject(), UINavigationControllerDelegateProtocol {
     // Both selectors map to the same Kotlin signature; the annotation keeps
@@ -133,7 +136,7 @@ private class NavigationDelegate(
         willShowViewController: UIViewController,
         animated: Boolean,
     ) {
-        onWillShow()
+        onWillShow(animated)
     }
 
     @ObjCSignatureOverride
