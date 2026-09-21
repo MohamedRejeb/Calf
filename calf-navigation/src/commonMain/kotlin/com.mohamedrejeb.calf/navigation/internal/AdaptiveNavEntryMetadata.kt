@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavMetadataKey
 import androidx.navigation3.runtime.get
+import com.mohamedrejeb.calf.navigation.AdaptivePaneRole
+import com.mohamedrejeb.calf.navigation.ExperimentalCalfNavigationApi
 import com.mohamedrejeb.calf.ui.navigation.UIKitNavigationBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 
@@ -11,14 +13,17 @@ import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
  * Everything `adaptiveNavEntry` captures besides the content lambda, stored in
  * [NavEntry.metadata] under [AdaptiveNavEntryMetadataKey].
  *
- * It lives in metadata rather than inside the content lambda because two
+ * It lives in metadata rather than inside the content lambda because the
  * hosts read it *outside* the entry's own composition:
  *  - the iOS host populates `UINavigationItem` and `hidesBottomBarWhenPushed`
  *    before the child controller is pushed, so the native transition animates
  *    with the right title, items and tab-bar state;
  *  - the Material tab host reads [tabBarShown] of the top entry to animate the
- *    navigation bar in and out.
+ *    navigation bar in and out;
+ *  - a list-detail display reads [paneRole] of every entry to decide which
+ *    pane shows it.
  */
+@OptIn(ExperimentalCalfNavigationApi::class)
 @Immutable
 internal data class AdaptiveNavEntryMetadata(
     val iosTitle: String,
@@ -30,6 +35,7 @@ internal data class AdaptiveNavEntryMetadata(
     val barShown: Boolean,
     val tabBarShown: Boolean,
     val iosGestureEnabled: Boolean,
+    val paneRole: AdaptivePaneRole,
 ) {
     companion object {
         /** Used for entries that were not created through `adaptiveNavEntry`. */
@@ -43,6 +49,7 @@ internal data class AdaptiveNavEntryMetadata(
             barShown = true,
             tabBarShown = true,
             iosGestureEnabled = true,
+            paneRole = AdaptivePaneRole.None,
         )
     }
 }

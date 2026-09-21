@@ -61,6 +61,9 @@ import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
  *   animated hide of the Material navigation bar elsewhere. Ignored outside
  *   tabs.
  * @param iosGestureEnabled when false, disables iOS swipe-back for this entry.
+ * @param paneRole the entry's place in a list-detail layout: [AdaptivePaneRole.List]
+ *   for the list, [AdaptivePaneRole.Detail] for the first screen of the detail
+ *   side. Only read by a display that was given `listDetail` settings.
  * @param content the screen body, receiving the bar-inset [PaddingValues].
  */
 @ExperimentalCalfNavigationApi
@@ -86,6 +89,7 @@ fun <T : NavKey> adaptiveNavEntry(
     barShown: Boolean = true,
     tabBarShown: Boolean = true,
     iosGestureEnabled: Boolean = true,
+    paneRole: AdaptivePaneRole = AdaptivePaneRole.None,
     content: @Composable (PaddingValues) -> Unit,
 ): NavEntry<NavKey> {
     val entryMetadata = AdaptiveNavEntryMetadata(
@@ -98,6 +102,7 @@ fun <T : NavKey> adaptiveNavEntry(
         barShown = barShown,
         tabBarShown = tabBarShown,
         iosGestureEnabled = iosGestureEnabled,
+        paneRole = paneRole,
     )
 
     return NavEntry(
