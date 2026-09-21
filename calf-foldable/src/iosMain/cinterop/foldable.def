@@ -47,7 +47,9 @@ static const int CalfFoldableRegionKindOcclusion = 1;
 static const NSUInteger CalfFoldableRegionQueryIncludeInactive = 1 << 0;
 
 static inline BOOL calf_foldable_isHingeApiAvailable(void) {
-    return NSClassFromString(@"UIHingeInteraction") != nil;
+    Class interactionClass = NSClassFromString(@"UIHingeInteraction");
+    return interactionClass != nil
+        && [interactionClass instancesRespondToSelector:NSSelectorFromString(@"initWithUpdateHandler:")];
 }
 
 static inline BOOL calf_foldable_isRegionsApiAvailable(void) {
@@ -59,15 +61,19 @@ static inline BOOL calf_foldable_isRegionsApiAvailable(void) {
 // value, angle in radians). `hasHinge` is NO when iOS delivers a nil hinge: the interaction left a
 // hierarchy that provides hinge updates. The interaction keeps `handler` alive until it is released.
 static inline id<UIInteraction> _Nullable calf_foldable_makeHingeInteraction(void (^ _Nonnull handler)(BOOL, NSInteger, double)) {
-    Class interactionClass = NSClassFromString(@"UIHingeInteraction");
-    if (interactionClass == nil) return nil;
-    id<CalfFoldableHingeInteraction> allocated = [interactionClass alloc];
+    if (!calf_foldable_isHingeApiAvailable()) return nil;
+    id<CalfFoldableHingeInteraction> allocated = [NSClassFromString(@"UIHingeInteraction") alloc];
     return [allocated initWithUpdateHandler:^(id interaction, id<CalfFoldableHingeUpdate> update) {
         id<CalfFoldableHinge> hinge = update.hinge;
-        if (hinge == nil) {
-            handler(NO, 0, 0.0);
+        BOOL hasHinge = hinge != nil;
+        NSInteger status = hasHinge ? hinge.status : 0;
+        double angle = hasHinge ? (double)hinge.angle : 0.0;
+        // UIKit declares the handler main-actor. The receiver writes UI state, so hold it to that
+        // even if a future iOS does not.
+        if (NSThread.isMainThread) {
+            handler(hasHinge, status, angle);
         } else {
-            handler(YES, hinge.status, (double)hinge.angle);
+            dispatch_async(dispatch_get_main_queue(), ^{ handler(hasHinge, status, angle); });
         }
     }];
 }

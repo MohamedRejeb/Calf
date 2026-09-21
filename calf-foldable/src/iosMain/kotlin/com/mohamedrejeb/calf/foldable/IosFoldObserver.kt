@@ -77,11 +77,12 @@ internal class IosFoldObserver(
     private var hingeInteraction: UIInteractionProtocol? = null
     private var posture: FoldPosture = FoldPosture.NoFold
     private var hasHinge: Boolean? = null
+    private var reading: IosFoldReading = IosFoldReading.Empty
 
     fun attach() {
         if (probeView != null) return
 
-        val probe = IosFoldProbeView(onLayout = ::publishSnapshot).apply {
+        val probe = IosFoldProbeView(onLayout = ::onProbeLayout).apply {
             userInteractionEnabled = false
             setFrame(hostView.bounds)
             autoresizingMask = UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
@@ -104,6 +105,19 @@ internal class IosFoldObserver(
         probeView = null
     }
 
+    /** The only place regions are read: UIKit only re-runs layout for regions read during layout. */
+    private fun onProbeLayout() {
+        val probe = probeView ?: return
+        val pixelsPerPoint = density()
+        reading = IosFoldReading(
+            divisionRegions = probe.reservedRegions(CalfFoldableRegionKindDivision, pixelsPerPoint),
+            occlusionRegions = probe.reservedRegions(CalfFoldableRegionKindOcclusion, pixelsPerPoint),
+            horizontalSizeClass = probe.traitCollection.horizontalSizeClass.toIosSizeClass(),
+            verticalSizeClass = probe.traitCollection.verticalSizeClass.toIosSizeClass(),
+        )
+        publishSnapshot()
+    }
+
     private fun onHingeUpdate(hasHingeNow: Boolean, rawStatus: Long, angleRadians: Double) {
         // A nil hinge means "left a hierarchy that provides hinge updates", not "no hinge".
         if (hasHingeNow) {
@@ -114,26 +128,17 @@ internal class IosFoldObserver(
         val newPosture = if (hasHingeNow) foldPostureOfIosHingeStatus(rawStatus) else FoldPosture.NoFold
         if (newPosture == posture && state.snapshot.iosCapabilities.hasHinge == hasHinge) return
 
+        // The posture is published over the regions of the last layout pass, so isSeparating
+        // follows the hinge at once. The regions themselves catch up in layout; asking for a pass
+        // costs nothing and does not rely on UIKit noticing by itself.
         posture = newPosture
         publishSnapshot()
+        probeView?.setNeedsLayout()
     }
 
-    /** Runs inside the probe view's layout pass, and once per posture change. */
     private fun publishSnapshot() {
-        val probe = probeView ?: return
-        val pixelsPerPoint = density()
-        val divisionRegion = probe.reservedRegions(CalfFoldableRegionKindDivision, pixelsPerPoint).firstOrNull()
-
-        val snapshot = FoldSnapshot(
-            posture = posture,
-            fold = foldInfoOfIosRegion(divisionRegion, posture),
-            iosFoldRegion = divisionRegion,
-            iosOcclusionRegions = probe.reservedRegions(CalfFoldableRegionKindOcclusion, pixelsPerPoint),
-            iosHorizontalSizeClass = probe.traitCollection.horizontalSizeClass.toIosSizeClass(),
-            iosVerticalSizeClass = probe.traitCollection.verticalSizeClass.toIosSizeClass(),
-            iosCapabilities = currentCapabilities(hasHinge),
-        )
-        // Layout passes are frequent; only a real change may invalidate Compose readers.
+        val snapshot = iosFoldSnapshotOf(posture, reading, currentCapabilities(hasHinge))
+        // Layout passes and angle ticks are frequent; only a real change may invalidate Compose readers.
         if (snapshot != state.snapshot) state.snapshot = snapshot
     }
 
