@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,12 +22,16 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNotSame
 
 @OptIn(ExperimentalTestApi::class, ExperimentalCalfNavigationApi::class)
 class AdaptiveTabDisplayTest {
@@ -38,6 +43,8 @@ class AdaptiveTabDisplayTest {
 
     /** Pushed inside a tab; hides the tab bar. */
     private data object Cover : NavKey
+
+    private class ProbeViewModel : ViewModel()
 
     @Test
     fun `switching tabs keeps each tab's stack and saveable state`() = runComposeUiTest {
@@ -124,6 +131,37 @@ class AdaptiveTabDisplayTest {
         waitForIdle()
 
         assertEquals(Home, state.selectedTab)
+    }
+
+    @Test
+    fun `two tab displays under one owner keep separate ViewModels`() = runComposeUiTest {
+        val owner = object : ViewModelStoreOwner {
+            override val viewModelStore = ViewModelStore()
+        }
+        val models = arrayOfNulls<ViewModel>(2)
+        setContent {
+            CompositionLocalProvider(LocalViewModelStoreOwner provides owner) {
+                Column {
+                    repeat(models.size) { index ->
+                        Box(Modifier.weight(1f)) {
+                            AdaptiveTabDisplay(
+                                state = rememberAdaptiveTabState<NavKey>(Home),
+                                tabs = listOf(adaptiveTab<NavKey>(Home, icon = {}, label = { Text("Home tab") })),
+                                // Without Nav3's per-entry ViewModel decorator the entries
+                                // resolve their ViewModels in the tab's own store.
+                                entryDecorators = emptyList(),
+                                materialLayoutType = NavigationSuiteType.NavigationBar,
+                            ) { key ->
+                                adaptiveNavEntry(key) { _ -> models[index] = viewModel { ProbeViewModel() } }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        waitForIdle()
+
+        assertNotSame(assertNotNull(models[0]), assertNotNull(models[1]))
     }
 
     @Composable

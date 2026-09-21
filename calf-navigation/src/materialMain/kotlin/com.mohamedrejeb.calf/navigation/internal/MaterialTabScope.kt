@@ -4,12 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import kotlin.random.Random
 
 /**
  * What one tab keeps alive while another tab is selected on Material platforms:
@@ -47,12 +49,15 @@ internal class TabViewModelStoresViewModel : ViewModel() {
     }
 }
 
-private const val TAB_STORES_KEY = "com.mohamedrejeb.calf.navigation.tab-stores"
+private const val TAB_STORES_KEY_PREFIX = "com.mohamedrejeb.calf.navigation.tab-stores:"
 
 /** One [MaterialTabScope] per tab, created once and kept for as long as the display is composed. */
 @Composable
 internal fun <T : NavKey> rememberMaterialTabScopes(tabs: List<T>): Map<T, MaterialTabScope> {
-    val stores = viewModel(key = TAB_STORES_KEY) { TabViewModelStoresViewModel() }
+    // One store holder per display: two displays under the same owner may use equal tab keys.
+    // Saved, so the display finds its ViewModels again after an Android configuration change.
+    val displayId = rememberSaveable { Random.nextLong().toString() }
+    val stores = viewModel(key = TAB_STORES_KEY_PREFIX + displayId) { TabViewModelStoresViewModel() }
     return tabs.associateWith { tab ->
         key(tab) {
             val entryStateHolder = rememberSaveableStateHolder()
