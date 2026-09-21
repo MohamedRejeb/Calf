@@ -233,7 +233,7 @@ What survives a layout change is everything an entry keeps while it is on the ba
 |---|---|---|
 | iPhone | Never (always one pane). | `UISplitViewController`: compact width. |
 | iPhone Duo | Open, flat or half open. Closed is one pane. | `UISplitViewController`: the inner display is regular width. Half open, iOS lines the list column up with the fold. |
-| iPad | Full screen in both orientations; one pane in a narrow Split View or Stage Manager window. | `UISplitViewController`: the window's horizontal size class. |
+| iPad | Whenever the window is regular width; one pane in a narrow Split View or Stage Manager window. With the default `Automatic` display mode iOS may show the list as an overlay opened from the bar button in portrait; `IosSplitViewDisplayMode.OneBesideSecondary` keeps both columns side by side. | `UISplitViewController`: the window's horizontal size class. |
 | Android phone | Never. | Window width below 600dp. |
 | Android foldable, open | From 600dp when a vertical hinge runs through the window, otherwise from 840dp. Half open, the panes sit on either side of the hinge. | Material 3 adaptive, with Calf raising the pane count for an open book-style foldable. |
 | Android tablet, Desktop, Web | Window width of 840dp and up. | Material 3 adaptive's expanded width class. |
