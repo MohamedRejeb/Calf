@@ -152,6 +152,124 @@ On Android, Desktop and Web, Calf adds nothing on top of Navigation 3: changes m
 
 Put the tab display inside an entry of an outer `AdaptiveNavDisplay` (with `barShown = false`) to push a screen over the whole tab UI, for example a sign-out screen. On iOS the tab bar rides the push transition and returns with the back swipe, because it belongs to the view controller being covered.
 
+## List-detail
+
+A list and its detail are ordinary entries of **one** back stack. When there is room they are shown side by side; when there is not, the detail is a normal push over the list. The back stack has the same shape in both layouts, so opening or closing an iPhone Duo, rotating an iPad or resizing a desktop window re-arranges the screen and keeps the selected item, scroll positions, the screens the detail pushed, ViewModels and saved state.
+
+<!-- MEDIA: iPhone Duo closed → open with a message and its attachment open: the stack becomes two columns, scroll position and counter unchanged -->
+
+Turn it on with `listDetail` and mark the entries:
+
+```kotlin
+@Serializable data object Inbox : NavKey
+@Serializable data class Message(val id: Int) : NavKey
+@Serializable data class Attachment(val id: Int) : NavKey
+
+val backStack = rememberAdaptiveNavBackStack(Inbox, configuration = config)
+
+AdaptiveNavDisplay(
+    backStack = backStack,
+    listDetail = rememberAdaptiveListDetailSettings(),
+) { key ->
+    when (key) {
+        is Inbox -> adaptiveNavEntry(
+            key = key,
+            iosTitle = "Inbox",
+            paneRole = AdaptivePaneRole.List(
+                detailPlaceholder = { Text("Select a message") },
+            ),
+        ) { padding ->
+            InboxScreen(padding, onOpen = { id -> backStack.selectDetail(list = Inbox, detail = Message(id)) })
+        }
+
+        is Message -> adaptiveNavEntry(
+            key = key,
+            iosTitle = "Message",
+            paneRole = AdaptivePaneRole.Detail,
+        ) { padding ->
+            MessageScreen(key.id, padding, onOpenAttachment = { backStack.add(Attachment(key.id)) })
+        }
+
+        // No role: it was pushed after the detail, so it stays in the detail pane.
+        is Attachment -> adaptiveNavEntry(key, iosTitle = "Attachment") { padding -> AttachmentScreen(key.id, padding) }
+
+        else -> error("Unknown key $key")
+    }
+}
+```
+
+- `AdaptivePaneRole.List` marks the list. Its `detailPlaceholder` fills the detail pane while two panes are shown and nothing is open. It is not an entry: it has no bar and is never on the back stack.
+- `AdaptivePaneRole.Detail` marks the **first** entry of the detail side. Whatever is pushed after it stays on the detail side without being marked, so a detail can push its own screens. An entry without a role that is pushed over the list *before* any detail (a filter screen) stays on the list side.
+- `backStack.selectDetail(list, detail)` replaces whatever is above `list` with `detail`. Use it instead of `add` for list taps: in two panes the list stays visible, and `add` would grow the stack by one detail per tap.
+- **Start the stack at the list.** Entries below the list are shown full screen on Android, Desktop and Web, but inside the narrow list column on iOS (like Mailboxes → Inbox in Mail). Screens that come before the list belong in an outer `AdaptiveNavDisplay`, the way the tabs are nested in [Quick start: tabs](#quick-start-tabs). A stack without a list entry is never split, so a deep link to a detail has to put the list below it: `rememberAdaptiveNavBackStack(Inbox, Message(42))`.
+- On Android **pass a `SavedStateConfiguration`** (see [State, ViewModels and persistence](#state-viewmodels-and-persistence)). Folding or unfolding recreates the Activity unless the app handles those configuration changes itself, and a back stack without a configuration starts over.
+
+### With tabs
+
+`AdaptiveTabDisplay` takes the same `listDetail` parameter. A tab whose **root entry** is an `AdaptivePaneRole.List` is laid out as list-detail; the other tabs stay plain stacks, so a settings tab is not squeezed into a list column on a wide screen. Re-selecting a list-detail tab pops it to the list.
+
+On iOS the split view sits *inside* the tab. That is the nesting iOS adapts: on iPhone Duo the tab bar joins the detail's bar items in the vertical strip, open and closed.
+
+<!-- MEDIA: open iPhone Duo, Mail tab of the sample: list column, detail column, tab bar and the detail's bar items in the vertical strip -->
+
+### What happens when
+
+| | One pane | Two panes |
+|---|---|---|
+| Visible | The top entry, pushed over the rest. | The list beside the top entry of the detail side, or beside the placeholder. |
+| Going from two panes to one | | The detail side's top entry is on top if one is open, otherwise the list. |
+| Back | System back and predictive back on Android; back button and swipe on iOS. One entry per step. | Android: one entry per step, the last step leaves the placeholder. iOS: the detail column swipes and pops its own screens; its first entry has no back button, another item is opened from the list. |
+| Selecting another item (`selectDetail`) | The new detail is pushed. | The open detail and everything it pushed are replaced; the list keeps its scroll position. |
+| Popping the last detail entry | Back to the list. | The placeholder. |
+| Popping the list on iOS while a detail is open | | The detail goes with it: it belonged to that list. |
+| Deep link to a detail | Seed the stack with the list below it. | Same stack, two panes. |
+| Process death | The back stack is restored through its `SavedStateConfiguration`. The arrangement is derived from it and the window, never stored. | Same. |
+
+What survives a layout change is everything an entry keeps while it is on the back stack: its ViewModels and its `rememberSaveable` state, lazy list positions included. Entries that stay on screen keep plain `remember` state too. As in any Navigation 3 app, an entry that is covered in one pane keeps its saved state and ViewModels but not plain `remember`.
+
+### Which platform shows two panes when
+
+| Platform | Two panes when | Decided by |
+|---|---|---|
+| iPhone | Never (always one pane). | `UISplitViewController`: compact width. |
+| iPhone Duo | Open, flat or half open. Closed is one pane. | `UISplitViewController`: the inner display is regular width. Half open, iOS lines the list column up with the fold. |
+| iPad | Full screen in both orientations; one pane in a narrow Split View or Stage Manager window. | `UISplitViewController`: the window's horizontal size class. |
+| Android phone | Never. | Window width below 600dp. |
+| Android foldable, open | From 600dp when a vertical hinge runs through the window, otherwise from 840dp. Half open, the panes sit on either side of the hinge. | Material 3 adaptive, with Calf raising the pane count for an open book-style foldable. |
+| Android tablet, Desktop, Web | Window width of 840dp and up. | Material 3 adaptive's expanded width class. |
+
+Calf does not debounce the pane count. On iPhone Duo the system container does not flicker while the device opens, and on Android a fold or unfold produces a single change.
+
+<!-- MEDIA: desktop window dragged across 840dp with a detail open: two panes ↔ one pane -->
+<!-- MEDIA: Pixel Fold folded ↔ unfolded on the Mail tab of the sample -->
+
+### iOS only: the split view
+
+`rememberAdaptiveListDetailSettings(iosSplitView = …)` configures the `UISplitViewController`. These values do nothing on other platforms, so creating the configuration asks for `@OptIn(CalfIosOnlyApi::class)`; taking the defaults does not.
+
+```kotlin
+@OptIn(CalfIosOnlyApi::class)
+val listDetail = rememberAdaptiveListDetailSettings(
+    iosSplitView = IosSplitViewConfiguration(
+        preferredDisplayMode = IosSplitViewDisplayMode.OneBesideSecondary,
+        splitBehavior = IosSplitViewBehavior.Tile,
+    ),
+)
+```
+
+| Value | `UISplitViewController` | Default |
+|---|---|---|
+| `preferredDisplayMode` | `preferredDisplayMode`: `Automatic`, `SecondaryOnly`, `OneBesideSecondary`, `OneOverSecondary` | `Automatic` |
+| `splitBehavior` | `preferredSplitBehavior`: `Automatic`, `Tile`, `Overlay`, `Displace` | `Automatic` |
+| `primaryColumnWidth`, `minPrimaryColumnWidth`, `maxPrimaryColumnWidth` | The matching column width properties, in dp (one dp is one point). | `null`: the system's width, which is what follows the fold on iPhone Duo. |
+| `primaryEdge` | `primaryEdge`: `Leading`, `Trailing` | `Leading` |
+| `presentsWithGesture` | `presentsWithGesture` | `true` |
+| `showsSecondaryOnlyButton` | `showsSecondaryOnlyButton` | `false` |
+
+For anything else, `iosMain` code can reach the controller: `IosSplitViewConfiguration(...).withSplitViewController { splitViewController -> … }`. Leave its delegate and its column controllers alone; they are how Calf keeps the back stack in charge of what each column shows.
+
+**Android, Desktop and Web have no such knobs in Calf.** Pane widths, the drag handle, pane expansion and other scene options belong to Material 3 adaptive. If you need them, use Navigation 3's `NavDisplay` with `rememberListDetailSceneStrategy(...)` and `ListDetailSceneStrategy.listPane()` / `detailPane()` from `org.jetbrains.compose.material3.adaptive:adaptive-navigation3` directly.
+
 ## `adaptiveNavEntry`
 
 Each route is declared with `adaptiveNavEntry`, which mirrors `AdaptiveTopBar`'s split between Material composable slots and iOS structured data:
@@ -224,7 +342,8 @@ Pass `<NavKey>` explicitly when the tabs are `@Serializable` objects: on iOS and
 
 - Modal presentation styles (sheets, full-screen modals) are not available yet; every entry is pushed.
 - iOS 26's tab bar minimize-on-scroll needs a `UIScrollView` and does not trigger with Compose content.
-- Deep links are not handled by the displays; drive the back stacks yourself.
+- Deep links are not handled by the displays; drive the back stacks yourself. For a list-detail display, put the list below the detail.
+- List-detail has two panes, never a third (supporting) one.
 
 ## API reference
 
@@ -245,6 +364,7 @@ Everything below needs `@OptIn(ExperimentalCalfNavigationApi::class)`.
 | `modifier` | Modifier for the display. |
 | `onBack` | Called for a back event on Material platforms. Default: removes the last key. Not used on iOS, where UIKit pops and the stack follows. |
 | `entryDecorators` | Nav3 entry decorators. Default: saveable state + per-entry ViewModel store. Not applied on iOS. |
+| `listDetail` | `AdaptiveListDetailSettings` to lay the stack out as [list-detail](#list-detail). `null` (default): a plain stack. |
 | `entryProvider` | Maps a key to its entry. Build entries with `adaptiveNavEntry`. |
 
 ### `adaptiveNavEntry`
@@ -262,6 +382,7 @@ Everything below needs `@OptIn(ExperimentalCalfNavigationApi::class)`.
 | `barShown` | Shows the top bar. Default `true`. |
 | `tabBarShown` | Inside `AdaptiveTabDisplay`: keeps the tab bar while this entry is on top. Default `true`. |
 | `iosGestureEnabled` | Allows the interactive swipe back, both the edge swipe and iOS 26's content swipe. Default `true`. |
+| `paneRole` | The entry's place in a [list-detail](#list-detail) layout: `AdaptivePaneRole.None` (default), `List(detailPlaceholder)` or `Detail`. Only read by a display that was given `listDetail`. |
 | `content` | The screen. Apply the `PaddingValues` it receives. |
 
 ### `rememberAdaptiveTabState` and `AdaptiveTabState`
@@ -304,7 +425,18 @@ If the tab list changes while the state is remembered, the selection restarts fr
 | `materialColors` | `NavigationSuiteColors`. `null` (default): Material's defaults. |
 | `iosConfiguration` | Native tab bar appearance (`UIKitTabBarConfiguration`). |
 | `iosSidebarAdaptable` | iOS 18+: lets the tab bar become a sidebar on wide displays. Default `false`. |
+| `listDetail` | Lays out every tab whose root entry is an `AdaptivePaneRole.List` as [list-detail](#with-tabs). `null` (default): plain stacks. |
 | `entryProvider` | Maps a key to its entry, for every tab. |
+
+### List-detail
+
+| API | Description |
+|---|---|
+| `AdaptivePaneRole` | `None` (default), `List(detailPlaceholder)`, `Detail`. Passed to `adaptiveNavEntry(paneRole = …)`. |
+| `AdaptiveListDetailSettings(iosSplitView)`, `rememberAdaptiveListDetailSettings(iosSplitView)` | Turns a display into list-detail when passed as `listDetail`. |
+| `IosSplitViewConfiguration(...)` | iOS only, `@CalfIosOnlyApi`. See [the split view](#ios-only-the-split-view). |
+| `IosSplitViewConfiguration.withSplitViewController { }` | iOS only, `iosMain`. Direct access to the `UISplitViewController`. |
+| `NavBackStack<NavKey>.selectDetail(list, detail)` | Replaces whatever is above `list` with `detail`. Selecting the detail that is already on top changes nothing; without `list` on the stack it pushes. |
 
 ## Relationship to `AdaptiveNavHost`
 
