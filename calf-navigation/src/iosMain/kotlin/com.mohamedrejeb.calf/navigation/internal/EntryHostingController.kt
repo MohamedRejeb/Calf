@@ -152,12 +152,12 @@ internal class EntryHostingController(
             }
         }
 
-        composeChild.willMoveToParentViewController(this)
+        // addChildViewController sends willMoveToParentViewController itself; only didMove is ours.
+        addChildViewController(composeChild)
         composeChild.view.setFrame(view.bounds)
         composeChild.view.autoresizingMask =
             UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
         view.addSubview(composeChild.view)
-        addChildViewController(composeChild)
         composeChild.didMoveToParentViewController(this)
         installContentScrollView()
     }
@@ -316,6 +316,8 @@ internal class EntryHostingController(
     }
 
     private fun cleanupChildren() {
+        // removeFromParentViewController does not send willMove(null); the caller has to.
+        childViewControllers.forEach { (it as UIViewController).willMoveToParentViewController(null) }
         view.subviews.forEach { (it as UIView).removeFromSuperview() }
         childViewControllers.forEach { (it as UIViewController).removeFromParentViewController() }
         contentScrollView = null
