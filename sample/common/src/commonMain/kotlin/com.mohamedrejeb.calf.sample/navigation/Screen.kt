@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.ImportContacts
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Navigation
 import androidx.compose.material.icons.outlined.Pages
@@ -144,6 +145,12 @@ enum class Screen(
         title = "Content Sharing",
         description = "Share text, URLs, and files using platform-native share sheets",
         icon = Icons.Outlined.Share,
+        category = ScreenCategory.PlatformAPIs,
+    ),
+    Foldable(
+        title = "Foldable",
+        description = "Live posture, fold bounds and panes; iPhone Duo regions and hinge angle",
+        icon = Icons.Outlined.ImportContacts,
         category = ScreenCategory.PlatformAPIs,
     ),
     WebView(

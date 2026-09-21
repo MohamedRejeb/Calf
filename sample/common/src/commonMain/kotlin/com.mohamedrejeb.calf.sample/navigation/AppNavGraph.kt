@@ -13,6 +13,7 @@ import com.mohamedrejeb.calf.sample.screens.DropDownScreen
 //import com.mohamedrejeb.calf.sample.screens.ExpandableFABScreen
 import com.mohamedrejeb.calf.sample.screens.DatePickerScreen
 import com.mohamedrejeb.calf.sample.screens.FilePickerScreen
+import com.mohamedrejeb.calf.sample.screens.FoldableScreen
 import com.mohamedrejeb.calf.sample.screens.HomeScreen
 import com.mohamedrejeb.calf.sample.screens.ImagePickerScreen
 import com.mohamedrejeb.calf.sample.screens.FileSaverScreen
@@ -160,6 +161,13 @@ fun AppNavGraph(
         }
         composable(Screen.Share.name) {
             ShareScreen(
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.Foldable.name) {
+            FoldableScreen(
                 navigateBack = {
                     navController.popBackStack()
                 }
