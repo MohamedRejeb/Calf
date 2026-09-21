@@ -98,7 +98,10 @@ internal fun rememberIosBarLayout(
             ),
         )
         // Published while composing, not from an effect: the scaffold composes its content
-        // after its bars, so the content's very first frame already has this padding.
+        // after its bars, so the content's very first frame already has this padding. That order
+        // is how Material3's ScaffoldLayout subcomposes (checked on 1.12.0-alpha03), not a
+        // documented contract: re-check it on a Material3 bump. If it changes, the only cost is
+        // one frame with the scaffold's own padding before this value arrives.
         contribution.publish(edge.insets(estimatedLayout.contentPadding))
         mutableStateOf(estimatedLayout)
     }

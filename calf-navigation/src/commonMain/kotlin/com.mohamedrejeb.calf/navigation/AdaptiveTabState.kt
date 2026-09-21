@@ -128,6 +128,7 @@ fun <T : NavKey> rememberAdaptiveTabState(
 }
 
 /** Fails fast when the bar items passed to a display do not line up with the state's tabs. */
+@ExperimentalCalfNavigationApi
 internal fun <T : NavKey> AdaptiveTabState<T>.requireMatching(tabs: List<AdaptiveTab<T>>) {
     val keys = tabs.map { it.key }
     require(keys == this.tabs) {
