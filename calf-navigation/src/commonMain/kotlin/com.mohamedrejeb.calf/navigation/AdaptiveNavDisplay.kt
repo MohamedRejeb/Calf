@@ -35,6 +35,12 @@ import androidx.navigation3.ui.NavDisplay
  *
  * Use [adaptiveNavEntry] to define each route's bar.
  *
+ * With [listDetail] the same back stack is laid out as list-detail: the entries marked with an
+ * [AdaptivePaneRole] are shown side by side when there is room and as a normal push when there
+ * is not. The back stack has the same shape either way, so a layout change (opening a foldable,
+ * rotating a tablet, resizing a window) keeps the selected item, scroll positions, the detail's
+ * own screens, ViewModels and saved state. Open a detail with [selectDetail].
+ *
  * @param backStack the stack to render; see [rememberAdaptiveNavBackStack].
  * @param onBack handles Android's system back and predictive back on Material
  *   platforms. Not used on iOS, where the system performs the pop itself;
@@ -42,6 +48,8 @@ import androidx.navigation3.ui.NavDisplay
  * @param entryDecorators Nav3 decorators applied on Material platforms. Not
  *   applied on iOS, whose native per-entry scopes provide lifecycle,
  *   ViewModel and saved-state owners.
+ * @param listDetail lays the stack out as list-detail; see [AdaptiveListDetailSettings].
+ *   `null` keeps a plain stack.
  * @param entryProvider builds the entry for a key; use [adaptiveNavEntry].
  */
 @ExperimentalCalfNavigationApi
@@ -54,5 +62,6 @@ expect fun AdaptiveNavDisplay(
         rememberSaveableStateHolderNavEntryDecorator(),
         rememberViewModelStoreNavEntryDecorator(),
     ),
+    listDetail: AdaptiveListDetailSettings? = null,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 )

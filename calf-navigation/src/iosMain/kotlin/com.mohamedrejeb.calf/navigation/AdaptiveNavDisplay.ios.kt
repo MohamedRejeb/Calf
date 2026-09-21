@@ -37,6 +37,7 @@ actual fun AdaptiveNavDisplay(
     modifier: Modifier,
     onBack: () -> Unit,
     entryDecorators: List<NavEntryDecorator<NavKey>>,
+    listDetail: AdaptiveListDetailSettings?,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
 ) {
     val updatedEntryProvider = rememberUpdatedState(entryProvider)
