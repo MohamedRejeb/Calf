@@ -110,7 +110,8 @@ actual fun <T : NavKey> AdaptiveTabDisplay(
             },
             label = "AdaptiveTabDisplay",
         ) { tab ->
-            tabStateHolder.SaveableStateProvider(tab) {
+            // The key has to be storable in a Bundle on Android, which a NavKey object is not.
+            tabStateHolder.SaveableStateProvider(state.tabs.indexOf(tab)) {
                 TabContent(
                     scope = tabScopes.getValue(tab),
                     state = state,
