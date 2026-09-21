@@ -17,7 +17,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.mohamedrejeb.calf.navigation.internal.ReportNavTransition
 import androidx.compose.ui.unit.Dp
 
 /**
@@ -47,7 +46,6 @@ internal actual fun AdaptiveBarHostScope(
     barShown: Boolean,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    ReportNavTransition()
     if (!barShown) {
         Box(Modifier.fillMaxSize()) {
             content(WindowInsets.safeDrawing.asPaddingValues())
