@@ -38,6 +38,7 @@ sealed interface AdaptivePaneRole {
     data object Detail : AdaptivePaneRole
 }
 
+@OptIn(ExperimentalCalfNavigationApi::class)
 internal val AdaptivePaneRole.kind: PaneRoleKind
     get() = when (this) {
         AdaptivePaneRole.None -> PaneRoleKind.None

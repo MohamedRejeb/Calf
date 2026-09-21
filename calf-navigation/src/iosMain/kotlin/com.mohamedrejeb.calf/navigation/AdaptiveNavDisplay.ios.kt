@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalForeignApi::class, ExperimentalComposeApi::class)
+@file:OptIn(ExperimentalForeignApi::class, ExperimentalComposeApi::class, ExperimentalCalfNavigationApi::class)
 
 package com.mohamedrejeb.calf.navigation
 
