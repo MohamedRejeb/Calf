@@ -56,11 +56,14 @@ import platform.darwin.dispatch_get_main_queue
  *     re-applies the parent composition's locals (theme, density, …) plus the
  *     per-entry `LifecycleOwner` / `ViewModelStoreOwner` / `SavedStateRegistryOwner`.
  *
- *  3. **In `viewDidDisappear(animated:)`**, when `isMovingFromParentViewController()`
- *     is true (popped for real, not merely covered by a push), tear the entry
- *     down: clear its `ViewModelStore` and mark its lifecycle destroyed. The
- *     navigation host mirrors the pop into the Compose back stack from its
- *     delegate, so no callback is needed here.
+ *  3. **Follow the view's appearance with the entry's lifecycle**: resumed in
+ *     `viewDidAppear`, stopped in `viewDidDisappear`. The entry never tears
+ *     itself down. Only its host knows that it left the back stack, and calls
+ *     [disposeEntry]: `isMovingFromParentViewController()` cannot tell. It is
+ *     false for a controller removed through `setViewControllers` (every pop
+ *     made on the Compose back stack), and on iOS 26 it was true for a root
+ *     that was only being covered, when its tab appeared and a push ran in the
+ *     same turn.
  */
 internal class EntryHostingController(
     private val entry: NavEntry<NavKey>,
@@ -301,11 +304,7 @@ internal class EntryHostingController(
 
     override fun viewDidDisappear(animated: Boolean) {
         super.viewDidDisappear(animated)
-        if (isMovingFromParentViewController()) {
-            disposeEntry()
-        } else {
-            entryScope.markStopped()
-        }
+        entryScope.markStopped()
     }
 
     /**
@@ -322,11 +321,11 @@ internal class EntryHostingController(
     }
 
     /**
-     * Tears the entry down. Idempotent: called from `viewDidDisappear` after a
-     * native pop, and by the host for entries that leave the stack without
-     * ever disappearing (dropped from the middle, popped while covered, or the
-     * whole navigator leaving the composition). Without it the entry's
-     * `ViewModelStore` would never be cleared.
+     * Tears the entry down: clears its `ViewModelStore`, destroys its lifecycle
+     * and removes the Compose surface. Idempotent. Called by the host for every
+     * entry that left the back stack: popped natively, popped or replaced from
+     * Compose, dropped while covered, or the whole navigator leaving the
+     * composition.
      */
     fun disposeEntry() {
         isDisposed = true

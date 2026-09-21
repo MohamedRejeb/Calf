@@ -38,7 +38,7 @@ internal class IosNavController(
     private val entryProvider: (NavKey) -> NavEntry<NavKey>,
     private val density: Float,
 ) : IosStackHost {
-    private val column = IosNavColumn(onDidShow = ::mirrorNativePops)
+    private val column = IosNavColumn(onDidShow = ::onTransitionFinished)
 
     val uiNavigationController: UINavigationController get() = column.uiNavigationController
 
@@ -47,6 +47,11 @@ internal class IosNavController(
     /** Wrapper controllers in stack order. A list, not a map: the same key may appear twice. */
     private var entryControllers: List<Pair<NavKey, EntryHostingController>> = emptyList()
     private var lastSyncedSnapshot: List<NavKey> = emptyList()
+
+    /** Controllers UIKit has reported at the end of a transition; see [entriesKeptAfterNativePop]. */
+    private var acknowledged: Set<EntryHostingController> = emptySet()
+
+    private val deferredDisposal = DeferredEntryDisposal()
 
     /** Makes the UIKit stack match [snapshot], the current Compose back stack. */
     override fun syncToUiStack(snapshot: List<NavKey>) {
@@ -61,18 +66,18 @@ internal class IosNavController(
         val diff = reconcileNavStack(entryControllers, snapshot, ::createController)
         entryControllers = diff.stack
 
-        // Wrappers dropped while covered never receive viewDidDisappear, so
-        // their scopes are torn down here. The visible top is skipped: UIKit
-        // animates it out and its own viewDidDisappear destroys the scope
-        // once the transition completes.
+        // Covered wrappers can be torn down at once. The visible top is
+        // animated out by UIKit first and torn down when that transition has
+        // finished.
         val visibleTop = column.topController
-        diff.dropped.forEach { controller ->
-            if (controller !== visibleTop) controller.disposeEntry()
-        }
+        val (onScreen, covered) = diff.dropped.partition { it === visibleTop }
+        covered.forEach { it.disposeEntry() }
+        deferredDisposal.defer(onScreen)
 
         val animated = lastSyncedSnapshot.isNotEmpty()
         lastSyncedSnapshot = snapshot
         column.show(diff.stack.map { it.second }, animated = animated)
+        if (!animated) deferredDisposal.disposeReleased()
     }
 
     private fun createController(key: NavKey): EntryHostingController =
@@ -93,6 +98,11 @@ internal class IosNavController(
         backStack.addAll(stack)
     }
 
+    private fun onTransitionFinished() {
+        deferredDisposal.disposeReleased()
+        mirrorNativePops()
+    }
+
     /**
      * A transition finished. UIKit only ever removes controllers from the top,
      * so whatever it kept is a prefix of [entryControllers]; anything after
@@ -100,8 +110,10 @@ internal class IosNavController(
      * and is trimmed from the Compose back stack.
      */
     private fun mirrorNativePops() {
-        val shown = column.controllers.toSet()
-        val remaining = entryControllers.takeWhile { (_, controller) -> controller in shown }
+        val shown = column.controllers.filterIsInstance<EntryHostingController>().toSet()
+        val kept = entriesKeptAfterNativePop(entryControllers.map { it.second }, shown, acknowledged)
+        val remaining = entryControllers.take(kept.size)
+        acknowledged = (acknowledged + shown).intersect(kept.toSet())
         if (remaining.size == entryControllers.size) return
 
         entryControllers.drop(remaining.size).forEach { (_, controller) -> controller.disposeEntry() }
@@ -121,7 +133,9 @@ internal class IosNavController(
 
     override fun release() {
         entryControllers.forEach { (_, controller) -> controller.disposeEntry() }
+        deferredDisposal.disposeAll()
         entryControllers = emptyList()
+        acknowledged = emptySet()
         lastSyncedSnapshot = emptyList()
     }
 }

@@ -85,8 +85,10 @@ internal class IosSplitController(
     /** The placeholder shown for [Pair.first], the list entry it belongs to. */
     private var placeholder: Pair<EntryHostingController, EntryHostingController>? = null
 
-    /** Dropped while on screen: UIKit animates them out, then they are torn down. */
-    private var pendingDisposal: List<EntryHostingController> = emptyList()
+    /** Controllers UIKit has reported at the end of a transition; see [entriesKeptAfterNativePop]. */
+    private var acknowledged: Set<EntryHostingController> = emptySet()
+
+    private val deferredDisposal = DeferredEntryDisposal()
 
     init {
         uiSplitViewController.delegate = splitDelegate
@@ -118,7 +120,7 @@ internal class IosSplitController(
         val visibleTops = visibleColumns().mapNotNull { it.topController }
         val (onScreen, covered) = diff.dropped.partition { it in visibleTops }
         covered.forEach { it.disposeEntry() }
-        pendingDisposal = pendingDisposal + onScreen
+        deferredDisposal.defer(onScreen)
 
         val animated = lastSyncedSnapshot.isNotEmpty()
         lastSyncedSnapshot = snapshot
@@ -159,8 +161,10 @@ internal class IosSplitController(
 
         isArranging = true
         releaseMovingControllers(targets)
-        targets.forEach { (column, wanted) -> column.showIfChanged(wanted, animated) }
+        val animatedColumns = targets.count { (column, wanted) -> column.showIfChanged(wanted, animated) }
         isArranging = false
+        // Nothing animates: no didShow is coming for what was just replaced.
+        if (animatedColumns == 0) disposeControllersThatLeft()
     }
 
     /**
@@ -178,15 +182,17 @@ internal class IosSplitController(
     }
 
     /**
-     * Animates only a push or pop inside the column. Replacing a column's root (another item was
+     * Returns whether it animates. Animates only a push or pop inside the column. Replacing a column's root (another item was
      * selected, the placeholder gives way to a detail) is not a navigation step and would animate
      * as a push that cannot be popped.
      */
-    private fun IosNavColumn.showIfChanged(wanted: List<UIViewController>, animated: Boolean) {
+    private fun IosNavColumn.showIfChanged(wanted: List<UIViewController>, animated: Boolean): Boolean {
         val current = controllers
-        if (current == wanted) return
+        if (current == wanted) return false
         val keepsRoot = current.isNotEmpty() && wanted.isNotEmpty() && current.first() === wanted.first()
-        show(wanted, animated = animated && keepsRoot)
+        val animates = animated && keepsRoot
+        show(wanted, animated = animates)
+        return animates
     }
 
     /**
@@ -204,7 +210,7 @@ internal class IosSplitController(
             parentLocals = parentLocals,
             density = density,
         )
-        placeholder?.second?.let { pendingDisposal = pendingDisposal + it }
+        placeholder?.second?.let { deferredDisposal.defer(listOf(it)) }
         placeholder = list to controller
         return controller
     }
@@ -232,10 +238,8 @@ internal class IosSplitController(
     }
 
     private fun disposeControllersThatLeft() {
-        val (gone, stillShown) = pendingDisposal.partition { it.parentViewController == null }
-        gone.forEach { it.disposeEntry() }
-        pendingDisposal = stillShown
-        if (placeholder?.second in gone) placeholder = null
+        val released = deferredDisposal.disposeReleased()
+        if (placeholder?.second in released) placeholder = null
     }
 
     /**
@@ -244,8 +248,10 @@ internal class IosSplitController(
      * that also drops the detail side, which belonged to the list that was just left.
      */
     private fun mirrorNativePops() {
-        val shown = visibleColumns().flatMap { it.controllers }.toSet()
-        val remaining = entryControllers.takeWhile { (_, controller) -> controller in shown }
+        val shown = visibleColumns().flatMap { it.controllers }.filterIsInstance<EntryHostingController>().toSet()
+        val kept = entriesKeptAfterNativePop(entryControllers.map { it.second }, shown, acknowledged)
+        val remaining = entryControllers.take(kept.size)
+        acknowledged = (acknowledged + shown).intersect(kept.toSet())
         if (remaining.size == entryControllers.size) return
 
         entryControllers.drop(remaining.size).forEach { (_, controller) -> controller.disposeEntry() }
@@ -278,10 +284,10 @@ internal class IosSplitController(
 
     override fun release() {
         entryControllers.forEach { (_, controller) -> controller.disposeEntry() }
-        pendingDisposal.forEach { it.disposeEntry() }
+        deferredDisposal.disposeAll()
         placeholder?.second?.disposeEntry()
         entryControllers = emptyList()
-        pendingDisposal = emptyList()
+        acknowledged = emptySet()
         placeholder = null
         lastSyncedSnapshot = emptyList()
     }
