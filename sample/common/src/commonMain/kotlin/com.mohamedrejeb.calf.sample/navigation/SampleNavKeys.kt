@@ -60,6 +60,8 @@ fun Screen.host(): SampleHost =
 
         // Nests AdaptiveTabDisplay with a split view inside a tab.
         Screen.AdaptiveNavigation,
+        // Owns a plain NavDisplay whose two panes need the whole window.
+        Screen.Nav3ListDetail,
         // Draw their own AdaptiveNavigationBar tab bar (and top bar).
         Screen.NavigationBar,
         Screen.ScaffoldDemo,

@@ -15,7 +15,14 @@ class SampleHostTest {
         val fullScreen = Screen.entries.filter { it.host() == SampleHost.FullScreen }.toSet()
 
         assertEquals(
-            setOf(Screen.Showcase, Screen.NavigationBar, Screen.ScaffoldDemo, Screen.AdaptiveNavigation),
+            setOf(
+                Screen.Showcase,
+                Screen.NavigationBar,
+                Screen.ScaffoldDemo,
+                Screen.AdaptiveNavigation,
+                // Owns a NavDisplay whose two panes need the whole window.
+                Screen.Nav3ListDetail,
+            ),
             fullScreen,
         )
     }
@@ -31,7 +38,7 @@ class SampleHostTest {
     fun everyOtherDemoIsADetailWithTheNavigatorsBar() {
         val details = Screen.entries.filter { it.host() == SampleHost.Detail }
 
-        assertEquals(Screen.entries.size - 1 - 4 - 3, details.size)
+        assertEquals(Screen.entries.size - 1 - 5 - 3, details.size)
         assertEquals(emptyList(), details.filter { it == Screen.Home })
     }
 

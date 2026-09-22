@@ -42,6 +42,7 @@ import com.mohamedrejeb.calf.sample.screens.FoldableScreen
 import com.mohamedrejeb.calf.sample.screens.HomeDetailPlaceholder
 import com.mohamedrejeb.calf.sample.screens.HomeScreen
 import com.mohamedrejeb.calf.sample.screens.ImagePickerScreen
+import com.mohamedrejeb.calf.sample.screens.Nav3ListDetailScreen
 import com.mohamedrejeb.calf.sample.screens.NavigationBarScreen
 import com.mohamedrejeb.calf.sample.screens.PermissionScreen
 import com.mohamedrejeb.calf.sample.screens.ProgressBarScreen
@@ -204,5 +205,6 @@ private fun DemoScreen(screen: Screen, navigateBack: () -> Unit) {
         Screen.TopBarDemo -> TopBarDemoScreen(navigateBack = navigateBack)
         Screen.Toolbar -> ToolbarScreen(navigateBack = navigateBack)
         Screen.AdaptiveNavigation -> AdaptiveNavigationDemoScreen(navigateBack = navigateBack)
+        Screen.Nav3ListDetail -> Nav3ListDetailScreen(navigateBack = navigateBack)
     }
 }

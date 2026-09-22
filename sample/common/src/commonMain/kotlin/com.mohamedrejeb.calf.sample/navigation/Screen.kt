@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.ToggleOn
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.VerticalSplit
 import androidx.compose.material.icons.outlined.ViewCompact
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.outlined.Web
@@ -193,6 +194,12 @@ enum class Screen(
         title = "Adaptive Navigation",
         description = "Native tabs and stacks: UITabBarController + UINavigationController on iOS, Nav3 + navigation suite elsewhere",
         icon = Icons.Outlined.SwapHoriz,
+        category = ScreenCategory.Navigation,
+    ),
+    Nav3ListDetail(
+        title = "Navigation 3 List-Detail",
+        description = "Plain NavDisplay with a fold-aware list-detail strategy: two panes on an open iPhone Duo, shared element transitions kept",
+        icon = Icons.Outlined.VerticalSplit,
         category = ScreenCategory.Navigation,
     ),
 //    ExpandableFAB(
