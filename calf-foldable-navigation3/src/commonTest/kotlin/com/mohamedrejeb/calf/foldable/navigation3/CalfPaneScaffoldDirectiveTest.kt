@@ -112,7 +112,7 @@ class CalfPaneScaffoldDirectiveTest {
     }
 
     @Test
-    fun `large width is capped at two panes, there is no third one`() {
+    fun `large width is capped at two panes and there is no third one`() {
         val info = WindowAdaptiveInfo(large, Posture())
         val upstream = calculatePaneScaffoldDirective(info)
 
