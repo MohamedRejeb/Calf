@@ -62,35 +62,37 @@ private const val REGION_FILL_ALPHA = 0.25f
 @Composable
 fun FoldableScreen(navigateBack: () -> Unit) {
     val foldState = rememberFoldState()
+    // The fold's bounds are in the window's space; both the layout and the overlay shift them by this.
+    var positionInRoot by remember { mutableStateOf<Offset?>(null) }
 
     SampleScreenScaffold(title = "Foldable", navigateBack = navigateBack) { padding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            FoldableContent(foldState = foldState, contentPadding = padding)
-            FoldRegionsOverlay(foldState = foldState)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .onPlaced { positionInRoot = it.positionInRoot() },
+        ) {
+            FoldableContent(foldState = foldState, contentPadding = padding, positionInRoot = positionInRoot)
+            FoldRegionsOverlay(foldState = foldState, positionInRoot = positionInRoot)
         }
     }
 }
 
 /**
  * Half open with the fold running across the screen: the values above the fold, the controls
- * below it. Any other pose: one scrolling column with the controls at the end.
+ * below it. Any other pose, and the first frame before the screen is placed: one scrolling column
+ * with the controls at the end.
  */
 @OptIn(ExperimentalCalfFoldableApi::class)
 @Composable
-private fun FoldableContent(foldState: FoldState, contentPadding: PaddingValues) {
+private fun FoldableContent(foldState: FoldState, contentPadding: PaddingValues, positionInRoot: Offset?) {
     val windowSize = LocalWindowInfo.current.containerSize.toSize()
     val panes = foldState.calculatePanes(windowSize)
-    val tabletop = tabletopPanes(foldState.posture, panes)
+    val tabletop = positionInRoot?.let { tabletopPanes(foldState.posture, panes) }
     var showDebugDump by rememberSaveable { mutableStateOf(false) }
     val scrollState = rememberScrollState()
-    var positionInRoot by remember { mutableStateOf(Offset.Zero) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .onPlaced { positionInRoot = it.positionInRoot() },
-    ) {
-        if (tabletop == null) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (tabletop == null || positionInRoot == null) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
@@ -245,20 +247,17 @@ private fun ValueCard(title: String, lines: List<Pair<String, String>>) {
 
 /**
  * Draws the fold and the occlusion regions where they really are. Their bounds are in the
- * window's coordinate space, so they are shifted by this overlay's own position in the root.
+ * window's coordinate space, so they are shifted by the screen's [positionInRoot]; nothing is
+ * drawn until the screen has been placed.
  */
 @OptIn(ExperimentalCalfFoldableApi::class, CalfIosOnlyApi::class)
 @Composable
-private fun FoldRegionsOverlay(foldState: FoldState) {
-    var positionInRoot by remember { mutableStateOf(Offset.Zero) }
+private fun FoldRegionsOverlay(foldState: FoldState, positionInRoot: Offset?) {
     val foldColor = MaterialTheme.colorScheme.primary
     val occlusionColor = MaterialTheme.colorScheme.error
 
-    Canvas(
-        modifier = Modifier
-            .fillMaxSize()
-            .onPlaced { positionInRoot = it.positionInRoot() },
-    ) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        positionInRoot ?: return@Canvas
         val foldBounds = foldState.iosFoldRegion?.bounds ?: foldState.fold?.bounds
         foldBounds?.let { drawRegion(it.translate(-positionInRoot), foldColor) }
         foldState.iosOcclusionRegions.forEach { region ->

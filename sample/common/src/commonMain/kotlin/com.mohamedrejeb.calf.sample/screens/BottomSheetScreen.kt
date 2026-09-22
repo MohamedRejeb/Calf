@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.toSize
 import com.mohamedrejeb.calf.foldable.ExperimentalCalfFoldableApi
 import com.mohamedrejeb.calf.foldable.rememberFoldState
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.sample.currentPlatform
 import com.mohamedrejeb.calf.sample.components.tabletopPanes
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.sheet.AdaptiveBottomSheet
@@ -53,10 +54,14 @@ fun BottomSheetScreen(
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
     // In tabletop (half open, fold across) the Material sheet stays in the pane below the fold.
     // A top padding, not a height cap: the sheet computes its anchors from the space it is given.
+    // iOS is left alone: the modifier would only pad the content of the native sheet, which UIKit places.
     val foldState = rememberFoldState()
     val windowSize = LocalWindowInfo.current.containerSize.toSize()
     val lowerPane = tabletopPanes(foldState.posture, foldState.calculatePanes(windowSize))?.second
-    val sheetTopInset = lowerPane?.let { with(LocalDensity.current) { it.top.toDp() } } ?: 0.dp
+    val sheetTopInset = lowerPane
+        ?.takeUnless { currentPlatform.isIOS }
+        ?.let { with(LocalDensity.current) { it.top.toDp() } }
+        ?: 0.dp
 
     SampleScreenScaffold(
         title = "Adaptive Bottom Sheet",

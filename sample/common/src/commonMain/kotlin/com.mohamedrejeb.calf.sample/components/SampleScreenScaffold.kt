@@ -10,7 +10,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveScaffold
@@ -22,7 +22,7 @@ import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
  * Set by the sample's list-detail display for the demos whose bar is a plain title with a back
  * button; `null` when a demo draws its own bar.
  */
-val LocalSampleEntryPadding: ProvidableCompositionLocal<PaddingValues?> = staticCompositionLocalOf { null }
+val LocalSampleEntryPadding: ProvidableCompositionLocal<PaddingValues?> = compositionLocalOf { null }
 
 /**
  * The scaffold of a plain demo: a title bar with a back button, or, inside a navigation entry
