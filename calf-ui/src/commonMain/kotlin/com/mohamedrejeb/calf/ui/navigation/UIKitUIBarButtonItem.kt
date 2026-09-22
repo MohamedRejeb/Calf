@@ -17,6 +17,15 @@ import com.mohamedrejeb.calf.ui.uikit.UIKitImage
  * @param selected Whether the bar button item is selected. Defaults to false.
  * @param width The width for a [UIKitUIBarButtonSystemItem.FixedSpace] item. Defaults to null.
  * @param onClick Callback invoked when the bar button item is clicked.
+ * @param label The item's name for VoiceOver and for the bar's overflow menu, where an
+ *   image-only item is otherwise listed without text. The bar keeps showing the image.
+ *   When null, an image item is named after its [title] if it has one, and every other
+ *   item keeps UIKit's own name: system items and SF Symbols have one, a Compose vector or
+ *   bitmap has none until you give it one.
+ * @param visibilityPriority Which items leave the bar first when there is no room for all
+ *   of them (iOS 27+, for example the vertical bar of an iPhone Duo): [UIKitUIBarButtonItemVisibilityPriority.Low]
+ *   items move to the overflow menu first, [UIKitUIBarButtonItemVisibilityPriority.High] items last.
+ *   Ignored before iOS 27.
  */
 @Immutable
 data class UIKitUIBarButtonItem(
@@ -29,6 +38,8 @@ data class UIKitUIBarButtonItem(
     val onClick: () -> Unit = {},
     val menuItems: List<AdaptiveDropDownItem> = emptyList(),
     val menuSections: List<AdaptiveDropDownSection> = emptyList(),
+    val label: String? = null,
+    val visibilityPriority: UIKitUIBarButtonItemVisibilityPriority = UIKitUIBarButtonItemVisibilityPriority.Standard,
 ) {
     internal val hasMenu: Boolean
         get() = menuItems.isNotEmpty() || menuSections.isNotEmpty()
@@ -38,33 +49,49 @@ data class UIKitUIBarButtonItem(
         fun title(
             title: String,
             enabled: Boolean = true,
+            label: String? = null,
+            visibilityPriority: UIKitUIBarButtonItemVisibilityPriority = UIKitUIBarButtonItemVisibilityPriority.Standard,
             onClick: () -> Unit = {},
         ) = UIKitUIBarButtonItem(
             title = title,
             enabled = enabled,
             onClick = onClick,
+            label = label,
+            visibilityPriority = visibilityPriority,
         )
 
-        /** Creates a bar button item with an image. Matches UIBarButtonItem(image:style:target:action:). */
+        /**
+         * Creates a bar button item with an image. Matches UIBarButtonItem(image:style:target:action:).
+         * Give a Compose vector or bitmap a [label]: it is what VoiceOver reads and what the
+         * overflow menu shows next to the image. SF Symbols carry their own description.
+         */
         fun image(
             image: UIKitImage,
             enabled: Boolean = true,
+            label: String? = null,
+            visibilityPriority: UIKitUIBarButtonItemVisibilityPriority = UIKitUIBarButtonItemVisibilityPriority.Standard,
             onClick: () -> Unit = {},
         ) = UIKitUIBarButtonItem(
             image = image,
             enabled = enabled,
             onClick = onClick,
+            label = label,
+            visibilityPriority = visibilityPriority,
         )
 
         /** Creates a system bar button item. Matches UIBarButtonItem(barButtonSystemItem:target:action:). */
         fun systemItem(
             systemItem: UIKitUIBarButtonSystemItem,
             enabled: Boolean = true,
+            label: String? = null,
+            visibilityPriority: UIKitUIBarButtonItemVisibilityPriority = UIKitUIBarButtonItemVisibilityPriority.Standard,
             onClick: () -> Unit = {},
         ) = UIKitUIBarButtonItem(
             systemItem = systemItem,
             enabled = enabled,
             onClick = onClick,
+            label = label,
+            visibilityPriority = visibilityPriority,
         )
 
         /** Creates a flexible space that expands to fill available width. */
@@ -86,6 +113,8 @@ data class UIKitUIBarButtonItem(
             menuItems: List<AdaptiveDropDownItem> = emptyList(),
             menuSections: List<AdaptiveDropDownSection> = emptyList(),
             enabled: Boolean = true,
+            label: String? = null,
+            visibilityPriority: UIKitUIBarButtonItemVisibilityPriority = UIKitUIBarButtonItemVisibilityPriority.Standard,
         ) = UIKitUIBarButtonItem(
             title = title,
             image = image,
@@ -93,6 +122,8 @@ data class UIKitUIBarButtonItem(
             enabled = enabled,
             menuItems = menuItems,
             menuSections = menuSections,
+            label = label,
+            visibilityPriority = visibilityPriority,
         )
     }
 }
@@ -119,4 +150,15 @@ enum class UIKitUIBarButtonSystemItem {
     FlexibleSpace,
     /** A fixed-width space between items. Set width via [UIKitUIBarButtonItem.width]. */
     FixedSpace,
+}
+
+/**
+ * How long a bar button item is kept in the bar when there is not enough room for every
+ * item (iOS 27+). Maps to `UIBarButtonItem.visibilityPriority`; UIKit moves [Low] items to
+ * the overflow menu first and [High] items last. Before iOS 27 every item is [Standard].
+ */
+enum class UIKitUIBarButtonItemVisibilityPriority {
+    Low,
+    Standard,
+    High,
 }

@@ -158,10 +158,12 @@ fun ShowcaseScreen(
                 iosTrailingItems = listOf(
                     UIKitUIBarButtonItem.image(
                         image = UIKitImage.SystemName(SFSymbol.squareAndArrowUp),
+                        label = "Share",
                         onClick = { showShareDialog = true },
                     ),
                     UIKitUIBarButtonItem.withMenu(
                         image = UIKitImage.SystemName(SFSymbol.ellipsisCircle),
+                        label = "More options",
                         menuItems = topBarMenuItems,
                     ),
                 ),

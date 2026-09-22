@@ -26,6 +26,9 @@ import platform.UIKit.UINavigationBarDelegateProtocol
 import platform.UIKit.UINavigationItem
 import platform.UIKit.UIBarPositionTopAttached
 import platform.UIKit.UIBarPositioningProtocol
+import platform.UIKit.accessibilityLabel
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.Platform
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
 
@@ -187,45 +190,69 @@ public fun UIKitUIBarButtonItem.toUIBarButtonItem(
     val target = if (hasMenu) null else actionHandler
     val action = if (hasMenu) null else selector
 
-    // If systemItem is specified, use system item constructor
-    if (systemItem != null) {
-        return UIBarButtonItem(
+    return createNativeItem(target, action, density).also {
+        it.enabled = enabled
+        it.selected = selected
+        if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections, density)
+        it.applyNames(resolveNames())
+        it.applyVisibilityPriority(visibilityPriority)
+        warnOnceIfUnnamed()
+    }
+}
+
+/** System item, image or title constructor, in that order of precedence. */
+@OptIn(ExperimentalForeignApi::class)
+private fun UIKitUIBarButtonItem.createNativeItem(
+    target: BarButtonActionHandler?,
+    action: kotlinx.cinterop.COpaquePointer?,
+    density: Float,
+): UIBarButtonItem {
+    val uiImage = image?.toUIImage(density)
+    return when {
+        systemItem != null -> UIBarButtonItem(
             barButtonSystemItem = systemItem.toUIBarButtonSystemItem(),
             target = target,
             action = action,
-        ).also {
-            it.enabled = enabled
-            it.selected = selected
-            if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections, density)
-        }
-    }
-
-    // If image is specified, use image constructor
-    val uiImage = image?.toUIImage(density)
-    if (uiImage != null) {
-        return UIBarButtonItem(
+        )
+        uiImage != null -> UIBarButtonItem(
             image = uiImage,
             style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
             target = target,
             action = action,
-        ).also {
-            it.enabled = enabled
-            it.selected = selected
-            if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections, density)
-        }
+        )
+        else -> UIBarButtonItem(
+            title = title ?: "",
+            style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
+            target = target,
+            action = action,
+        )
     }
+}
 
-    // Otherwise, use title constructor
-    return UIBarButtonItem(
-        title = title ?: "",
-        style = UIBarButtonItemStyle.UIBarButtonItemStylePlain,
-        target = target,
-        action = action,
-    ).also {
-        it.enabled = enabled
-        it.selected = selected
-        if (hasMenu) it.menu = buildUIMenu(menuItems, menuSections, density)
-    }
+/**
+ * An image item keeps its image in the bar; the title set here is what the overflow menu
+ * and VoiceOver use for it.
+ */
+private fun UIBarButtonItem.applyNames(names: BarButtonItemNames) {
+    names.nativeTitle?.let { title = it }
+    names.accessibilityLabel?.let { accessibilityLabel = it }
+}
+
+private var unnamedImageWarned = false
+
+/**
+ * A Compose vector or bitmap has no name of its own, so VoiceOver reads nothing for the
+ * item and the overflow menu (iOS 26+, and the vertical bar of an iPhone Duo) lists it as
+ * a bare image. Said once per process, in debug binaries only.
+ */
+@OptIn(ExperimentalNativeApi::class)
+private fun UIKitUIBarButtonItem.warnOnceIfUnnamed() {
+    if (unnamedImageWarned || !isUnnamedCustomImage || !Platform.isDebugBinary) return
+    unnamedImageWarned = true
+    println(
+        "Calf: a UIKitUIBarButtonItem with a Compose vector or bitmap has no label. " +
+            "Pass `label` so VoiceOver and the bar's overflow menu can name it.",
+    )
 }
 
 private fun buildUIMenu(

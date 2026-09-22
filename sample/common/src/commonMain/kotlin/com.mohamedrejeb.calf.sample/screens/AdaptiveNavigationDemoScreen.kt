@@ -83,6 +83,7 @@ private val NavDemoSavedState = SavedStateConfiguration {
             subclass(NavDemoDetail::class)
             subclass(NavDemoCover::class)
             subclass(NavDemoLocked::class)
+            subclass(NavDemoBarItems::class)
             subclass(NavDemoInbox::class)
             subclass(NavDemoMessage::class)
             subclass(NavDemoAttachment::class)
@@ -162,6 +163,7 @@ private fun NavDemoTabs(
         configuration = NavDemoSavedState,
     )
     var itemCount by remember { mutableIntStateOf(5) }
+    val lastTapped = rememberNavDemoLastTapped()
 
     AdaptiveTabDisplay(
         state = tabs,
@@ -262,8 +264,16 @@ private fun NavDemoTabs(
                     contentPadding = padding,
                     onOpenCover = { tabs.backStack.add(NavDemoCover) },
                     onOpenLocked = { tabs.backStack.add(NavDemoLocked) },
+                    onOpenBarItems = { tabs.backStack.add(NavDemoBarItems) },
                 )
             }
+
+            is NavDemoBarItems -> navDemoBarItemsEntry(
+                key = key,
+                backStack = tabs.backStack,
+                onTapped = { lastTapped.value = it },
+                lastTapped = { lastTapped.value },
+            )
 
             is NavDemoCover -> adaptiveNavEntry(
                 key = key,
@@ -311,7 +321,7 @@ private fun NavDemoTabs(
 }
 
 @Composable
-private fun NavDemoBackButton(onClick: () -> Unit) {
+internal fun NavDemoBackButton(onClick: () -> Unit) {
     IconButton(onClick = onClick) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
     }
@@ -329,6 +339,7 @@ private fun NavKey.demoLabel(): String =
         is NavDemoDetail -> "Item $itemId"
         is NavDemoCover -> "Cover"
         is NavDemoLocked -> "Locked"
+        is NavDemoBarItems -> "Bar items"
         is NavDemoInbox -> "Inbox"
         is NavDemoMessage -> "Message $messageId"
         is NavDemoAttachment -> "Attachment"

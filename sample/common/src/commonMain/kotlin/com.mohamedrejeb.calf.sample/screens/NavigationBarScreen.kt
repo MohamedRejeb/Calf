@@ -881,6 +881,7 @@ fun NavigationBarScreen(
                 iosTrailingItems = listOf(
                     UIKitUIBarButtonItem(
                         image = UIKitImage.SystemName(SFSymbol.magnifyingglass),
+                        label = "Search",
                         onClick = { /* search */ },
                     ),
                 ),

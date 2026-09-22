@@ -111,7 +111,24 @@ UIKitUIBarButtonItem.flexibleSpace()
 
 // Fixed-width space
 UIKitUIBarButtonItem.fixedSpace(width = 16.0)
+
+// Image item with a name for VoiceOver and the overflow menu
+UIKitUIBarButtonItem.image(
+    image = UIKitImage.Vector(Icons.Outlined.Notifications),
+    label = "Notifications",
+    visibilityPriority = UIKitUIBarButtonItemVisibilityPriority.Low,
+    onClick = { /* handle */ }
+)
 ```
+
+### Labels and overflow
+
+| Parameter | What it does |
+|---|---|
+| `label` | The item's name for VoiceOver and for the bar's overflow menu (iOS 26+ bars, and the vertical bar of an iPhone Duo). Defaults to `title`. The bar keeps showing the image; the label is only read and listed. System items and SF Symbols already have a name from UIKit; a Compose vector or bitmap has none until you give it one, and debug builds log a one-time reminder. |
+| `visibilityPriority` | `UIKitUIBarButtonItemVisibilityPriority.Low`, `Standard` (default) or `High`. When the bar runs out of room, iOS 27+ moves `Low` items to the overflow menu first and `High` items last. Ignored before iOS 27. |
+
+A text item is never moved into an iPhone Duo's vertical strip; it stays in the title row.
 
 !!! tip
     Use type-safe `SFSymbol` constants from `calf-ui` instead of raw strings for icon names. See [SF Symbols & Cupertino Icons](../sf-symbols.md) for details.

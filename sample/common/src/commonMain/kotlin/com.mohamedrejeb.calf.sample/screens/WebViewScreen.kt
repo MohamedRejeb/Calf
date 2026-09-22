@@ -97,30 +97,36 @@ fun WebViewScreen(
                 UIKitUIBarButtonItem.image(
                     image = UIKitImage.SystemName(SFSymbol.chevronLeft),
                     enabled = navigator.canGoBack,
+                    label = "Navigate Back",
                     onClick = { navigator.navigateBack() },
                 ),
                 UIKitUIBarButtonItem.image(
                     image = UIKitImage.SystemName(SFSymbol.chevronRight),
                     enabled = navigator.canGoForward,
+                    label = "Navigate Forward",
                     onClick = { navigator.navigateForward() },
                 ),
                 UIKitUIBarButtonItem.flexibleSpace(),
                 UIKitUIBarButtonItem.image(
                     image = UIKitImage.SystemName(SFSymbol.arrowClockwise),
+                    label = "Reload",
                     onClick = { navigator.reload() },
                 ),
                 UIKitUIBarButtonItem.flexibleSpace(),
                 UIKitUIBarButtonItem.image(
                     image = UIKitImage.SystemName(SFSymbol.xmark),
+                    label = "Stop Loading",
                     onClick = { navigator.stopLoading() },
                 ),
                 UIKitUIBarButtonItem.flexibleSpace(),
                 UIKitUIBarButtonItem.image(
                     image = UIKitImage.SystemName(SFSymbol.globe),
+                    label = "Load URL",
                     onClick = { navigator.loadUrl(INITIAL_URL) },
                 ),
                 UIKitUIBarButtonItem.image(
                     image = UIKitImage.SystemName(SFSymbol.chevronLeftForwardslashChevronRight),
+                    label = "Load HTML",
                     onClick = { navigator.loadHtml(DUMMY_HTML) },
                 ),
             )

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
@@ -90,6 +91,7 @@ internal fun NavDemoExploreContent(
     contentPadding: PaddingValues,
     onOpenCover: () -> Unit,
     onOpenLocked: () -> Unit,
+    onOpenBarItems: () -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -110,6 +112,14 @@ internal fun NavDemoExploreContent(
                 title = "Locked screen",
                 subtitle = "iosGestureEnabled = false blocks iOS swipe-back",
                 onClick = onOpenLocked,
+            )
+        }
+        item {
+            NavDemoFeatureRow(
+                icon = { Icon(Icons.Outlined.MoreHoriz, contentDescription = null) },
+                title = "Bar items and overflow",
+                subtitle = "labels and visibilityPriority for the iPhone Duo strip",
+                onClick = onOpenBarItems,
             )
         }
         item {
@@ -335,7 +345,7 @@ internal fun NavDemoSignedOutContent(
 }
 
 @Composable
-private fun NavDemoCard(title: String, body: String) {
+internal fun NavDemoCard(title: String, body: String) {
     Card(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         Column(
             modifier = Modifier
@@ -350,7 +360,7 @@ private fun NavDemoCard(title: String, body: String) {
 }
 
 @Composable
-private fun NavDemoSectionHeader(text: String) {
+internal fun NavDemoSectionHeader(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,

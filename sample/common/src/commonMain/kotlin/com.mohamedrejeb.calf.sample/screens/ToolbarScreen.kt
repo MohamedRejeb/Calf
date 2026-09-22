@@ -55,18 +55,22 @@ fun ToolbarScreen(
 
     val backItem = UIKitUIBarButtonItem.image(
         image = UIKitImage.SystemName(SFSymbol.chevronLeft),
+        label = "Back",
         onClick = { lastAction = "Back tapped" },
     )
     val forwardItem = UIKitUIBarButtonItem.image(
         image = UIKitImage.SystemName(SFSymbol.chevronRight),
+        label = "Forward",
         onClick = { lastAction = "Forward tapped" },
     )
     val shareItem = UIKitUIBarButtonItem.image(
         image = UIKitImage.SystemName(SFSymbol.squareAndArrowUp),
+        label = "Share",
         onClick = { lastAction = "Share tapped" },
     )
     val bookmarkItem = UIKitUIBarButtonItem.image(
         image = UIKitImage.SystemName(SFSymbol.book),
+        label = "Bookmark",
         onClick = { lastAction = "Bookmark tapped" },
     )
 

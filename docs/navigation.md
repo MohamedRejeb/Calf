@@ -322,6 +322,41 @@ adaptiveNavEntry(
 ) { padding -> /* ... */ }
 ```
 
+### Bar items on iPhone Duo
+
+On an iPhone Duo the container moves the bar button items and the tab bar into one vertical strip on the
+cover display and in landscape on the inner display. Two things matter there that do not on an iPhone:
+
+- **Every image item needs a name.** When the strip runs out of room, items move to an overflow menu, which
+  lists them by name, and VoiceOver reads the same name. System items and SF Symbols have one from UIKit;
+  a Compose vector or bitmap has none, so give it a `label`. The bar keeps showing the image, the label is
+  only used by the menu and by VoiceOver. A text item keeps its title in the strip's title row and is never
+  moved into the strip.
+- **`visibilityPriority` decides what overflows first** (iOS 27+): `Low` items leave the bar first,
+  `High` items last, `Standard` in between. Before iOS 27 the priority is ignored.
+
+```kotlin
+iosTrailingItems = listOf(
+    UIKitUIBarButtonItem.systemItem(
+        systemItem = UIKitUIBarButtonSystemItem.Add,
+        visibilityPriority = UIKitUIBarButtonItemVisibilityPriority.High,
+        onClick = onAdd,
+    ),
+    UIKitUIBarButtonItem.image(
+        image = UIKitImage.Vector(Icons.Outlined.Notifications),
+        label = "Notifications",
+        visibilityPriority = UIKitUIBarButtonItemVisibilityPriority.Low,
+        onClick = onNotifications,
+    ),
+)
+```
+
+The strip is shared with the tab bar: with a tab bar present, keep to a few image items per side and mark
+the rest `Low`, so the overflow menu, not the tab bar, takes them. The sample's Adaptive Navigation demo
+has a "Bar items and overflow" screen (Explore tab) with eight items of mixed kinds and priorities.
+
+<!-- MEDIA: iPhone Duo closed, the sample's "Bar items and overflow" screen: image items in the strip, the overflow menu open with the labelled items, the Sort text item in the title row -->
+
 ## `adaptiveTab`
 
 | Parameter | Used on |
@@ -397,7 +432,7 @@ Everything below needs `@OptIn(ExperimentalCalfNavigationApi::class)`.
 | `largeTitle` | `LargeTopAppBar` on Material, a large `UINavigationBar` title on iOS. Default `false`. |
 | `iosTitle` | Title of the native navigation bar. |
 | `iosBackTitle` | Title of the back button shown by the *next* screen. `null` (default): UIKit's default. |
-| `iosLeadingItems`, `iosTrailingItems` | Native bar button items. |
+| `iosLeadingItems`, `iosTrailingItems` | Native bar button items. Give image items a `label` and, for iPhone Duo, a `visibilityPriority`; see [Bar items on iPhone Duo](#bar-items-on-iphone-duo). |
 | `iosConfiguration` | Native bar appearance (`UIKitNavigationBarConfiguration`). |
 | `barShown` | Shows the top bar. Default `true`. |
 | `tabBarShown` | Inside `AdaptiveTabDisplay`: keeps the tab bar while this entry is on top. Default `true`. |

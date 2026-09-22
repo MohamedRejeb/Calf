@@ -67,10 +67,12 @@ fun TopBarDemoScreen(
                 iosTrailingItems = listOf(
                     UIKitUIBarButtonItem(
                         image = UIKitImage.SystemName(SFSymbol.squareAndArrowUp),
+                        label = "Share",
                         onClick = { /* share */ },
                     ),
                     UIKitUIBarButtonItem(
                         image = UIKitImage.SystemName(SFSymbol.ellipsisCircle),
+                        label = "More",
                         onClick = { /* more */ },
                     ),
                 ),
