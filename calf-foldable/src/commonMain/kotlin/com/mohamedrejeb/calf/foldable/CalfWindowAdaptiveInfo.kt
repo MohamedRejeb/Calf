@@ -25,6 +25,9 @@ import androidx.compose.runtime.remember
 @Composable
 fun rememberCalfWindowAdaptiveInfo(): WindowAdaptiveInfo {
     val upstream = currentWindowAdaptiveInfoV2()
+    // A per-platform constant, so the composable call below is made consistently on every recomposition.
+    // Where upstream reads the fold itself there is no reason to start a second fold collector.
+    if (upstreamReportsWindowPosture) return upstream
     val snapshot = rememberFoldState().snapshot
     return remember(upstream, snapshot) {
         mergeWindowAdaptiveInfo(

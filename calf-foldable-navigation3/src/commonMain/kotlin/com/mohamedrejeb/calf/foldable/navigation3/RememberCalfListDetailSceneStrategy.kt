@@ -38,6 +38,10 @@ import com.mohamedrejeb.calf.foldable.rememberCalfWindowAdaptiveInfo
  * Nothing about the app's navigation changes. Shared element transitions, custom transitions and
  * predictive back keep working because the `NavDisplay` and its scenes are the ones from
  * Navigation 3.
+ *
+ * One deliberate difference from upstream's default directive, fold or no fold: the pane count is
+ * capped at two, the rule calf-navigation's list-detail follows. An app that uses upstream's
+ * `extraPane()` on a very wide window should pass its own [directive].
  */
 @ExperimentalCalfFoldableApi
 @ExperimentalMaterial3AdaptiveApi
