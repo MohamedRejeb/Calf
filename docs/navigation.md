@@ -468,7 +468,7 @@ The Calf sample (`sample/common`) is wired the way this page recommends, so open
 
 <!-- MEDIA: the sample's home on an open iPhone Duo: list column, selected demo highlighted, detail column -->
 
-The **Navigation 3 List-Detail** demo (`screens/Nav3ListDetailScreen.kt`) is the other path: a plain `NavDisplay` with `rememberCalfListDetailSceneStrategy()`, a shared element transition between a row and the detail header, and the same two panes on an open iPhone Duo.
+The **Navigation 3 List-Detail** demo (`screens/Nav3ListDetailScreen.kt`) is the other path: a plain `NavDisplay` with `rememberCalfListDetailSceneStrategy()`, Navigation 3's own transitions, and the same two panes on an open iPhone Duo.
 
 ## Relationship to `AdaptiveNavHost`
 

@@ -211,7 +211,7 @@ Two things to know:
 - A shared element between the list and the detail should be applied only while one pane is shown. In
   two panes the row and the detail header are on screen at the same time, and two visible matches of
   one key are not a transition. `LocalListDetailSceneScope.current` is non-null only inside the
-  two-pane scene, so it is the switch. The sample's Navigation 3 List-Detail demo does this.
+  two-pane scene, so it is the switch.
 
 <!-- MEDIA: the sample's Navigation 3 List-Detail demo on iPhone Duo: closed (one pane, a tap animates the swatch into the detail header), open (two panes), book (the detail starts after the fold) -->
 

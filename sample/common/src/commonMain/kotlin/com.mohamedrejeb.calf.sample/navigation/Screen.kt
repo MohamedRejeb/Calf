@@ -198,7 +198,7 @@ enum class Screen(
     ),
     Nav3ListDetail(
         title = "Navigation 3 List-Detail",
-        description = "Plain NavDisplay with a fold-aware list-detail strategy: two panes on an open iPhone Duo, shared element transitions kept",
+        description = "Plain NavDisplay with a fold-aware list-detail strategy: two panes on an open iPhone Duo, Navigation 3 transitions kept",
         icon = Icons.Outlined.VerticalSplit,
         category = ScreenCategory.Navigation,
     ),

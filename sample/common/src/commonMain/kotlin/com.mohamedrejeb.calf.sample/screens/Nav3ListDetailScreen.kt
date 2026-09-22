@@ -1,13 +1,10 @@
 @file:OptIn(
-    androidx.compose.animation.ExperimentalSharedTransitionApi::class,
     androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi::class,
     com.mohamedrejeb.calf.foldable.ExperimentalCalfFoldableApi::class,
 )
 
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,15 +27,11 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
-import androidx.compose.material3.adaptive.navigation3.LocalListDetailSceneScope
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,7 +40,6 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.mohamedrejeb.calf.foldable.navigation3.rememberCalfListDetailSceneStrategy
@@ -76,11 +68,10 @@ private val Nav3SavedState: SavedStateConfiguration = SavedStateConfiguration {
 }
 
 /**
- * Plain Navigation 3 with Calf's fold-aware list-detail strategy: `NavDisplay`, upstream's
- * `listPane()` / `detailPane()` metadata and a shared element transition between a row and the
- * detail header, which calf-navigation's UIKit containers cannot do. The one line that comes from
- * Calf is `rememberCalfListDetailSceneStrategy()`: it gives two panes on an open iPhone Duo and
- * lays the detail out after the fold when the Duo is half open.
+ * Plain Navigation 3 with Calf's fold-aware list-detail strategy: `NavDisplay` and upstream's
+ * `listPane()` / `detailPane()` metadata, with Navigation 3's own transitions and predictive back.
+ * The one line that comes from Calf is `rememberCalfListDetailSceneStrategy()`: it gives two panes
+ * on an open iPhone Duo and lays the detail out after the fold when the Duo is half open.
  */
 @Composable
 fun Nav3ListDetailScreen(navigateBack: () -> Unit) {
@@ -93,29 +84,25 @@ fun Nav3ListDetailScreen(navigateBack: () -> Unit) {
 private fun Nav3ListDetail(modifier: Modifier) {
     val backStack = rememberNavBackStack(Nav3SavedState, Nav3Inbox)
 
-    SharedTransitionLayout(modifier = modifier) {
-        CompositionLocalProvider(LocalNav3SharedTransitionScope provides this) {
-            NavDisplay(
-                backStack = backStack,
-                sharedTransitionScope = this,
-                sceneStrategies = listOf(rememberCalfListDetailSceneStrategy()),
-                entryProvider = entryProvider {
-                    entry<Nav3Inbox>(
-                        metadata = ListDetailSceneStrategy.listPane(detailPlaceholder = { Nav3NoItemSelected() }),
-                    ) {
-                        Nav3ItemList(
-                            // Read in the composition, so the highlight follows the back stack.
-                            selectedId = backStack.filterIsInstance<Nav3Item>().lastOrNull()?.id,
-                            onOpen = backStack::openItem,
-                        )
-                    }
-                    entry<Nav3Item>(metadata = ListDetailSceneStrategy.detailPane()) { key ->
-                        Nav3ItemDetail(id = key.id, onClose = { backStack.removeLastOrNull() })
-                    }
-                },
-            )
-        }
-    }
+    NavDisplay(
+        backStack = backStack,
+        modifier = modifier,
+        sceneStrategies = listOf(rememberCalfListDetailSceneStrategy()),
+        entryProvider = entryProvider {
+            entry<Nav3Inbox>(
+                metadata = ListDetailSceneStrategy.listPane(detailPlaceholder = { Nav3NoItemSelected() }),
+            ) {
+                Nav3ItemList(
+                    // Read in the composition, so the highlight follows the back stack.
+                    selectedId = backStack.filterIsInstance<Nav3Item>().lastOrNull()?.id,
+                    onOpen = backStack::openItem,
+                )
+            }
+            entry<Nav3Item>(metadata = ListDetailSceneStrategy.detailPane()) { key ->
+                Nav3ItemDetail(id = key.id, onClose = { backStack.removeLastOrNull() })
+            }
+        },
+    )
 }
 
 /**
@@ -134,8 +121,8 @@ private fun Nav3ItemList(selectedId: Int?, onOpen: (Int) -> Unit) {
             val id = index + 1
             ListItem(
                 leadingContent = { Nav3Swatch(id = id, modifier = Modifier.size(40.dp)) },
-                headlineContent = { Text("Item $id", modifier = Modifier.nav3SharedBounds("title-$id")) },
-                supportingContent = { Text("Tap to open. The swatch and the title travel to the detail.") },
+                headlineContent = { Text("Item $id") },
+                supportingContent = { Text("Tap to open. In two panes the list stays where it is.") },
                 tonalElevation = if (id == selectedId) 4.dp else 0.dp,
                 modifier = Modifier.fillMaxWidth().clickable { onOpen(id) },
             )
@@ -174,58 +161,19 @@ private fun Nav3DetailHeader(id: Int, onClose: () -> Unit) {
             Icon(Icons.Filled.Close, contentDescription = "Close item")
         }
         Nav3Swatch(id = id, modifier = Modifier.size(72.dp))
-        Text(
-            text = "Item $id",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.nav3SharedBounds("title-$id"),
-        )
+        Text(text = "Item $id", style = MaterialTheme.typography.headlineSmall)
     }
 }
 
 @Composable
 private fun Nav3Swatch(id: Int, modifier: Modifier) {
-    Box(
-        modifier = modifier
-            .nav3SharedElement("swatch-$id")
-            .background(swatchColor(id), MaterialTheme.shapes.medium),
-    )
+    Box(modifier = modifier.background(swatchColor(id), MaterialTheme.shapes.medium))
 }
 
 @Composable
 private fun Nav3NoItemSelected() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Select an item", style = MaterialTheme.typography.titleMedium)
-    }
-}
-
-private val LocalNav3SharedTransitionScope: ProvidableCompositionLocal<SharedTransitionScope> =
-    staticCompositionLocalOf { error("Only inside the Navigation 3 list-detail demo") }
-
-/**
- * The shared element for the one-pane push and pop. In two panes the row and the detail header
- * are on screen at the same time, and two visible matches of one key are not a transition, so the
- * modifier is left out there. [LocalListDetailSceneScope] is only provided inside the two-pane scene.
- */
-@Composable
-private fun Modifier.nav3SharedElement(key: String): Modifier {
-    if (LocalListDetailSceneScope.current != null) return this
-    return with(LocalNav3SharedTransitionScope.current) {
-        this@nav3SharedElement.sharedElement(
-            sharedContentState = rememberSharedContentState(key),
-            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-        )
-    }
-}
-
-/** Like [nav3SharedElement], for content whose size differs between the row and the header. */
-@Composable
-private fun Modifier.nav3SharedBounds(key: String): Modifier {
-    if (LocalListDetailSceneScope.current != null) return this
-    return with(LocalNav3SharedTransitionScope.current) {
-        this@nav3SharedBounds.sharedBounds(
-            sharedContentState = rememberSharedContentState(key),
-            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-        )
     }
 }
 
