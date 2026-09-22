@@ -1,21 +1,18 @@
-@file:OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalCalfNavigationApi::class)
+@file:OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalCalfNavigationApi::class, ExperimentalCalfFoldableApi::class)
 
 package com.mohamedrejeb.calf.navigation.internal
 
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
-import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
-import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.scene.SceneStrategy
+import com.mohamedrejeb.calf.foldable.ExperimentalCalfFoldableApi
+import com.mohamedrejeb.calf.foldable.navigation3.calfPaneScaffoldDirective
 import com.mohamedrejeb.calf.navigation.AdaptivePaneRole
 import com.mohamedrejeb.calf.navigation.ExperimentalCalfNavigationApi
 import com.mohamedrejeb.calf.navigation.kind
@@ -51,7 +48,10 @@ internal fun materialListDetail(
 ): MaterialListDetail {
     val strategy = rememberListDetailSceneStrategy<NavKey>(
         backNavigationBehavior = BackNavigationBehavior.PopLatest,
-        directive = listDetailDirective(),
+        // The pane count rule calf-foldable-navigation3 shares with the plain Navigation 3 path.
+        // Upstream's own window info: on Material platforms it already reads the fold (Android) or
+        // there is none (desktop, web), so calf-foldable would add nothing here.
+        directive = calfPaneScaffoldDirective(currentWindowAdaptiveInfoV2()),
     )
 
     val keys = backStack.toList()
@@ -76,33 +76,6 @@ internal fun materialListDetail(
     )
 }
 
-/**
- * Material's own directive for the current window, with the pane count from
- * [materialHorizontalPartitions]. Hinge handling stays Material's: a hinge that separates the
- * display (half open) is kept clear, with the panes on either side of it.
- */
-@Composable
-private fun listDetailDirective(): PaneScaffoldDirective {
-    val windowInfo = currentWindowAdaptiveInfoV2()
-    val upstream = calculatePaneScaffoldDirective(windowInfo)
-    val windowWidthDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
-
-    val partitions = materialHorizontalPartitions(
-        upstreamPartitions = upstream.maxHorizontalPartitions,
-        windowWidthDp = windowWidthDp.value,
-        hasVerticalHinge = windowInfo.windowPosture.hingeList.any { it.isVertical },
-    )
-    if (partitions == upstream.maxHorizontalPartitions) return upstream
-
-    return upstream.copy(
-        maxHorizontalPartitions = partitions,
-        horizontalPartitionSpacerSize = if (partitions > 1) PANE_SPACER else 0.dp,
-    )
-}
-
 /** A copy of this entry with [extra] metadata. `NavEntry` keeps its key private, hence [key]. */
 private fun NavEntry<NavKey>.withMetadata(key: NavKey, extra: Map<String, Any>): NavEntry<NavKey> =
     NavEntry(key = key, contentKey = contentKey, metadata = metadata + extra) { Content() }
-
-/** Material's spacer between two horizontal partitions. */
-private val PANE_SPACER = 24.dp

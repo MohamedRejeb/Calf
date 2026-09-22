@@ -31,6 +31,8 @@ kotlin {
     sourceSets.named("materialMain") {
         dependencies {
             implementation(libs.compose.material3.adaptive.navigation3)
+            // The fold-aware pane directive, shared with apps on plain Navigation 3.
+            implementation(projects.calfFoldableNavigation3)
         }
     }
 
