@@ -1,5 +1,7 @@
 package com.mohamedrejeb.calf.navigation.internal
 
+import kotlin.math.round
+
 /**
  * What an iOS entry host knows about its navigation bar's *resting* top inset,
  * the one with the large title expanded. All values are in points.
@@ -15,13 +17,32 @@ package com.mohamedrejeb.calf.navigation.internal
  *   orientation and size class, so another width starts over.
  * @property expandedTopInset largest top inset seen while the content was at
  *   its top, zero until sampled.
+ * @property sampledByWidth the expanded inset of the last few widths sampled,
+ *   keyed by whole points. The inset can only be sampled with the content at
+ *   its top, so a width change while scrolled (a rotation, an iPhone Duo pose
+ *   change) would otherwise leave the content following the live inset until
+ *   the next scroll to the top; a width seen before restores its inset at once.
+ *   Only [REMEMBERED_WIDTHS] entries are kept, so a continuous resize (iPad
+ *   Stage Manager) cannot grow it.
  */
 internal data class NavBarInsetCalibration(
     val width: Double = 0.0,
     val expandedTopInset: Double = 0.0,
+    private val sampledByWidth: Map<Double, Double> = emptyMap(),
 ) {
-    fun forWidth(width: Double): NavBarInsetCalibration =
-        if (width == this.width) this else NavBarInsetCalibration(width = width)
+    fun forWidth(width: Double): NavBarInsetCalibration {
+        val key = round(width)
+        if (key == this.width) return this
+        val remembered = when {
+            expandedTopInset > 0.0 -> (sampledByWidth - this.width + (this.width to expandedTopInset)).takeLast(REMEMBERED_WIDTHS)
+            else -> sampledByWidth
+        }
+        return NavBarInsetCalibration(
+            width = key,
+            expandedTopInset = remembered[key] ?: 0.0,
+            sampledByWidth = remembered,
+        )
+    }
 
     /** The inset only shrinks while scrolling, so at the top the largest value seen is the expanded one. */
     fun sampledAtTop(currentTopInset: Double): NavBarInsetCalibration =
@@ -49,7 +70,15 @@ internal data class NavBarInsetCalibration(
      */
     fun mirroredOffsetY(atTop: Boolean, currentTopInset: Double, scrolledPoints: Double): Double =
         if (atTop) -currentTopInset else -expandedTopInset + scrolledPoints
+
+    companion object {
+        /** Enough for the widths a phone or foldable cycles through; iPad multitasking widths are transient. */
+        const val REMEMBERED_WIDTHS = 6
+    }
 }
+
+private fun <K, V> Map<K, V>.takeLast(n: Int): Map<K, V> =
+    if (size <= n) this else entries.drop(size - n).associate { (k, v) -> k to v }
 
 private const val INSET_EPSILON = 0.5
 
