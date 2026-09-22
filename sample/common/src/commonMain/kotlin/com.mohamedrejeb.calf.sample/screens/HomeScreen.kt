@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,9 +36,15 @@ import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.navigation.Screen
 import com.mohamedrejeb.calf.sample.navigation.ScreenCategory
 
+/**
+ * The component list. It is the list pane of the sample's list-detail display, so beside an open
+ * demo it highlights [selectedScreen]; on a narrow window it is the screen the demos are pushed
+ * over.
+ */
 @Composable
 fun HomeScreen(
-    navigate: (String) -> Unit,
+    navigate: (Screen) -> Unit,
+    selectedScreen: Screen? = null,
 ) {
     val screensByCategory = Screen.entries
         .filter { it != Screen.Home && it != Screen.Showcase }
@@ -87,7 +94,7 @@ fun HomeScreen(
         ) {
             item(key = "showcase") {
                 ShowcaseBanner(
-                    onClick = { navigate(Screen.Showcase.name) },
+                    onClick = { navigate(Screen.Showcase) },
                 )
             }
 
@@ -103,10 +110,11 @@ fun HomeScreen(
                     key = { it.name },
                 ) { screen ->
                     FeatureListItem(
-                        onClick = { navigate(screen.name) },
+                        onClick = { navigate(screen) },
                         title = screen.title,
                         description = screen.description,
                         icon = screen.icon,
+                        selected = screen == selectedScreen,
                     )
                 }
 
@@ -115,6 +123,23 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+/** Fills the detail pane while two panes are shown and no demo is open. */
+@Composable
+fun HomeDetailPlaceholder() {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Text(
+            text = "Select a component",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -192,11 +217,16 @@ private fun FeatureListItem(
     title: String,
     description: String,
     icon: ImageVector,
+    selected: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = if (selected) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainer
+            },
         ),
         onClick = onClick,
         shape = MaterialTheme.shapes.medium,
