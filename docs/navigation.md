@@ -440,6 +440,16 @@ If the tab list changes while the state is remembered, the selection restarts fr
 | `IosSplitViewConfiguration.withSplitViewController { }` | iOS only, `iosMain`. Direct access to the `UISplitViewController`. |
 | `NavBackStack<NavKey>.selectDetail(list, detail)` | Replaces whatever is above `list` with `detail`. Selecting the detail that is already on top changes nothing; without `list` on the stack it pushes. |
 
+## The sample app is a list-detail app
+
+The Calf sample (`sample/common`) is wired the way this page recommends, so opening it on an iPad, an open iPhone Duo, a desktop window or an Android tablet *is* the demo: the component list on the left, the selected demo on the right, and a plain push on a phone. It is a small, complete example to copy from:
+
+- `navigation/SampleNavKeys.kt`: one `@Serializable` `SampleScreen(screen)` key per entry of the `Screen` enum, a `SampleRoot` key, the `SavedStateConfiguration` both stacks are created with (so a fold or unfold on Android, which recreates the Activity, keeps the selected demo), and `Screen.host()`: a pure function that says where each demo is shown.
+- `navigation/AppNavGraph.kt`: two layers. The **outer** `AdaptiveNavDisplay` pushes the demos that own the whole screen (their own tabs, or their own navigation display) full screen: a `UISplitViewController` must never be pushed, so they cannot live in a detail column. Its root entry hosts the **inner** `AdaptiveNavDisplay` with `listDetail`: the home list is the `AdaptivePaneRole.List` entry with a "Select a component" placeholder, every other demo an `AdaptivePaneRole.Detail`. A list tap calls `selectDetail`, and the list highlights the demo whose key is on top of the stack.
+- `components/SampleScreenScaffold.kt`: the demos' shared scaffold. Inside a detail entry the navigator paints the bar (title, back button, and on iPhone Duo the vertical strip), so the scaffold renders only the body; demos whose subject is the bar itself keep drawing their own and use `barShown = false`.
+
+<!-- MEDIA: the sample's home on an open iPhone Duo: list column, selected demo highlighted, detail column -->
+
 ## Relationship to `AdaptiveNavHost`
 
-The older string-route `AdaptiveNavHost` / `AdaptiveNavHostController` API is still available and unchanged. It will be deprecated in favor of `AdaptiveNavDisplay` once the new API stabilizes.
+The older string-route `AdaptiveNavHost` / `AdaptiveNavHostController` API is still available and unchanged. The sample no longer uses it. It will be deprecated in favor of `AdaptiveNavDisplay` once the new API stabilizes.

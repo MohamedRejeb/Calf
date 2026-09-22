@@ -127,8 +127,9 @@ private fun homeEntry(
             key = key,
             barShown = false,
             paneRole = AdaptivePaneRole.List(detailPlaceholder = { HomeDetailPlaceholder() }),
-        ) {
+        ) { padding ->
             HomeScreen(
+                contentPadding = padding,
                 // Read in the composition, so the highlight follows the stack on every platform.
                 selectedScreen = stack.selectedDemo(),
                 navigate = { target ->

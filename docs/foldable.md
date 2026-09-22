@@ -90,28 +90,43 @@ to feed it your own values.
 
 ### A tabletop layout from the raw values
 
-Everything Calf builds on top of the fold uses this same public API, so you are never locked in:
+Everything Calf builds on top of the fold uses this same public API, so you are never locked in. This is the layout of the sample's Foldable screen: half open with the fold running across the window, the content stays above the fold and the controls sit below it; in any other pose it is one scrolling column.
 
 ```kotlin
+/** The two panes of a tabletop posture, `null` in every other pose (a half-open book, a flat device). */
+fun tabletopPanes(posture: FoldPosture, panes: FoldPanes): FoldPanes? =
+    panes.takeIf {
+        posture == FoldPosture.HalfOpen && it.count == 2 && it.orientation == FoldOrientation.Horizontal
+    }
+
 @OptIn(ExperimentalCalfFoldableApi::class)
 @Composable
 fun Player() {
     val foldState = rememberFoldState()
-    val fold = foldState.fold
-    val isTabletop = foldState.posture == FoldPosture.HalfOpen &&
-        fold?.orientation == FoldOrientation.Horizontal
+    val windowSize = LocalWindowInfo.current.containerSize.toSize()
+    val tabletop = tabletopPanes(foldState.posture, foldState.calculatePanes(windowSize))
+    var positionInRoot by remember { mutableStateOf(Offset.Zero) }
 
-    if (isTabletop && fold != null) {
-        val foldTop = with(LocalDensity.current) { fold.bounds.top.toDp() }
-        Column {
-            Video(Modifier.height(foldTop))   // above the fold
-            Controls(Modifier.weight(1f))     // below it
+    Box(Modifier.fillMaxSize().onPlaced { positionInRoot = it.positionInRoot() }) {
+        if (tabletop == null) {
+            FullScreenPlayer()
+        } else {
+            // The panes are in the window's space; this layout starts at positionInRoot.
+            val gap = requireNotNull(tabletop.gap).translate(-positionInRoot)
+            val density = LocalDensity.current
+            Column(Modifier.fillMaxSize()) {
+                Video(Modifier.fillMaxWidth().height(with(density) { gap.top.toDp() }))   // above the fold
+                Spacer(Modifier.height(with(density) { gap.height.toDp() }))              // the fold itself
+                Controls(Modifier.fillMaxWidth().weight(1f))                               // below it
+            }
         }
-    } else {
-        FullScreenPlayer()
     }
 }
 ```
+
+The same helper keeps a Material `ModalBottomSheet` in the lower pane: give it `Modifier.padding(top = lowerPane.top.toDp())` (the sample's Bottom Sheet screen does this). Use a top padding rather than a height cap: the sheet computes its anchors from the space it is given, and a capped sheet would open half way up the pane.
+
+<!-- MEDIA: the sample's Foldable screen half open with the fold across (iPhone Duo in Book pose rotated, Pixel Fold in landscape): values above the fold, controls below -->
 
 ### Material3 Adaptive
 

@@ -3,18 +3,15 @@ package com.mohamedrejeb.calf.sample.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -40,10 +37,14 @@ import com.mohamedrejeb.calf.sample.navigation.ScreenCategory
  * The component list. It is the list pane of the sample's list-detail display, so beside an open
  * demo it highlights [selectedScreen]; on a narrow window it is the screen the demos are pushed
  * over.
+ *
+ * @param contentPadding the insets of the navigation entry: the pane's own safe area, not the
+ *   window's (in a split view the two differ).
  */
 @Composable
 fun HomeScreen(
     navigate: (Screen) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(),
     selectedScreen: Screen? = null,
 ) {
     val screensByCategory = Screen.entries
@@ -57,8 +58,7 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
+            .padding(contentPadding)
     ) {
         Text(
             text = "Calf",

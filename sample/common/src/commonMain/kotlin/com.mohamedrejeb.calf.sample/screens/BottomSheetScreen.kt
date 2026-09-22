@@ -24,15 +24,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
+import com.mohamedrejeb.calf.foldable.ExperimentalCalfFoldableApi
+import com.mohamedrejeb.calf.foldable.rememberFoldState
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.sample.components.tabletopPanes
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.sheet.AdaptiveBottomSheet
 import com.mohamedrejeb.calf.ui.sheet.rememberAdaptiveSheetState
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfFoldableApi::class)
 @Composable
 fun BottomSheetScreen(
     navigateBack: () -> Unit
@@ -45,6 +51,12 @@ fun BottomSheetScreen(
         }
     )
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+    // In tabletop (half open, fold across) the Material sheet stays in the pane below the fold.
+    // A top padding, not a height cap: the sheet computes its anchors from the space it is given.
+    val foldState = rememberFoldState()
+    val windowSize = LocalWindowInfo.current.containerSize.toSize()
+    val lowerPane = tabletopPanes(foldState.posture, foldState.calculatePanes(windowSize))?.second
+    val sheetTopInset = lowerPane?.let { with(LocalDensity.current) { it.top.toDp() } } ?: 0.dp
 
     SampleScreenScaffold(
         title = "Adaptive Bottom Sheet",
@@ -77,6 +89,7 @@ fun BottomSheetScreen(
                 onDismissRequest = {
                     openBottomSheet = false
                 },
+                modifier = Modifier.padding(top = sheetTopInset),
                 adaptiveSheetState = sheetState,
             ) {
                 var showDialog by remember { mutableStateOf(false) }
