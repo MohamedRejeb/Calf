@@ -230,9 +230,11 @@ private fun Modifier.nav3SharedBounds(key: String): Modifier {
 }
 
 private fun swatchColor(id: Int): Color =
-    Color.hsl(hue = (id * HUE_STEP_DEGREES % FULL_CIRCLE_DEGREES).toFloat(), saturation = 0.55f, lightness = 0.55f)
+    Color.hsl(hue = (id * HUE_STEP_DEGREES % FULL_CIRCLE_DEGREES).toFloat(), saturation = SWATCH_SATURATION, lightness = SWATCH_LIGHTNESS)
 
 private const val ITEM_COUNT = 30
 private const val DETAIL_LINE_COUNT = 60
 private const val HUE_STEP_DEGREES = 37
 private const val FULL_CIRCLE_DEGREES = 360
+private const val SWATCH_SATURATION = 0.55f
+private const val SWATCH_LIGHTNESS = 0.55f
