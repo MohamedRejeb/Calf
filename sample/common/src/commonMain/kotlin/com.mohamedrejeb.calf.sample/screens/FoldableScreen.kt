@@ -87,12 +87,12 @@ fun FoldableScreen(navigateBack: () -> Unit) {
 private fun FoldableContent(foldState: FoldState, contentPadding: PaddingValues, positionInRoot: Offset?) {
     val windowSize = LocalWindowInfo.current.containerSize.toSize()
     val panes = foldState.calculatePanes(windowSize)
-    val tabletop = positionInRoot?.let { tabletopPanes(foldState.posture, panes) }
+    val tabletop = tabletopPanes(foldState.posture, panes)
     var showDebugDump by rememberSaveable { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (tabletop == null || positionInRoot == null) {
+        if (positionInRoot == null || tabletop == null) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier
