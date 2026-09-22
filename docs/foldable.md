@@ -131,17 +131,89 @@ The same helper keeps a Material `ModalBottomSheet` in the lower pane: give it `
 ### Material3 Adaptive
 
 Compose Multiplatform's `currentWindowAdaptiveInfo()` works in common code, but its `windowPosture` is
-always empty on iOS. `toWindowPosture()` fills that gap, so the Material3 adaptive scaffolds become
-fold-aware there too:
+always empty on iOS. `rememberCalfWindowAdaptiveInfo()` returns the same size class with the posture
+from `rememberFoldState()` on the platforms where upstream leaves it empty, so the Material3 adaptive
+scaffolds become fold-aware there too:
 
 ```kotlin
-val adaptiveInfo = WindowAdaptiveInfo(
-    windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass,
-    windowPosture = foldState.toWindowPosture(),
-)
+val adaptiveInfo = rememberCalfWindowAdaptiveInfo()
+NavigationSuiteScaffold(layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)) { ... }
 ```
 
+On Android it returns upstream's own value untouched: Material3 Adaptive already reads the
+`FoldingFeature` there, and feeding the same fold twice would be wrong. On desktop and web there is no
+fold to add. The pieces are public too: `foldState.toWindowPosture()` gives the `Posture` and
+`WindowAdaptiveInfo(windowSizeClass, windowPosture)` is upstream's constructor.
+
 Calf does not re-implement window size classes. Keep using `WindowSizeClass` for breakpoints.
+
+## Navigation 3: two panes around the fold
+
+An app on plain [Navigation 3](https://kotlinlang.org/docs/multiplatform/compose-navigation-3.html) lays
+a list and its detail out side by side with Material 3 adaptive's `rememberListDetailSceneStrategy`.
+At the current versions that strategy never sees the fold on iOS, because the directive it builds comes
+from a `windowPosture` that is empty there. `calf-foldable-navigation3` is the drop-in that fixes this,
+without touching the app's navigation: `NavDisplay`, its transitions, shared elements and predictive
+back stay exactly what Navigation 3 provides.
+
+[![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-foldable-navigation3)](https://search.maven.org/search?q=g:com.mohamedrejeb.calf)
+
+```kotlin
+// build.gradle.kts
+commonMain.dependencies {
+    implementation("com.mohamedrejeb.calf:calf-foldable-navigation3:<version>")
+}
+```
+
+One line changes:
+
+```kotlin
+@OptIn(ExperimentalCalfFoldableApi::class, ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+fun Inbox(backStack: NavBackStack<NavKey>) {
+    NavDisplay(
+        backStack = backStack,
+        sceneStrategies = listOf(rememberCalfListDetailSceneStrategy()),
+        entryProvider = entryProvider {
+            entry<Inbox>(metadata = ListDetailSceneStrategy.listPane(detailPlaceholder = { Text("Select a message") })) {
+                InboxList(onOpen = { id -> backStack.add(Message(id)) })
+            }
+            entry<Message>(metadata = ListDetailSceneStrategy.detailPane()) { key -> MessageScreen(key.id) }
+        },
+    )
+}
+```
+
+`rememberCalfListDetailSceneStrategy` has the same parameters and defaults as upstream's function and
+delegates to it. Only the default `directive` differs: it is `calfPaneScaffoldDirective(rememberCalfWindowAdaptiveInfo())`.
+
+What that gives, platform by platform:
+
+| Platform | Without Calf | With `rememberCalfListDetailSceneStrategy()` |
+|---|---|---|
+| iPhone Duo, open | Two panes (the inner display is expanded width), but the scaffold does not know where the fold is | Two panes; half open, the detail pane starts after the fold and the fold is kept clear |
+| iPhone Duo, closed; iPhone | One pane | One pane |
+| Android foldable | Upstream reads the fold itself | Unchanged: upstream's own value is passed through |
+| Android foldable narrower than 840dp, open | One pane | Two panes from 600dp when a vertical hinge runs through the window |
+| Android tablet, desktop, web | Two panes from 840dp | Unchanged |
+
+The pane count is the one rule calf-navigation's Material list-detail uses, so an app that mixes both
+paths gets the same answer on the same window. There is never a third pane.
+
+`calfPaneScaffoldDirective(windowAdaptiveInfo, verticalHingePolicy)` is public for apps that build the
+`ListDetailPaneScaffold` or `SupportingPaneScaffold` themselves. It returns upstream's own directive
+whenever the rule changes nothing.
+
+Two things to know:
+
+- The excluded bounds are in window pixels, in the hosting view's space on iOS. They are right when the
+  `NavDisplay` fills its hosting view, which is the same assumption upstream makes on Android.
+- A shared element between the list and the detail should be applied only while one pane is shown. In
+  two panes the row and the detail header are on screen at the same time, and two visible matches of
+  one key are not a transition. `LocalListDetailSceneScope.current` is non-null only inside the
+  two-pane scene, so it is the switch. The sample's Navigation 3 List-Detail demo does this.
+
+<!-- MEDIA: the sample's Navigation 3 List-Detail demo on iPhone Duo: closed (one pane, a tap animates the swatch into the detail header), open (two panes), book (the detail starts after the fold) -->
 
 ## Shared vs iOS only
 
@@ -275,6 +347,7 @@ fakes the angle.
 |---|---|
 | `rememberFoldState()` | Observes the fold for as long as the caller is in the composition |
 | `FoldState` | `snapshot`, `posture`, `fold`, `isSeparating`, `calculatePanes()`, `toWindowPosture()` and the `ios` members |
+| `rememberCalfWindowAdaptiveInfo()` | Material3 Adaptive's `WindowAdaptiveInfo` with the fold filled in where upstream leaves it empty |
 | `FoldSnapshot` | All values at one moment, as an immutable data class. `FoldSnapshot.NoFold` is the empty one |
 | `FoldPosture` | `NoFold`, `Closed`, `HalfOpen`, `Flat`, and `isOpen` |
 | `FoldInfo`, `FoldOrientation` | The fold's bounds, orientation and `isSeparating` |
@@ -285,3 +358,10 @@ fakes the angle.
 | `LocalFoldStateOverride` | Replaces what `rememberFoldState()` returns below it |
 | `@ExperimentalCalfFoldableApi` | Opt-in for the whole module |
 | `@CalfIosOnlyApi` | Opt-in for members that only act on iOS (in `calf-core`) |
+
+`calf-foldable-navigation3`:
+
+| API | Description |
+|---|---|
+| `rememberCalfListDetailSceneStrategy(...)` | Upstream's `rememberListDetailSceneStrategy` with a fold-aware default directive; same parameters |
+| `calfPaneScaffoldDirective(windowAdaptiveInfo, verticalHingePolicy)` | Upstream's `calculatePaneScaffoldDirective` with two panes on an open book-style foldable from the medium width |

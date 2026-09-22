@@ -27,6 +27,24 @@ The Compose `NavBackStack` is the single source of truth on every platform: muta
 !!! tip "Give the navigator the whole screen"
     Both displays paint their own bars. Mount them as the root of the screen (typically `Modifier.fillMaxSize()`) rather than inside another `Scaffold` with its own bars.
 
+## Which path do I pick?
+
+Calf supports two ways to navigate, and both get iPhone Duo support. **calf-navigation** hands each entry to a real UIKit container on iOS, which is what gives it system push and pop, large titles and the system split view. **Plain Navigation 3** keeps every entry in one Compose hierarchy, which is what keeps shared element transitions, custom transitions and predictive-back scrubbing. Calf supports the second path through extensions and never replaces its navigation. The same calf-ui components work on both.
+
+| Capability | calf-navigation | Plain Navigation 3 + Calf extensions |
+|---|---|---|
+| System push and pop, edge swipe-back on iOS | Yes: `UINavigationController` | No: Compose transitions; system back on Android only |
+| Large titles that collapse with the content | Yes | No |
+| Bars in the iPhone Duo vertical strip | Yes: the containers' bars move there | Not yet: a bar host for standalone calf-ui bars is planned. Its strip items will be the items of one hosted bar, not per-screen system bars |
+| System split view with columns aligned to the fold | Yes: `UISplitViewController` on iOS | No: the two panes are Material 3 adaptive's scaffold, laid out from Calf's fold data |
+| Two panes on an open iPhone Duo | Yes: `listDetail` | Yes: `rememberCalfListDetailSceneStrategy()` from `calf-foldable-navigation3`, see [Foldable](foldable.md#navigation-3-two-panes-around-the-fold) |
+| Fold, camera and tabletop values | Yes: `calf-foldable` | Yes: `calf-foldable` |
+| Shared element transitions between entries | No: each entry is its own Compose hierarchy | Yes |
+| Custom Compose transitions per entry | No | Yes |
+| Predictive back that scrubs the transition | Android: the system animation of the container | Yes: Navigation 3's, inside the list-detail scaffold too |
+
+Pick calf-navigation for an app that should feel native on iOS first. Pick plain Navigation 3 for an app whose navigation is a designed Compose experience, and add the extensions for the fold.
+
 ## Quick start: a stack
 
 ```kotlin
@@ -270,7 +288,7 @@ val listDetail = rememberAdaptiveListDetailSettings(
 
 For anything else, `iosMain` code can reach the controller: `IosSplitViewConfiguration(...).withSplitViewController { splitViewController -> … }`. Leave its delegate and its column controllers alone; they are how Calf keeps the back stack in charge of what each column shows.
 
-**Android, Desktop and Web have no such knobs in Calf.** Pane widths, the drag handle, pane expansion and other scene options belong to Material 3 adaptive. If you need them, use Navigation 3's `NavDisplay` with `rememberListDetailSceneStrategy(...)` and `ListDetailSceneStrategy.listPane()` / `detailPane()` from `org.jetbrains.compose.material3.adaptive:adaptive-navigation3` directly.
+**Android, Desktop and Web have no such knobs in Calf.** Pane widths, the drag handle, pane expansion and other scene options belong to Material 3 adaptive. If you need them, use Navigation 3's `NavDisplay` with `rememberCalfListDetailSceneStrategy(...)` from `calf-foldable-navigation3` (the same scene, fold-aware on iOS, with every upstream parameter) and `ListDetailSceneStrategy.listPane()` / `detailPane()` from `org.jetbrains.compose.material3.adaptive:adaptive-navigation3` directly. See [Which path do I pick?](#which-path-do-i-pick).
 
 ## `adaptiveNavEntry`
 
@@ -449,6 +467,8 @@ The Calf sample (`sample/common`) is wired the way this page recommends, so open
 - `components/SampleScreenScaffold.kt`: the demos' shared scaffold. Inside a detail entry the navigator paints the bar (title, back button, and on iPhone Duo the vertical strip), so the scaffold renders only the body; demos whose subject is the bar itself keep drawing their own and use `barShown = false`.
 
 <!-- MEDIA: the sample's home on an open iPhone Duo: list column, selected demo highlighted, detail column -->
+
+The **Navigation 3 List-Detail** demo (`screens/Nav3ListDetailScreen.kt`) is the other path: a plain `NavDisplay` with `rememberCalfListDetailSceneStrategy()`, a shared element transition between a row and the detail header, and the same two panes on an open iPhone Duo.
 
 ## Relationship to `AdaptiveNavHost`
 
