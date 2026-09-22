@@ -7,7 +7,12 @@ import androidx.compose.runtime.State
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 import com.mohamedrejeb.calf.navigation.AdaptivePaneRole
+import com.mohamedrejeb.calf.navigation.adaptiveNavEntry
 import com.mohamedrejeb.calf.navigation.ExperimentalCalfNavigationApi
 import com.mohamedrejeb.calf.navigation.IosSplitViewConfiguration
 import com.mohamedrejeb.calf.navigation.kind
@@ -236,8 +241,13 @@ internal class IosSplitController(
             ?.takeIf { (owner, controller) -> owner === list && controller in secondary.controllers }
             ?.let { return it.second }
 
+        // Through adaptiveNavEntry so the placeholder gets the column's safe area like any entry:
+        // on iOS 26 the list column floats over a full-width detail column, and a placeholder
+        // centred on the whole column would sit under the list.
         val controller = EntryHostingController(
-            entry = NavEntry<NavKey>(key = DetailPlaceholderKey) { role.detailPlaceholder() },
+            entry = adaptiveNavEntry(key = DetailPlaceholderKey) { padding ->
+                Box(modifier = Modifier.fillMaxSize().padding(padding)) { role.detailPlaceholder() }
+            },
             parentLocals = parentLocals,
             density = density,
         )

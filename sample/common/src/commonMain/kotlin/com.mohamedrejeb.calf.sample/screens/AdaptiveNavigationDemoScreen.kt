@@ -303,7 +303,9 @@ private fun NavDemoTabs(
                 )
             }
 
-            else -> navDemoListDetailEntry(key, tabs.backStack) ?: error("Unexpected tab key: $key")
+            // The Mail tab's own stack: `tabs.backStack` is the *selected* tab's, and on iOS the
+            // entries of every tab are built up front, while another tab is selected.
+            else -> navDemoListDetailEntry(key, tabs.backStackOf(NavDemoInbox)) ?: error("Unexpected tab key: $key")
         }
     }
 }

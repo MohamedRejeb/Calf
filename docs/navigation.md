@@ -208,6 +208,8 @@ AdaptiveNavDisplay(
 
 `AdaptiveTabDisplay` takes the same `listDetail` parameter. A tab whose **root entry** is an `AdaptivePaneRole.List` is laid out as list-detail; the other tabs stay plain stacks, so a settings tab is not squeezed into a list column on a wide screen. Re-selecting a list-detail tab pops it to the list.
 
+Inside `entryProvider`, navigate on `state.backStackOf(tab)` or read `state.backStack` inside the click lambda. `state.backStack` is the *selected* tab's stack, and on iOS the entries of every tab are built up front, while another tab is selected: a stack captured while building the entry would be the wrong tab's.
+
 On iOS the split view sits *inside* the tab. That is the nesting iOS adapts: on iPhone Duo the tab bar joins the detail's bar items in the vertical strip, open and closed.
 
 <!-- MEDIA: open iPhone Duo, Mail tab of the sample: list column, detail column, tab bar and the detail's bar items in the vertical strip -->
