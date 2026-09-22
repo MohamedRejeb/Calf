@@ -69,4 +69,13 @@ kotlin {
     sourceSets.wasmJsMain.dependencies {
         implementation(libs.ktor.client.wasm)
     }
+
+    sourceSets.commonTest.dependencies {
+        implementation(libs.kotlin.test)
+    }
+
+    sourceSets.desktopTest.dependencies {
+        implementation(libs.compose.ui.test)
+        implementation(compose.desktop.currentOs)
+    }
 }
