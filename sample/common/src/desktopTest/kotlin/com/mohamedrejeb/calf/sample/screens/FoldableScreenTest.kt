@@ -21,8 +21,9 @@ import com.mohamedrejeb.calf.foldable.FoldState
 import com.mohamedrejeb.calf.foldable.LocalFoldStateOverride
 import com.mohamedrejeb.calf.sample.ui.theme.CalfTheme
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
-/** The Foldable demo's tabletop layout, driven by calf-foldable's fake state. One dp is one pixel. */
+/** The Foldable demo's pane layout, driven by calf-foldable's fake state. One dp is one pixel. */
 @OptIn(ExperimentalTestApi::class, ExperimentalCalfFoldableApi::class)
 class FoldableScreenTest {
 
@@ -35,7 +36,7 @@ class FoldableScreenTest {
         FoldSnapshot(
             posture = posture,
             fold = FoldInfo(
-                bounds = Rect(0f, HEIGHT / 2f, WIDTH.toFloat(), HEIGHT / 2f),
+                bounds = Rect(0f, FOLD_Y, WIDTH.toFloat(), FOLD_Y),
                 orientation = FoldOrientation.Horizontal,
                 isSeparating = posture == FoldPosture.HalfOpen,
             ),
@@ -43,21 +44,26 @@ class FoldableScreenTest {
     )
 
     @Test
-    fun `half open with the fold across shows the tabletop layout`() = runComposeUiTest {
-        setContent { Foldable(foldAcross(FoldPosture.HalfOpen)) }
-        waitForIdle()
+    fun `half open with the fold across keeps the posture above the fold and the details below`() =
+        runComposeUiTest {
+            setContent { Foldable(foldAcross(FoldPosture.HalfOpen)) }
+            waitForIdle()
 
-        onNodeWithText(TABLETOP_HINT).assertIsDisplayed()
-        onNodeWithText("posture: HalfOpen").assertIsDisplayed()
-    }
+            onNodeWithText("Half open").assertIsDisplayed()
+            onNodeWithText("2 panes").assertIsDisplayed()
+            val postureBottom = onNodeWithText("Half open").fetchSemanticsNode().boundsInRoot.bottom
+            val detailsTop = onNodeWithText("Panes").fetchSemanticsNode().boundsInRoot.top
+            assertTrue(postureBottom <= FOLD_Y, "the posture ends at $postureBottom, below the fold")
+            assertTrue(detailsTop >= FOLD_Y, "the details start at $detailsTop, above the fold")
+        }
 
     @Test
-    fun `a flat device keeps the single layout`() = runComposeUiTest {
-        setContent { Foldable(foldAcross(FoldPosture.Flat)) }
+    fun `without a fold everything is in one pane`() = runComposeUiTest {
+        setContent { Foldable(FoldState()) }
         waitForIdle()
 
-        onNodeWithText(TABLETOP_HINT).assertDoesNotExist()
-        onNodeWithText("posture: Flat").assertIsDisplayed()
+        onNodeWithText("No fold").assertIsDisplayed()
+        onNodeWithText("1 pane").assertIsDisplayed()
     }
 
     @Composable
@@ -74,6 +80,6 @@ class FoldableScreenTest {
     private companion object {
         const val WIDTH = 800
         const val HEIGHT = 800
-        const val TABLETOP_HINT = "Tabletop: the values stay above the fold, these controls below it."
+        const val FOLD_Y = HEIGHT / 2f
     }
 }

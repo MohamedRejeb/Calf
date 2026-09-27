@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.ui.theme.IconTileSize
@@ -33,19 +34,21 @@ import com.mohamedrejeb.calf.sample.ui.theme.Spacing
  * centred and capped at [PageMaxWidth] so it reads well in a wide pane.
  *
  * @param contentPadding the insets of the navigation entry or scaffold the page is shown in.
+ * @param containerColor the page background; transparent when something is drawn behind the page.
  */
 @Composable
 fun DemoPage(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     scrollState: ScrollState = rememberScrollState(),
+    containerColor: Color = MaterialTheme.colorScheme.background,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Box(
         contentAlignment = Alignment.TopCenter,
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(containerColor)
             .verticalScroll(scrollState),
     ) {
         Column(
