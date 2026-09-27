@@ -5,6 +5,12 @@ plugins {
 }
 
 kotlin {
+    android {
+        // Packs composeResources (the logo, and calf-cupertino-icons' font) into the APK. The AGP 9
+        // KMP library target leaves Android resources off by default.
+        androidResources.enable = true
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
