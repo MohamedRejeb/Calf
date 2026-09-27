@@ -124,7 +124,10 @@ private fun DrawScope.drawHatch(rect: Rect, color: Color) {
     }
 }
 
-/** "59 dp" in the middle of a band, when the band is thick enough to hold it. */
+/**
+ * "59 dp" inside a band, when the band is thick enough to hold it. Along a horizontal band it sits
+ * a quarter of the way in, clear of a vertical fold, which usually runs down the middle.
+ */
 private fun DrawScope.drawBandLabel(textMeasurer: TextMeasurer, band: UnsafeBand, style: TextStyle) {
     val label = textMeasurer.measure("${band.sizePx.toDp().value.toInt()} dp", style)
     val thickness = if (band.isVertical) band.rect.width else band.rect.height
@@ -133,7 +136,7 @@ private fun DrawScope.drawBandLabel(textMeasurer: TextMeasurer, band: UnsafeBand
     drawText(
         textLayoutResult = label,
         topLeft = Offset(
-            x = band.rect.center.x - label.size.width / 2f,
+            x = if (band.isVertical) band.rect.center.x - label.size.width / 2f else band.rect.left + band.rect.width / 4f,
             y = band.rect.center.y - label.size.height / 2f,
         ),
     )

@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -110,6 +111,7 @@ private fun ColumnScope.FoldablePane(
     if (showsPosture) {
         FoldableTitleRow(onClose = onClose)
         PostureCard(foldState = foldState, panes = panes)
+        LegendSection()
     }
     if (showsDetails) {
         FoldableDetails(
@@ -123,24 +125,23 @@ private fun ColumnScope.FoldablePane(
     }
 }
 
-/** A scrolling page placed exactly on [slot], its content kept inside the safe part of it. */
+/**
+ * A scrolling page placed on the safe part of [slot] and clipped to it, so content never scrolls
+ * into the hatched unsafe edges the screen is showing.
+ */
 @Composable
 private fun PaneContent(slot: PaneSlot, content: @Composable ColumnScope.() -> Unit) {
-    val density = LocalDensity.current
-    val bounds = slot.bounds
-    with(density) {
+    val bounds = slot.safeBounds
+    if (bounds.width <= 0f || bounds.height <= 0f) return
+    with(LocalDensity.current) {
         Box(
             modifier = Modifier
                 .offset { IntOffset(bounds.left.roundToInt(), bounds.top.roundToInt()) }
-                .size(bounds.width.toDp(), bounds.height.toDp()),
+                .size(bounds.width.toDp(), bounds.height.toDp())
+                .clipToBounds(),
         ) {
             DemoPage(
-                contentPadding = PaddingValues(
-                    start = slot.padding.left.toDp(),
-                    top = slot.padding.top.toDp(),
-                    end = slot.padding.right.toDp(),
-                    bottom = slot.padding.bottom.toDp(),
-                ),
+                contentPadding = PaddingValues(),
                 containerColor = Color.Transparent,
                 content = content,
             )

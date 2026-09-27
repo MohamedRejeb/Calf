@@ -81,7 +81,6 @@ internal fun FoldableDetails(
         }
     }
     IosFoldSection(foldState, density, showDebugDump, onShowDebugDumpChange)
-    LegendSection()
     DemoSection(title = "Usage") { CodeSnippet(USAGE.trimIndent()) }
 }
 
@@ -135,8 +134,9 @@ private fun DebugDump(foldState: FoldState) {
     }
 }
 
+/** What each colour of the drawing means. Sits under the posture, so it is read first. */
 @Composable
-private fun LegendSection() {
+internal fun LegendSection() {
     val colors = geometryColors()
     DemoSection(title = "Legend") {
         DemoListCard {
