@@ -90,7 +90,7 @@ to feed it your own values.
 
 ### A tabletop layout from the raw values
 
-Everything Calf builds on top of the fold uses this same public API, so you are never locked in. This is the layout of the sample's Foldable screen: half open with the fold running across the window, the content stays above the fold and the controls sit below it; in any other pose it is one scrolling column.
+Everything Calf builds on top of the fold uses this same public API, so you are never locked in. The helper below picks out the tabletop pose: half open with the fold running across the window, content above the fold and controls below it. The sample's Foldable screen goes one step further and lays its content out in whatever panes `calculatePanes` returns, each inset by its own share of the safe area: the posture above the fold in tabletop, beside it in a book, one scrolling column without a fold. It also draws the fold, the unsafe edges and, on iPhone Duo, the camera area where they really are.
 
 ```kotlin
 /** The two panes of a tabletop posture, `null` in every other pose (a half-open book, a flat device). */
@@ -126,7 +126,7 @@ fun Player() {
 
 The same helper keeps a Material `ModalBottomSheet` in the lower pane: give it `Modifier.padding(top = lowerPane.top.toDp())` (the sample's Bottom Sheet screen does this). Use a top padding rather than a height cap: the sheet computes its anchors from the space it is given, and a capped sheet would open half way up the pane.
 
-<!-- MEDIA: the sample's Foldable screen half open with the fold across (iPhone Duo in Book pose rotated, Pixel Fold in landscape): values above the fold, controls below -->
+<!-- MEDIA: the sample's Foldable screen half open with the fold across (iPhone Duo in Book pose rotated, Pixel Fold in landscape): posture above the fold, details below -->
 
 ### Material3 Adaptive
 
@@ -213,7 +213,7 @@ Two things to know:
   one key are not a transition. `LocalListDetailSceneScope.current` is non-null only inside the
   two-pane scene, so it is the switch.
 
-<!-- MEDIA: the sample's Navigation 3 List-Detail demo on iPhone Duo: closed (one pane, a tap animates the swatch into the detail header), open (two panes), book (the detail starts after the fold) -->
+<!-- MEDIA: the sample's Navigation 3 List-Detail demo on iPhone Duo: closed (one pane, a tap pushes the colour), open (two panes), book (the detail starts after the fold) -->
 
 ## Shared vs iOS only
 
