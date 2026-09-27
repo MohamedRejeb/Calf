@@ -23,6 +23,7 @@ kotlin {
         api(libs.compose.material3)
         implementation(libs.compose.material.icons.extended)
 
+        implementation(libs.compose.components.resources)
         implementation(libs.kotlinx.datetime)
 
         // Calf
@@ -79,4 +80,8 @@ kotlin {
         implementation(libs.compose.ui.test)
         implementation(compose.desktop.currentOs)
     }
+}
+
+compose.resources {
+    packageOfResClass = "com.mohamedrejeb.calf.sample.resources"
 }

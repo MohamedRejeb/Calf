@@ -6,212 +6,251 @@ import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Camera
-import androidx.compose.material.icons.outlined.CheckBox
+import androidx.compose.material.icons.outlined.CropSquare
+import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.ImportContacts
-import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.Navigation
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.List
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Pages
-import androidx.compose.material.icons.outlined.PunchClock
-import androidx.compose.material.icons.outlined.SwapHoriz
-import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.SaveAlt
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.SmartButton
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.ToggleOn
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.VerticalSplit
-import androidx.compose.material.icons.outlined.ViewCompact
-import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material.icons.outlined.Web
+import androidx.compose.material.icons.outlined.ViewDay
 import androidx.compose.material.icons.outlined.WebAsset
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material.icons.outlined.Widgets
+import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.ui.graphics.vector.ImageVector
 
+/** The sections of the home list, in display order. */
 enum class ScreenCategory(val title: String) {
-    UIComponents("UI Components"),
+    StartHere("Start here"),
+    Components("Components"),
+    Presentation("Dialogs, sheets and menus"),
     Pickers("Pickers"),
-    PlatformAPIs("Platform APIs"),
     Navigation("Navigation"),
+    PlatformAPIs("Platform APIs"),
 }
 
+/**
+ * Every demo of the sample, in display order within its [category].
+ *
+ * @property api the Calf API the demo is about, shown in its header.
+ */
 enum class Screen(
     val title: String,
     val description: String,
     val icon: ImageVector,
     val category: ScreenCategory,
+    val api: String,
 ) {
     Home(
-        title = "Home",
-        description = "",
-        icon = Icons.Outlined.ViewCompact,
-        category = ScreenCategory.UIComponents,
+        title = "Calf",
+        description = "Compose Adaptive Look & Feel",
+        icon = Icons.Outlined.Dashboard,
+        category = ScreenCategory.StartHere,
+        api = "",
     ),
+
+    // Start here
     Showcase(
-        title = "Component Showcase",
-        description = "All adaptive components in a single view",
+        title = "Showcase",
+        description = "A complete screen built only from adaptive components",
         icon = Icons.Outlined.AutoAwesome,
-        category = ScreenCategory.UIComponents,
-    ),
-    Dialog(
-        title = "Adaptive Alert Dialog",
-        description = "Native alert dialogs with iOS UIAlertController and Material3 AlertDialog",
-        icon = Icons.Outlined.Warning,
-        category = ScreenCategory.UIComponents,
-    ),
-    BottomSheet(
-        title = "Adaptive Bottom Sheet",
-        description = "Modal bottom sheets with native iOS presentation",
-        icon = Icons.Outlined.Pages,
-        category = ScreenCategory.UIComponents,
-    ),
-    ProgressBar(
-        title = "Adaptive Progress Bar",
-        description = "Circular progress indicators with Cupertino and Material styles",
-        icon = Icons.Outlined.Refresh,
-        category = ScreenCategory.UIComponents,
-    ),
-    Switch(
-        title = "Adaptive Switch",
-        description = "Toggle switches with native iOS UISwitch and Material3 Switch",
-        icon = Icons.Outlined.ToggleOn,
-        category = ScreenCategory.UIComponents,
-    ),
-    Slider(
-        title = "Adaptive Slider",
-        description = "Sliders with Liquid Glass on iOS 26+ and Material3 Slider on other platforms",
-        icon = Icons.Outlined.Tune,
-        category = ScreenCategory.UIComponents,
-    ),
-    Button(
-        title = "Adaptive Buttons",
-        description = "Buttons with Cupertino style on iOS and Material3 on other platforms",
-        icon = Icons.Outlined.CheckBox,
-        category = ScreenCategory.UIComponents,
-    ),
-    AdaptiveClickable(
-        title = "Adaptive Clickable",
-        description = "Platform-aware click feedback with ripple and highlight effects",
-        icon = Icons.Outlined.AdsClick,
-        category = ScreenCategory.UIComponents,
-    ),
-    DropDown(
-        title = "Adaptive Drop Down",
-        description = "Context menus with iOS UIMenu and Material3 DropdownMenu",
-        icon = Icons.Outlined.Menu,
-        category = ScreenCategory.UIComponents,
-    ),
-    DatePicker(
-        title = "Adaptive Date Picker",
-        description = "Inline, compact and range date pickers with the native iOS calendar and Material3",
-        icon = Icons.Outlined.CalendarMonth,
-        category = ScreenCategory.Pickers,
-    ),
-    TimePicker(
-        title = "Adaptive Time Picker",
-        description = "Time selection with native iOS UIDatePicker and Material3 TimePicker",
-        icon = Icons.Outlined.PunchClock,
-        category = ScreenCategory.Pickers,
-    ),
-    FilePicker(
-        title = "File Picker",
-        description = "File selection with platform-native file pickers",
-        icon = Icons.Outlined.AttachFile,
-        category = ScreenCategory.Pickers,
-    ),
-    ImagePicker(
-        title = "Image Picker",
-        description = "Image selection with native photo library pickers",
-        icon = Icons.Outlined.Image,
-        category = ScreenCategory.Pickers,
-    ),
-    ProfilePicture(
-        title = "File Saver",
-        description = "Pick, preview, and export a profile picture using file picker and saver",
-        icon = Icons.Outlined.SaveAlt,
-        category = ScreenCategory.Pickers,
-    ),
-    CameraPickerScreen(
-        title = "Camera Picker",
-        description = "Camera capture with native platform camera APIs",
-        icon = Icons.Outlined.Camera,
-        category = ScreenCategory.Pickers,
-    ),
-    CupertinoIconsCatalog(
-        title = "Cupertino Icons",
-        description = "Browse 1300+ Cupertino-style icons from the bundled SF Symbols font",
-        icon = Icons.Outlined.AutoAwesome,
-        category = ScreenCategory.UIComponents,
-    ),
-    Share(
-        title = "Content Sharing",
-        description = "Share text, URLs, and files using platform-native share sheets",
-        icon = Icons.Outlined.Share,
-        category = ScreenCategory.PlatformAPIs,
-    ),
-    Foldable(
-        title = "Foldable",
-        description = "Live posture, fold bounds and panes; iPhone Duo regions and hinge angle",
-        icon = Icons.Outlined.ImportContacts,
-        category = ScreenCategory.PlatformAPIs,
-    ),
-    WebView(
-        title = "Web View",
-        description = "Embedded web content with WKWebView on iOS and WebView on Android",
-        icon = Icons.Outlined.Web,
-        category = ScreenCategory.PlatformAPIs,
-    ),
-    Permission(
-        title = "Permissions",
-        description = "Runtime permission handling across platforms",
-        icon = Icons.Outlined.Security,
-        category = ScreenCategory.PlatformAPIs,
-    ),
-//    Map(
-//        title = "Adaptive Map",
-//        description = "Map views with Apple Maps on iOS and Google Maps on Android",
-//        icon = Icons.Outlined.Map,
-//        category = ScreenCategory.PlatformAPIs,
-//    ),
-    NavigationBar(
-        title = "Adaptive Navigation Bar",
-        description = "Bottom navigation with iOS UITabBar and Material3 NavigationBar",
-        icon = Icons.Outlined.Navigation,
-        category = ScreenCategory.Navigation,
-    ),
-    ScaffoldDemo(
-        title = "Adaptive Scaffold",
-        description = "Combined Scaffold with AdaptiveTopBar and AdaptiveNavigationBar",
-        icon = Icons.Outlined.ViewCompact,
-        category = ScreenCategory.Navigation,
-    ),
-    TopBarDemo(
-        title = "Adaptive Top Bar",
-        description = "Top app bar with native iOS UINavigationBar and Material3 TopAppBar",
-        icon = Icons.Outlined.WebAsset,
-        category = ScreenCategory.Navigation,
+        category = ScreenCategory.StartHere,
+        api = "calf-ui",
     ),
     AdaptiveNavigation(
         title = "Adaptive Navigation",
-        description = "Native tabs and stacks: UITabBarController + UINavigationController on iOS, Nav3 + navigation suite elsewhere",
+        description = "Native tabs, stacks and split view from one back stack",
         icon = Icons.Outlined.SwapHoriz,
-        category = ScreenCategory.Navigation,
+        category = ScreenCategory.StartHere,
+        api = "AdaptiveTabDisplay",
     ),
+    Foldable(
+        title = "Foldable",
+        description = "Posture, fold, camera area and panes, drawn live",
+        icon = Icons.Outlined.ImportContacts,
+        category = ScreenCategory.StartHere,
+        api = "rememberFoldState",
+    ),
+
+    // Components
+    Button(
+        title = "Buttons",
+        description = "Filled, icon and Liquid Glass buttons",
+        icon = Icons.Outlined.SmartButton,
+        category = ScreenCategory.Components,
+        api = "AdaptiveButton",
+    ),
+    Switch(
+        title = "Switch",
+        description = "UISwitch on iOS, Material 3 elsewhere",
+        icon = Icons.Outlined.ToggleOn,
+        category = ScreenCategory.Components,
+        api = "AdaptiveSwitch",
+    ),
+    Slider(
+        title = "Slider",
+        description = "Liquid Glass on iOS 26, Material 3 elsewhere",
+        icon = Icons.Outlined.Tune,
+        category = ScreenCategory.Components,
+        api = "AdaptiveSlider",
+    ),
+    ProgressBar(
+        title = "Progress Indicator",
+        description = "The iOS activity indicator and Material's spinner",
+        icon = Icons.Outlined.Autorenew,
+        category = ScreenCategory.Components,
+        api = "AdaptiveCircularProgressIndicator",
+    ),
+    AdaptiveClickable(
+        title = "Clickable",
+        description = "Highlight on iOS, ripple on Material",
+        icon = Icons.Outlined.AdsClick,
+        category = ScreenCategory.Components,
+        api = "Modifier.adaptiveClickable",
+    ),
+    Toolbar(
+        title = "Floating Toolbar",
+        description = "Liquid Glass toolbar and Material 3 Expressive",
+        icon = Icons.Outlined.ViewDay,
+        category = ScreenCategory.Components,
+        api = "AdaptiveToolbar",
+    ),
+    CupertinoIconsCatalog(
+        title = "Cupertino Icons",
+        description = "1300+ SF Symbols style icons on every platform",
+        icon = Icons.Outlined.Widgets,
+        category = ScreenCategory.Components,
+        api = "CupertinoIcons",
+    ),
+
+    // Dialogs, sheets and menus
+    Dialog(
+        title = "Alert Dialog",
+        description = "UIAlertController on iOS, Material 3 elsewhere",
+        icon = Icons.Outlined.Warning,
+        category = ScreenCategory.Presentation,
+        api = "AdaptiveAlertDialog",
+    ),
+    BottomSheet(
+        title = "Bottom Sheet",
+        description = "Native sheet presentation with detents on iOS",
+        icon = Icons.Outlined.Pages,
+        category = ScreenCategory.Presentation,
+        api = "AdaptiveBottomSheet",
+    ),
+    DropDown(
+        title = "Drop Down Menu",
+        description = "UIMenu on iOS, Material 3 menu elsewhere",
+        icon = Icons.Outlined.MoreHoriz,
+        category = ScreenCategory.Presentation,
+        api = "AdaptiveDropDown",
+    ),
+
+    // Pickers
+    DatePicker(
+        title = "Date Picker",
+        description = "Inline, compact and range pickers",
+        icon = Icons.Outlined.CalendarMonth,
+        category = ScreenCategory.Pickers,
+        api = "AdaptiveDatePicker",
+    ),
+    TimePicker(
+        title = "Time Picker",
+        description = "UIDatePicker on iOS, Material 3 elsewhere",
+        icon = Icons.Outlined.Schedule,
+        category = ScreenCategory.Pickers,
+        api = "AdaptiveTimePicker",
+    ),
+    FilePicker(
+        title = "File Picker",
+        description = "The system file picker on every platform",
+        icon = Icons.Outlined.AttachFile,
+        category = ScreenCategory.Pickers,
+        api = "rememberFilePickerLauncher",
+    ),
+    ImagePicker(
+        title = "Image Picker",
+        description = "Photos from the gallery, previewed with Coil",
+        icon = Icons.Outlined.Image,
+        category = ScreenCategory.Pickers,
+        api = "FilePickerFileType.Image",
+    ),
+    CameraPickerScreen(
+        title = "Camera",
+        description = "Take a photo with the system camera",
+        icon = Icons.Outlined.Camera,
+        category = ScreenCategory.Pickers,
+        api = "rememberCameraPickerLauncher",
+    ),
+    ProfilePicture(
+        title = "File Saver",
+        description = "Pick, edit and save a file back to disk",
+        icon = Icons.Outlined.SaveAlt,
+        category = ScreenCategory.Pickers,
+        api = "rememberFileSaverLauncher",
+    ),
+
+    // Navigation
     Nav3ListDetail(
         title = "Navigation 3 List-Detail",
-        description = "Plain NavDisplay with a fold-aware list-detail strategy: two panes on an open iPhone Duo, Navigation 3 transitions kept",
+        description = "Plain NavDisplay with a fold-aware two-pane strategy",
         icon = Icons.Outlined.VerticalSplit,
         category = ScreenCategory.Navigation,
+        api = "rememberCalfListDetailSceneStrategy",
     ),
-//    ExpandableFAB(
-//        title = "Adaptive Expandable FAB",
-//        description = "Expandable floating action button with Liquid Glass on iOS and Material3 animation",
-//        icon = Icons.Outlined.Add,
-//        category = ScreenCategory.UIComponents,
-//    ),
-    Toolbar(
-        title = "Adaptive Toolbar",
-        description = "Floating toolbar with Liquid Glass on iOS and Material3 Expressive HorizontalFloatingToolbar",
-        icon = Icons.Outlined.Menu,
-        category = ScreenCategory.UIComponents,
+    NavigationBar(
+        title = "Navigation Bar",
+        description = "UITabBar on iOS, Material 3 navigation bar",
+        icon = Icons.Outlined.CropSquare,
+        category = ScreenCategory.Navigation,
+        api = "AdaptiveNavigationBar",
+    ),
+    ScaffoldDemo(
+        title = "Scaffold",
+        description = "Top bar, tab bar and content insets together",
+        icon = Icons.Outlined.List,
+        category = ScreenCategory.Navigation,
+        api = "AdaptiveScaffold",
+    ),
+    TopBarDemo(
+        title = "Top Bar",
+        description = "UINavigationBar on iOS, Material 3 top app bar",
+        icon = Icons.Outlined.WebAsset,
+        category = ScreenCategory.Navigation,
+        api = "AdaptiveTopBar",
+    ),
+
+    // Platform APIs
+    Share(
+        title = "Share",
+        description = "Text, links and files through the share sheet",
+        icon = Icons.Outlined.Share,
+        category = ScreenCategory.PlatformAPIs,
+        api = "rememberShareLauncher",
+    ),
+    WebView(
+        title = "Web View",
+        description = "WKWebView, Android WebView and more",
+        icon = Icons.Outlined.Language,
+        category = ScreenCategory.PlatformAPIs,
+        api = "WebView",
+    ),
+    Permission(
+        title = "Permissions",
+        description = "Ask for and track runtime permissions",
+        icon = Icons.Outlined.Security,
+        category = ScreenCategory.PlatformAPIs,
+        api = "rememberPermissionState",
     ),
 }

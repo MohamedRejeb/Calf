@@ -22,6 +22,8 @@ class SampleHostTest {
                 Screen.AdaptiveNavigation,
                 // Owns a NavDisplay whose two panes need the whole window.
                 Screen.Nav3ListDetail,
+                // Draws the whole window's geometry.
+                Screen.Foldable,
             ),
             fullScreen,
         )
@@ -38,7 +40,7 @@ class SampleHostTest {
     fun everyOtherDemoIsADetailWithTheNavigatorsBar() {
         val details = Screen.entries.filter { it.host() == SampleHost.Detail }
 
-        assertEquals(Screen.entries.size - 1 - 5 - 3, details.size)
+        assertEquals(Screen.entries.size - 1 - 6 - 3, details.size)
         assertEquals(emptyList(), details.filter { it == Screen.Home })
     }
 

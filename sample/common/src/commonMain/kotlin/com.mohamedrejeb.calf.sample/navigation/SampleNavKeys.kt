@@ -62,6 +62,8 @@ fun Screen.host(): SampleHost =
         Screen.AdaptiveNavigation,
         // Owns a plain NavDisplay whose two panes need the whole window.
         Screen.Nav3ListDetail,
+        // Draws the window's real geometry (fold, camera, unsafe areas), so it needs all of it.
+        Screen.Foldable,
         // Draw their own AdaptiveNavigationBar tab bar (and top bar).
         Screen.NavigationBar,
         Screen.ScaffoldDemo,
