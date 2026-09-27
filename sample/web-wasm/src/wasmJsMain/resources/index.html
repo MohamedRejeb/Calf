@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calf Demo (Kotlin/Wasm)</title>
+    <title>Calf · Compose Adaptive Look &amp; Feel</title>
     <script type="application/javascript" src="web.js"></script>
     <style>
         html, body {
@@ -11,8 +11,14 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            background-color: white;
             overflow: hidden;
+            background-color: #F3F3F7;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            html, body {
+                background-color: #0E0E12;
+            }
         }
 
         #warning {
