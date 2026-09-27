@@ -5,15 +5,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.IosShare
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.mohamedrejeb.calf.sample.components.BarOverflowMenu
 import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
@@ -152,7 +149,7 @@ private fun ShowcaseTabContent(
 }
 
 /**
- * The bar: back, a share action and a menu. Material draws the menu with a `DropdownMenu`; iOS
+ * The bar: back, a share action and a menu. Material draws the menu with [BarOverflowMenu]; iOS
  * gets a `UIBarButtonItem` whose `UIMenu` holds the same items.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
@@ -162,7 +159,6 @@ private fun ShowcaseTopBar(
     onShare: () -> Unit,
     onShowDialog: (ShowcaseDialog) -> Unit,
 ) {
-    var menuExpanded by remember { mutableStateOf(false) }
     val menuItems = remember(onShare, onShowDialog) { topBarMenuItems(onShare, onShowDialog) }
 
     AdaptiveTopBar(
@@ -176,34 +172,7 @@ private fun ShowcaseTopBar(
             AdaptiveIconButton(onClick = onShare) {
                 Icon(Icons.Outlined.IosShare, contentDescription = "Share trip")
             }
-            Box {
-                AdaptiveIconButton(onClick = { menuExpanded = true }) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = "More options")
-                }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false },
-                ) {
-                    menuItems.forEach { item ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = item.title,
-                                    color = if (item.isDestructive) {
-                                        MaterialTheme.colorScheme.error
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurface
-                                    },
-                                )
-                            },
-                            onClick = {
-                                menuExpanded = false
-                                item.onClick()
-                            },
-                        )
-                    }
-                }
-            }
+            BarOverflowMenu(items = menuItems)
         },
         iosTitle = SCREEN_TITLE,
         iosLeadingItems = listOf(

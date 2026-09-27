@@ -1,21 +1,11 @@
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Luggage
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.mohamedrejeb.calf.sample.ui.theme.IconTileSize
 import com.mohamedrejeb.calf.sample.ui.theme.TileAmber
 import com.mohamedrejeb.calf.sample.ui.theme.TileCoral
 import com.mohamedrejeb.calf.sample.ui.theme.TileIndigo
@@ -64,9 +54,7 @@ internal data class Traveller(
     val status: String,
     val color: Color,
     val isPending: Boolean = false,
-) {
-    val initials: String = name.split(" ").mapNotNull { it.firstOrNull() }.joinToString("")
-}
+)
 
 internal val TripTravellers: List<Traveller> = listOf(
     Traveller(name = "Inès Duarte", status = "Organiser", color = TileIndigo),
@@ -81,23 +69,6 @@ internal enum class ReminderOption(val label: String) {
     OneHourBefore("1 hour before"),
     OneDayBefore("1 day before"),
     Off("Off"),
-}
-
-/** A traveller's initials on a tinted circle, the size of an `IconTile` so dividers line up. */
-@Composable
-internal fun TravellerAvatar(traveller: Traveller, modifier: Modifier = Modifier) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(IconTileSize)
-            .background(traveller.color, CircleShape),
-    ) {
-        Text(
-            text = traveller.initials,
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White,
-        )
-    }
 }
 
 // Formatting. Plain English names instead of a locale formatter: the sample shows the same text

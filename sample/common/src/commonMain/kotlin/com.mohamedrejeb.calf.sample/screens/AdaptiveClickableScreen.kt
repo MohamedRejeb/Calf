@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -31,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.components.CodeSnippet
 import com.mohamedrejeb.calf.sample.components.DemoCard
@@ -39,6 +37,7 @@ import com.mohamedrejeb.calf.sample.components.DemoDivider
 import com.mohamedrejeb.calf.sample.components.DemoHeader
 import com.mohamedrejeb.calf.sample.components.DemoListCard
 import com.mohamedrejeb.calf.sample.components.DemoPage
+import com.mohamedrejeb.calf.sample.components.DemoRow
 import com.mohamedrejeb.calf.sample.components.DemoSection
 import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
 import com.mohamedrejeb.calf.sample.components.IconTile
@@ -67,7 +66,6 @@ Row(
 }
 """
 
-private val FileRowMinHeight = 60.dp
 private val TrailingIconSize = 20.dp
 private val AlbumIconSize = 28.dp
 
@@ -174,35 +172,20 @@ private fun FileRow(
     onDoubleClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
-    val background = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.m),
-        modifier = Modifier
-            .fillMaxWidth()
-            .adaptiveClickable(onLongClick = onLongClick, onDoubleClick = onDoubleClick, onClick = onClick)
-            .background(background)
-            .heightIn(min = FileRowMinHeight)
-            .padding(horizontal = Spacing.l, vertical = Spacing.s),
-    ) {
-        IconTile(icon = file.icon, color = file.tint)
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = file.name,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = file.details,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (starred) TrailingIcon(Icons.Filled.Star, "Starred", TileAmber)
-        if (selected) TrailingIcon(Icons.Filled.CheckCircle, "Selected", MaterialTheme.colorScheme.primary)
-    }
+    DemoRow(
+        title = file.name,
+        subtitle = file.details,
+        leading = { IconTile(icon = file.icon, color = file.tint) },
+        // Always given, even when empty, so the row shows no chevron: a tap opens, it does not navigate.
+        trailing = {
+            if (starred) TrailingIcon(Icons.Filled.Star, "Starred", TileAmber)
+            if (selected) TrailingIcon(Icons.Filled.CheckCircle, "Selected", MaterialTheme.colorScheme.primary)
+        },
+        selected = selected,
+        onClick = onClick,
+        onDoubleClick = onDoubleClick,
+        onLongClick = onLongClick,
+    )
 }
 
 @Composable

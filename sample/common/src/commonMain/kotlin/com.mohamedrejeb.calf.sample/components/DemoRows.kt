@@ -35,7 +35,8 @@ private val TileIconSize = 18.dp
 /**
  * One row of a [DemoListCard]: optional leading content, a title with an optional subtitle, and
  * optional trailing content. With [onClick] it shows a chevron (unless [trailing] is given) and
- * gives the platform's press feedback through `Modifier.adaptiveClickable`.
+ * gives the platform's press feedback through `Modifier.adaptiveClickable`, which also takes the
+ * row's [onLongClick] and [onDoubleClick]; those two need an [onClick].
  */
 @Composable
 fun DemoRow(
@@ -46,6 +47,8 @@ fun DemoRow(
     trailing: (@Composable () -> Unit)? = null,
     selected: Boolean = false,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
+    onDoubleClick: (() -> Unit)? = null,
 ) {
     val background = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
     Row(
@@ -53,7 +56,17 @@ fun DemoRow(
         horizontalArrangement = Arrangement.spacedBy(Spacing.m),
         modifier = modifier
             .fillMaxWidth()
-            .then(if (onClick != null) Modifier.adaptiveClickable(onClick = onClick) else Modifier)
+            .then(
+                if (onClick != null) {
+                    Modifier.adaptiveClickable(
+                        onLongClick = onLongClick,
+                        onDoubleClick = onDoubleClick,
+                        onClick = onClick,
+                    )
+                } else {
+                    Modifier
+                },
+            )
             .background(background)
             .heightIn(min = RowMinHeight)
             .padding(horizontal = Spacing.l, vertical = Spacing.m - 2.dp),

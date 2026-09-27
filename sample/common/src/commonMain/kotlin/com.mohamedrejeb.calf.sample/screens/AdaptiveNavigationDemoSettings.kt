@@ -31,6 +31,7 @@ import com.mohamedrejeb.calf.sample.components.DemoRow
 import com.mohamedrejeb.calf.sample.components.DemoSection
 import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
 import com.mohamedrejeb.calf.sample.components.IconTile
+import com.mohamedrejeb.calf.sample.components.InitialsAvatar
 import com.mohamedrejeb.calf.sample.ui.theme.TileAmber
 import com.mohamedrejeb.calf.sample.ui.theme.TileBlue
 import com.mohamedrejeb.calf.sample.ui.theme.TileCoral
@@ -69,7 +70,14 @@ internal fun NavDemoSettingsContent(
             DemoRow(
                 title = ACCOUNT_NAME,
                 subtitle = ACCOUNT_EMAIL,
-                leading = { NavDemoAvatar(name = ACCOUNT_NAME, color = TileIndigo) },
+                leading = {
+                    InitialsAvatar(
+                        name = ACCOUNT_NAME,
+                        color = TileIndigo,
+                        size = NavDemoThumbnailSize,
+                        textStyle = MaterialTheme.typography.titleSmall,
+                    )
+                },
             )
         }
         NavDemoTabStateSection(tabs)

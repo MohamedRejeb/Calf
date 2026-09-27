@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.mohamedrejeb.calf.sample.components.BarOverflowMenu
 import com.mohamedrejeb.calf.sample.components.CodeSnippet
 import com.mohamedrejeb.calf.sample.components.DemoCard
 import com.mohamedrejeb.calf.sample.components.DemoDivider
@@ -82,7 +83,9 @@ fun DropDownScreen(navigateBack: () -> Unit) {
     SampleScreenScaffold(
         title = Screen.DropDown.title,
         navigateBack = navigateBack,
-        actions = { BarMenuButton(entries = barMenu) },
+        actions = {
+            BarOverflowMenu(items = barMenu.map { it.item }, icons = barMenu.map { it.materialIcon })
+        },
         iosTrailingItems = listOf(
             UIKitUIBarButtonItem.withMenu(
                 image = UIKitImage.SystemName(SFSymbol.ellipsisCircle),

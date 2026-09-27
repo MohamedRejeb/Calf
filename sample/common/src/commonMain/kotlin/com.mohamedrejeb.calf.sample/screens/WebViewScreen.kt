@@ -52,7 +52,11 @@ private val INITIAL_URL =
     if (currentPlatform.isWeb) "https://en.wikipedia.org/wiki/Main_Page/"
     else "https://github.com/MohamedRejeb/Calf"
 
-/** The page of the "Load HTML" button: plain inline HTML that follows the system theme. */
+/**
+ * The page of the "Load HTML" button: plain inline HTML that follows the system theme. Its hex
+ * colours mirror `ui.theme/Color.kt` (the `Light*` and `Dark*` neutrals, `Indigo40` and
+ * `Indigo80` for links), so the page looks like the rest of the sample; change them together.
+ */
 private val INLINE_HTML = """
     <!DOCTYPE html>
     <html>

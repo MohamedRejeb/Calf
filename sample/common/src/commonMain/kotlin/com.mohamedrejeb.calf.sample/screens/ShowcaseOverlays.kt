@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +29,7 @@ import com.mohamedrejeb.calf.sample.components.DemoListCard
 import com.mohamedrejeb.calf.sample.components.DemoRow
 import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
 import com.mohamedrejeb.calf.sample.components.IconTile
+import com.mohamedrejeb.calf.sample.components.SheetHeader
 import com.mohamedrejeb.calf.sample.ui.theme.Spacing
 import com.mohamedrejeb.calf.sample.ui.theme.TileBlue
 import com.mohamedrejeb.calf.sample.ui.theme.TileViolet
@@ -126,7 +126,10 @@ internal fun ShareTripSheet(onDismiss: () -> Unit) {
                 .padding(horizontal = Spacing.pageMargin)
                 .padding(bottom = Spacing.xl),
         ) {
-            ShareSheetHeader()
+            SheetHeader(
+                title = "Share trip",
+                subtitle = "$TRIP_NAME · ${TripTravellers.size} travellers",
+            )
             DemoListCard {
                 DemoRow(
                     title = "Invite link",
@@ -155,22 +158,5 @@ internal fun ShareTripSheet(onDismiss: () -> Unit) {
                 Text(if (copied) "Link copied" else "Copy link")
             }
         }
-    }
-}
-
-@Composable
-private fun ShareSheetHeader() {
-    Column(modifier = Modifier.padding(horizontal = Spacing.xs)) {
-        Text(
-            text = "Share trip",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(Modifier.height(Spacing.xs))
-        Text(
-            text = "$TRIP_NAME · ${TripTravellers.size} travellers",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }

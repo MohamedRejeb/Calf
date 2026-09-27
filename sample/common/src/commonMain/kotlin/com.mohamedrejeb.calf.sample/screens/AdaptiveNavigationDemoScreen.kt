@@ -20,14 +20,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.mohamedrejeb.calf.navigation.AdaptiveNavDisplay
 import com.mohamedrejeb.calf.navigation.AdaptiveTabDisplay
+import com.mohamedrejeb.calf.navigation.AdaptiveTabState
 import com.mohamedrejeb.calf.navigation.adaptiveNavEntry
 import com.mohamedrejeb.calf.navigation.adaptiveTab
 import com.mohamedrejeb.calf.navigation.rememberAdaptiveListDetailSettings
@@ -40,6 +42,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+
+/** How many places the Home tab lists before the + button adds more. */
+private const val INITIAL_ITEM_COUNT = 5
 
 // Outer stack: the tabs, and a screen pushed over them (sign-out flow).
 @Serializable
@@ -162,7 +167,7 @@ private fun NavDemoTabs(
         NavDemoSettings,
         configuration = NavDemoSavedState,
     )
-    var itemCount by remember { mutableIntStateOf(5) }
+    var itemCount by rememberSaveable { mutableIntStateOf(INITIAL_ITEM_COUNT) }
     val lastTapped = rememberNavDemoLastTapped()
 
     AdaptiveTabDisplay(
@@ -206,119 +211,162 @@ private fun NavDemoTabs(
         iosSidebarAdaptable = true,
         listDetail = rememberAdaptiveListDetailSettings(),
     ) { key ->
-        when (key) {
-            is NavDemoHome -> adaptiveNavEntry(
-                key = key,
-                title = { Text("Home") },
-                navigationIcon = {
-                    IconButton(onClick = onExit) {
-                        Icon(Icons.Filled.Close, contentDescription = "Exit demo")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { itemCount += 1 }) {
-                        Icon(Icons.Filled.Add, contentDescription = "Add item")
-                    }
-                },
-                largeTitle = true,
-                iosTitle = "Home",
-                iosBackTitle = "Home",
-                iosLeadingItems = listOf(
-                    UIKitUIBarButtonItem.systemItem(UIKitUIBarButtonSystemItem.Close, onClick = onExit),
-                ),
-                iosTrailingItems = listOf(
-                    UIKitUIBarButtonItem.systemItem(UIKitUIBarButtonSystemItem.Add, onClick = { itemCount += 1 }),
-                ),
-            ) { padding ->
-                NavDemoHomeContent(
-                    contentPadding = padding,
-                    itemCount = { itemCount },
-                    onOpenItem = { tabs.backStack.add(NavDemoDetail(it)) },
-                )
-            }
-
-            is NavDemoDetail -> adaptiveNavEntry(
-                key = key,
-                title = { Text(navDemoPlace(key.itemId).name) },
-                navigationIcon = { NavDemoBackButton { tabs.backStack.removeLastOrNull() } },
-                iosTitle = navDemoPlace(key.itemId).name,
-                iosBackTitle = navDemoPlace(key.itemId).name,
-                tabBarShown = false,
-            ) { padding ->
-                NavDemoDetailContent(
-                    itemId = key.itemId,
-                    contentPadding = padding,
-                    backStack = tabs.backStack,
-                    onPopToRoot = { tabs.popToRoot() },
-                )
-            }
-
-            is NavDemoExplore -> adaptiveNavEntry(
-                key = key,
-                title = { Text("Explore") },
-                largeTitle = true,
-                iosTitle = "Explore",
-                iosBackTitle = "Explore",
-            ) { padding ->
-                NavDemoExploreContent(
-                    contentPadding = padding,
-                    onOpenCover = { tabs.backStack.add(NavDemoCover) },
-                    onOpenLocked = { tabs.backStack.add(NavDemoLocked) },
-                    onOpenBarItems = { tabs.backStack.add(NavDemoBarItems) },
-                )
-            }
-
-            is NavDemoBarItems -> navDemoBarItemsEntry(
-                key = key,
-                backStack = tabs.backStack,
-                onTapped = { lastTapped.value = it },
-                lastTapped = { lastTapped.value },
-            )
-
-            is NavDemoCover -> adaptiveNavEntry(
-                key = key,
-                barShown = false,
-                tabBarShown = false,
-                iosTitle = "Cover",
-            ) { padding ->
-                NavDemoCoverContent(
-                    contentPadding = padding,
-                    onClose = { tabs.backStack.removeLastOrNull() },
-                )
-            }
-
-            is NavDemoLocked -> adaptiveNavEntry(
-                key = key,
-                title = { Text("No Swipe Back") },
-                navigationIcon = { NavDemoBackButton { tabs.backStack.removeLastOrNull() } },
-                iosTitle = "No Swipe Back",
-                iosGestureEnabled = false,
-            ) { padding ->
-                NavDemoLockedContent(
-                    contentPadding = padding,
-                    onBack = { tabs.backStack.removeLastOrNull() },
-                )
-            }
-
-            is NavDemoSettings -> adaptiveNavEntry(
-                key = key,
-                title = { Text("Settings") },
-                largeTitle = true,
-                iosTitle = "Settings",
-            ) { padding ->
-                NavDemoSettingsContent(
-                    contentPadding = padding,
-                    tabs = tabs,
-                    onSignOut = onSignOut,
-                )
-            }
-
+        navDemoHomeEntry(
+            key = key,
+            tabs = tabs,
+            itemCount = { itemCount },
+            onAddItem = { itemCount += 1 },
+            onExit = onExit,
+        )
+            ?: navDemoExploreEntry(key = key, tabs = tabs, lastTapped = lastTapped)
+            ?: navDemoSettingsEntry(key = key, tabs = tabs, onSignOut = onSignOut)
             // The Mail tab's own stack: `tabs.backStack` is the *selected* tab's, and on iOS the
             // entries of every tab are built up front, while another tab is selected.
-            else -> navDemoListDetailEntry(key, tabs.backStackOf(NavDemoInbox)) ?: error("Unexpected tab key: $key")
-        }
+            ?: navDemoListDetailEntry(key, tabs.backStackOf(NavDemoInbox))
+            ?: error("Unexpected tab key: $key")
     }
 }
+
+// Entry builders, one per tab. Each returns null for a key of another tab. They read
+// `tabs.backStack` inside their callbacks, when the tab they belong to is the selected one.
+
+/** The Home tab: the list of places and the place pushed from it. */
+private fun navDemoHomeEntry(
+    key: NavKey,
+    tabs: AdaptiveTabState<NavKey>,
+    itemCount: () -> Int,
+    onAddItem: () -> Unit,
+    onExit: () -> Unit,
+): NavEntry<NavKey>? =
+    when (key) {
+        is NavDemoHome -> adaptiveNavEntry(
+            key = key,
+            title = { Text("Home") },
+            navigationIcon = {
+                IconButton(onClick = onExit) {
+                    Icon(Icons.Filled.Close, contentDescription = "Exit demo")
+                }
+            },
+            actions = {
+                IconButton(onClick = onAddItem) {
+                    Icon(Icons.Filled.Add, contentDescription = "Add item")
+                }
+            },
+            largeTitle = true,
+            iosTitle = "Home",
+            iosBackTitle = "Home",
+            iosLeadingItems = listOf(
+                UIKitUIBarButtonItem.systemItem(UIKitUIBarButtonSystemItem.Close, onClick = onExit),
+            ),
+            iosTrailingItems = listOf(
+                UIKitUIBarButtonItem.systemItem(UIKitUIBarButtonSystemItem.Add, onClick = onAddItem),
+            ),
+        ) { padding ->
+            NavDemoHomeContent(
+                contentPadding = padding,
+                itemCount = itemCount,
+                onOpenItem = { tabs.backStack.add(NavDemoDetail(it)) },
+            )
+        }
+
+        is NavDemoDetail -> adaptiveNavEntry(
+            key = key,
+            title = { Text(navDemoPlace(key.itemId).name) },
+            navigationIcon = { NavDemoBackButton { tabs.backStack.removeLastOrNull() } },
+            iosTitle = navDemoPlace(key.itemId).name,
+            iosBackTitle = navDemoPlace(key.itemId).name,
+            tabBarShown = false,
+        ) { padding ->
+            NavDemoDetailContent(
+                itemId = key.itemId,
+                contentPadding = padding,
+                backStack = tabs.backStack,
+                onPopToRoot = { tabs.popToRoot() },
+            )
+        }
+
+        else -> null
+    }
+
+/** The Explore tab and the screens it pushes: bar items, a cover without bars, a locked back swipe. */
+private fun navDemoExploreEntry(
+    key: NavKey,
+    tabs: AdaptiveTabState<NavKey>,
+    lastTapped: NavDemoLastTapped,
+): NavEntry<NavKey>? =
+    when (key) {
+        is NavDemoExplore -> adaptiveNavEntry(
+            key = key,
+            title = { Text("Explore") },
+            largeTitle = true,
+            iosTitle = "Explore",
+            iosBackTitle = "Explore",
+        ) { padding ->
+            NavDemoExploreContent(
+                contentPadding = padding,
+                onOpenCover = { tabs.backStack.add(NavDemoCover) },
+                onOpenLocked = { tabs.backStack.add(NavDemoLocked) },
+                onOpenBarItems = { tabs.backStack.add(NavDemoBarItems) },
+            )
+        }
+
+        is NavDemoBarItems -> navDemoBarItemsEntry(
+            key = key,
+            backStack = tabs.backStack,
+            onTapped = { lastTapped.value = it },
+            lastTapped = { lastTapped.value },
+        )
+
+        is NavDemoCover -> adaptiveNavEntry(
+            key = key,
+            barShown = false,
+            tabBarShown = false,
+            iosTitle = "Cover",
+        ) { padding ->
+            NavDemoCoverContent(
+                contentPadding = padding,
+                onClose = { tabs.backStack.removeLastOrNull() },
+            )
+        }
+
+        is NavDemoLocked -> adaptiveNavEntry(
+            key = key,
+            title = { Text("No Swipe Back") },
+            navigationIcon = { NavDemoBackButton { tabs.backStack.removeLastOrNull() } },
+            iosTitle = "No Swipe Back",
+            iosGestureEnabled = false,
+        ) { padding ->
+            NavDemoLockedContent(
+                contentPadding = padding,
+                onBack = { tabs.backStack.removeLastOrNull() },
+            )
+        }
+
+        else -> null
+    }
+
+/** The Settings tab. */
+private fun navDemoSettingsEntry(
+    key: NavKey,
+    tabs: AdaptiveTabState<NavKey>,
+    onSignOut: () -> Unit,
+): NavEntry<NavKey>? =
+    when (key) {
+        is NavDemoSettings -> adaptiveNavEntry(
+            key = key,
+            title = { Text("Settings") },
+            largeTitle = true,
+            iosTitle = "Settings",
+        ) { padding ->
+            NavDemoSettingsContent(
+                contentPadding = padding,
+                tabs = tabs,
+                onSignOut = onSignOut,
+            )
+        }
+
+        else -> null
+    }
 
 @Composable
 internal fun NavDemoBackButton(onClick: () -> Unit) {

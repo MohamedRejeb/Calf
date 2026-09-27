@@ -33,6 +33,8 @@ import com.mohamedrejeb.calf.sample.components.DemoSection
 import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
 import com.mohamedrejeb.calf.sample.components.EmptyState
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.sample.components.TextAreaRow
+import com.mohamedrejeb.calf.sample.components.TextFieldRow
 import com.mohamedrejeb.calf.sample.components.ValueRow
 import com.mohamedrejeb.calf.sample.navigation.Screen
 import com.mohamedrejeb.calf.sample.ui.theme.Spacing

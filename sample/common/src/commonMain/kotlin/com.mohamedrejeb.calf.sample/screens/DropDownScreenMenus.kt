@@ -1,24 +1,16 @@
 package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.MenuItemColors
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.mohamedrejeb.calf.sample.components.MoreOptionsButton
+import com.mohamedrejeb.calf.sample.components.OverflowMenuItem
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
-import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDown
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
@@ -62,7 +54,7 @@ internal fun FileMenuButton(
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        MoreButton(onClick = { expanded = true })
+        MoreOptionsButton(onClick = { expanded = true })
         AdaptiveDropDown(
             expanded = expanded,
             onDismissRequest = { expanded = false },
@@ -70,67 +62,14 @@ internal fun FileMenuButton(
             iosSections = sections.map { it.section },
         ) {
             entries.forEach { entry ->
-                MaterialMenuItem(entry = entry, onDismiss = { expanded = false })
+                OverflowMenuItem(item = entry.item, icon = entry.materialIcon, onDismiss = { expanded = false })
             }
             sections.forEach { section ->
                 HorizontalDivider()
                 section.entries.forEach { entry ->
-                    MaterialMenuItem(entry = entry, onDismiss = { expanded = false })
+                    OverflowMenuItem(item = entry.item, icon = entry.materialIcon, onDismiss = { expanded = false })
                 }
             }
         }
     }
 }
-
-/**
- * The Material side of the top bar menu. On iOS the bar is a UINavigationBar and the same
- * entries become the bar button's UIMenu, see `UIKitUIBarButtonItem.withMenu`.
- */
-@Composable
-internal fun BarMenuButton(entries: List<MenuEntry>) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        MoreButton(onClick = { expanded = true })
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-        ) {
-            entries.forEach { entry ->
-                MaterialMenuItem(entry = entry, onDismiss = { expanded = false })
-            }
-        }
-    }
-}
-
-@Composable
-private fun MoreButton(onClick: () -> Unit) {
-    AdaptiveIconButton(onClick = onClick) {
-        Icon(
-            Icons.Filled.MoreVert,
-            contentDescription = "More options",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun MaterialMenuItem(entry: MenuEntry, onDismiss: () -> Unit) {
-    val item = entry.item
-    DropdownMenuItem(
-        text = { Text(item.title) },
-        leadingIcon = { Icon(entry.materialIcon, contentDescription = null) },
-        enabled = !item.isDisabled,
-        colors = if (item.isDestructive) destructiveItemColors() else MenuDefaults.itemColors(),
-        onClick = {
-            onDismiss()
-            item.onClick()
-        },
-    )
-}
-
-@Composable
-private fun destructiveItemColors(): MenuItemColors =
-    MenuDefaults.itemColors(
-        textColor = MaterialTheme.colorScheme.error,
-        leadingIconColor = MaterialTheme.colorScheme.error,
-    )

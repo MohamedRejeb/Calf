@@ -1,36 +1,28 @@
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.LinkOff
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import com.mohamedrejeb.calf.sample.components.DemoDivider
 import com.mohamedrejeb.calf.sample.components.DemoListCard
 import com.mohamedrejeb.calf.sample.components.DemoRow
 import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
 import com.mohamedrejeb.calf.sample.components.IconTile
 import com.mohamedrejeb.calf.sample.components.DemoSection
-import com.mohamedrejeb.calf.sample.ui.theme.IconTileSize
+import com.mohamedrejeb.calf.sample.components.InitialsAvatar
+import com.mohamedrejeb.calf.sample.components.SheetHeader
 import com.mohamedrejeb.calf.sample.ui.theme.Spacing
 import com.mohamedrejeb.calf.sample.ui.theme.TileAmber
 import com.mohamedrejeb.calf.sample.ui.theme.TileBlue
@@ -38,7 +30,6 @@ import com.mohamedrejeb.calf.sample.ui.theme.TileCoral
 import com.mohamedrejeb.calf.sample.ui.theme.TileIndigo
 import com.mohamedrejeb.calf.sample.ui.theme.TileTeal
 import com.mohamedrejeb.calf.sample.ui.theme.TileViolet
-import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 
@@ -75,7 +66,11 @@ internal fun ShareSheetContent(
             .padding(horizontal = Spacing.pageMargin)
             .padding(bottom = Spacing.xxl),
     ) {
-        ShareSheetHeader(onDone = onDone)
+        SheetHeader(
+            title = "Share album",
+            subtitle = "$ALBUM_NAME · 42 photos",
+            onDone = onDone,
+        )
         DemoListCard {
             DemoRow(
                 title = "Copy link",
@@ -113,30 +108,6 @@ internal fun ShareSheetContent(
 }
 
 @Composable
-private fun ShareSheetHeader(onDone: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = Spacing.xs),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "Share album",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = "$ALBUM_NAME · 42 photos",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        AdaptiveButton(onClick = onDone) {
-            Text("Done")
-        }
-    }
-}
-
-@Composable
 private fun ContactsList(onSend: (String) -> Unit) {
     DemoSection(title = "Send to") {
         DemoListCard {
@@ -144,7 +115,7 @@ private fun ContactsList(onSend: (String) -> Unit) {
                 if (index > 0) DemoDivider(startIndent = DividerIndentWithIcon)
                 DemoRow(
                     title = name,
-                    leading = { Avatar(name = name, color = AvatarColors[index % AvatarColors.size]) },
+                    leading = { InitialsAvatar(name = name, color = AvatarColors[index % AvatarColors.size]) },
                     onClick = { onSend(name) },
                 )
             }
@@ -152,20 +123,3 @@ private fun ContactsList(onSend: (String) -> Unit) {
     }
 }
 
-/** The initials of a contact on a coloured circle, the size of an icon tile so dividers line up. */
-@Composable
-private fun Avatar(name: String, color: Color) {
-    val initials = name.split(" ").mapNotNull { it.firstOrNull() }.take(2).joinToString("")
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(IconTileSize)
-            .background(color, CircleShape),
-    ) {
-        Text(
-            text = initials,
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White,
-        )
-    }
-}

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -98,31 +96,6 @@ internal fun NavDemoHero(
         )
     }
 }
-
-/** A person's initials on a coloured circle. */
-@Composable
-internal fun NavDemoAvatar(
-    name: String,
-    color: Color,
-    modifier: Modifier = Modifier,
-    size: Dp = NavDemoThumbnailSize,
-    textStyle: TextStyle = MaterialTheme.typography.titleSmall,
-) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(size)
-            .background(color, CircleShape),
-    ) {
-        Text(text = initialsOf(name), style = textStyle, color = Color.White)
-    }
-}
-
-private fun initialsOf(name: String): String =
-    name.split(' ')
-        .filter { it.isNotBlank() }
-        .take(2)
-        .joinToString("") { it.first().uppercase() }
 
 /** A tip at the top of a screen: an icon tile, a short title and one or two sentences. */
 @Composable

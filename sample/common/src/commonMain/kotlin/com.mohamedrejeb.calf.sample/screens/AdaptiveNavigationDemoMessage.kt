@@ -21,6 +21,7 @@ import com.mohamedrejeb.calf.sample.components.DemoListCard
 import com.mohamedrejeb.calf.sample.components.DemoPage
 import com.mohamedrejeb.calf.sample.components.DemoRow
 import com.mohamedrejeb.calf.sample.components.DemoSection
+import com.mohamedrejeb.calf.sample.components.InitialsAvatar
 import com.mohamedrejeb.calf.sample.ui.theme.Spacing
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.gesture.adaptiveClickable
@@ -44,7 +45,12 @@ internal fun NavDemoMailRow(
             .background(background)
             .padding(horizontal = Spacing.l, vertical = Spacing.m),
     ) {
-        NavDemoAvatar(name = mail.sender, color = mail.tint)
+        InitialsAvatar(
+            name = mail.sender,
+            color = mail.tint,
+            size = NavDemoThumbnailSize,
+            textStyle = MaterialTheme.typography.titleSmall,
+        )
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -126,7 +132,12 @@ private fun NavDemoSenderRow(mail: NavDemoMail) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.m),
     ) {
-        NavDemoAvatar(name = mail.sender, color = mail.tint)
+        InitialsAvatar(
+            name = mail.sender,
+            color = mail.tint,
+            size = NavDemoThumbnailSize,
+            textStyle = MaterialTheme.typography.titleSmall,
+        )
         Column {
             Text(
                 text = mail.sender,

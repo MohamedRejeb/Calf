@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.sample.screens
+package com.mohamedrejeb.calf.sample.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,11 +24,11 @@ private val FieldRowMinHeight = 52.dp
 private val FieldRowVerticalPadding = Spacing.m - 2.dp
 
 /**
- * A settings-style field in a [com.mohamedrejeb.calf.sample.components.DemoListCard]: the
- * [label] on the left, the editable value on the right, an optional [suffix] after it.
+ * A settings-style field in a [DemoListCard]: the [label] on the left, the editable value on the
+ * right, an optional [suffix] after it.
  */
 @Composable
-internal fun TextFieldRow(
+fun TextFieldRow(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
@@ -70,7 +70,7 @@ internal fun TextFieldRow(
 
 /** A full-width field in a card: a link, a note. Grows with its text up to [maxLines]. */
 @Composable
-internal fun TextAreaRow(
+fun TextAreaRow(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -95,6 +95,7 @@ internal fun TextAreaRow(
     )
 }
 
+/** The bare field under both rows: body type, the placeholder in the outline colour. */
 @Composable
 private fun DemoBasicTextField(
     value: String,

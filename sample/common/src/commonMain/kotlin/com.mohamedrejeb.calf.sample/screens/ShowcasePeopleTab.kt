@@ -17,6 +17,7 @@ import com.mohamedrejeb.calf.sample.components.DemoRow
 import com.mohamedrejeb.calf.sample.components.DemoSection
 import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
 import com.mohamedrejeb.calf.sample.components.IconTile
+import com.mohamedrejeb.calf.sample.components.InitialsAvatar
 import com.mohamedrejeb.calf.sample.ui.theme.TileBlue
 import com.mohamedrejeb.calf.sample.ui.theme.TileCoral
 import com.mohamedrejeb.calf.sample.ui.theme.TileIndigo
@@ -83,7 +84,7 @@ private fun TravellersSection(onInvite: () -> Unit) {
                 DemoRow(
                     title = traveller.name,
                     subtitle = traveller.status,
-                    leading = { TravellerAvatar(traveller) },
+                    leading = { InitialsAvatar(name = traveller.name, color = traveller.color) },
                     trailing = if (traveller.isPending) {
                         { PendingLabel() }
                     } else {
