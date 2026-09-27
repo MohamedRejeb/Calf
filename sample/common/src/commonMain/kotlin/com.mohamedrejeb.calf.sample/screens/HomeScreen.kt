@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.currentPlatform
@@ -44,6 +45,9 @@ import com.mohamedrejeb.calf.sample.ui.theme.TileIndigo
 import com.mohamedrejeb.calf.sample.ui.theme.TileTeal
 import com.mohamedrejeb.calf.sample.ui.theme.TileViolet
 import org.jetbrains.compose.resources.painterResource
+
+/** Test tag of the home list, which is only composed while the list is on screen. */
+const val HOME_LIST_TAG = "home-list"
 
 private val HeaderLogoSize = 64.dp
 private val PlaceholderLogoSize = 120.dp
@@ -74,7 +78,8 @@ fun HomeScreen(
         contentPadding = contentPadding,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.background)
+            .testTag(HOME_LIST_TAG),
     ) {
         item(key = "header") {
             HomeHeader(modifier = Modifier.homeColumn().padding(top = Spacing.l, bottom = Spacing.s))

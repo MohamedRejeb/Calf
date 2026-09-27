@@ -6,29 +6,31 @@
 package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import com.mohamedrejeb.calf.navigation.adaptiveNavEntry
+import com.mohamedrejeb.calf.sample.components.CodePill
+import com.mohamedrejeb.calf.sample.components.DemoCard
+import com.mohamedrejeb.calf.sample.components.DemoDivider
+import com.mohamedrejeb.calf.sample.components.DemoListCard
+import com.mohamedrejeb.calf.sample.components.DemoPage
+import com.mohamedrejeb.calf.sample.components.DemoRow
+import com.mohamedrejeb.calf.sample.components.DemoSection
+import com.mohamedrejeb.calf.sample.components.ValueRow
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItemVisibilityPriority
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonSystemItem
@@ -47,12 +49,12 @@ private data class NavDemoBarItem(
 )
 
 private val demoBarItems = listOf(
-    NavDemoBarItem("Add item", UIKitUIBarButtonItemVisibilityPriority.High, "system item"),
+    NavDemoBarItem("Add item", UIKitUIBarButtonItemVisibilityPriority.High, "System item"),
     NavDemoBarItem("Favorite", UIKitUIBarButtonItemVisibilityPriority.Standard, "SF Symbol"),
     NavDemoBarItem("Bookmark", UIKitUIBarButtonItemVisibilityPriority.Standard, "SF Symbol"),
-    NavDemoBarItem("Notifications", UIKitUIBarButtonItemVisibilityPriority.Low, "Compose vector, needs a label"),
-    NavDemoBarItem("Sort", UIKitUIBarButtonItemVisibilityPriority.Low, "text item, stays in the title row on iPhone Duo"),
-    NavDemoBarItem("Search", UIKitUIBarButtonItemVisibilityPriority.Standard, "system item"),
+    NavDemoBarItem("Notifications", UIKitUIBarButtonItemVisibilityPriority.Low, "Compose vector, with a label"),
+    NavDemoBarItem("Sort", UIKitUIBarButtonItemVisibilityPriority.Low, "Text item, stays in the title row"),
+    NavDemoBarItem("Search", UIKitUIBarButtonItemVisibilityPriority.Standard, "System item"),
     NavDemoBarItem("Settings", UIKitUIBarButtonItemVisibilityPriority.Low, "SF Symbol"),
     NavDemoBarItem("Share", UIKitUIBarButtonItemVisibilityPriority.High, "SF Symbol"),
 )
@@ -129,39 +131,38 @@ internal fun navDemoBarItemsEntry(
 }
 
 @Composable
-private fun NavDemoBarItemsContent(
+internal fun NavDemoBarItemsContent(
     contentPadding: PaddingValues,
     lastTapped: () -> String?,
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding,
-    ) {
-        item {
-            NavDemoCard(
-                title = "Overflow on iPhone Duo",
-                body = "In the vertical bar of an iPhone Duo the image items share the strip with the " +
-                    "tab bar. When there is no room for all of them, Low items move to the overflow " +
-                    "menu first and High items stay the longest. Text items keep their place in the " +
-                    "title row. Before iOS 27 the priority is ignored.",
-            )
+    DemoPage(contentPadding = contentPadding) {
+        DemoSection(
+            title = "Last tapped",
+            footer = "System items and SF Symbols carry a name of their own; a Compose vector or bitmap " +
+                "does not, so it gets a label. VoiceOver reads the label and the overflow menu shows it " +
+                "next to the image.",
+        ) {
+            DemoCard {
+                ValueRow(label = "Bar item", value = lastTapped() ?: "None yet")
+            }
         }
-        item {
-            NavDemoCard(
-                title = "Labels",
-                body = "System items and SF Symbols carry a name of their own; a Compose vector or " +
-                    "bitmap does not, so it gets a label. VoiceOver reads the label and the overflow " +
-                    "menu shows it next to the image. Last tapped: ${lastTapped() ?: "nothing yet"}.",
-            )
-        }
-        item { NavDemoSectionHeader("Trailing items, in order") }
-        items(demoBarItems) { item ->
-            ListItem(
-                headlineContent = { Text(item.name) },
-                supportingContent = { Text(item.kind) },
-                trailingContent = { Text(item.priority.name) },
-            )
-            HorizontalDivider()
+        DemoSection(
+            title = "Trailing items, in order",
+            footer = "In the vertical bar of an iPhone Duo the image items share the strip with the tab " +
+                "bar. When there is no room for all of them, Low items move to the overflow menu first " +
+                "and High items stay the longest. Text items keep their place in the title row. Before " +
+                "iOS 27 the priority is ignored.",
+        ) {
+            DemoListCard {
+                demoBarItems.forEachIndexed { index, item ->
+                    if (index > 0) DemoDivider()
+                    DemoRow(
+                        title = item.name,
+                        subtitle = item.kind,
+                        trailing = { CodePill(item.priority.name) },
+                    )
+                }
+            }
         }
     }
 }

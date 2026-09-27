@@ -5,10 +5,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,171 +15,152 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveScaffold
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
-import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 
-@OptIn(ExperimentalCalfUiApi::class, ExperimentalMaterial3Api::class)
-@Composable
-fun ScaffoldDemoScreen(
-    navigateBack: () -> Unit,
+private const val SCAFFOLD_TAB_FADE_MILLIS = 300
+
+/** The tabs of the scaffold demo, with their Material icons and their UITabBar item. */
+private enum class ScaffoldTab(
+    val title: String,
+    val icon: ImageVector,
+    val selectedIcon: ImageVector,
+    val iosItem: UIKitUITabBarItem,
 ) {
-    var selectedIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("Home", "Favorites", "Settings")
-    val icons = listOf(
-        Icons.Outlined.Home,
-        Icons.Outlined.Favorite,
-        Icons.Outlined.Settings,
-    )
-    val selectedIcons = listOf(
-        Icons.Filled.Home,
-        Icons.Filled.Favorite,
-        Icons.Filled.Settings,
-    )
+    Home(
+        title = "Home",
+        icon = Icons.Outlined.Home,
+        selectedIcon = Icons.Filled.Home,
+        iosItem = UIKitUITabBarItem(title = "Home", image = UIKitImage.SystemName(SFSymbol.houseFill)),
+    ),
+    Favorites(
+        title = "Favorites",
+        icon = Icons.Outlined.FavoriteBorder,
+        selectedIcon = Icons.Filled.Favorite,
+        iosItem = UIKitUITabBarItem(title = "Favorites", image = UIKitImage.Vector(Icons.Rounded.Favorite)),
+    ),
+    Settings(
+        title = "Settings",
+        icon = Icons.Outlined.Settings,
+        selectedIcon = Icons.Filled.Settings,
+        iosItem = UIKitUITabBarItem(title = "Settings", image = UIKitImage.Vector(Icons.Rounded.Settings)),
+    ),
+}
+
+private val ScaffoldTabBarItems: List<UIKitUITabBarItem> = ScaffoldTab.entries.map { it.iosItem }
+
+/**
+ * [AdaptiveScaffold] with an [AdaptiveTopBar] and an [AdaptiveNavigationBar]. The content area is
+ * outlined by two guides that sit exactly on its top and bottom edges: a stale bar padding (after
+ * rotating the device, for example) shows up as a gap between a guide and its bar, or as a guide
+ * hidden under it.
+ */
+@OptIn(ExperimentalCalfUiApi::class)
+@Composable
+fun ScaffoldDemoScreen(navigateBack: () -> Unit) {
+    var selectedIndex by rememberSaveable { mutableIntStateOf(ScaffoldTab.Home.ordinal) }
+    val selectedTab = ScaffoldTab.entries[selectedIndex]
 
     AdaptiveScaffold(
-        topBar = {
-            AdaptiveTopBar(
-                title = { Text(tabs[selectedIndex]) },
-                navigationIcon = {
-                    AdaptiveIconButton(onClick = navigateBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                        )
-                    }
-                },
-                iosTitle = tabs[selectedIndex],
-                iosLeadingItems = listOf(
-                    UIKitUIBarButtonItem(
-                        title = "Back",
-                        onClick = navigateBack,
-                    )
-                ),
-            )
-        },
+        topBar = { ScaffoldDemoTopBar(tab = selectedTab, navigateBack = navigateBack) },
         bottomBar = {
-            AdaptiveNavigationBar(
-                iosItems = listOf(
-                    UIKitUITabBarItem(
-                        title = "Home",
-                        image = UIKitImage.SystemName(SFSymbol.houseFill),
-                    ),
-                    UIKitUITabBarItem(
-                        title = "Favorites",
-                        image = UIKitImage.Vector(Icons.Rounded.Favorite),
-                    ),
-                    UIKitUITabBarItem(
-                        title = "Settings",
-                        image = UIKitImage.Vector(Icons.Rounded.Settings),
-                    ),
-                ),
-                iosSelectedIndex = selectedIndex,
-                iosOnItemSelected = { selectedIndex = it },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    NavigationBarItem(
-                        selected = selectedIndex == index,
-                        onClick = { selectedIndex = index },
-                        icon = {
-                            Icon(
-                                if (selectedIndex == index) selectedIcons[index] else icons[index],
-                                contentDescription = tab,
-                            )
-                        },
-                        label = { Text(tab) },
-                    )
-                }
-            }
+            ScaffoldDemoTabBar(selectedTab = selectedTab, onSelect = { selectedIndex = it.ordinal })
         },
     ) { padding ->
-        AnimatedContent(
-            targetState = selectedIndex,
-            transitionSpec = {
-                fadeIn(animationSpec = tween(300)) togetherWith
-                        fadeOut(animationSpec = tween(300))
-            },
-            modifier = Modifier.fillMaxSize(),
-        ) { tabIndex ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-            ) {
-                // The markers sit exactly on the edges of the padded content, so a stale bar
-                // padding (e.g. after rotating the device) shows up as a gap or an overlap.
-                ContentEdgeMarker(
-                    text = "Content top edge: must touch the top bar",
-                    modifier = Modifier.align(Alignment.TopCenter),
-                )
-                ContentEdgeMarker(
-                    text = "Content bottom edge: must touch the tab bar",
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                )
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp),
-                ) {
-                    Text(
-                        text = tabs[tabIndex],
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = "This demonstrates AdaptiveScaffold + AdaptiveTopBar + AdaptiveNavigationBar working together. On iOS, native UINavigationBar and UITabBar are used. Rotate the device: the markers must stay glued to the bars.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
+        ScaffoldDemoContent(tab = selectedTab, padding = padding)
     }
 }
 
 @Composable
-private fun ContentEdgeMarker(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onPrimaryContainer,
-        textAlign = TextAlign.Center,
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .padding(vertical = 2.dp),
+private fun ScaffoldDemoContent(tab: ScaffoldTab, padding: PaddingValues) {
+    Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+        AnimatedContent(
+            targetState = tab,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(SCAFFOLD_TAB_FADE_MILLIS)) togetherWith
+                    fadeOut(animationSpec = tween(SCAFFOLD_TAB_FADE_MILLIS))
+            },
+            modifier = Modifier.fillMaxSize(),
+        ) { shownTab ->
+            ScaffoldInsetsPage(tabTitle = shownTab.title, padding = padding)
+        }
+        // Drawn over the page so they stay on the edges while it scrolls.
+        ContentEdgeGuide(
+            edge = ContentEdge.Top,
+            label = "Content top · ${padding.calculateTopPadding().toInsetLabel()}",
+            modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
+        )
+        ContentEdgeGuide(
+            edge = ContentEdge.Bottom,
+            label = "Content bottom · ${padding.calculateBottomPadding().toInsetLabel()}",
+            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
+        )
+    }
+}
+
+@OptIn(ExperimentalCalfUiApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun ScaffoldDemoTopBar(tab: ScaffoldTab, navigateBack: () -> Unit) {
+    AdaptiveTopBar(
+        title = { Text(tab.title) },
+        navigationIcon = {
+            AdaptiveIconButton(onClick = navigateBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        },
+        iosTitle = tab.title,
+        iosLeadingItems = listOf(
+            UIKitUIBarButtonItem(title = "Back", onClick = navigateBack),
+        ),
     )
+}
+
+@OptIn(ExperimentalCalfUiApi::class)
+@Composable
+private fun ScaffoldDemoTabBar(selectedTab: ScaffoldTab, onSelect: (ScaffoldTab) -> Unit) {
+    AdaptiveNavigationBar(
+        iosItems = ScaffoldTabBarItems,
+        iosSelectedIndex = selectedTab.ordinal,
+        iosOnItemSelected = { index -> ScaffoldTab.entries.getOrNull(index)?.let(onSelect) },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        ScaffoldTab.entries.forEach { tab ->
+            val selected = tab == selectedTab
+            NavigationBarItem(
+                selected = selected,
+                onClick = { onSelect(tab) },
+                icon = {
+                    Icon(
+                        imageVector = if (selected) tab.selectedIcon else tab.icon,
+                        contentDescription = null,
+                    )
+                },
+                label = { Text(tab.title) },
+            )
+        }
+    }
 }

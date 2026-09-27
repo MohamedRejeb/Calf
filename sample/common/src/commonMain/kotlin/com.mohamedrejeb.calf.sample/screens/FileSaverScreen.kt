@@ -4,21 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.SaveAlt
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,219 +21,233 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PaintingStyle
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
-import com.mohamedrejeb.calf.io.readByteArray
+import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.picker.FilePickerFileType
-import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.FilePickerSettings
 import com.mohamedrejeb.calf.picker.ImageRepresentationMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import com.mohamedrejeb.calf.picker.rememberFileSaverLauncher
-import com.mohamedrejeb.calf.picker.toImageBitmap
+import com.mohamedrejeb.calf.sample.components.CodeSnippet
+import com.mohamedrejeb.calf.sample.components.DemoCard
+import com.mohamedrejeb.calf.sample.components.DemoDivider
+import com.mohamedrejeb.calf.sample.components.DemoHeader
+import com.mohamedrejeb.calf.sample.components.DemoListCard
+import com.mohamedrejeb.calf.sample.components.DemoPage
+import com.mohamedrejeb.calf.sample.components.DemoRow
+import com.mohamedrejeb.calf.sample.components.DemoSection
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
-import com.mohamedrejeb.calf.sample.utils.toByteArray
+import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.sample.ui.theme.Spacing
+import com.mohamedrejeb.calf.sample.ui.theme.TileTeal
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.math.min
+
+private const val USAGE = """
+// file is null when the user cancels
+val saver = rememberFileSaverLauncher { file ->
+    saved = file != null
+}
+
+saver.launch(
+    bytes = croppedPng,
+    baseName = "profile_picture",
+    extension = "png",
+)
+"""
+
+private const val DEFAULT_FILE_NAME = "profile_picture"
+private const val EXPORT_EXTENSION = "png"
+private const val PROFILE_NAME = "Amira Haddad"
+private const val PROFILE_DETAIL = "Product designer, Tunis"
+private val AvatarSize = 132.dp
+private val AvatarPlaceholderIconSize = 64.dp
+
+/** What happened to the last export, shown under the export options. */
+private sealed interface ExportStatus {
+    data class Saved(val fileName: String?) : ExportStatus
+    data object Cancelled : ExportStatus
+    data class Failed(val reason: String) : ExportStatus
+}
 
 @OptIn(ExperimentalCalfApi::class)
 @Composable
 fun FileSaverScreen(navigateBack: () -> Unit) {
     val scope = rememberCoroutineScope()
-
-    var selectedFile by remember { mutableStateOf<KmpFile?>(null) }
-    val fileNameState = remember { TextFieldState("profile_picture") }
-    var saveMessage by remember { mutableStateOf<String?>(null) }
+    var photo by remember { mutableStateOf<KmpFile?>(null) }
+    var fileName by rememberSaveable { mutableStateOf(DEFAULT_FILE_NAME) }
+    var status by remember { mutableStateOf<ExportStatus?>(null) }
 
     val pickerLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Image,
-        selectionMode = FilePickerSelectionMode.Single,
         settings = FilePickerSettings(
-            title = "Choose a profile picture",
+            title = "Choose a profile photo",
             imageRepresentationMode = ImageRepresentationMode.Compatible,
         ),
         onResult = { files ->
-            selectedFile = files.firstOrNull()
-            saveMessage = null
+            files.firstOrNull()?.let { photo = it }
+            status = null
         },
     )
-
     val saverLauncher = rememberFileSaverLauncher(
         onResult = { file ->
-            saveMessage = if (file != null) "Saved successfully" else "Save cancelled"
+            status = if (file != null) ExportStatus.Saved(file.getName()) else ExportStatus.Cancelled
         },
     )
 
-    SampleScreenScaffold(
-        title = "File Saver",
-        navigateBack = navigateBack,
-    ) { padding ->
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-        ) {
-            Text(
-                text = "Pick a profile picture, preview it in a circle crop, then export it using the file saver API.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Circle avatar preview
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(200.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-            ) {
-                if (selectedFile != null) {
-                    AsyncImage(
-                        model = selectedFile,
-                        contentDescription = "Profile picture",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = "Placeholder",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(80.dp),
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                state = fileNameState,
-                label = { Text("File name") },
-                lineLimits = androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AdaptiveButton(
-                onClick = { pickerLauncher.launch() },
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.Image,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (selectedFile == null) "Choose Photo" else "Change Photo")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            AdaptiveButton(
-                onClick = {
+    SampleScreenScaffold(title = Screen.ProfilePicture.title, navigateBack = navigateBack) { padding ->
+        DemoPage(contentPadding = padding) {
+            DemoHeader(Screen.ProfilePicture)
+            ProfileSection(photo = photo, onChoosePhoto = { pickerLauncher.launch() })
+            ExportSection(
+                fileName = fileName,
+                onFileNameChange = { fileName = it },
+                status = status,
+                canSave = photo != null,
+                onSave = {
+                    val source = photo ?: return@ExportSection
                     scope.launch {
-                        val file = selectedFile ?: return@launch
-                        val bytes = file.readByteArray()
-                        val cropped = withContext(Dispatchers.Default) {
-                            circleCropImage(bytes)
-                        }
-                        val baseName = fileNameState.text.toString().ifBlank { "profile_picture" }
-                        saverLauncher.launch(
-                            bytes = cropped,
-                            baseName = baseName,
-                            extension = "png",
-                        )
+                        circleCropPng(source)
+                            .onSuccess { png ->
+                                saverLauncher.launch(
+                                    bytes = png,
+                                    baseName = fileName.ifBlank { DEFAULT_FILE_NAME },
+                                    extension = EXPORT_EXTENSION,
+                                )
+                            }
+                            .onFailure { error ->
+                                status = ExportStatus.Failed(error.message ?: "The photo could not be read")
+                            }
                     }
                 },
-                enabled = selectedFile != null,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.SaveAlt,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Export Photo")
-                }
+            )
+            DemoSection(title = "Usage") {
+                CodeSnippet(USAGE.trimIndent())
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(12.dp))
+@Composable
+private fun ProfileSection(
+    photo: KmpFile?,
+    onChoosePhoto: () -> Unit,
+) {
+    DemoSection(title = "Profile photo") {
+        DemoCard(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(Spacing.xl),
+            verticalArrangement = Arrangement.spacedBy(Spacing.l),
+        ) {
+            Avatar(photo)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = PROFILE_NAME,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = PROFILE_DETAIL,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            AdaptiveButton(
+                onClick = onChoosePhoto,
+                colors = ButtonDefaults.filledTonalButtonColors(),
+            ) {
+                Text(if (photo == null) "Choose photo" else "Change photo")
+            }
+        }
+    }
+}
 
-            Text(
-                text = saveMessage ?: "Export status",
-                style = MaterialTheme.typography.bodyMedium,
-                color = when (saveMessage) {
-                    "Save cancelled" -> Color(0xFFF44336)
-                    null -> Color.Transparent
-                    else -> Color(0xFF4CAF50)
-                },
-                modifier = Modifier.alpha(if (saveMessage != null) 1f else 0f),
+/** The photo in the circle it will be saved as, or a placeholder before one is chosen. */
+@Composable
+private fun Avatar(photo: KmpFile?) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(AvatarSize)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+    ) {
+        if (photo != null) {
+            AsyncImage(
+                model = photo,
+                contentDescription = "Profile photo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Outlined.Person,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(AvatarPlaceholderIconSize),
             )
         }
     }
 }
 
-private fun circleCropImage(bytes: ByteArray): ByteArray {
-    val source = bytes.toImageBitmap()
-    val size = min(source.width, source.height)
-
-    // Draw circle-cropped image onto a new bitmap
-    val output = ImageBitmap(size, size)
-    val canvas = Canvas(output)
-
-    // Clip to circle
-    val path = Path().apply {
-        addOval(
-            androidx.compose.ui.geometry.Rect(
-                offset = Offset.Zero,
-                size = Size(size.toFloat(), size.toFloat()),
+@Composable
+private fun ExportSection(
+    fileName: String,
+    onFileNameChange: (String) -> Unit,
+    status: ExportStatus?,
+    canSave: Boolean,
+    onSave: () -> Unit,
+) {
+    DemoSection(
+        title = "Export",
+        footer = "The photo is cropped to a circle and saved as a PNG with a transparent background.",
+    ) {
+        DemoListCard {
+            TextFieldRow(
+                label = "File name",
+                value = fileName,
+                onValueChange = onFileNameChange,
+                placeholder = DEFAULT_FILE_NAME,
+                suffix = ".$EXPORT_EXTENSION",
             )
-        )
+            if (status != null) {
+                DemoDivider()
+                ExportStatusRow(status)
+            }
+        }
+        AdaptiveButton(
+            onClick = onSave,
+            enabled = canSave,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Save photo")
+        }
     }
-    canvas.clipPath(path)
+}
 
-    // Center crop: draw the center portion of the source image
-    val srcX = (source.width - size) / 2
-    val srcY = (source.height - size) / 2
-    canvas.drawImageRect(
-        image = source,
-        srcOffset = IntOffset(srcX, srcY),
-        srcSize = IntSize(size, size),
-        dstOffset = IntOffset.Zero,
-        dstSize = IntSize(size, size),
-        paint = Paint(),
+@Composable
+private fun ExportStatusRow(status: ExportStatus) {
+    val (label, color) = when (status) {
+        is ExportStatus.Saved -> "Saved" to TileTeal
+        ExportStatus.Cancelled -> "Cancelled" to MaterialTheme.colorScheme.outline
+        is ExportStatus.Failed -> "Failed" to MaterialTheme.colorScheme.error
+    }
+    DemoRow(
+        title = "Last export",
+        subtitle = when (status) {
+            is ExportStatus.Saved -> status.fileName
+            ExportStatus.Cancelled -> null
+            is ExportStatus.Failed -> status.reason
+        },
+        trailing = { StatusLabel(label = label, color = color, modifier = Modifier.padding(start = Spacing.s)) },
     )
-    return output.toByteArray()
 }

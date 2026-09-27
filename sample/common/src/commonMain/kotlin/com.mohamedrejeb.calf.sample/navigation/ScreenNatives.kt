@@ -22,7 +22,7 @@ fun Screen.nativeImplementation(platform: Platform, isLiquidGlass: Boolean): Str
         Screen.Switch -> if (ios) "UISwitch" else "Material 3 Switch"
         Screen.Slider -> if (ios) iosStyle(isLiquidGlass, "Cupertino slider") else "Material 3 Slider"
         Screen.ProgressBar -> if (ios) "UIActivityIndicatorView" else "Material 3 CircularProgressIndicator"
-        Screen.AdaptiveClickable -> if (ios) "iOS highlight feedback" else "Material ripple"
+        Screen.AdaptiveClickable -> if (ios) "iOS press-to-scale feedback" else "Material ripple"
         Screen.Toolbar -> if (ios) iosStyle(isLiquidGlass, "Cupertino toolbar") else "Material 3 Expressive toolbar"
         Screen.CupertinoIconsCatalog -> "SF Symbols style font, bundled"
         Screen.Dialog -> if (ios) "UIAlertController" else "Material 3 AlertDialog"
@@ -61,7 +61,7 @@ fun Screen.nativeImplementation(platform: Platform, isLiquidGlass: Boolean): Str
         Screen.Permission -> when (platform) {
             Platform.IOS -> "iOS authorization APIs"
             Platform.Android -> "Android runtime permissions"
-            Platform.Desktop, Platform.Web -> "Granted by default on this platform"
+            Platform.Desktop, Platform.Web -> "Not supported on this platform"
         }
     }
 }

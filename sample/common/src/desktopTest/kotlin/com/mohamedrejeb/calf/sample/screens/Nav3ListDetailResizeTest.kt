@@ -9,11 +9,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -21,7 +24,7 @@ import com.mohamedrejeb.calf.sample.ui.theme.CalfTheme
 import kotlin.test.Test
 
 /**
- * Resizing the window across the two-pane threshold with an item open: the item stays open and
+ * Resizing the window across the two-pane threshold with a color open: the color stays open and
  * keeps its saved counter in both directions. The back stack is never edited by the layout.
  */
 @OptIn(ExperimentalTestApi::class)
@@ -39,25 +42,25 @@ class Nav3ListDetailResizeTest {
         setContent { Demo(window) }
         waitForIdle()
 
-        onAllNodesWithText("Item 3").onFirst().performClick()
+        onAllNodesWithText(TANGERINE).onFirst().performClick()
         waitForIdle()
-        onNodeWithText("Tap (0)").performClick()
-        onNodeWithText("Tap (1)").performClick()
+        onNodeWithText("Tap").performScrollTo().performClick()
+        onNodeWithText("Tap").performClick()
         waitForIdle()
-        onNodeWithText("Saved taps: 2").assertIsDisplayed()
-        onNodeWithText("Item 1").assertDoesNotExist()
+        onNode(savedTaps(2)).assertIsDisplayed()
+        onNodeWithText(VERMILION).assertDoesNotExist()
 
         window.width = WIDE
         waitForIdle()
-        // Two panes: the list is back beside the same item, counter intact.
-        onNodeWithText("Item 1").assertIsDisplayed()
-        onNodeWithText("Saved taps: 2").assertIsDisplayed()
+        // Two panes: the list is back beside the same color, counter intact.
+        onNodeWithText(VERMILION).assertIsDisplayed()
+        onNode(savedTaps(2)).assertIsDisplayed()
 
         window.width = NARROW
         waitForIdle()
-        // One pane again: the item is on top, still with its counter.
-        onNodeWithText("Item 1").assertDoesNotExist()
-        onNodeWithText("Saved taps: 2").assertIsDisplayed()
+        // One pane again: the color is on top, still with its counter.
+        onNodeWithText(VERMILION).assertDoesNotExist()
+        onNode(savedTaps(2)).assertIsDisplayed()
     }
 
     @Composable
@@ -70,7 +73,14 @@ class Nav3ListDetailResizeTest {
         }
     }
 
+    /** The state check's row: label and value are one node. */
+    private fun savedTaps(count: Int): SemanticsMatcher = hasText("Saved taps") and hasText(count.toString())
+
     private companion object {
+        // The first and third colors of the palette.
+        const val VERMILION = "Vermilion"
+        const val TANGERINE = "Tangerine"
+
         const val WIDE = 1200
         const val NARROW = 400
         const val WINDOW_HEIGHT = 800

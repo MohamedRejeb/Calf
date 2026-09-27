@@ -1,229 +1,314 @@
 package com.mohamedrejeb.calf.sample.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Checkroom
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.components.CodeSnippet
+import com.mohamedrejeb.calf.sample.components.DemoCard
+import com.mohamedrejeb.calf.sample.components.DemoDivider
+import com.mohamedrejeb.calf.sample.components.DemoHeader
+import com.mohamedrejeb.calf.sample.components.DemoListCard
+import com.mohamedrejeb.calf.sample.components.DemoPage
+import com.mohamedrejeb.calf.sample.components.DemoRow
+import com.mohamedrejeb.calf.sample.components.DemoSection
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.sample.components.ValueRow
 import com.mohamedrejeb.calf.sample.isLiquidGlassAvailable
+import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.sample.ui.theme.Spacing
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import com.mohamedrejeb.calf.ui.button.LiquidGlassButtonColors
 
+private const val USAGE = """
+AdaptiveButton(onClick = { addToBag() }) {
+    Text("Add to bag")
+}
+
+AdaptiveIconButton(onClick = { isFavourite = !isFavourite }) {
+    Icon(Icons.Outlined.FavoriteBorder, contentDescription = "Favourite")
+}
+"""
+
+private const val UNIT_PRICE_EUROS = 89
+private const val MAX_QUANTITY = 5
+private const val DISABLED_GLASS_ALPHA = 0.4f
+private val ThumbnailSize = 56.dp
+private val ButtonIconSize = 18.dp
+private val QuantityWidth = 24.dp
+
+/** Space between an icon button's edge and its icon; offset so the glyphs line up with the card. */
+private val IconButtonInset = 12.dp
+
 @Composable
-fun ButtonScreen(
-    navigateBack: () -> Unit
-) {
-    SampleScreenScaffold(
-        title = "Adaptive Buttons",
-        navigateBack = navigateBack,
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Text(
-                text = "Buttons rendered with Cupertino style on iOS and Material3 on other platforms.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Filled Button
-            SectionCard(title = "Filled Button") {
-                var clickCount by remember { mutableIntStateOf(0) }
-
-                Row {
-                    AdaptiveButton(
-                        onClick = { clickCount++ },
-                    ) {
-                        Text("Clicked $clickCount times")
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    AdaptiveButton(
-                        onClick = {},
-                        enabled = false,
-                    ) {
-                        Text("Disabled")
-                    }
-                }
-
-                if (isLiquidGlassAvailable) {
-                    val onSurface = MaterialTheme.colorScheme.onSurface
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row {
-                        AdaptiveButton(
-                            onClick = {},
-                            liquidGlassColors = LiquidGlassButtonColors(
-                                tintColor = Color.Unspecified,
-                                surfaceColor = Color.Unspecified,
-                                contentColor = onSurface,
-                                disabledContentColor = onSurface.copy(alpha = 0.4f),
-                            ),
-                        ) {
-                            Text("Filled Glass")
-                        }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        AdaptiveButton(
-                            onClick = {},
-                            enabled = false,
-                            liquidGlassColors = LiquidGlassButtonColors(
-                                tintColor = Color.Unspecified,
-                                surfaceColor = Color.Unspecified,
-                                contentColor = onSurface,
-                                disabledContentColor = onSurface.copy(alpha = 0.4f),
-                            ),
-                        ) {
-                            Text("Filled Disabled")
-                        }
-                    }
-                }
+fun ButtonScreen(navigateBack: () -> Unit) {
+    SampleScreenScaffold(title = Screen.Button.title, navigateBack = navigateBack) { padding ->
+        DemoPage(contentPadding = padding) {
+            DemoHeader(Screen.Button)
+            ProductSection()
+            VariantsSection()
+            if (isLiquidGlassAvailable) LiquidGlassSection()
+            DemoSection(title = "Usage") {
+                CodeSnippet(USAGE.trimIndent())
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Icon Buttons
-            SectionCard(title = "Icon Buttons") {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    AdaptiveIconButton(
-                        onClick = {},
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Favorite,
-                            contentDescription = "Favorite",
-                        )
-                    }
-
-                    AdaptiveIconButton(
-                        onClick = {},
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Share,
-                            contentDescription = "Share",
-                        )
-                    }
-
-                    AdaptiveIconButton(
-                        onClick = {},
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = "Add",
-                        )
-                    }
-
-                    AdaptiveIconButton(
-                        onClick = {},
-                        enabled = false,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Favorite,
-                            contentDescription = "Disabled",
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Buttons with icons
-            SectionCard(title = "Buttons with Icons") {
-                Row {
-                    AdaptiveButton(
-                        onClick = {},
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Create New")
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    AdaptiveButton(
-                        onClick = {},
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Share,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Share")
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-private fun SectionCard(
-    title: String,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
-        shape = MaterialTheme.shapes.medium,
-        modifier = modifier.fillMaxWidth(),
+private fun ProductSection() {
+    var quantity by rememberSaveable { mutableIntStateOf(1) }
+    var favourite by rememberSaveable { mutableStateOf(false) }
+    var inBag by rememberSaveable { mutableIntStateOf(0) }
+    var lastTap by rememberSaveable { mutableStateOf("Nothing yet") }
+
+    DemoSection(
+        title = "Product",
+        footer = "The stepper passes enabled = false at 1 and at $MAX_QUANTITY items.",
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            content()
+        DemoCard {
+            ProductSummary()
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                QuantityStepper(
+                    quantity = quantity,
+                    onQuantityChange = { quantity = it },
+                    modifier = Modifier.offset(x = -IconButtonInset),
+                )
+                Spacer(Modifier.weight(1f))
+                AdaptiveIconButton(
+                    onClick = {
+                        favourite = !favourite
+                        lastTap = if (favourite) "Saved to favourites" else "Removed from favourites"
+                    },
+                    modifier = Modifier.offset(x = IconButtonInset),
+                ) {
+                    Icon(
+                        imageVector = if (favourite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Favourite",
+                    )
+                }
+                AdaptiveIconButton(
+                    onClick = { lastTap = "Share sheet opened" },
+                    modifier = Modifier.offset(x = IconButtonInset),
+                ) {
+                    Icon(Icons.Outlined.Share, contentDescription = "Share")
+                }
+            }
+            AdaptiveButton(
+                onClick = {
+                    inBag += quantity
+                    lastTap = "Added $quantity to bag"
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                ButtonIcon(Icons.Outlined.ShoppingBag)
+                Text("Add to bag · €${UNIT_PRICE_EUROS * quantity}")
+            }
+        }
+        DemoCard {
+            ValueRow(label = "In your bag", value = if (inBag == 1) "1 item" else "$inBag items")
+            ValueRow(label = "Last tap", value = lastTap)
         }
     }
+}
+
+@Composable
+private fun ProductSummary() {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.m),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(ThumbnailSize)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.shapes.medium),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Checkroom,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Linen overshirt",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = "Sand · Size M · In stock",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Text(
+            text = "€$UNIT_PRICE_EUROS",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+@Composable
+private fun QuantityStepper(
+    quantity: Int,
+    onQuantityChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+        AdaptiveIconButton(
+            onClick = { onQuantityChange(quantity - 1) },
+            enabled = quantity > 1,
+        ) {
+            Icon(Icons.Outlined.Remove, contentDescription = "One less")
+        }
+        Text(
+            text = quantity.toString(),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.widthIn(min = QuantityWidth),
+        )
+        AdaptiveIconButton(
+            onClick = { onQuantityChange(quantity + 1) },
+            enabled = quantity < MAX_QUANTITY,
+        ) {
+            Icon(Icons.Outlined.Add, contentDescription = "One more")
+        }
+    }
+}
+
+@Composable
+private fun VariantsSection() {
+    DemoSection(
+        title = "Variants",
+        footer = if (isLiquidGlassAvailable) {
+            null
+        } else {
+            "On iOS 26 these are Liquid Glass buttons, and liquidGlassColors sets their glass colours."
+        },
+    ) {
+        DemoListCard {
+            DemoRow(
+                title = "Filled",
+                trailing = { AdaptiveButton(onClick = {}) { Text("Checkout") } },
+            )
+            DemoDivider()
+            DemoRow(
+                title = "Disabled",
+                trailing = { AdaptiveButton(onClick = {}, enabled = false) { Text("Checkout") } },
+            )
+            DemoDivider()
+            DemoRow(
+                title = "Icon and label",
+                trailing = {
+                    AdaptiveButton(onClick = {}) {
+                        ButtonIcon(Icons.Outlined.Add)
+                        Text("New list")
+                    }
+                },
+            )
+            DemoDivider()
+            DemoRow(
+                title = "Icon buttons",
+                trailing = {
+                    Row {
+                        IconOnlyButton(Icons.Outlined.FavoriteBorder, "Favourite")
+                        IconOnlyButton(Icons.Outlined.Share, "Share")
+                        IconOnlyButton(Icons.Outlined.Add, "Add")
+                    }
+                },
+            )
+            DemoDivider()
+            DemoRow(
+                title = "Icon button, disabled",
+                trailing = { IconOnlyButton(Icons.Outlined.FavoriteBorder, "Favourite", enabled = false) },
+            )
+        }
+    }
+}
+
+/** Only shown where [isLiquidGlassAvailable]: clear glass through `liquidGlassColors`. */
+@Composable
+private fun LiquidGlassSection() {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    // Unspecified tint and surface: an untinted glass button instead of one tinted with `colors`.
+    val clearGlass = LiquidGlassButtonColors(
+        tintColor = Color.Unspecified,
+        surfaceColor = Color.Unspecified,
+        contentColor = onSurface,
+        disabledContentColor = onSurface.copy(alpha = DISABLED_GLASS_ALPHA),
+    )
+    DemoSection(
+        title = "Liquid Glass",
+        footer = "liquidGlassColors with an unspecified tint and surface gives a clear glass button.",
+    ) {
+        DemoListCard {
+            DemoRow(
+                title = "Clear glass",
+                trailing = {
+                    AdaptiveButton(onClick = {}, liquidGlassColors = clearGlass) { Text("Save for later") }
+                },
+            )
+            DemoDivider()
+            DemoRow(
+                title = "Clear glass, disabled",
+                trailing = {
+                    AdaptiveButton(onClick = {}, enabled = false, liquidGlassColors = clearGlass) {
+                        Text("Save for later")
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun IconOnlyButton(
+    icon: ImageVector,
+    contentDescription: String,
+    enabled: Boolean = true,
+) {
+    AdaptiveIconButton(onClick = {}, enabled = enabled) {
+        Icon(imageVector = icon, contentDescription = contentDescription)
+    }
+}
+
+/** The leading icon of a button with a label, sized and spaced like Material's. */
+@Composable
+private fun ButtonIcon(icon: ImageVector) {
+    Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(ButtonIconSize))
+    Spacer(Modifier.width(Spacing.s))
 }

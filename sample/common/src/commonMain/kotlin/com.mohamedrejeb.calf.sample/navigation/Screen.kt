@@ -11,7 +11,7 @@ import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.ImportContacts
 import androidx.compose.material.icons.outlined.Language
-import androidx.compose.material.icons.outlined.List
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Pages
 import androidx.compose.material.icons.outlined.Schedule
@@ -114,7 +114,7 @@ enum class Screen(
     ),
     AdaptiveClickable(
         title = "Clickable",
-        description = "Highlight on iOS, ripple on Material",
+        description = "Press-to-scale on iOS, ripple on Material",
         icon = Icons.Outlined.AdsClick,
         category = ScreenCategory.Components,
         api = "Modifier.adaptiveClickable",
@@ -219,7 +219,7 @@ enum class Screen(
     ScaffoldDemo(
         title = "Scaffold",
         description = "Top bar, tab bar and content insets together",
-        icon = Icons.Outlined.List,
+        icon = Icons.AutoMirrored.Outlined.List,
         category = ScreenCategory.Navigation,
         api = "AdaptiveScaffold",
     ),

@@ -2,47 +2,39 @@
 
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Logout
-import androidx.compose.material.icons.outlined.Fullscreen
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Layers
+import androidx.compose.material.icons.outlined.VerticalAlignTop
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import com.mohamedrejeb.calf.navigation.AdaptiveTabState
+import com.mohamedrejeb.calf.sample.components.DemoCard
+import com.mohamedrejeb.calf.sample.components.DemoDivider
+import com.mohamedrejeb.calf.sample.components.DemoListCard
+import com.mohamedrejeb.calf.sample.components.DemoPage
+import com.mohamedrejeb.calf.sample.components.DemoRow
+import com.mohamedrejeb.calf.sample.components.DemoSection
+import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
+import com.mohamedrejeb.calf.sample.components.IconTile
+import com.mohamedrejeb.calf.sample.ui.theme.Spacing
+import com.mohamedrejeb.calf.sample.ui.theme.TileAmber
+import com.mohamedrejeb.calf.sample.ui.theme.TileBlue
+import com.mohamedrejeb.calf.sample.ui.theme.TileIndigo
+import com.mohamedrejeb.calf.sample.ui.theme.TileTeal
 
 /** Scoped to a single back-stack entry; cleared exactly when the entry is popped. */
 internal class NavDemoCounterViewModel : ViewModel() {
@@ -54,84 +46,50 @@ internal class NavDemoCounterViewModel : ViewModel() {
     }
 }
 
+/** The Home tab: the saved places. The bar's + adds one more. */
 @Composable
 internal fun NavDemoHomeContent(
     contentPadding: PaddingValues,
     itemCount: () -> Int,
     onOpenItem: (Int) -> Unit,
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding,
-    ) {
-        item {
-            NavDemoCard(
-                title = "One stack per tab",
-                body = "Push an item, switch tabs and come back: the stack, the scroll " +
-                    "position and the item's ViewModel are still here. Tap the Home " +
-                    "tab again to pop to the root.",
-            )
-        }
-        item { NavDemoSectionHeader("Items — tap + to add more") }
-        items(itemCount()) { index ->
-            ListItem(
-                headlineContent = { Text("Item $index") },
-                supportingContent = { Text("Pushes a detail that hides the tab bar") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onOpenItem(index) },
-            )
-            HorizontalDivider()
+    DemoPage(contentPadding = contentPadding) {
+        NavDemoHintCard(
+            icon = Icons.Outlined.Layers,
+            tint = TileIndigo,
+            title = "One stack per tab",
+            body = "Open a place, switch tabs and come back: the stack, the scroll position and the " +
+                "place's ViewModel are still here. Tap Home again to pop to the root.",
+        )
+        DemoSection(
+            title = "Saved places",
+            footer = "Tap + in the bar to save another place. A place opens without the tab bar.",
+        ) {
+            DemoListCard {
+                repeat(itemCount()) { index ->
+                    if (index > 0) DemoDivider(startIndent = NavDemoThumbnailIndent)
+                    NavDemoPlaceRow(place = navDemoPlace(index), onClick = { onOpenItem(index) })
+                }
+            }
         }
     }
 }
 
 @Composable
-internal fun NavDemoExploreContent(
-    contentPadding: PaddingValues,
-    onOpenCover: () -> Unit,
-    onOpenLocked: () -> Unit,
-    onOpenBarItems: () -> Unit,
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding,
-    ) {
-        item { NavDemoSectionHeader("Per-entry options") }
-        item {
-            NavDemoFeatureRow(
-                icon = { Icon(Icons.Outlined.Fullscreen, contentDescription = null) },
-                title = "Edge-to-edge cover",
-                subtitle = "barShown = false and tabBarShown = false",
-                onClick = onOpenCover,
-            )
-        }
-        item {
-            NavDemoFeatureRow(
-                icon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
-                title = "Locked screen",
-                subtitle = "iosGestureEnabled = false blocks iOS swipe-back",
-                onClick = onOpenLocked,
-            )
-        }
-        item {
-            NavDemoFeatureRow(
-                icon = { Icon(Icons.Outlined.MoreHoriz, contentDescription = null) },
-                title = "Bar items and overflow",
-                subtitle = "labels and visibilityPriority for the iPhone Duo strip",
-                onClick = onOpenBarItems,
-            )
-        }
-        item {
-            NavDemoCard(
-                title = "Badges",
-                body = "This tab shows a badge on both platforms: a Material badge here, " +
-                    "the native badgeValue on iOS.",
-            )
-        }
-    }
+private fun NavDemoPlaceRow(place: NavDemoPlace, onClick: () -> Unit) {
+    DemoRow(
+        title = place.name,
+        subtitle = "${place.country} · ${place.tagline}",
+        leading = { NavDemoThumbnail(icon = place.icon, color = place.tint) },
+        onClick = onClick,
+    )
 }
 
+/**
+ * A place pushed from Home, with the tab bar hidden. Below the place itself, the "Navigation"
+ * section shows what this entry owns: its ViewModel, the back stack it sits on, and pushes
+ * and pops from code.
+ */
 @Composable
 internal fun NavDemoDetailContent(
     itemId: Int,
@@ -139,250 +97,113 @@ internal fun NavDemoDetailContent(
     backStack: NavBackStack<NavKey>,
     onPopToRoot: () -> Unit,
 ) {
-    val counterViewModel = viewModel(key = "nav-demo-counter") { NavDemoCounterViewModel() }
+    val place = navDemoPlace(itemId)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(contentPadding)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Card {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text("Entry-scoped ViewModel", style = MaterialTheme.typography.titleMedium)
+    DemoPage(contentPadding = contentPadding) {
+        NavDemoPlaceHeader(place)
+        DemoSection(title = "About") {
+            DemoCard {
                 Text(
-                    "Counter: ${counterViewModel.count}",
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                Button(onClick = counterViewModel::increment) { Text("Increment") }
-                Text(
-                    "This ViewModel belongs to this entry only. It survives screens " +
-                        "pushed on top and tab switches, and is cleared when you pop " +
-                        "back — reopen the item and the counter starts at 0.",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = place.about,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
+            DemoListCard {
+                NavDemoInfoRow(label = "Country", value = place.country)
+                DemoDivider()
+                NavDemoInfoRow(label = "Best time", value = place.bestTime)
+                DemoDivider()
+                NavDemoInfoRow(label = "Suggested stay", value = place.stay)
+            }
         }
+        NavDemoEntrySection(itemId = itemId, backStack = backStack, onPopToRoot = onPopToRoot)
+    }
+}
 
-        NavDemoCard(title = "Back stack", body = backStack.demoLabels())
+@Composable
+private fun NavDemoPlaceHeader(place: NavDemoPlace) {
+    NavDemoHero(icon = place.icon, color = place.tint)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+        modifier = Modifier.padding(horizontal = Spacing.xs),
+    ) {
+        Text(
+            text = place.name,
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = place.tagline,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
 
-        Button(
+/** The entry-scoped ViewModel, the back stack this entry is on, and pushes and pops from code. */
+@Composable
+private fun NavDemoEntrySection(
+    itemId: Int,
+    backStack: NavBackStack<NavKey>,
+    onPopToRoot: () -> Unit,
+) {
+    val counterViewModel = viewModel(key = "nav-demo-counter") { NavDemoCounterViewModel() }
+
+    DemoSection(
+        title = "Navigation",
+        footer = "The counter lives in a ViewModel that belongs to this entry. It survives screens " +
+            "pushed on top and tab switches, and is cleared when you pop back: open the place again " +
+            "and it starts at 0. A duplicate entry gets a counter of its own.",
+    ) {
+        DemoListCard {
+            NavDemoInfoRow(
+                label = "Counter",
+                value = counterViewModel.count.toString(),
+                monospace = true,
+                action = { NavDemoRowButton(label = "Increment", onClick = counterViewModel::increment) },
+            )
+            DemoDivider()
+            NavDemoInfoRow(
+                label = "Back stack",
+                value = backStack.demoLabels(),
+                monospace = true,
+                valueMaxLines = Int.MAX_VALUE,
+            )
+        }
+        NavDemoStackActions(itemId = itemId, backStack = backStack, onPopToRoot = onPopToRoot)
+    }
+}
+
+@Composable
+private fun NavDemoStackActions(
+    itemId: Int,
+    backStack: NavBackStack<NavKey>,
+    onPopToRoot: () -> Unit,
+) {
+    val place = navDemoPlace(itemId)
+    val next = navDemoPlace(itemId + 1)
+
+    DemoListCard {
+        DemoRow(
+            title = "Open ${next.name}",
+            subtitle = "Pushes the next place",
+            leading = { IconTile(icon = Icons.AutoMirrored.Outlined.ArrowForward, color = TileBlue) },
             onClick = { backStack.add(NavDemoDetail(itemId + 1)) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("Push Item ${itemId + 1}")
-        }
-        OutlinedButton(
+        )
+        DemoDivider(startIndent = DividerIndentWithIcon)
+        DemoRow(
+            title = "Open ${place.name} again",
+            subtitle = "A duplicate entry, with a ViewModel of its own",
+            leading = { IconTile(icon = Icons.Outlined.ContentCopy, color = TileTeal) },
             onClick = { backStack.add(NavDemoDetail(itemId)) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("Push this screen again (duplicate entry)")
-        }
-        OutlinedButton(
+        )
+        DemoDivider(startIndent = DividerIndentWithIcon)
+        DemoRow(
+            title = "Back to Home",
+            subtitle = "Pops to the root of the tab",
+            leading = { IconTile(icon = Icons.Outlined.VerticalAlignTop, color = TileAmber) },
             onClick = onPopToRoot,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("Pop to root")
-        }
-    }
-}
-
-@Composable
-internal fun NavDemoCoverContent(
-    contentPadding: PaddingValues,
-    onClose: () -> Unit,
-) {
-    val gradient = Brush.verticalGradient(
-        listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary),
-    )
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(gradient),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                "Edge-to-edge",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "This entry hides both the navigation bar and the tab bar, so the " +
-                    "content owns the full screen. On iOS you can still swipe from " +
-                    "the left edge to pop.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimary,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(24.dp))
-            Button(onClick = onClose) { Text("Close") }
-        }
-    }
-}
-
-@Composable
-internal fun NavDemoLockedContent(
-    contentPadding: PaddingValues,
-    onBack: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Icon(
-            Icons.Outlined.Lock,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
         )
-        Spacer(Modifier.height(16.dp))
-        Text("Swipe-back is disabled", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(12.dp))
-        Text(
-            "This entry sets iosGestureEnabled = false — the iOS edge-swipe gesture " +
-                "won't pop it, which is useful for forms that shouldn't be dismissed " +
-                "accidentally. Use the back button instead.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(24.dp))
-        Button(onClick = onBack) { Text("Go back") }
     }
-}
-
-@Composable
-internal fun NavDemoSettingsContent(
-    contentPadding: PaddingValues,
-    tabs: AdaptiveTabState<NavKey>,
-    onSignOut: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(contentPadding)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        NavDemoCard(
-            title = "Tab state",
-            body = tabs.tabs.joinToString("\n") { tab ->
-                val marker = if (tab == tabs.selectedTab) "▶ " else "   "
-                marker + tabs.backStackOf(tab).demoLabels()
-            },
-        )
-        OutlinedButton(
-            onClick = { tabs.select(NavDemoHome) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("Select the Home tab from code")
-        }
-        NavDemoCard(
-            title = "Wide displays",
-            body = "iosSidebarAdaptable = true lets the tab bar become a sidebar on " +
-                "iPad and on the inner display of iPhone Duo. On Material the " +
-                "navigation suite switches to a rail on wide windows.",
-        )
-        NavDemoCard(
-            title = "Sign out",
-            body = "Signing out pushes a screen over the tabs from the outer stack. " +
-                "The tab bar leaves with the transition and comes back with the " +
-                "back swipe, on iOS as well.",
-        )
-        Button(
-            onClick = onSignOut,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = null)
-            Spacer(Modifier.padding(4.dp))
-            Text("Sign out")
-        }
-    }
-}
-
-@Composable
-internal fun NavDemoSignedOutContent(
-    contentPadding: PaddingValues,
-    onSignIn: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text("You are signed out", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(12.dp))
-        Text(
-            "This screen lives on the outer stack, above the tabs. Swipe back on " +
-                "iOS and watch the tab bar return with the gesture.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(24.dp))
-        Button(onClick = onSignIn) { Text("Sign in again") }
-    }
-}
-
-@Composable
-internal fun NavDemoCard(title: String, body: String) {
-    Card(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(body, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-
-@Composable
-internal fun NavDemoSectionHeader(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 8.dp),
-    )
-}
-
-@Composable
-private fun NavDemoFeatureRow(
-    icon: @Composable () -> Unit,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-) {
-    ListItem(
-        leadingContent = icon,
-        headlineContent = { Text(title) },
-        supportingContent = { Text(subtitle) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-    )
-    HorizontalDivider()
 }

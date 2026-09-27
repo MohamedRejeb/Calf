@@ -1,207 +1,136 @@
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import com.mohamedrejeb.calf.ui.button.AdaptiveButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
-import com.mohamedrejeb.calf.permissions.BackgroundLocation
-import com.mohamedrejeb.calf.permissions.BluetoothAdvertise
-import com.mohamedrejeb.calf.permissions.BluetoothConnect
-import com.mohamedrejeb.calf.permissions.BluetoothLe
-import com.mohamedrejeb.calf.permissions.BluetoothScan
-import com.mohamedrejeb.calf.permissions.Call
 import com.mohamedrejeb.calf.permissions.Camera
-import com.mohamedrejeb.calf.permissions.CoarseLocation
 import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
-import com.mohamedrejeb.calf.permissions.FineLocation
-import com.mohamedrejeb.calf.permissions.Gallery
 import com.mohamedrejeb.calf.permissions.Notification
 import com.mohamedrejeb.calf.permissions.Permission
-import com.mohamedrejeb.calf.permissions.ReadAudio
-import com.mohamedrejeb.calf.permissions.ReadCalendar
-import com.mohamedrejeb.calf.permissions.ReadContacts
-import com.mohamedrejeb.calf.permissions.ReadImage
-import com.mohamedrejeb.calf.permissions.ReadStorage
-import com.mohamedrejeb.calf.permissions.ReadVideo
 import com.mohamedrejeb.calf.permissions.RecordAudio
-import com.mohamedrejeb.calf.permissions.RemoteNotification
-import com.mohamedrejeb.calf.permissions.WifiAccessState
-import com.mohamedrejeb.calf.permissions.WifiChangeState
-import com.mohamedrejeb.calf.permissions.WifiNearbyDevices
-import com.mohamedrejeb.calf.permissions.WriteCalendar
-import com.mohamedrejeb.calf.permissions.WriteContacts
-import com.mohamedrejeb.calf.permissions.WriteStorage
 import com.mohamedrejeb.calf.permissions.isGranted
 import com.mohamedrejeb.calf.permissions.rememberMultiplePermissionsState
 import com.mohamedrejeb.calf.permissions.rememberPermissionState
-import com.mohamedrejeb.calf.permissions.shouldShowRationale
+import com.mohamedrejeb.calf.sample.components.CodeSnippet
+import com.mohamedrejeb.calf.sample.components.DemoCard
+import com.mohamedrejeb.calf.sample.components.DemoDivider
+import com.mohamedrejeb.calf.sample.components.DemoHeader
+import com.mohamedrejeb.calf.sample.components.DemoListCard
+import com.mohamedrejeb.calf.sample.components.DemoPage
+import com.mohamedrejeb.calf.sample.components.DemoRow
+import com.mohamedrejeb.calf.sample.components.DemoSection
+import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
+import com.mohamedrejeb.calf.sample.components.IconTile
+import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.sample.components.ValueRow
+import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.sample.ui.theme.TileIndigo
+import com.mohamedrejeb.calf.ui.button.AdaptiveButton
+
+private const val USAGE = """
+val camera = rememberPermissionState(Permission.Camera) { granted ->
+    if (granted) openCamera()
+}
+
+when {
+    camera.status.isGranted -> openCamera()
+    camera.status.shouldShowRationale -> showWhyWeNeedTheCamera()
+    else -> camera.launchPermissionRequest()
+}
+"""
 
 @Composable
 fun PermissionScreen(navigateBack: () -> Unit) {
-    val permissions = remember {
-        listOf(
-            Permission.Call,
-            Permission.Camera,
-            Permission.Gallery,
-            Permission.ReadStorage,
-            Permission.WriteStorage,
-            Permission.ReadImage,
-            Permission.ReadVideo,
-            Permission.ReadAudio,
-            Permission.FineLocation,
-            Permission.CoarseLocation,
-            Permission.BackgroundLocation,
-            Permission.Notification,
-            Permission.RemoteNotification,
-            Permission.RecordAudio,
-            Permission.BluetoothLe,
-            Permission.BluetoothScan,
-            Permission.BluetoothConnect,
-            Permission.BluetoothAdvertise,
-            Permission.ReadContacts,
-            Permission.WriteContacts,
-            Permission.ReadCalendar,
-            Permission.WriteCalendar,
-            Permission.WifiAccessState,
-            Permission.WifiChangeState,
-            Permission.WifiNearbyDevices,
-        )
-    }
-
-    SampleScreenScaffold(
-        title = "Permissions",
-        navigateBack = navigateBack,
-    ) { padding ->
-        LazyColumn(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-        ) {
-            item {
-                Text(
-                    text = "Runtime permission handling across platforms.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = 8.dp),
-                )
+    SampleScreenScaffold(title = Screen.Permission.title, navigateBack = navigateBack) { padding ->
+        DemoPage(contentPadding = padding) {
+            DemoHeader(Screen.Permission)
+            VideoCallSection()
+            PermissionGroups.forEach { group ->
+                PermissionGroupSection(group)
             }
-
-            item {
-                MultiplePermissionsItem(
-                    permissions = listOf(Permission.Camera, Permission.RecordAudio),
-                )
-            }
-
-            items(permissions) { permission ->
-                PermissionItem(permission = permission)
+            DemoSection(title = "Usage") {
+                CodeSnippet(USAGE.trimIndent())
             }
         }
     }
 }
 
+/** Two permissions asked together, the way a video call app would. */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-private fun MultiplePermissionsItem(permissions: List<Permission>) {
-    val multiplePermissionsState = rememberMultiplePermissionsState(permissions = permissions)
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    Text(
-        text = "Multiple: ${permissions.joinToString { it.name }}",
-    )
-
-    Text(
-        text = "All permissions granted: ${multiplePermissionsState.allPermissionsGranted}",
-    )
-
-    Text(
-        text = "Should show rationale: ${multiplePermissionsState.shouldShowRationale}",
-    )
-
-    Text(
-        text = "Revoked permissions: ${multiplePermissionsState.revokedPermissions.joinToString { it.permission.name }}",
-    )
-
-    AdaptiveButton(
-        onClick = {
-            multiplePermissionsState.launchMultiplePermissionRequest()
-        },
+private fun VideoCallSection() {
+    val permissions = listOf(Permission.Camera, Permission.RecordAudio)
+    val state = rememberMultiplePermissionsState(permissions = permissions)
+    DemoSection(
+        title = "Video call",
+        footer = "rememberMultiplePermissionsState asks for the camera and the microphone in one request.",
     ) {
-        Text(
-            text = "Request permissions",
-        )
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    HorizontalDivider()
-}
-
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-private fun PermissionItem(permission: Permission) {
-    val permissionState = rememberPermissionState(permission = permission)
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    Text(
-        text = permission.name,
-    )
-
-    Text(
-        text = "Is permission granted: ${permissionState.status.isGranted}",
-    )
-
-    LaunchedEffect(permissionState.status) {
-        println("${permission.name}: ${permissionState.status}")
-        if (!permissionState.status.isGranted && permissionState.status.shouldShowRationale) {
-            println("${permission.name}: Show Rationale")
-        }
-    }
-
-    AdaptiveButton(
-        onClick = {
-            permissionState.launchPermissionRequest()
-        },
-    ) {
-        Text(
-            text = "Request permission",
-        )
-    }
-
-
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    if (permission.name == Permission.Notification.name) {
-        AdaptiveButton(
-            onClick = {
-                permissionState.openAppSettings()
-            },
-        ) {
-            Text(
-                text = "Open Notification Settings",
+        DemoCard {
+            ValueRow(label = "All granted", value = yesNo(state.allPermissionsGranted))
+            ValueRow(label = "Show rationale", value = yesNo(state.shouldShowRationale))
+            ValueRow(
+                label = "Revoked",
+                value = state.revokedPermissions
+                    .joinToString { it.permission.name }
+                    .ifEmpty { "None" },
             )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        AdaptiveButton(
+            onClick = { state.launchMultiplePermissionRequest() },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Ask for camera and microphone")
+        }
     }
-
-
-    HorizontalDivider()
 }
+
+@Composable
+private fun PermissionGroupSection(group: PermissionGroup) {
+    DemoSection(title = group.title, footer = group.footer) {
+        DemoListCard {
+            group.items.forEachIndexed { index, item ->
+                if (index > 0) DemoDivider(startIndent = DividerIndentWithIcon)
+                PermissionRow(item)
+            }
+            if (group.showsAppSettings) {
+                DemoDivider(startIndent = DividerIndentWithIcon)
+                AppSettingsRow()
+            }
+        }
+    }
+}
+
+/** One permission: its status, and a tap asks for it while it is not granted. */
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun PermissionRow(item: PermissionItem) {
+    val state = rememberPermissionState(permission = item.permission)
+    DemoRow(
+        title = item.title,
+        subtitle = item.permission.name,
+        leading = { IconTile(icon = item.icon, color = item.tint) },
+        trailing = { PermissionStatusLabel(state.status) },
+        onClick = if (state.status.isGranted) null else ({ state.launchPermissionRequest() }),
+    )
+}
+
+/**
+ * Opens the app's page in the system settings, where a permission denied for good can still be
+ * turned on.
+ */
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun AppSettingsRow() {
+    val notification = rememberPermissionState(permission = Permission.Notification)
+    DemoRow(
+        title = "Open notification settings",
+        subtitle = "openAppSettings()",
+        leading = { IconTile(icon = Icons.Outlined.Settings, color = TileIndigo) },
+        onClick = { notification.openAppSettings() },
+    )
+}
+
+private fun yesNo(value: Boolean): String = if (value) "Yes" else "No"

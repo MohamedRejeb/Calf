@@ -1,22 +1,11 @@
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +15,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
@@ -36,6 +24,10 @@ import com.mohamedrejeb.calf.navigation.AdaptivePaneRole
 import com.mohamedrejeb.calf.navigation.ExperimentalCalfNavigationApi
 import com.mohamedrejeb.calf.navigation.adaptiveNavEntry
 import com.mohamedrejeb.calf.navigation.selectDetail
+import com.mohamedrejeb.calf.sample.components.DemoDivider
+import com.mohamedrejeb.calf.sample.components.DemoListCard
+import com.mohamedrejeb.calf.sample.components.DemoPage
+import com.mohamedrejeb.calf.sample.components.EmptyState
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
@@ -77,108 +69,87 @@ internal fun navDemoListDetailEntry(key: NavKey, backStack: NavBackStack<NavKey>
 
         is NavDemoMessage -> adaptiveNavEntry(
             key = key,
-            title = { Text("Message ${key.messageId}") },
-            navigationIcon = { NavDemoListDetailBackButton { backStack.removeLastOrNull() } },
-            iosTitle = "Message ${key.messageId}",
+            title = { Text(navDemoMail(key.messageId).sender) },
+            navigationIcon = { NavDemoBackButton { backStack.removeLastOrNull() } },
+            iosTitle = navDemoMail(key.messageId).sender,
             iosBackTitle = "Message",
             paneRole = AdaptivePaneRole.Detail,
         ) { padding ->
-            NavDemoStateProbeContent(
-                title = "Message ${key.messageId}",
+            NavDemoMessageContent(
+                messageId = key.messageId,
                 contentPadding = padding,
-                actionLabel = "Open attachment",
-                onAction = { backStack.add(NavDemoAttachment(key.messageId)) },
+                onOpenAttachment = { backStack.add(NavDemoAttachment(key.messageId)) },
             )
         }
 
         is NavDemoAttachment -> adaptiveNavEntry(
             key = key,
             title = { Text("Attachment") },
-            navigationIcon = { NavDemoListDetailBackButton { backStack.removeLastOrNull() } },
+            navigationIcon = { NavDemoBackButton { backStack.removeLastOrNull() } },
             iosTitle = "Attachment",
         ) { padding ->
-            NavDemoStateProbeContent(
-                title = "Attachment of message ${key.messageId}",
+            NavDemoAttachmentContent(
+                messageId = key.messageId,
                 contentPadding = padding,
-                actionLabel = "Back to the message",
-                onAction = { backStack.removeLastOrNull() },
+                onBack = { backStack.removeLastOrNull() },
             )
         }
 
         else -> null
     }
 
+/** The inbox. The open message is highlighted, which shows in two panes. */
 @Composable
-private fun NavDemoInboxContent(
+internal fun NavDemoInboxContent(
     contentPadding: PaddingValues,
     selectedMessageId: Int?,
     onOpenMessage: (Int) -> Unit,
 ) {
-    LazyColumn(
-        state = rememberLazyListState(),
-        contentPadding = contentPadding,
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        items(count = MESSAGE_COUNT, key = { index -> index }) { index ->
-            val id = index + 1
-            ListItem(
-                headlineContent = { Text("Message $id") },
-                supportingContent = { Text("Tap to open. In two panes the inbox stays where it is.") },
-                tonalElevation = if (id == selectedMessageId) 4.dp else 0.dp,
-                modifier = Modifier.fillMaxWidth().clickable { onOpenMessage(id) },
-            )
-            HorizontalDivider()
+    DemoPage(contentPadding = contentPadding) {
+        DemoListCard {
+            navDemoMailIds.forEach { id ->
+                if (id != navDemoMailIds.first) DemoDivider(startIndent = NavDemoThumbnailIndent)
+                NavDemoMailRow(
+                    mail = navDemoMail(id),
+                    selected = id == selectedMessageId,
+                    onClick = { onOpenMessage(id) },
+                )
+            }
         }
     }
 }
 
 /**
- * A scrollable screen that shows what has to survive a layout change: the scroll position, a saved
- * counter and the ViewModel instance.
+ * The state probe of an entry of this tab: taps saved with `rememberSaveable` and the number of
+ * the entry's ViewModel. Both, and the page's scroll position, must survive a layout change.
  */
 @Composable
-private fun NavDemoStateProbeContent(
-    title: String,
-    contentPadding: PaddingValues,
-    actionLabel: String,
-    onAction: () -> Unit,
-) {
+internal fun NavDemoMailStateCheck() {
     var taps by rememberSaveable { mutableIntStateOf(0) }
     val instance = viewModel { NavDemoInstanceViewModel() }.instance
 
-    LazyColumn(
-        state = rememberLazyListState(),
-        contentPadding = contentPadding,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-    ) {
-        item { Text(title, style = MaterialTheme.typography.headlineSmall) }
-        item { Text("ViewModel instance #$instance · saved taps: $taps") }
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { taps += 1 }) { Text("Tap ($taps)") }
-                Button(onClick = onAction) { Text(actionLabel) }
-            }
-        }
-        items(PROBE_LINE_COUNT) { index ->
-            Text("Line ${index + 1} · scroll, then open or close the fold, rotate, or resize the window")
-        }
-    }
+    NavDemoStateCheck(
+        taps = taps,
+        instance = instance,
+        onTap = { taps += 1 },
+        footer = "Scroll, then open or close the fold, rotate, or resize the window. The same numbers " +
+            "and scroll position mean the entry was kept.",
+    )
 }
 
 @Composable
 private fun NavDemoNoMessageSelected() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Select a message", style = MaterialTheme.typography.titleMedium)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
+        EmptyState(
+            icon = Icons.Outlined.Email,
+            title = "No message selected",
+            message = "Choose a message in the inbox to read it here.",
+        )
     }
 }
 
-@Composable
-private fun NavDemoListDetailBackButton(onClick: () -> Unit) {
-    IconButton(onClick = onClick) {
-        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-    }
-}
-
-private const val MESSAGE_COUNT = 40
-private const val PROBE_LINE_COUNT = 60

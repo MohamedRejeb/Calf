@@ -239,10 +239,10 @@ private fun NavDemoTabs(
 
             is NavDemoDetail -> adaptiveNavEntry(
                 key = key,
-                title = { Text("Item ${key.itemId}") },
+                title = { Text(navDemoPlace(key.itemId).name) },
                 navigationIcon = { NavDemoBackButton { tabs.backStack.removeLastOrNull() } },
-                iosTitle = "Item ${key.itemId}",
-                iosBackTitle = "Item ${key.itemId}",
+                iosTitle = navDemoPlace(key.itemId).name,
+                iosBackTitle = navDemoPlace(key.itemId).name,
                 tabBarShown = false,
             ) { padding ->
                 NavDemoDetailContent(
@@ -336,12 +336,12 @@ private fun NavKey.demoLabel(): String =
         is NavDemoHome -> "Home"
         is NavDemoExplore -> "Explore"
         is NavDemoSettings -> "Settings"
-        is NavDemoDetail -> "Item $itemId"
+        is NavDemoDetail -> navDemoPlace(itemId).name
         is NavDemoCover -> "Cover"
         is NavDemoLocked -> "Locked"
         is NavDemoBarItems -> "Bar items"
         is NavDemoInbox -> "Inbox"
-        is NavDemoMessage -> "Message $messageId"
+        is NavDemoMessage -> navDemoMail(messageId).sender
         is NavDemoAttachment -> "Attachment"
         else -> toString()
     }

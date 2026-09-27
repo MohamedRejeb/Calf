@@ -16,6 +16,7 @@ import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
@@ -23,6 +24,7 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
+import com.mohamedrejeb.calf.sample.screens.HOME_LIST_TAG
 import com.mohamedrejeb.calf.sample.ui.theme.CalfTheme
 import kotlin.test.Test
 
@@ -48,11 +50,12 @@ class SampleNavigationTest {
         // The desktop web view is a Swing panel, which the headless test host cannot show.
         Screen.entries.filter { it != Screen.Home && it != Screen.WebView }.forEach { screen ->
             openFromList(screen)
-            onNodeWithText("Calf").assertDoesNotExist()
+            // The header scrolls with the list, so the list itself is what marks the home screen.
+            onNodeWithTag(HOME_LIST_TAG).assertDoesNotExist()
             onAllNodesWithText(expectedTextOf(screen)).onFirst().assertExists("$screen did not open")
 
             goBack(screen)
-            onNodeWithText("Calf").assertExists("the list is not back after $screen")
+            onNodeWithTag(HOME_LIST_TAG).assertExists("the list is not back after $screen")
         }
     }
 

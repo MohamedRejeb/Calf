@@ -6,13 +6,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -20,8 +23,8 @@ import com.mohamedrejeb.calf.sample.ui.theme.CalfTheme
 import kotlin.test.Test
 
 /**
- * The plain Navigation 3 demo on the desktop: one pane pushes the item over the list, a wide
- * window shows the list beside the placeholder and then beside the open item.
+ * The plain Navigation 3 demo (a color palette) on the desktop: one pane pushes the color over
+ * the list, a wide window shows the list beside the placeholder and then beside the open color.
  */
 @OptIn(ExperimentalTestApi::class)
 class Nav3ListDetailScreenTest {
@@ -35,41 +38,41 @@ class Nav3ListDetailScreenTest {
     fun `narrow window pushes the item over the list and closes it again`() = runComposeUiTest {
         setContent { Demo(FakeWindow(NARROW)) }
         waitForIdle()
-        onNodeWithText("Select an item").assertDoesNotExist()
+        onNodeWithText(PLACEHOLDER).assertDoesNotExist()
 
-        onAllNodesWithText("Item 3").onFirst().performClick()
+        onAllNodesWithText(TANGERINE).onFirst().performClick()
         waitForIdle()
-        onNodeWithText("Saved taps: 0").assertIsDisplayed()
-        onNodeWithText("Item 1").assertDoesNotExist()
+        onNode(savedTaps(0)).performScrollTo().assertIsDisplayed()
+        onNodeWithText(VERMILION).assertDoesNotExist()
 
         onNodeWithContentDescription("Close item").performClick()
         waitForIdle()
-        onNodeWithText("Item 1").assertIsDisplayed()
-        onNodeWithText("Saved taps: 0").assertDoesNotExist()
+        onNodeWithText(VERMILION).assertIsDisplayed()
+        onNode(savedTaps(0)).assertDoesNotExist()
     }
 
     @Test
     fun `wide window shows the placeholder, then the item beside the list`() = runComposeUiTest {
         setContent { Demo(FakeWindow(WIDE)) }
         waitForIdle()
-        onNodeWithText("Select an item").assertIsDisplayed()
+        onNodeWithText(PLACEHOLDER).assertIsDisplayed()
 
-        onAllNodesWithText("Item 3").onFirst().performClick()
+        onAllNodesWithText(TANGERINE).onFirst().performClick()
         waitForIdle()
-        onNodeWithText("Select an item").assertDoesNotExist()
-        onNodeWithText("Item 1").assertIsDisplayed()
+        onNodeWithText(PLACEHOLDER).assertDoesNotExist()
+        onNodeWithText(VERMILION).assertIsDisplayed()
         // The row and the detail header.
-        onAllNodesWithText("Item 3").assertCountEquals(2)
+        onAllNodesWithText(TANGERINE).assertCountEquals(2)
 
         // Another tap replaces the open item instead of stacking one more.
-        onAllNodesWithText("Item 5").onFirst().performClick()
+        onAllNodesWithText(MOSS).onFirst().performClick()
         waitForIdle()
-        onAllNodesWithText("Item 3").assertCountEquals(1)
-        onAllNodesWithText("Item 5").assertCountEquals(2)
+        onAllNodesWithText(TANGERINE).assertCountEquals(1)
+        onAllNodesWithText(MOSS).assertCountEquals(2)
 
         onNodeWithContentDescription("Close item").performClick()
         waitForIdle()
-        onNodeWithText("Select an item").assertIsDisplayed()
+        onNodeWithText(PLACEHOLDER).assertIsDisplayed()
     }
 
     @Composable
@@ -82,7 +85,16 @@ class Nav3ListDetailScreenTest {
         }
     }
 
+    /** The state check's row: label and value are one node. */
+    private fun savedTaps(count: Int): SemanticsMatcher = hasText("Saved taps") and hasText(count.toString())
+
     private companion object {
+        // The first, third and fifth colors of the palette.
+        const val VERMILION = "Vermilion"
+        const val TANGERINE = "Tangerine"
+        const val MOSS = "Moss"
+        const val PLACEHOLDER = "No color selected"
+
         const val WIDE = 1200
         const val NARROW = 400
         const val WINDOW_HEIGHT = 800
