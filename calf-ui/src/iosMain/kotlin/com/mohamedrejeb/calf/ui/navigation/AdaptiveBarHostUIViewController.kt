@@ -127,6 +127,8 @@ internal class BarHostContainer(
     private var defaultUnselectedItemTintColor: UIColor? = null
 
     init {
+        // The root is all the app keeps: it owns the container, and with it the host.
+        rootController.container = this
         setTabCount(1)
         rootController.show(navigationControllers.first())
         moveContentTo(0)
@@ -186,7 +188,10 @@ internal class BarHostContainer(
             return
         }
         val tabBarController = tabBarController()
+        val selected = tabBar.selectedIndex.coerceIn(tabBar.items.indices)
         if (tabBar != appliedTabBar) {
+            // Fewer tabs: move the content out of a slot that is about to go before dropping it.
+            if (selectedIndex >= tabBar.items.size) moveContentTo(selected)
             setTabCount(tabBar.items.size)
             tabBar.items.forEachIndexed { index, item ->
                 navigationControllers[index].tabBarItem = item.toUITabBarItem(index.toLong(), host.density)
@@ -198,7 +203,6 @@ internal class BarHostContainer(
             )
             appliedTabBar = tabBar
         }
-        val selected = tabBar.selectedIndex.coerceIn(tabBar.items.indices)
         if (tabBarController.selectedIndex.toInt() != selected) {
             tabBarController.selectedIndex = selected.toULong()
         }
@@ -299,6 +303,9 @@ internal fun UITabBarController.setTabBarVisibility(hidden: Boolean, animated: B
 
 /** The controller handed to the app: it shows one container, and swaps it when tabs appear. */
 internal class BarHostRootController : UIViewController(nibName = null, bundle = null) {
+    /** Kept alive for as long as the app holds this controller. */
+    var container: BarHostContainer? = null
+
     private var current: UIViewController? = null
 
     fun show(container: UIViewController) {

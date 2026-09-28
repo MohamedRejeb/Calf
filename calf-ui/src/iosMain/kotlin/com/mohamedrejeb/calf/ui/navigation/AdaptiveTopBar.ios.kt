@@ -50,17 +50,14 @@ actual fun AdaptiveTopBar(
 ) {
     val hostedScaffold = currentHostedScaffold()
     if (hostedScaffold != null) {
-        // Inside an AdaptiveBarHostUIViewController the container's navigation bar shows this.
-        val bar = HostedTopBar(
-            title = iosTitle,
-            leadingItems = iosLeadingItems,
-            trailingItems = iosTrailingItems,
-            configuration = iosConfiguration,
-        )
-        PublishHostedBar(
+        PublishTopBar(
             scaffold = hostedScaffold,
-            publish = { it.copy(topBar = bar) },
-            withdraw = { it.copy(topBar = null) },
+            bar = HostedTopBar(
+                title = iosTitle,
+                leadingItems = iosLeadingItems,
+                trailingItems = iosTrailingItems,
+                configuration = iosConfiguration,
+            ),
         )
         return
     }
@@ -113,4 +110,14 @@ actual fun AdaptiveTopBar(
     )
 
     IosBarPlaceholder(layout = { navBarLayout.value })
+}
+
+/** Inside an [AdaptiveBarHostUIViewController] the container's navigation bar shows [bar]. */
+@Composable
+private fun PublishTopBar(scaffold: HostedScaffold, bar: HostedTopBar) {
+    PublishHostedBar(
+        scaffold = scaffold,
+        publish = { it.copy(topBar = bar) },
+        withdraw = { it.copy(topBar = null) },
+    )
 }

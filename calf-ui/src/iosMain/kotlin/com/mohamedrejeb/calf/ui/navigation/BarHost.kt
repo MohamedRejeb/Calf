@@ -54,14 +54,19 @@ internal class BarHost(
     var density: Float = 1f
 
     private val tabSelection = mutableMapOf<Any, (Int) -> Unit>()
+    private var hasRegistrationsSinceApply = false
     private val scrollOffsets = mutableMapOf<Any, Float>()
 
     fun isHostSurface(viewController: UIViewController): Boolean =
         viewController === contentViewController
 
-    fun register(key: Any, parent: Any?) = update { it.register(key, parent) }
+    fun register(key: Any, parent: Any?) {
+        hasRegistrationsSinceApply = true
+        update { it.register(key, parent) }
+    }
 
     fun unregister(key: Any) {
+        hasRegistrationsSinceApply = true
         tabSelection.remove(key)
         scrollOffsets.remove(key)
         update { it.unregister(key) }
@@ -71,8 +76,14 @@ internal class BarHost(
 
     fun setBackGestureInProgress(inProgress: Boolean) = update { it.withBackGesture(inProgress) }
 
-    /** After the container applied the bars: what registers from now on is newer. */
+    /**
+     * After the container applied the bars: what registers from now on is newer. Only when
+     * scaffolds came or went since the last apply, so a bar that merely recomposed between two
+     * panes' registrations cannot split them into two generations.
+     */
     fun endGeneration() {
+        if (!hasRegistrationsSinceApply) return
+        hasRegistrationsSinceApply = false
         state = state.nextGeneration()
     }
 

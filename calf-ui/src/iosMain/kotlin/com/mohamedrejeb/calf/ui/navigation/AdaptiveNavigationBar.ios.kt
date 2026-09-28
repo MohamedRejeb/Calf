@@ -47,18 +47,14 @@ actual fun AdaptiveNavigationBar(
 ) {
     val hostedScaffold = currentHostedScaffold()
     if (hostedScaffold != null && iosItems.size in 1..MAX_HOSTED_TABS) {
-        // Inside an AdaptiveBarHostUIViewController the container's tab bar shows this.
-        val onItemSelected by rememberUpdatedState(iosOnItemSelected)
-        val bar = HostedTabBar(
-            items = iosItems,
-            selectedIndex = iosSelectedIndex,
-            configuration = iosConfiguration,
-        )
-        SideEffect { hostedScaffold.host.setTabSelection(hostedScaffold) { onItemSelected(it) } }
-        PublishHostedBar(
+        PublishTabBar(
             scaffold = hostedScaffold,
-            publish = { it.copy(tabBar = bar) },
-            withdraw = { it.copy(tabBar = null) },
+            bar = HostedTabBar(
+                items = iosItems,
+                selectedIndex = iosSelectedIndex,
+                configuration = iosConfiguration,
+            ),
+            onItemSelected = iosOnItemSelected,
         )
         return
     }
@@ -107,6 +103,18 @@ actual fun AdaptiveNavigationBar(
     )
 
     IosBarPlaceholder(layout = { tabBarLayout.value })
+}
+
+/** Inside an [AdaptiveBarHostUIViewController] the container's tab bar shows [bar]. */
+@Composable
+private fun PublishTabBar(scaffold: HostedScaffold, bar: HostedTabBar, onItemSelected: (Int) -> Unit) {
+    val currentOnItemSelected by rememberUpdatedState(onItemSelected)
+    SideEffect { scaffold.host.setTabSelection(scaffold) { currentOnItemSelected(it) } }
+    PublishHostedBar(
+        scaffold = scaffold,
+        publish = { it.copy(tabBar = bar) },
+        withdraw = { it.copy(tabBar = null) },
+    )
 }
 
 /** The most tabs a `UITabBarController` shows on an iPhone without its "More" tab. */
