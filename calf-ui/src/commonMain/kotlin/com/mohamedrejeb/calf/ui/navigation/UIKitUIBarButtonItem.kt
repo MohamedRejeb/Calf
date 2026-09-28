@@ -94,6 +94,23 @@ data class UIKitUIBarButtonItem(
             visibilityPriority = visibilityPriority,
         )
 
+        /**
+         * Creates a back button: the system's back chevron, named [label] for VoiceOver and the
+         * overflow menu, and the last item to leave a crowded bar. For a bar with no back button
+         * of its own, such as a screen hosted by `AdaptiveBarHostUIViewController` on iOS, where
+         * Compose owns the back stack: [onClick] pops it. On an iPhone Duo an image item moves
+         * into the vertical bar, where a titled "Back" item would stay in the title row.
+         */
+        fun back(
+            label: String = "Back",
+            onClick: () -> Unit,
+        ) = image(
+            image = UIKitImage.SystemName("chevron.backward"),
+            label = label,
+            visibilityPriority = UIKitUIBarButtonItemVisibilityPriority.High,
+            onClick = onClick,
+        )
+
         /** Creates a flexible space that expands to fill available width. */
         fun flexibleSpace() = UIKitUIBarButtonItem(
             systemItem = UIKitUIBarButtonSystemItem.FlexibleSpace,

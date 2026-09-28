@@ -76,4 +76,14 @@ class UIKitUIBarButtonItemNamesTest {
         assertEquals(250, UIKitUIBarButtonItemVisibilityPriority.High.uikitFallbackValue)
         assertEquals(UIKitUIBarButtonItemVisibilityPriority.Standard, UIKitUIBarButtonItem.title("x").visibilityPriority)
     }
+
+    @Test
+    fun `a back item is a named chevron that stays in the bar longest`() {
+        val back = UIKitUIBarButtonItem.back {}
+
+        assertEquals(UIKitImage.SystemName("chevron.backward"), back.image)
+        assertEquals(BarButtonItemNames("Back", "Back"), back.resolveNames())
+        assertEquals(UIKitUIBarButtonItemVisibilityPriority.High, back.visibilityPriority)
+        assertEquals("Retour", UIKitUIBarButtonItem.back(label = "Retour") {}.label)
+    }
 }
