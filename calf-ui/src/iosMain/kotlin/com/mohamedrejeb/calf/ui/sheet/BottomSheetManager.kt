@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.ComposeUIViewController
+import com.mohamedrejeb.calf.ui.navigation.IosBarEdgeInsets
 import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.applyTheme
 import com.mohamedrejeb.calf.ui.utils.toUIColor
@@ -23,6 +24,7 @@ import platform.darwin.NSObject
  * A helper class that is used to present UIKit bottom sheet with Compose content.
  *
  * @param onDismiss The callback that is called when the bottom sheet is dismissed.
+ * @param onSafeAreaChange Receives the sheet's own safe area whenever UIKit changes it.
  * @param content The Compose content of the bottom sheet.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +34,7 @@ internal class BottomSheetManager(
     private var containerColor: Color,
     private var onDismiss: () -> Unit,
     private val confirmValueChange: (SheetValue) -> Boolean,
+    private val onSafeAreaChange: (IosBarEdgeInsets) -> Unit,
     private val content: @Composable () -> Unit,
     internal var layoutDirection: LayoutDirection = LayoutDirection.Ltr,
 ) {
@@ -68,6 +71,7 @@ internal class BottomSheetManager(
             modalPresentationStyle = UIModalPresentationPageSheet
             modalTransitionStyle = UIModalTransitionStyleCoverVertical
             presentationController?.delegate = presentationControllerDelegate
+            SheetSafeAreaProbe(onSafeAreaChange).install(view)
             isInitialized = true
         }
     }
@@ -109,7 +113,6 @@ internal class BottomSheetManager(
                 )
         )
         bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = showDragHandle
-        bottomSheetUIViewController.sheetPresentationController?.placeInColumnOf(parentUIViewController)
 
         applyTheme(isDark)
         applyContainerColor(containerColor)

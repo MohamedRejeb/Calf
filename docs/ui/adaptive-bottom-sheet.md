@@ -76,6 +76,8 @@ Box(
 
 ## Placement on iPad and iPhone Duo
 
-On iOS 27 and later the native sheet opens on the side of the window where the screen that presents it sits. A sheet presented from the detail column of a split view (calf-navigation's list-detail on an iPad or an open iPhone Duo) therefore opens over that column: on a half-open iPhone Duo it stays in the column's pane instead of iOS putting it in the leading pane, over the list. A screen that spans the whole window keeps the system placement. The sheet keeps UIKit's width, so on a flat, open iPhone Duo it can still reach across the fold.
+The native sheet goes where iOS puts it, like the sheets of Apple's own apps: centred on the window, on an iPhone Duo opened flat across the fold and clear of the vertical bar, and in the leading pane when the Duo is half open (book pose), wherever it was presented from. Moving it to the presenting column's side would put part of it under the Duo's vertical bar and camera.
 
-Placement follows the presenting UIKit view controller. Two Compose panes in one view, as with Navigation 3's list-detail scene, share one controller, so their sheets keep the system placement.
+When the sheet does reach under an unsafe part of the window (the vertical bar of a closed iPhone Duo, the Dynamic Island in iPhone landscape), its content is kept out of it on the sides: Calf pads it by the sheet's own safe area, so no control ends up under the bar. The bottom is left to your content, as in any UIKit sheet. Compose's `WindowInsets` inside the sheet describe the window, not the sheet, so don't pad the sheet's content with them.
+
+<!-- MEDIA: a closed iPhone Duo with AdaptiveBottomSheet at the large detent, content clear of the vertical bar -->

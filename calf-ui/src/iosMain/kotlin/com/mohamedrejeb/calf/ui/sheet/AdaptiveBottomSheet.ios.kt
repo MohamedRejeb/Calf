@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalAbsoluteTonalElevation
@@ -15,6 +16,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentCompositionLocalContext
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -23,6 +25,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.Dp
+import com.mohamedrejeb.calf.ui.navigation.IosBarEdgeInsets
 import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +67,8 @@ actual fun AdaptiveBottomSheet(
             elevation = absoluteElevation
         )
 
+    val sheetSafeArea = remember { mutableStateOf(IosBarEdgeInsets.Zero) }
+
     val sheetManager = remember(currentUIViewController) {
         BottomSheetManager(
             parentUIViewController = currentUIViewController,
@@ -75,6 +80,7 @@ actual fun AdaptiveBottomSheet(
             confirmValueChange = {
                 confirmValueChangeState.value.invoke(it)
             },
+            onSafeAreaChange = { sheetSafeArea.value = it },
             content = {
                 val sheetCompositionLocalContext = currentCompositionLocalContext
 
@@ -86,8 +92,12 @@ actual fun AdaptiveBottomSheet(
                             tonalElevation = tonalElevationState.value,
                             modifier = modifierState.value.fillMaxWidth()
                         ) {
+                            val insets = sheetContentInsets(sheetSafeArea.value)
                             Column(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    // Out of what the sheet reaches under (an iPhone Duo's vertical bar).
+                                    .absolutePadding(left = insets.left, right = insets.right),
                                 content = contentState.value,
                             )
                         }
