@@ -2,7 +2,6 @@ package com.mohamedrejeb.calf.ui.datepicker
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerFormatter
@@ -66,13 +65,7 @@ actual fun AdaptiveDatePicker(
                 modifier = Modifier
                     .background(colors.containerColor)
                     .fillMaxWidth()
-                    .then(
-                        if (datePickerManager.aspectRatio.isFinite() && datePickerManager.aspectRatio > 0f)
-                            Modifier
-                                .aspectRatio(datePickerManager.aspectRatio)
-                        else
-                            Modifier
-                    )
+                    .then(remember(datePickerManager) { Modifier.uikitFittingHeight(datePickerManager.view) })
             )
         }
     }

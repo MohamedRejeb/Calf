@@ -2,7 +2,6 @@ package com.mohamedrejeb.calf.ui.datepicker
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerFormatter
@@ -61,10 +60,6 @@ actual fun AdaptiveDateRangePicker(
             },
         )
     }
-    val aspectRatio = remember(backend) {
-        backend.aspectRatio.takeIf { it > 0f } ?: inlineDatePickerAspectRatio()
-    }
-
     val layoutDirection = LocalLayoutDirection.current
     val absoluteElevation = LocalAbsoluteTonalElevation.current
     val containerColorAtElevation = surfaceColorAtElevation(
@@ -108,7 +103,7 @@ actual fun AdaptiveDateRangePicker(
                 modifier = Modifier
                     .background(colors.containerColor)
                     .fillMaxWidth()
-                    .aspectRatio(aspectRatio),
+                    .then(remember(backend) { Modifier.uikitFittingHeight(backend.view) }),
             )
         }
     }
