@@ -94,6 +94,7 @@ internal class BarHostContainer(
     private var tabBarController: UITabBarController? = null
 
     private var isApplyScheduled = false
+    private var isApplying = false
 
     private val scrollMirror = LargeTitleScrollMirror(
         // The host already reports points.
@@ -103,6 +104,7 @@ internal class BarHostContainer(
 
     // A new screen or title style: let the mirror expand a large title again.
     private val driver = BarHostDriver(onTopBarLayoutChange = scrollMirror::recalibrate)
+    private val barColumn = BarHostBarColumn()
 
     private val composeViewController: UIViewController = ComposeUIViewController(configure) {
         HostContent(content)
@@ -110,7 +112,7 @@ internal class BarHostContainer(
 
     val host = BarHost(
         contentViewController = composeViewController,
-        onBarsChange = ::scheduleApply,
+        onBarsChange = ::onBarsChange,
         onOwnerScrollChange = scrollMirror::reportScrollOffset,
     )
 
@@ -162,29 +164,54 @@ internal class BarHostContainer(
     private val slot: BarHostSlotController
         get() = slots[selectedIndex]
 
+    /**
+     * A change the containers must show now is applied right away: an entering screen publishes its
+     * bars while Compose lays it out, and its content, composed next in the same pass, then gets
+     * the insets of those bars on its first frame instead of the previous screen's. Everything is
+     * applied again at the end of the main-thread turn, which also ends the generation.
+     */
+    private fun onBarsChange(immediate: Boolean) {
+        if (immediate && hasAppliedBars) applyNow()
+        scheduleApply()
+    }
+
     /** Coalesces every bar change of one main-thread turn into one UIKit update. */
     private fun scheduleApply() {
         if (isApplyScheduled) return
         isApplyScheduled = true
         dispatch_async(dispatch_get_main_queue()) {
             isApplyScheduled = false
-            val state = host.state
-            // Tabs first: selecting another tab moves the content, and the bars follow it.
-            applyTabBar(state.shownBars.tabBar, animated = hasAppliedBars)
-            driver.apply(state, navigationController, slot, host.density)
+            applyNow()
             hasAppliedBars = true
             host.endGeneration()
         }
+    }
+
+    /** Shows the host's bars in the containers and measures what they leave to the content. */
+    private fun applyNow() {
+        // Applying lays the containers out, which measures, which can report a change again.
+        if (isApplying) return
+        isApplying = true
+        val state = host.state
+        // Tabs first: selecting another tab moves the content, and the bars follow it.
+        applyTabBar(state.shownBars.tabBar, hasTabs = state.hasTabs, animated = hasAppliedBars)
+        driver.apply(state, navigationController, slot, host.density)
+        barColumn.apply(navigationController, slot, state.barColumnInsets())
+        rootController.view.layoutIfNeeded()
+        measure()
+        isApplying = false
     }
 
     /**
      * Shows [tabBar] in the tab bar controller, one tab per item, the content in the selected
      * one; hides it when the shown screen has none. Hiding at the moment another screen takes the
      * bars (the start of its transition) is what keeps the tab bar from lingering over it.
+     * Once no screen publishes tabs any more ([hasTabs]), the tab bar controller goes.
      */
-    private fun applyTabBar(tabBar: HostedTabBar?, animated: Boolean) {
+    private fun applyTabBar(tabBar: HostedTabBar?, hasTabs: Boolean, animated: Boolean) {
         if (tabBar == null) {
-            tabBarController?.setTabBarVisibility(hidden = true, animated = animated)
+            if (hasTabs) tabBarController?.setTabBarVisibility(hidden = true, animated = animated)
+            else removeTabBarController()
             return
         }
         val tabBarController = tabBarController()
@@ -208,6 +235,23 @@ internal class BarHostContainer(
         }
         moveContentTo(selected)
         tabBarController.setTabBarVisibility(hidden = false, animated = animated)
+    }
+
+    /**
+     * Back to the containers of a fresh host: the first tab's navigation controller as the root.
+     * A `UITabBarController` around the app, even with its tab bar hidden, takes an iPhone Duo's
+     * vertical bar from the tab bars of containers inside the Compose content (a calf-navigation
+     * `AdaptiveTabDisplay`).
+     */
+    private fun removeTabBarController() {
+        val controller = tabBarController ?: return
+        moveContentTo(0)
+        setTabCount(1)
+        controller.setViewControllers(emptyList<UIViewController>(), animated = false)
+        controller.delegate = null
+        tabBarController = null
+        appliedTabBar = null
+        rootController.show(navigationControllers.first())
     }
 
     /** A tab tapped in UIKit: move the content right away, then tell the screen that shows the tabs. */
@@ -259,9 +303,12 @@ internal class BarHostContainer(
         measure()
     }
 
-    /** The slot's safe area is what the containers' bars leave to the content. */
+    /**
+     * The slot's safe area is what the containers' bars leave to the content; the root's is the
+     * window's own, without them.
+     */
     private fun measure() {
-        val insets = slot.view.safeAreaInsets.useContents {
+        val bars = slot.view.safeAreaInsets.useContents {
             IosBarEdgeInsets(
                 left = left.dp,
                 // Not the live inset: it shrinks with the large title, see NavBarInsetCalibration.
@@ -270,9 +317,19 @@ internal class BarHostContainer(
                 bottom = bottom.dp,
             )
         }
-        host.setLiveInsets(insets)
+        val system = rootController.view.safeAreaInsets.useContents {
+            IosBarEdgeInsets(left = left.dp, top = top.dp, right = right.dp, bottom = bottom.dp)
+        }
+        host.setMeasuredInsets(bars, system)
     }
 }
+
+/** The room the shown bars leave beside the owner's column, none when they span the window. */
+private fun BarHostState.barColumnInsets(): IosBarEdgeInsets =
+    if (shownBars.topBar == null && shownBars.toolbarItems == null)
+        IosBarEdgeInsets.Zero
+    else
+        ownerSpan?.barColumnInsets() ?: IosBarEdgeInsets.Zero
 
 private fun hostNavigationController(slot: UIViewController): UINavigationController =
     UINavigationController(rootViewController = slot).apply {

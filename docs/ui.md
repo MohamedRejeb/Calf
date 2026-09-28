@@ -81,13 +81,17 @@ What you get:
 - **Large titles** (`UIKitNavigationBarConfiguration(prefersLargeTitles = true)`) expand and collapse with your content's scrolling. Any nested-scrolling child (`LazyColumn`, `verticalScroll`) takes part.
 - **iPhone Duo:** the bar items, the toolbar items and the tab bar move into the vertical bar next to the content, on the side iOS picks, and the content is inset on that side. When the vertical bar is full, items go to its overflow menu, lowest `visibilityPriority` first. With the Duo open in portrait the bar shares the status bar row, as native apps do.
 - **Padding:** `AdaptiveScaffold` passes the room the containers' bars leave to its `content`, on all four edges, as far as it reaches that scaffold. A scaffold nested in a padded one, or a pane beside another, is not padded twice. Compose's own `WindowInsets` include the containers' bars too.
+- **Stable during transitions:** a screen coming in is laid out with the insets of its own bars from its first frame, and a screen going out keeps the insets it had until it is gone, however long the transition or the back gesture takes. Neither resizes while Compose moves them.
+- **Two panes:** when the screen that owns the bars is a pane (the detail of a list-detail layout on an iPad or an open iPhone Duo), the bars cover only that pane, the way a split view's detail column has its own bar: the title starts after the list, the items still go to the Duo's vertical bar, and the list keeps its own insets.
 
 <!-- MEDIA: #530 before / after: the same Navigation 3 push on an iPhone, standalone bars sliding with the page vs. the hosted bar staying put -->
 <!-- MEDIA: an open iPhone Duo, a Navigation 3 screen with its bar items, toolbar and tab bar in the vertical bar -->
 
 ### Who owns the bars
 
-The screen that composed last owns them: during a push or a pop, the screen that is coming in. While a back gesture runs the bars stay with the current screen, and they change only once the gesture commits. Screens that appear in the same frame (two panes, a restored back stack) share the bars with whichever of them has bars.
+The screen that composed last owns them: during a push or a pop, the screen that is coming in. While a back gesture runs the bars stay with the current screen, and they change only once the gesture commits. Screens that appear in the same frame (two panes, a restored back stack) share the bars with whichever of them has bars, and a pane without bars that appears beside the owner (the list coming back when an iPhone Duo is opened) leaves the bars to it.
+
+When no screen with an `AdaptiveScaffold` is left (say the app switches to screens built with calf-navigation), the host goes back to how it starts: bars hidden and empty, and no `UITabBarController` around the app, which would otherwise take the iPhone Duo's vertical bar from the tab bars of calf-navigation's containers. An app can move between both kinds of screens at any time.
 
 - A screen with an `AdaptiveScaffold` but no top bar hides the navigation bar. A screen without any `AdaptiveScaffold` does not take the bars, so give every screen one.
 - A bar only publishes to the host from inside an `AdaptiveScaffold` composed in the host's own Compose view. Content of an `AdaptiveBottomSheet`, an `AdaptiveAlertDialog`, or an entry of calf-navigation's `AdaptiveNavDisplay` keeps drawing standalone bars, exactly as before.
@@ -104,7 +108,7 @@ The bar host is one set of bars for the whole window, whose items follow the scr
 | Title and items follow an interactive back gesture | No: they change when it commits | Yes |
 | iOS edge swipe-back | Compose's (Navigation 3 predictive back) | UIKit's |
 | iPhone Duo vertical bar | Yes | Yes |
-| Two panes | One bar above both panes | Each column of the split view has its own bar |
+| Two panes | The owning pane's bar, over that pane | Each column of the split view has its own bar |
 
 A Compose `Dialog` or `Popup` drawn in the host's view is not detected: the hosted bars stay above it and are not dimmed. The native sheets and alerts of `AdaptiveBottomSheet` and `AdaptiveAlertDialog` dim and block them as usual.
 

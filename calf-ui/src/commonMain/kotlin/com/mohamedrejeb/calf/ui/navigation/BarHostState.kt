@@ -9,7 +9,8 @@ import androidx.compose.runtime.Immutable
  * The host is one UIKit container for the whole Compose hierarchy. Every AdaptiveScaffold in it
  * registers; the newest one owns the bars and the container shows its top bar, toolbar and tab
  * bar. Screens change inside Compose, so "newest" is the screen that composed last: the entering
- * one during a push or a pop.
+ * one during a push or a pop. A pane that composes beside the owner (a list next to a detail)
+ * does not take its bars.
  */
 
 /** What an [AdaptiveTopBar] asks the host's navigation bar to show. */
@@ -49,22 +50,30 @@ internal class BarHostState private constructor(
     private val nextOrder: Long,
     private val generation: Long,
     private val gesture: GestureFreeze?,
-    private val ownedInsets: Map<Any, IosBarEdgeInsets>,
+    private val barShares: Map<Any, IosBarEdgeInsets>,
 ) {
     constructor() : this(emptyMap(), 0L, 0L, null, emptyMap())
 
     /**
-     * The scaffold whose bars are shown: the newest registered one, except while a back gesture
-     * runs. Scaffolds that appear together (two panes, a restored back stack) are equally new;
-     * among them one with bars wins, so a bar-less list pane does not hide the detail's bars. Navigation 3 composes the previous screen as soon as the gesture starts, and it only
+     * The scaffold whose bars are shown: the newest candidate, except while a back gesture runs.
+     *
+     * Scaffolds that appear together (two panes, a restored back stack) are equally new; among
+     * them one with bars wins. A scaffold without bars only becomes a candidate once it is placed,
+     * and does not take the bars from a scaffold with bars it sits beside: it is a pane next to the
+     * owner, not a screen over it.
+     *
+     * Navigation 3 composes the previous screen as soon as a back gesture starts, and it only
      * becomes the screen once the gesture commits; a cancelled gesture must never show its bars.
      */
     val owner: Any? =
         gesture?.owner?.takeIf { it in scaffolds } ?: newest()
 
+    /** The owner, then the scaffolds it is nested in, outwards: the scaffolds whose bars are shown. */
+    private val shownChain: List<RegisteredScaffold> = ownerChain()
+
     /** The owner's bars; slots it leaves empty come from the scaffolds it is nested in. */
     val shownBars: HostedBars =
-        ownerChain().fold(HostedBars()) { shown, scaffold ->
+        shownChain.fold(HostedBars()) { shown, scaffold ->
             HostedBars(
                 topBar = shown.topBar ?: scaffold.bars.topBar,
                 toolbarItems = shown.toolbarItems ?: scaffold.bars.toolbarItems,
@@ -74,7 +83,18 @@ internal class BarHostState private constructor(
 
     /** The scaffold the shown tab bar belongs to, which receives its selection. */
     val shownTabBarSource: Any? =
-        ownerChain().firstOrNull { it.bars.tabBar != null }?.key
+        shownChain.firstOrNull { it.bars.tabBar != null }?.key
+
+    /** Whether a registered scaffold publishes a tab bar, shown or not (a screen pushed over tabs). */
+    val hasTabs: Boolean =
+        scaffolds.values.any { it.bars.tabBar != null }
+
+    /** Where the owner sits across the host, `null` until it is placed. */
+    val ownerSpan: HostedSpan? =
+        owner?.let(scaffolds::get)?.span
+
+    /** Where [key] sits across the host, `null` until it is placed. */
+    fun spanOf(key: Any): HostedSpan? = scaffolds[key]?.span
 
     /** Adds [key], nested in [parent]. A scaffold keeps the position of its first registration. */
     fun register(key: Any, parent: Any?): BarHostState {
@@ -100,7 +120,7 @@ internal class BarHostState private constructor(
         return copy(
             scaffolds = remaining,
             gesture = gesture?.takeUnless { it.isSettled(remaining) },
-            ownedInsets = ownedInsets - key,
+            barShares = barShares - key,
         )
     }
 
@@ -109,6 +129,14 @@ internal class BarHostState private constructor(
         val bars = transform(scaffold.bars)
         if (bars == scaffold.bars) return this
         return copy(scaffolds = scaffolds + (key to scaffold.copy(bars = bars)))
+    }
+
+    /** Records where [key] was placed across the host. */
+    fun withSpan(key: Any, span: HostedSpan?): BarHostState {
+        val scaffold = scaffolds[key] ?: return this
+        val clamped = span?.clamped()
+        if (clamped == scaffold.span) return this
+        return copy(scaffolds = scaffolds + (key to scaffold.copy(span = clamped)))
     }
 
     /**
@@ -129,27 +157,35 @@ internal class BarHostState private constructor(
      */
     fun nextGeneration(): BarHostState = copy(generation = generation + 1)
 
-    /** Records [live] as the owner's content insets, the ones it keeps after losing the bars. */
-    fun withLiveInsets(live: IosBarEdgeInsets): BarHostState {
-        val key = owner ?: return this
-        if (ownedInsets[key] == live) return this
-        return copy(ownedInsets = ownedInsets + (key to live))
+    /**
+     * Records what the shown bars add to the [system] insets ([bars] is the content area the
+     * containers leave with them), for every scaffold whose bars are shown. A scaffold keeps its
+     * share once its bars are no longer shown, until it leaves.
+     */
+    fun withMeasuredInsets(bars: IosBarEdgeInsets, system: IosBarEdgeInsets): BarHostState {
+        val share = bars.beyond(system)
+        val updated = shownChain.filter { barShares[it.key] != share }
+        if (updated.isEmpty()) return this
+        return copy(barShares = barShares + updated.map { it.key to share })
     }
 
     /**
-     * Content insets for [key]: the owner follows the container ([live]); a scaffold that lost the
-     * bars keeps the insets it last had, so a leaving screen does not jump when the bar changes
-     * height under it (a large title appearing, the toolbar leaving).
+     * Content insets for [key]. A scaffold whose bars are shown follows the containers ([bars]).
+     * Any other one gets the [system] insets plus the share of the bars it had when they were its
+     * own: a leaving screen does not jump when the bars change under it (a large title appearing,
+     * the toolbar leaving), for as long as it is composed, and a pane beside the owner never gets
+     * the owner's bar.
      */
-    fun contentInsetsOf(key: Any, live: IosBarEdgeInsets): IosBarEdgeInsets =
-        if (key == owner) live else ownedInsets[key] ?: live
+    fun contentInsetsOf(key: Any, bars: IosBarEdgeInsets, system: IosBarEdgeInsets): IosBarEdgeInsets =
+        if (shownChain.any { it.key == key }) bars else system + (barShares[key] ?: IosBarEdgeInsets.Zero)
 
     private fun newest(): Any? {
-        val latest = scaffolds.values.maxOfOrNull { it.generation } ?: return null
-        return scaffolds.values
-            .filter { it.generation == latest }
-            .maxWithOrNull(compareBy<RegisteredScaffold>({ it.bars.hasAny }, { it.order }))
-            ?.key
+        val candidates = scaffolds.values
+            .filter { it.bars.hasAny || it.span != null }
+            .sortedWith(compareByDescending<RegisteredScaffold> { it.generation }.thenByDescending { it.bars.hasAny }.thenByDescending { it.order })
+        return candidates.firstOrNull { candidate ->
+            candidate.bars.hasAny || candidates.none { it.bars.hasAny && it.isBeside(candidate) }
+        }?.key
     }
 
     /** The owner, then the scaffolds it is nested in, outwards; ancestors that left are skipped. */
@@ -164,8 +200,8 @@ internal class BarHostState private constructor(
         nextOrder: Long = this.nextOrder,
         generation: Long = this.generation,
         gesture: GestureFreeze? = this.gesture,
-        ownedInsets: Map<Any, IosBarEdgeInsets> = this.ownedInsets,
-    ): BarHostState = BarHostState(scaffolds, nextOrder, generation, gesture, ownedInsets)
+        barShares: Map<Any, IosBarEdgeInsets> = this.barShares,
+    ): BarHostState = BarHostState(scaffolds, nextOrder, generation, gesture, barShares)
 
     override fun equals(other: Any?): Boolean =
         other is BarHostState &&
@@ -173,14 +209,26 @@ internal class BarHostState private constructor(
             other.nextOrder == nextOrder &&
             other.generation == generation &&
             other.gesture == gesture &&
-            other.ownedInsets == ownedInsets
+            other.barShares == barShares
 
     override fun hashCode(): Int =
-        listOf(scaffolds, nextOrder, generation, gesture, ownedInsets).hashCode()
+        listOf(scaffolds, nextOrder, generation, gesture, barShares).hashCode()
 
     override fun toString(): String =
         "BarHostState(scaffolds=${scaffolds.size}, owner=$owner, frozen=${gesture != null})"
 }
+
+/**
+ * Whether the large-title calibration has to start over: the shown top bar appeared, hid or
+ * switched title style, or a new screen or container shows it ([isNewLayout]). A calibration kept
+ * after its bar hid would pad a bar-less screen by the height the bar had.
+ */
+internal fun topBarNeedsRecalibration(previous: HostedTopBar?, next: HostedTopBar?, isNewLayout: Boolean): Boolean =
+    when {
+        next == null -> previous != null
+        isNewLayout || previous == null -> true
+        else -> previous.configuration.prefersLargeTitles != next.configuration.prefersLargeTitles
+    }
 
 private data class RegisteredScaffold(
     val key: Any,
@@ -188,7 +236,15 @@ private data class RegisteredScaffold(
     val order: Long,
     val generation: Long,
     val bars: HostedBars,
-)
+    val span: HostedSpan? = null,
+) {
+    /** Placed side by side with [other]; unknown while either one is not placed yet. */
+    fun isBeside(other: RegisteredScaffold): Boolean {
+        val mine = span ?: return false
+        val theirs = other.span ?: return false
+        return mine.isBeside(theirs)
+    }
+}
 
 private val HostedBars.hasAny: Boolean
     get() = topBar != null || toolbarItems != null || tabBar != null

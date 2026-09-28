@@ -50,6 +50,10 @@ internal class BarHostDriver(
             target = navigationController to slot
             applied = null
         }
+        if (state.owner == null) {
+            clear(navigationController, slot)
+            return
+        }
         val bars = state.shownBars
         val isFirstApply = applied == null
         val ownerChanged = !isFirstApply && state.owner !== appliedOwner
@@ -72,14 +76,33 @@ internal class BarHostDriver(
             change()
         }
         setBarsHidden(navigationController, bars, animated = !isFirstApply)
-        val topBarLayoutChanged = bars.topBar != null && (
-            isFirstApply || ownerChanged || previous.topBar == null ||
-                previous.topBar.configuration.prefersLargeTitles != bars.topBar.configuration.prefersLargeTitles
-            )
-        if (topBarLayoutChanged) onTopBarLayoutChange()
+        if (topBarNeedsRecalibration(previous.topBar, bars.topBar, isNewLayout = isFirstApply || ownerChanged)) {
+            onTopBarLayoutChange()
+        }
 
         applied = bars
         appliedOwner = state.owner
+    }
+
+    /**
+     * No hosted scaffold is left (the app shows screens that do not use the host): the containers go
+     * back to how a fresh host has them, bars hidden and empty, and nothing of the last screen is kept.
+     */
+    private fun clear(navigationController: UINavigationController, slot: UIViewController) {
+        if (applied == null && appliedOwner == null) return
+        val item = slot.navigationItem
+        item.title = null
+        item.setLeftBarButtonItems(null, animated = false)
+        item.setRightBarButtonItems(null, animated = false)
+        item.applyTitleAppearance(UIKitNavigationBarConfiguration())
+        slot.setToolbarItems(null, animated = false)
+        leadingBinding = UIBarButtonItemsBinding.Empty
+        trailingBinding = UIBarButtonItemsBinding.Empty
+        toolbarBinding = UIBarButtonItemsBinding.Empty
+        setBarsHidden(navigationController, HostedBars(), animated = false)
+        if (applied?.topBar != null) onTopBarLayoutChange()
+        applied = null
+        appliedOwner = null
     }
 
     private fun applyTopBar(

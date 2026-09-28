@@ -148,7 +148,6 @@ private fun HostedScaffoldLayout(
     val scaffold = remember(host, parent) { HostedScaffold(host, parent) }
     val density = LocalDensity.current
     var boxOffsets by remember { mutableStateOf(IosBarEdgeInsets.Zero) }
-    val hostInsets = host.contentInsetsOf(scaffold)
     // A bar the host does not take over (none today) still draws itself and claims its room here.
     val nativeBarInsetsState = remember { mutableStateOf(IosNativeBarInsets()) }
 
@@ -158,7 +157,10 @@ private fun HostedScaffoldLayout(
     ) {
         Scaffold(
             modifier = modifier
-                .onPlaced { boxOffsets = it.offsetsInRoot(density) }
+                .onPlaced {
+                    boxOffsets = it.offsetsInRoot(density)
+                    host.setSpan(scaffold, it.spanInRoot(density))
+                }
                 .nestedScroll(scaffold.scrollTracker),
             topBar = topBar,
             bottomBar = bottomBar,
@@ -170,8 +172,11 @@ private fun HostedScaffoldLayout(
             // The host's insets replace the system ones: they include the containers' bars, and a
             // screen that lost the bars keeps its own (Compose's follow the container live).
             contentWindowInsets =
-                if (hostInsets != null) contentWindowInsets.exclude(HostCoveredInsets) else contentWindowInsets,
+                if (host.isMeasured) contentWindowInsets.exclude(HostCoveredInsets) else contentWindowInsets,
         ) { scaffoldPadding ->
+            // Read here, where Scaffold composes the content after the bars: a bar this screen
+            // just published is already in the host's insets (see BarHost's onBarsChange).
+            val hostInsets = host.contentInsetsOf(scaffold)
             val padding = scaffoldPadding.withNativeBarInsets(
                 insets = (hostInsets?.reaching(boxOffsets) ?: IosBarEdgeInsets.Zero)
                     .union(nativeBarInsetsState.value.total),
@@ -202,5 +207,17 @@ private fun LayoutCoordinates.offsetsInRoot(density: Density): IosBarEdgeInsets 
             right = if (fillsWidth) 0f.toDp() else (rootSize.width - position.x - size.width).toDp(),
             bottom = if (fillsHeight) 0f.toDp() else (rootSize.height - position.y - size.height).toDp(),
         )
+    }
+}
+
+/** This layout's horizontal extent in the Compose surface; a full-width layout spans all of it. */
+private fun LayoutCoordinates.spanInRoot(density: Density): HostedSpan {
+    val rootWidth = findRootCoordinates().size.width.toFloat()
+    val left = positionInRoot().x
+    return with(density) {
+        if (size.width >= rootWidth)
+            HostedSpan(left = 0f.toDp(), right = rootWidth.toDp(), hostWidth = rootWidth.toDp())
+        else
+            HostedSpan(left = left.toDp(), right = (left + size.width).toDp(), hostWidth = rootWidth.toDp())
     }
 }

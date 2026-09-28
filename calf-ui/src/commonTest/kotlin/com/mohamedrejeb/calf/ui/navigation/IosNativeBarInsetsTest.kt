@@ -181,5 +181,44 @@ class IosNativeBarInsetsTest {
         assertEquals(IosBarEdgeInsets(top = 82.dp, bottom = 34.dp), insets.reaching(leftPane))
     }
 
+    @Test
+    fun `a box sliding past an edge gets the same insets as one touching it`() {
+        // A list pane halfway through a Navigation 3 slide is 237pt past the left edge: that must not
+        // pad it by 237pt, or its content shrinks for the whole transition.
+        val insets = IosBarEdgeInsets(left = 0.dp, top = 82.dp, right = 84.dp, bottom = 34.dp)
+        val slidingOut = IosBarEdgeInsets(left = (-237).dp, right = 828.dp)
+
+        assertEquals(insets.reaching(IosBarEdgeInsets(right = 591.dp)), insets.reaching(slidingOut))
+        assertEquals(IosBarEdgeInsets(top = 82.dp, bottom = 34.dp), insets.reaching(slidingOut))
+    }
+
+    @Test
+    fun `a box sliding past the strip edge keeps the strip inset it has at rest`() {
+        val insets = IosBarEdgeInsets(top = 82.dp, right = 84.dp, bottom = 34.dp)
+        val slidingIn = IosBarEdgeInsets(left = 600.dp, right = (-200).dp)
+
+        assertEquals(insets.reaching(IosBarEdgeInsets(left = 400.dp)), insets.reaching(slidingIn))
+    }
+
+    // endregion
+
+    // region arithmetic
+
+    @Test
+    fun `the part of one set of insets beyond another is never negative`() {
+        val withBar = IosBarEdgeInsets(left = 0.dp, top = 116.dp, right = 0.dp, bottom = 34.dp)
+        val system = IosBarEdgeInsets(left = 10.dp, top = 62.dp, right = 0.dp, bottom = 34.dp)
+
+        assertEquals(IosBarEdgeInsets(top = 54.dp), withBar.beyond(system))
+    }
+
+    @Test
+    fun `insets add up edge by edge`() {
+        assertEquals(
+            IosBarEdgeInsets(left = 1.dp, top = 116.dp, right = 84.dp, bottom = 34.dp),
+            IosBarEdgeInsets(left = 1.dp, top = 62.dp, right = 84.dp) + IosBarEdgeInsets(top = 54.dp, bottom = 34.dp),
+        )
+    }
+
     // endregion
 }

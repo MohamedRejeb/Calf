@@ -41,13 +41,34 @@ internal data class IosBarEdgeInsets(
      * The part of these insets that reaches a box whose edges are [boxOffsets] away from the host's
      * edges. A box already moved clear of a bar (an inner scaffold inside a padded outer one, a
      * pane that ends before the far edge) needs no padding for it.
+     *
+     * A box past an edge (a pane halfway through a slide transition) counts as touching it: the
+     * part outside the host is off screen, and padding it would squeeze the content for the whole
+     * transition.
      */
     fun reaching(boxOffsets: IosBarEdgeInsets): IosBarEdgeInsets =
         IosBarEdgeInsets(
-            left = (left - boxOffsets.left).coerceAtLeast(0.dp),
-            top = (top - boxOffsets.top).coerceAtLeast(0.dp),
-            right = (right - boxOffsets.right).coerceAtLeast(0.dp),
-            bottom = (bottom - boxOffsets.bottom).coerceAtLeast(0.dp),
+            left = (left - boxOffsets.left.coerceAtLeast(0.dp)).coerceAtLeast(0.dp),
+            top = (top - boxOffsets.top.coerceAtLeast(0.dp)).coerceAtLeast(0.dp),
+            right = (right - boxOffsets.right.coerceAtLeast(0.dp)).coerceAtLeast(0.dp),
+            bottom = (bottom - boxOffsets.bottom.coerceAtLeast(0.dp)).coerceAtLeast(0.dp),
+        )
+
+    /** How far these insets reach beyond [other] on each edge; never negative. */
+    fun beyond(other: IosBarEdgeInsets): IosBarEdgeInsets =
+        IosBarEdgeInsets(
+            left = (left - other.left).coerceAtLeast(0.dp),
+            top = (top - other.top).coerceAtLeast(0.dp),
+            right = (right - other.right).coerceAtLeast(0.dp),
+            bottom = (bottom - other.bottom).coerceAtLeast(0.dp),
+        )
+
+    operator fun plus(other: IosBarEdgeInsets): IosBarEdgeInsets =
+        IosBarEdgeInsets(
+            left = left + other.left,
+            top = top + other.top,
+            right = right + other.right,
+            bottom = bottom + other.bottom,
         )
 
     companion object {

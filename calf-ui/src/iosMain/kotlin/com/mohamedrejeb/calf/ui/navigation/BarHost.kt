@@ -13,10 +13,6 @@ import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import platform.UIKit.UIViewController
-import platform.darwin.DISPATCH_TIME_NOW
-import platform.darwin.dispatch_after
-import platform.darwin.dispatch_get_main_queue
-import platform.darwin.dispatch_time
 
 /**
  * The bar host of one [AdaptiveBarHostUIViewController]: the scaffolds registered in its Compose
@@ -25,30 +21,28 @@ import platform.darwin.dispatch_time
  *
  * @param contentViewController the one Compose view controller of the container. Only scaffolds
  *   composed in it take part; a sheet's or a calf-navigation entry's content has its own.
- * @param onBarsChange asks the container to apply the bars again, once per main-thread turn.
+ * @param onBarsChange asks the container to apply the bars again. `immediate` when the owner or
+ *   the shown bars changed: the container applies and measures right away, so a screen composing
+ *   its content in the same layout pass already gets the insets of its own bars. Anything else,
+ *   the owner's column included (it moves on every frame of a pane's slide), is applied once per
+ *   main-thread turn.
  */
 internal class BarHost(
     val contentViewController: UIViewController,
-    private val onBarsChange: () -> Unit,
+    private val onBarsChange: (immediate: Boolean) -> Unit,
     private val onOwnerScrollChange: (Float) -> Unit,
 ) {
     var state: BarHostState by mutableStateOf(BarHostState())
         private set
 
     /**
-     * The container's content insets, four edges, the top one calibrated for the large title.
-     * `null` until the container measured itself.
+     * What the containers leave to the content with the shown bars, four edges, the top one
+     * calibrated for the large title. `null` until the container measured itself.
      */
-    private var liveInsets: IosBarEdgeInsets? by mutableStateOf(null)
+    private var barInsets: IosBarEdgeInsets? by mutableStateOf(null)
 
-    /**
-     * While the owner changes: a scaffold that just lost the bars keeps its last insets for as
-     * long as a navigation transition takes, then follows the container like the others. A leaving
-     * screen must not jump when the bars change height under it; a pane that stays beside the new
-     * owner must make room for the bars it now shares.
-     */
-    private var isOwnerChanging by mutableStateOf(false)
-    private var ownerChangeCount = 0
+    /** The window's safe area without the containers' bars: what the other scaffolds follow. */
+    private var systemInsets: IosBarEdgeInsets? by mutableStateOf(null)
 
     /** Points per pixel of the Compose surface, for the scroll offsets handed to UIKit. */
     var density: Float = 1f
@@ -56,6 +50,10 @@ internal class BarHost(
     private val tabSelection = mutableMapOf<Any, (Int) -> Unit>()
     private var hasRegistrationsSinceApply = false
     private val scrollOffsets = mutableMapOf<Any, Float>()
+
+    /** Whether the container measured itself; until then scaffolds keep Compose's own insets. */
+    var isMeasured: Boolean by mutableStateOf(false)
+        private set
 
     fun isHostSurface(viewController: UIViewController): Boolean =
         viewController === contentViewController
@@ -87,15 +85,23 @@ internal class BarHost(
         state = state.nextGeneration()
     }
 
-    fun setLiveInsets(insets: IosBarEdgeInsets) {
-        if (insets == liveInsets) return
-        liveInsets = insets
+    fun setMeasuredInsets(bars: IosBarEdgeInsets, system: IosBarEdgeInsets) {
+        if (bars == barInsets && system == systemInsets) return
+        barInsets = bars
+        systemInsets = system
+        isMeasured = true
         update { it }
     }
 
-    /** Content insets of [key] in the host's coordinates, `null` before the first measurement. */
+    /** Where [key] was placed across the host's surface; decides panes beside the owner. */
+    fun setSpan(key: Any, span: HostedSpan) = update { it.withSpan(key, span) }
+
+    /**
+     * Content insets of [key] in the host's coordinates (see [BarHostState.contentInsetsOf]),
+     * `null` before the first measurement.
+     */
     fun contentInsetsOf(key: Any): IosBarEdgeInsets? =
-        liveInsets?.let { live -> if (isOwnerChanging) state.contentInsetsOf(key, live) else live }
+        barInsets?.let { bars -> state.contentInsetsOf(key, bars, systemInsets ?: bars) }
 
     fun setTabSelection(key: Any, onItemSelected: (Int) -> Unit) {
         tabSelection[key] = onItemSelected
@@ -112,30 +118,21 @@ internal class BarHost(
         if (key == state.owner) onOwnerScrollChange(offsetPx / density)
     }
 
-    private fun holdInsetsDuringOwnerChange() {
-        val change = ++ownerChangeCount
-        isOwnerChanging = true
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, OWNER_CHANGE_NANOS), dispatch_get_main_queue()) {
-            if (change == ownerChangeCount) isOwnerChanging = false
-        }
-    }
-
     private fun update(transform: (BarHostState) -> BarHostState) {
         val old = state
-        // The owner always records its insets, so it keeps them once another scaffold takes over.
-        val new = transform(old).let { next -> liveInsets?.let(next::withLiveInsets) ?: next }
+        // The shown bars' scaffolds record their share, so they keep it once another one takes over.
+        val new = transform(old).let { next ->
+            barInsets?.let { bars -> next.withMeasuredInsets(bars, systemInsets ?: bars) } ?: next
+        }
         if (new == old) return
         state = new
+        val shownChanged = new.owner != old.owner || new.shownBars != old.shownBars || new.hasTabs != old.hasTabs
         if (new.owner != old.owner) {
             onOwnerScrollChange((new.owner?.let(scrollOffsets::get) ?: 0f) / density)
-            holdInsetsDuringOwnerChange()
         }
-        onBarsChange()
+        onBarsChange(shownChanged)
     }
 }
-
-/** Upper bound of a navigation transition; afterwards every scaffold follows the container. */
-private const val OWNER_CHANGE_NANOS = 600_000_000L
 
 /** The bar host of the Compose surface, `null` when the app did not install one. */
 internal val LocalAdaptiveBarHost = staticCompositionLocalOf<BarHost?> { null }
