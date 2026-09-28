@@ -109,6 +109,7 @@ internal class BottomSheetManager(
                 )
         )
         bottomSheetUIViewController.sheetPresentationController?.prefersGrabberVisible = showDragHandle
+        bottomSheetUIViewController.sheetPresentationController?.placeInColumnOf(parentUIViewController)
 
         applyTheme(isDark)
         applyContainerColor(containerColor)
