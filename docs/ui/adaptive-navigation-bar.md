@@ -61,6 +61,16 @@ fun MyNavigationBar() {
 
 On iOS the bar is a native `UITabBar` that Compose never measures. Inside an `AdaptiveScaffold`, the bar reports the room it takes and the scaffold adds it to the bottom of the `PaddingValues` it hands to `content`. The padding is updated when the device rotates and when the safe area changes. See [Top Bar](adaptive-top-bar.md#content-padding-on-ios).
 
+## Inside the bar host (iOS)
+
+With [`AdaptiveBarHostUIViewController`](../ui.md#installing-the-bar-host-ios) as the app's iOS entry point, up to five items become the tabs of the host's `UITabBarController`. Selection works both ways: `iosSelectedIndex` selects the tab, and a tap on a tab calls `iosOnItemSelected`. Your Compose content is not split per tab: the one Compose hierarchy moves into the selected tab, so its state and your own tab transitions are kept.
+
+The tab bar belongs to the screen whose `AdaptiveScaffold` shows it, and to the screens nested inside that scaffold's content. When a screen outside it takes the bars, a pushed detail for example, the tab bar hides at the start of the transition instead of staying over the new screen. On an iPhone Duo the tab bar moves into the vertical bar.
+
+With more than five items the bar stays standalone: a `UITabBarController` would move the rest behind its own "More" tab.
+
+<!-- MEDIA: a hosted tab bar on an open iPhone Duo, in the vertical bar below the screen's bar items -->
+
 ## iOS Configuration
 
 You can customize the iOS tab bar appearance using `UIKitTabBarConfiguration`:

@@ -74,3 +74,8 @@ Box(
 }
 ```
 
+## Placement on iPad and iPhone Duo
+
+On iOS 27 and later the native sheet opens on the side of the window where the screen that presents it sits. A sheet presented from the detail column of a split view (calf-navigation's list-detail on an iPad or an open iPhone Duo) therefore opens over that column: on a half-open iPhone Duo it stays in the column's pane instead of iOS putting it in the leading pane, over the list. A screen that spans the whole window keeps the system placement. The sheet keeps UIKit's width, so on a flat, open iPhone Duo it can still reach across the fold.
+
+Placement follows the presenting UIKit view controller. Two Compose panes in one view, as with Navigation 3's list-detail scene, share one controller, so their sheets keep the system placement.

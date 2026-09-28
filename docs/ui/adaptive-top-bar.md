@@ -67,6 +67,20 @@ On iOS the bar is a native `UINavigationBar` that Compose never measures. Inside
 
 The padding follows the bar: it is updated when the device rotates, when the safe area changes (iPad Split View, a foldable changing pose) and when the bar's height changes. Side insets are part of it, so content also stays clear of the camera housing in landscape. The change is applied in one step, not animated, because UIKit moves the bar on its own clock.
 
+## Inside the bar host (iOS)
+
+With [`AdaptiveBarHostUIViewController`](../ui.md#installing-the-bar-host-ios) as the app's iOS entry point, the bar is the host's `UINavigationController` navigation bar instead of a standalone view. The same parameters apply: `iosTitle`, `iosLeadingItems`, `iosTrailingItems` and `iosConfiguration` describe what the bar shows while this screen owns it. The bar stays in place when Compose pushes or pops a screen, only the title and items crossfade; a large title collapses as the content scrolls; on an iPhone Duo the items move into the vertical bar.
+
+The hosted bar has no back button of its own. Put one first in the leading items:
+
+```kotlin
+iosLeadingItems = listOf(
+    UIKitUIBarButtonItem.back(onClick = navigateBack),
+),
+```
+
+<!-- MEDIA: a hosted top bar on iPhone during a Navigation 3 push: the bar stays, the title crossfades -->
+
 ## iOS Configuration
 
 You can customize the iOS navigation bar appearance using `UIKitNavigationBarConfiguration`:

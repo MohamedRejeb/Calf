@@ -56,3 +56,7 @@ fun MyToolbar() {
 | `trailingContent`    | Optional trailing content for the Material 3 Expressive floating toolbar.                                        |
 | `content`            | The main content composable for the Material 3 Expressive floating toolbar. Typically a row of `IconButton`s.    |
 | `iosItems`           | The list of bar button items for the iOS native toolbar. See `UIKitUIBarButtonItem`.                             |
+
+## Inside the bar host (iOS)
+
+With [`AdaptiveBarHostUIViewController`](../ui.md#installing-the-bar-host-ios) as the app's iOS entry point, `iosItems` become the `toolbarItems` of the host's `UINavigationController`: the system toolbar at the bottom of the screen, which appears and leaves with the screen that shows it. On an iPhone Duo its items join the vertical bar below the navigation bar's items; when the vertical bar is full they go to its overflow menu first.

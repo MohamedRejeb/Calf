@@ -273,3 +273,7 @@ val actions = listOf(
     )
 )
 ```
+
+## Placement on iPad and iPhone Duo
+
+The alert is a `UIAlertController`, and iOS decides where it goes: centred on the window, or on a half-open iPhone Duo in the leading pane. It ignores the presentation context of the screen that shows it, so an alert from a detail column is not moved into that column. The action-sheet style becomes a popover on an iPad or an open iPhone Duo.
