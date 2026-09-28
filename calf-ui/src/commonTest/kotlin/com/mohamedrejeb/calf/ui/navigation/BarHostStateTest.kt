@@ -77,6 +77,7 @@ class BarHostStateTest {
     fun `a scaffold without bars still owns and hides the bar`() {
         val state = BarHostState()
             .register(home, parent = null).topBar(home, homeBar)
+            .nextGeneration()
             .register(detail, parent = null)
 
         assertSame(detail, state.owner)
@@ -89,6 +90,37 @@ class BarHostStateTest {
 
         assertNull(state.owner)
         assertEquals(HostedBars(), state.shownBars)
+    }
+
+    @Test
+    fun `of scaffolds that appear together the one with bars owns them`() {
+        // Two panes composed in the same frame: a bar-less list beside a detail with a bar.
+        val state = BarHostState()
+            .register(detail, parent = null).topBar(detail, detailBar)
+            .register(home, parent = null)
+
+        assertSame(detail, state.owner)
+        assertEquals(detailBar, state.shownBars.topBar)
+    }
+
+    @Test
+    fun `a bar-less scaffold that appears later still hides the bars`() {
+        val state = BarHostState()
+            .register(detail, parent = null).topBar(detail, detailBar)
+            .nextGeneration()
+            .register(home, parent = null)
+
+        assertSame(home, state.owner)
+        assertNull(state.shownBars.topBar)
+    }
+
+    @Test
+    fun `of scaffolds that appear together with bars the newest owns them`() {
+        val state = BarHostState()
+            .register(home, parent = null).topBar(home, homeBar)
+            .register(detail, parent = null).topBar(detail, detailBar)
+
+        assertSame(detail, state.owner)
     }
 
     // endregion
@@ -177,7 +209,7 @@ class BarHostStateTest {
         assertSame(detail, settled.owner)
 
         // Once settled the freeze is gone: a new screen takes the bar as usual.
-        assertSame(sheet, settled.register(sheet, parent = null).owner)
+        assertSame(sheet, settled.nextGeneration().register(sheet, parent = null).owner)
     }
 
     @Test

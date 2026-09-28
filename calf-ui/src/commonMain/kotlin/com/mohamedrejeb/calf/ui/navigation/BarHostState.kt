@@ -47,14 +47,16 @@ internal data class HostedBars(
 internal class BarHostState private constructor(
     private val scaffolds: Map<Any, RegisteredScaffold>,
     private val nextOrder: Long,
+    private val generation: Long,
     private val gesture: GestureFreeze?,
     private val ownedInsets: Map<Any, IosBarEdgeInsets>,
 ) {
-    constructor() : this(emptyMap(), 0L, null, emptyMap())
+    constructor() : this(emptyMap(), 0L, 0L, null, emptyMap())
 
     /**
      * The scaffold whose bars are shown: the newest registered one, except while a back gesture
-     * runs. Navigation 3 composes the previous screen as soon as the gesture starts, and it only
+     * runs. Scaffolds that appear together (two panes, a restored back stack) are equally new;
+     * among them one with bars wins, so a bar-less list pane does not hide the detail's bars. Navigation 3 composes the previous screen as soon as the gesture starts, and it only
      * becomes the screen once the gesture commits; a cancelled gesture must never show its bars.
      */
     val owner: Any? =
@@ -77,7 +79,13 @@ internal class BarHostState private constructor(
     /** Adds [key], nested in [parent]. A scaffold keeps the position of its first registration. */
     fun register(key: Any, parent: Any?): BarHostState {
         if (key in scaffolds) return this
-        val registered = RegisteredScaffold(key = key, parent = parent, order = nextOrder, bars = HostedBars())
+        val registered = RegisteredScaffold(
+            key = key,
+            parent = parent,
+            order = nextOrder,
+            generation = generation,
+            bars = HostedBars(),
+        )
         return copy(
             scaffolds = scaffolds + (key to registered),
             nextOrder = nextOrder + 1,
@@ -115,6 +123,12 @@ internal class BarHostState private constructor(
             else -> this
         }
 
+    /**
+     * Ends the current generation: scaffolds registered from now on are newer than every one
+     * registered so far. The host calls it once per main-thread turn, after applying the bars.
+     */
+    fun nextGeneration(): BarHostState = copy(generation = generation + 1)
+
     /** Records [live] as the owner's content insets, the ones it keeps after losing the bars. */
     fun withLiveInsets(live: IosBarEdgeInsets): BarHostState {
         val key = owner ?: return this
@@ -130,8 +144,13 @@ internal class BarHostState private constructor(
     fun contentInsetsOf(key: Any, live: IosBarEdgeInsets): IosBarEdgeInsets =
         if (key == owner) live else ownedInsets[key] ?: live
 
-    private fun newest(): Any? =
-        scaffolds.values.maxByOrNull { it.order }?.key
+    private fun newest(): Any? {
+        val latest = scaffolds.values.maxOfOrNull { it.generation } ?: return null
+        return scaffolds.values
+            .filter { it.generation == latest }
+            .maxWithOrNull(compareBy<RegisteredScaffold>({ it.bars.hasAny }, { it.order }))
+            ?.key
+    }
 
     /** The owner, then the scaffolds it is nested in, outwards; ancestors that left are skipped. */
     private fun ownerChain(): List<RegisteredScaffold> =
@@ -143,19 +162,21 @@ internal class BarHostState private constructor(
     private fun copy(
         scaffolds: Map<Any, RegisteredScaffold> = this.scaffolds,
         nextOrder: Long = this.nextOrder,
+        generation: Long = this.generation,
         gesture: GestureFreeze? = this.gesture,
         ownedInsets: Map<Any, IosBarEdgeInsets> = this.ownedInsets,
-    ): BarHostState = BarHostState(scaffolds, nextOrder, gesture, ownedInsets)
+    ): BarHostState = BarHostState(scaffolds, nextOrder, generation, gesture, ownedInsets)
 
     override fun equals(other: Any?): Boolean =
         other is BarHostState &&
             other.scaffolds == scaffolds &&
             other.nextOrder == nextOrder &&
+            other.generation == generation &&
             other.gesture == gesture &&
             other.ownedInsets == ownedInsets
 
     override fun hashCode(): Int =
-        listOf(scaffolds, nextOrder, gesture, ownedInsets).hashCode()
+        listOf(scaffolds, nextOrder, generation, gesture, ownedInsets).hashCode()
 
     override fun toString(): String =
         "BarHostState(scaffolds=${scaffolds.size}, owner=$owner, frozen=${gesture != null})"
@@ -165,8 +186,12 @@ private data class RegisteredScaffold(
     val key: Any,
     val parent: Any?,
     val order: Long,
+    val generation: Long,
     val bars: HostedBars,
 )
+
+private val HostedBars.hasAny: Boolean
+    get() = topBar != null || toolbarItems != null || tabBar != null
 
 /** The owner held while a back gesture runs, and the registrations it started with. */
 private data class GestureFreeze(

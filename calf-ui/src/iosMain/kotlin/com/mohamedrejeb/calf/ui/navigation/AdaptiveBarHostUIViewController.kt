@@ -13,6 +13,8 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import platform.UIKit.NSDirectionalRectEdgeBottom
+import platform.UIKit.NSDirectionalRectEdgeTop
 import platform.UIKit.UIColor
 import platform.UIKit.UIGestureRecognizer
 import platform.UIKit.UINavigationController
@@ -71,18 +73,25 @@ public fun AdaptiveBarHostUIViewController(
     configure: ComposeUIViewControllerConfiguration.() -> Unit = {},
     content: @Composable () -> Unit,
 ): UIViewController =
-    BarHostContainer(configure, content).tabBarController
+    BarHostContainer(configure, content).rootController
 
 /**
- * The containers: a `UITabBarController` whose tabs are each a `UINavigationController` with one
- * thin [BarHostSlotController]. The single Compose view controller is a child of the selected
- * slot and moves with the selection; the tab bar is hidden while the shown screen has none.
+ * The containers: a `UINavigationController` whose one controller is a thin
+ * [BarHostSlotController] holding the Compose view controller. Once a screen shows tabs, a
+ * `UITabBarController` takes over with one such navigation controller per tab; the Compose view
+ * controller moves into the selected tab's slot, and the tab bar is hidden while the shown
+ * screen has none.
+ *
+ * The tab bar controller only exists once tabs were shown: a `UITabBarController` around the app
+ * would take the vertical bar of an iPhone Duo from the tab bars of containers inside the Compose
+ * content (a calf-navigation `AdaptiveTabDisplay`), even with its own tab bar hidden.
  */
 internal class BarHostContainer(
     configure: ComposeUIViewControllerConfiguration.() -> Unit,
     content: @Composable () -> Unit,
 ) {
-    val tabBarController = UITabBarController()
+    val rootController = BarHostRootController()
+    private var tabBarController: UITabBarController? = null
 
     private var isApplyScheduled = false
 
@@ -114,15 +123,26 @@ internal class BarHostContainer(
     private var hasAppliedBars = false
 
     // Restored when a tab bar configuration goes back to unspecified colours.
-    private val defaultTintColor: UIColor = tabBarController.tabBar.tintColor
-    private val defaultUnselectedItemTintColor: UIColor? = tabBarController.tabBar.unselectedItemTintColor
+    private var defaultTintColor: UIColor? = null
+    private var defaultUnselectedItemTintColor: UIColor? = null
 
     init {
-        tabBarController.delegate = tabBarDelegate
         setTabCount(1)
-        tabBarController.setTabBarVisibility(hidden = true)
+        rootController.show(navigationControllers.first())
         moveContentTo(0)
     }
+
+    /** The tab bar controller, created and put in place the first time a screen shows tabs. */
+    private fun tabBarController(): UITabBarController =
+        tabBarController ?: UITabBarController().also { controller ->
+            tabBarController = controller
+            controller.delegate = tabBarDelegate
+            defaultTintColor = controller.tabBar.tintColor
+            defaultUnselectedItemTintColor = controller.tabBar.unselectedItemTintColor
+            // Out of the root first: a controller has one parent.
+            rootController.show(controller)
+            controller.setViewControllers(navigationControllers, animated = false)
+        }
 
     @Composable
     private fun HostContent(content: @Composable () -> Unit) {
@@ -151,6 +171,7 @@ internal class BarHostContainer(
             applyTabBar(state.shownBars.tabBar, animated = hasAppliedBars)
             driver.apply(state, navigationController, slot, host.density)
             hasAppliedBars = true
+            host.endGeneration()
         }
     }
 
@@ -161,9 +182,10 @@ internal class BarHostContainer(
      */
     private fun applyTabBar(tabBar: HostedTabBar?, animated: Boolean) {
         if (tabBar == null) {
-            tabBarController.setTabBarVisibility(hidden = true, animated = animated)
+            tabBarController?.setTabBarVisibility(hidden = true, animated = animated)
             return
         }
+        val tabBarController = tabBarController()
         if (tabBar != appliedTabBar) {
             setTabCount(tabBar.items.size)
             tabBar.items.forEachIndexed { index, item ->
@@ -171,7 +193,7 @@ internal class BarHostContainer(
             }
             tabBarController.tabBar.applyTabBarConfiguration(
                 configuration = tabBar.configuration,
-                defaultTintColor = defaultTintColor,
+                defaultTintColor = defaultTintColor ?: tabBarController.tabBar.tintColor,
                 defaultUnselectedItemTintColor = defaultUnselectedItemTintColor,
             )
             appliedTabBar = tabBar
@@ -203,7 +225,7 @@ internal class BarHostContainer(
             navigationControllers.getOrNull(index) ?: hostNavigationController(slot)
         }
         slots = newSlots
-        tabBarController.setViewControllers(navigationControllers, animated = false)
+        tabBarController?.setViewControllers(navigationControllers, animated = false)
     }
 
     /** Moves the Compose content into the slot of tab [index]; its composition stays alive. */
@@ -222,7 +244,7 @@ internal class BarHostContainer(
         target.view.addSubview(composeViewController.view)
         composeViewController.didMoveToParentViewController(target)
         // Above the Compose view, see LargeTitleScrollMirror.
-        scrollMirror.install(target)
+        scrollMirror.install(target, edges = NSDirectionalRectEdgeTop or NSDirectionalRectEdgeBottom)
         target.setNeedsStatusBarAppearanceUpdate()
         scheduleApply()
     }
@@ -272,6 +294,25 @@ internal fun UITabBarController.setTabBarVisibility(hidden: Boolean, animated: B
         if (isTabBarHidden() != hidden) setTabBarHidden(hidden, animated = animated)
     } else {
         tabBar.hidden = hidden
+    }
+}
+
+/** The controller handed to the app: it shows one container, and swaps it when tabs appear. */
+internal class BarHostRootController : UIViewController(nibName = null, bundle = null) {
+    private var current: UIViewController? = null
+
+    fun show(container: UIViewController) {
+        current?.let { previous ->
+            previous.willMoveToParentViewController(null)
+            previous.view.removeFromSuperview()
+            previous.removeFromParentViewController()
+        }
+        addChildViewController(container)
+        container.view.setFrame(view.bounds)
+        container.view.autoresizingMask = UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
+        view.addSubview(container.view)
+        container.didMoveToParentViewController(this)
+        current = container
     }
 }
 

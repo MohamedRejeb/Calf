@@ -10,6 +10,7 @@ import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGRectZero
 import platform.CoreGraphics.CGSizeMake
+import platform.UIKit.NSDirectionalRectEdge
 import platform.UIKit.NSDirectionalRectEdgeTop
 import platform.UIKit.UIScrollView
 import platform.UIKit.UIView
@@ -55,15 +56,24 @@ public class LargeTitleScrollMirror(
     }
 
     private var registeredIn: UIViewController? = null
+    private var registeredEdges: NSDirectionalRectEdge = NSDirectionalRectEdgeTop
     private var trackedScrollPx: Float = 0f
     private var calibration = NavBarInsetCalibration()
     private val titleMovesWithContent = isIOSVersionAtLeast(LIQUID_GLASS_MIN_IOS)
 
     /**
-     * Puts the scroll view on top of [viewController]'s view and registers it there. Called again
-     * with another controller, it moves over (the bar host moves its content between tabs).
+     * Puts the scroll view on top of [viewController]'s view and registers it there for [edges]
+     * (`NSDirectionalRectEdge` flags). Called again with another controller, it moves over (the
+     * bar host moves its content between tabs).
+     *
+     * Registered for the bottom edge too, a tab bar or toolbar keeps its standard appearance:
+     * without a scroll view for its edge UIKit treats the content as scrolled to that edge and
+     * makes the bar transparent (iOS 15–18), over whatever is behind it.
      */
-    public fun install(viewController: UIViewController) {
+    public fun install(
+        viewController: UIViewController,
+        edges: NSDirectionalRectEdge = NSDirectionalRectEdgeTop,
+    ) {
         // The previous controller's bar would keep drawing its large title into this scroll view
         // (iOS 26 renders it in the content scroll view's space), over the new one's.
         unregister()
@@ -72,9 +82,10 @@ public class LargeTitleScrollMirror(
         scrollView.setFrame(view.bounds)
         view.addSubview(scrollView)
         if (isIOSVersionAtLeast(CONTENT_SCROLL_VIEW_MIN_IOS)) {
-            viewController.setContentScrollView(scrollView, forEdge = NSDirectionalRectEdgeTop)
+            viewController.setContentScrollView(scrollView, forEdge = edges)
         }
         registeredIn = viewController
+        registeredEdges = edges
     }
 
     public fun remove() {
@@ -85,7 +96,7 @@ public class LargeTitleScrollMirror(
     private fun unregister() {
         val previous = registeredIn ?: return
         if (isIOSVersionAtLeast(CONTENT_SCROLL_VIEW_MIN_IOS)) {
-            previous.setContentScrollView(null, forEdge = NSDirectionalRectEdgeTop)
+            previous.setContentScrollView(null, forEdge = registeredEdges)
         }
         registeredIn = null
     }
