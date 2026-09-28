@@ -47,6 +47,10 @@ internal class BarHostDriver(
     ) {
         val isNewTarget = target?.first !== navigationController || target?.second !== slot
         if (isNewTarget) {
+            // Only the containers holding the content show bars. The ones it left hide theirs: moved
+            // back later (a tab switch, the tab bar controller going away), a bar left showing there
+            // gives the content its inset again, and UIKit keeps that inset after the bar hides.
+            target?.first?.let { setBarsHidden(it, HostedBars(), animated = false) }
             target = navigationController to slot
             applied = null
         }
