@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import com.mohamedrejeb.calf.foldable.ExperimentalCalfFoldableApi
 import com.mohamedrejeb.calf.foldable.FoldOrientation
 import com.mohamedrejeb.calf.foldable.FoldPanes
@@ -59,5 +60,29 @@ class FoldablePaneSlotsTest {
         val slot = paneSlots(window, origin, screen, EdgeInsets.Zero).single()
 
         assertEquals(Rect(0f, 0f, 1000f, 800f), slot.bounds)
+    }
+
+    @Test
+    fun aScreenAsLargeAsTheWindowRestsAtTheWindowOrigin() {
+        // A Navigation 3 push slides the screen in from the right: mid-transition its position is
+        // (603, 0), but it is laid out for the window it will fill.
+        val origin = restingOrigin(position = Offset(603f, 0f), screenSize = Size(1206f, 2622f), windowSize = Size(1206f, 2622f))
+
+        assertEquals(Offset.Zero, origin)
+    }
+
+    @Test
+    fun aScreenSmallerThanTheWindowKeepsItsPosition() {
+        // The screen inside a pane of a list-detail layout: the fold is where it is relative to it.
+        val origin = restingOrigin(position = Offset(384f, 0f), screenSize = Size(567f, 669f), windowSize = Size(951f, 669f))
+
+        assertEquals(Offset(384f, 0f), origin)
+    }
+
+    @Test
+    fun onlyTheAxisTheScreenFillsRestsAtZero() {
+        val origin = restingOrigin(position = Offset(-300f, 120f), screenSize = Size(1000f, 600f), windowSize = Size(1000f, 800f))
+
+        assertEquals(Offset(0f, 120f), origin)
     }
 }

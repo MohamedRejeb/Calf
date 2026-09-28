@@ -49,7 +49,8 @@ import kotlin.math.roundToInt
 @Composable
 fun FoldableScreen(navigateBack: () -> Unit) {
     val foldState = rememberFoldState()
-    val panes = foldState.calculatePanes(LocalWindowInfo.current.containerSize.toSize())
+    val windowSize = LocalWindowInfo.current.containerSize.toSize()
+    val panes = foldState.calculatePanes(windowSize)
     val safeInsets = safeDrawingInsets()
     val colors = geometryColors()
     // The fold is reported in the window's space; the screen draws in its own. Null until placed,
@@ -63,7 +64,7 @@ fun FoldableScreen(navigateBack: () -> Unit) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .onPlaced {
-                screenOrigin = it.positionInRoot()
+                screenOrigin = restingOrigin(it.positionInRoot(), it.size.toSize(), windowSize)
                 screenSize = it.size
             },
     ) {

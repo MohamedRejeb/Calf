@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import com.mohamedrejeb.calf.foldable.ExperimentalCalfFoldableApi
 import com.mohamedrejeb.calf.foldable.FoldPanes
 
@@ -72,3 +73,15 @@ internal fun paneSlots(
         )
     }
 }
+
+/**
+ * Where the screen sits in the window once it is at rest. On an axis the screen fills, that is the
+ * window's edge whatever its current position: a navigation transition slides the screen in and
+ * out, and following the slide would re-cut the panes every frame (the content squeezed into the
+ * part already on screen). A smaller screen (in a pane) keeps its position.
+ */
+internal fun restingOrigin(position: Offset, screenSize: Size, windowSize: Size): Offset =
+    Offset(
+        x = if (screenSize.width >= windowSize.width) 0f else position.x,
+        y = if (screenSize.height >= windowSize.height) 0f else position.y,
+    )
