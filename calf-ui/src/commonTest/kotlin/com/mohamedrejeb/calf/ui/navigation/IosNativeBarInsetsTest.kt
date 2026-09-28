@@ -144,4 +144,42 @@ class IosNativeBarInsetsTest {
     }
 
     // endregion
+
+    // region reach
+
+    @Test
+    fun `a box filling the host gets every inset`() {
+        val insets = IosBarEdgeInsets(left = 0.dp, top = 82.dp, right = 84.dp, bottom = 34.dp)
+
+        assertEquals(insets, insets.reaching(IosBarEdgeInsets.Zero))
+    }
+
+    @Test
+    fun `a box already moved below the bar gets no top inset`() {
+        // An inner scaffold inside an outer one that applied its padding.
+        val insets = IosBarEdgeInsets(top = 168.dp, bottom = 83.dp)
+
+        assertEquals(
+            IosBarEdgeInsets(top = 0.dp, bottom = 0.dp),
+            insets.reaching(IosBarEdgeInsets(top = 168.dp, bottom = 83.dp)),
+        )
+    }
+
+    @Test
+    fun `a box partly under a bar gets the part it overlaps`() {
+        val insets = IosBarEdgeInsets(top = 116.dp)
+
+        assertEquals(IosBarEdgeInsets(top = 54.dp), insets.reaching(IosBarEdgeInsets(top = 62.dp)))
+    }
+
+    @Test
+    fun `a left pane does not get the strip on the right`() {
+        // Open iPhone Duo, two Compose panes: the list ends at the fold, far from the strip.
+        val insets = IosBarEdgeInsets(top = 82.dp, right = 84.dp, bottom = 34.dp)
+        val leftPane = IosBarEdgeInsets(right = 475.dp)
+
+        assertEquals(IosBarEdgeInsets(top = 82.dp, bottom = 34.dp), insets.reaching(leftPane))
+    }
+
+    // endregion
 }

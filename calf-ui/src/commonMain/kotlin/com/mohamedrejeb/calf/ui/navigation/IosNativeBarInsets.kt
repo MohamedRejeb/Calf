@@ -37,6 +37,19 @@ internal data class IosBarEdgeInsets(
             bottom = maxOf(bottom, other.bottom),
         )
 
+    /**
+     * The part of these insets that reaches a box whose edges are [boxOffsets] away from the host's
+     * edges. A box already moved clear of a bar (an inner scaffold inside a padded outer one, a
+     * pane that ends before the far edge) needs no padding for it.
+     */
+    fun reaching(boxOffsets: IosBarEdgeInsets): IosBarEdgeInsets =
+        IosBarEdgeInsets(
+            left = (left - boxOffsets.left).coerceAtLeast(0.dp),
+            top = (top - boxOffsets.top).coerceAtLeast(0.dp),
+            right = (right - boxOffsets.right).coerceAtLeast(0.dp),
+            bottom = (bottom - boxOffsets.bottom).coerceAtLeast(0.dp),
+        )
+
     companion object {
         val Zero = IosBarEdgeInsets()
     }
