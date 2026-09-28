@@ -13,9 +13,12 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import platform.UIKit.UIColor
 import platform.UIKit.UIGestureRecognizer
 import platform.UIKit.UINavigationController
 import platform.UIKit.UITabBarController
+import platform.UIKit.UITabBarControllerDelegateProtocol
+import platform.UIKit.tabBarItem
 import platform.UIKit.UIViewAutoresizingFlexibleHeight
 import platform.UIKit.UIViewAutoresizingFlexibleWidth
 import platform.UIKit.UIViewController
@@ -23,6 +26,7 @@ import platform.UIKit.addChildViewController
 import platform.UIKit.didMoveToParentViewController
 import platform.UIKit.removeFromParentViewController
 import platform.UIKit.willMoveToParentViewController
+import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
@@ -105,7 +109,16 @@ internal class BarHostContainer(
     private var navigationControllers: List<UINavigationController> = emptyList()
     private var selectedIndex = 0
 
+    private val tabBarDelegate = BarHostTabBarDelegate(::onTabTapped)
+    private var appliedTabBar: HostedTabBar? = null
+    private var hasAppliedBars = false
+
+    // Restored when a tab bar configuration goes back to unspecified colours.
+    private val defaultTintColor: UIColor = tabBarController.tabBar.tintColor
+    private val defaultUnselectedItemTintColor: UIColor? = tabBarController.tabBar.unselectedItemTintColor
+
     init {
+        tabBarController.delegate = tabBarDelegate
         setTabCount(1)
         tabBarController.setTabBarVisibility(hidden = true)
         moveContentTo(0)
@@ -133,13 +146,59 @@ internal class BarHostContainer(
         isApplyScheduled = true
         dispatch_async(dispatch_get_main_queue()) {
             isApplyScheduled = false
-            driver.apply(host.state, navigationController, slot, host.density)
+            val state = host.state
+            // Tabs first: selecting another tab moves the content, and the bars follow it.
+            applyTabBar(state.shownBars.tabBar, animated = hasAppliedBars)
+            driver.apply(state, navigationController, slot, host.density)
+            hasAppliedBars = true
         }
+    }
+
+    /**
+     * Shows [tabBar] in the tab bar controller, one tab per item, the content in the selected
+     * one; hides it when the shown screen has none. Hiding at the moment another screen takes the
+     * bars (the start of its transition) is what keeps the tab bar from lingering over it.
+     */
+    private fun applyTabBar(tabBar: HostedTabBar?, animated: Boolean) {
+        if (tabBar == null) {
+            tabBarController.setTabBarVisibility(hidden = true, animated = animated)
+            return
+        }
+        if (tabBar != appliedTabBar) {
+            setTabCount(tabBar.items.size)
+            tabBar.items.forEachIndexed { index, item ->
+                navigationControllers[index].tabBarItem = item.toUITabBarItem(index.toLong(), host.density)
+            }
+            tabBarController.tabBar.applyTabBarConfiguration(
+                configuration = tabBar.configuration,
+                defaultTintColor = defaultTintColor,
+                defaultUnselectedItemTintColor = defaultUnselectedItemTintColor,
+            )
+            appliedTabBar = tabBar
+        }
+        val selected = tabBar.selectedIndex.coerceIn(tabBar.items.indices)
+        if (tabBarController.selectedIndex.toInt() != selected) {
+            tabBarController.selectedIndex = selected.toULong()
+        }
+        moveContentTo(selected)
+        tabBarController.setTabBarVisibility(hidden = false, animated = animated)
+    }
+
+    /** A tab tapped in UIKit: move the content right away, then tell the screen that shows the tabs. */
+    private fun onTabTapped(viewController: UIViewController): Boolean {
+        val index = navigationControllers.indexOf(viewController)
+        if (index < 0) return false
+        moveContentTo(index)
+        host.onTabSelected(index)
+        return true
     }
 
     private fun setTabCount(count: Int) {
         if (count == slots.size) return
-        val newSlots = List(count) { index -> slots.getOrNull(index) ?: BarHostSlotController(::onSlotLayout) }
+        val newSlots = List(count) { index ->
+            // Loaded now: the first visit of a tab took 0.3 s when the view loaded on selection.
+            slots.getOrNull(index) ?: BarHostSlotController(::onSlotLayout).also { it.loadViewIfNeeded() }
+        }
         navigationControllers = newSlots.mapIndexed { index, slot ->
             navigationControllers.getOrNull(index) ?: hostNavigationController(slot)
         }
@@ -214,6 +273,16 @@ internal fun UITabBarController.setTabBarVisibility(hidden: Boolean, animated: B
     } else {
         tabBar.hidden = hidden
     }
+}
+
+/** Hands UIKit tab taps to the container before UIKit switches the tab. */
+private class BarHostTabBarDelegate(
+    private val onTabTapped: (UIViewController) -> Boolean,
+) : NSObject(), UITabBarControllerDelegateProtocol {
+    override fun tabBarController(
+        tabBarController: UITabBarController,
+        shouldSelectViewController: UIViewController,
+    ): Boolean = onTabTapped(shouldSelectViewController)
 }
 
 /**

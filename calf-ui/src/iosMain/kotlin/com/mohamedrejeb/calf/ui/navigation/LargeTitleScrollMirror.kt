@@ -54,6 +54,7 @@ public class LargeTitleScrollMirror(
         autoresizingMask = UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
     }
 
+    private var registeredIn: UIViewController? = null
     private var trackedScrollPx: Float = 0f
     private var calibration = NavBarInsetCalibration()
     private val titleMovesWithContent = isIOSVersionAtLeast(LIQUID_GLASS_MIN_IOS)
@@ -63,6 +64,9 @@ public class LargeTitleScrollMirror(
      * with another controller, it moves over (the bar host moves its content between tabs).
      */
     public fun install(viewController: UIViewController) {
+        // The previous controller's bar would keep drawing its large title into this scroll view
+        // (iOS 26 renders it in the content scroll view's space), over the new one's.
+        unregister()
         val view = viewController.view
         scrollView.removeFromSuperview()
         scrollView.setFrame(view.bounds)
@@ -70,10 +74,20 @@ public class LargeTitleScrollMirror(
         if (isIOSVersionAtLeast(CONTENT_SCROLL_VIEW_MIN_IOS)) {
             viewController.setContentScrollView(scrollView, forEdge = NSDirectionalRectEdgeTop)
         }
+        registeredIn = viewController
     }
 
     public fun remove() {
+        unregister()
         scrollView.removeFromSuperview()
+    }
+
+    private fun unregister() {
+        val previous = registeredIn ?: return
+        if (isIOSVersionAtLeast(CONTENT_SCROLL_VIEW_MIN_IOS)) {
+            previous.setContentScrollView(null, forEdge = NSDirectionalRectEdgeTop)
+        }
+        registeredIn = null
     }
 
     /** The content's scroll distance from its top, in pixels, as a [LargeTitleScrollTracker] reports it. */
