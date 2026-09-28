@@ -22,7 +22,8 @@ import platform.UIKit.UINavigationBar
 /**
  * iOS implementation of [AdaptiveTopBar].
  *
- * This implementation uses UIKit's UINavigationBar to create a native iOS navigation bar.
+ * This implementation uses UIKit's UINavigationBar to create a native iOS navigation bar. Inside an
+ * [AdaptiveBarHostUIViewController] the bar is the host container's own navigation bar instead.
  * The Material3 parameters ([title], [navigationIcon], [actions]) are ignored on iOS —
  * the bar is built from [iosTitle], [iosLeadingItems], and [iosTrailingItems].
  */
@@ -47,6 +48,23 @@ actual fun AdaptiveTopBar(
     iosTrailingItems: List<UIKitUIBarButtonItem>,
     iosConfiguration: UIKitNavigationBarConfiguration,
 ) {
+    val hostedScaffold = currentHostedScaffold()
+    if (hostedScaffold != null) {
+        // Inside an AdaptiveBarHostUIViewController the container's navigation bar shows this.
+        val bar = HostedTopBar(
+            title = iosTitle,
+            leadingItems = iosLeadingItems,
+            trailingItems = iosTrailingItems,
+            configuration = iosConfiguration,
+        )
+        PublishHostedBar(
+            scaffold = hostedScaffold,
+            publish = { it.copy(topBar = bar) },
+            withdraw = { it.copy(topBar = null) },
+        )
+        return
+    }
+
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
 

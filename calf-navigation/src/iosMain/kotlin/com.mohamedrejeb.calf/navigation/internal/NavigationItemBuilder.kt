@@ -2,16 +2,12 @@
 
 package com.mohamedrejeb.calf.navigation.internal
 
-import androidx.compose.ui.graphics.isSpecified
 import com.mohamedrejeb.calf.ui.navigation.UIBarButtonItemsBinding
-import com.mohamedrejeb.calf.ui.navigation.UIKitNavigationBarConfiguration
-import com.mohamedrejeb.calf.ui.navigation.toNavigationBarAppearance
+import com.mohamedrejeb.calf.ui.navigation.applyTitleAppearance
 import com.mohamedrejeb.calf.ui.navigation.toUIBarButtonItems
-import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIBarButtonItem
 import platform.UIKit.UIBarButtonItemStyle
-import platform.UIKit.UINavigationBarAppearance
 import platform.UIKit.UINavigationItem
 import platform.UIKit.UINavigationItemLargeTitleDisplayMode
 
@@ -59,26 +55,6 @@ internal fun applyEntryMetadataToItem(
             action = null,
         )
     }
-    item.applyAppearance(metadata.iosConfiguration)
+    item.applyTitleAppearance(metadata.iosConfiguration)
     return NavBarItemBindings(leading, trailing)
-}
-
-/**
- * Per-item bar appearance, which UIKit animates together with the push
- * transition (unlike mutating the bar's own appearance from `viewWillAppear`,
- * which snaps). Only a specified title color needs one; otherwise the item
- * inherits the bar's system appearance, keeping the transparent scroll-edge
- * look large titles rely on.
- */
-private fun UINavigationItem.applyAppearance(configuration: UIKitNavigationBarConfiguration) {
-    if (!configuration.titleColor.isSpecified) return
-    val standard = configuration.toNavigationBarAppearance(isLiquidGlassEnabled = isIOS26OrAbove())
-    val scrollEdge = UINavigationBarAppearance().apply {
-        configureWithTransparentBackground()
-        titleTextAttributes = standard.titleTextAttributes
-        largeTitleTextAttributes = standard.largeTitleTextAttributes
-    }
-    standardAppearance = standard
-    compactAppearance = standard
-    scrollEdgeAppearance = scrollEdge
 }

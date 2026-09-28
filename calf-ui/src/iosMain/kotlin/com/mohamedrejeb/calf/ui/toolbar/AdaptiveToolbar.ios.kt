@@ -14,7 +14,10 @@ import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.navigation.AdaptiveBarHostUIViewController
+import com.mohamedrejeb.calf.ui.navigation.PublishHostedBar
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
+import com.mohamedrejeb.calf.ui.navigation.currentHostedScaffold
 import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 
@@ -23,7 +26,8 @@ import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
  *
  * On iOS 26+, uses a native UIToolbar with Liquid Glass effects when [iosItems] is provided.
  * On older iOS versions or when [iosItems] is empty, falls back to Material 3 Expressive
- * [HorizontalFloatingToolbar].
+ * [HorizontalFloatingToolbar]. Inside an [AdaptiveBarHostUIViewController] the items go to the
+ * host container's own toolbar.
  */
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @ExperimentalCalfUiApi
@@ -38,6 +42,17 @@ actual fun AdaptiveToolbar(
 ) {
     if (iosItems.isEmpty())
         return
+
+    val hostedScaffold = currentHostedScaffold()
+    if (hostedScaffold != null) {
+        // Inside an AdaptiveBarHostUIViewController the container's toolbar shows the items.
+        PublishHostedBar(
+            scaffold = hostedScaffold,
+            publish = { it.copy(toolbarItems = iosItems) },
+            withdraw = { it.copy(toolbarItems = null) },
+        )
+        return
+    }
 
     val viewController = LocalUIViewController.current
     val density = LocalDensity.current

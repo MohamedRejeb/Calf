@@ -126,8 +126,22 @@ public fun UIKitNavigationBarConfiguration.toNavigationBarAppearance(
 @InternalCalfApi
 public class UIBarButtonItemsBinding internal constructor(
     public val items: List<UIBarButtonItem>,
-    @Suppress("unused") private val handlers: List<BarButtonActionHandler>,
+    private val handlers: List<BarButtonActionHandler>,
 ) {
+    /**
+     * Points the native items at [newItems]' callbacks without rebuilding them, so nothing
+     * flickers. [newItems] must look like the items this binding was built from (see
+     * [barItemsUpdate]); menus are rebuilt because their actions capture the callbacks.
+     */
+    internal fun rebind(newItems: List<UIKitUIBarButtonItem>, density: Float) {
+        newItems.forEachIndexed { index, item ->
+            handlers.getOrNull(index)?.onClick = if (item.hasMenu) ({}) else item.onClick
+            if (item.hasMenu) {
+                items.getOrNull(index)?.menu = buildUIMenu(item.menuItems, item.menuSections, density)
+            }
+        }
+    }
+
     public companion object {
         public val Empty: UIBarButtonItemsBinding = UIBarButtonItemsBinding(emptyList(), emptyList())
     }
@@ -151,8 +165,11 @@ public fun List<UIKitUIBarButtonItem>.toUIBarButtonItems(density: Float): UIBarB
 @InternalCalfApi
 @OptIn(ExperimentalForeignApi::class)
 public class BarButtonActionHandler(
-    private val onClick: () -> Unit,
+    onClick: () -> Unit,
 ) : NSObject() {
+    /** Replaced when the bar host rebinds an item to a recomposed screen's callback. */
+    internal var onClick: () -> Unit = onClick
+
     @Suppress("unused")
     @ObjCAction
     fun handleAction() {

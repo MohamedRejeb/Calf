@@ -91,6 +91,16 @@ public class LargeTitleScrollMirror(
         applyScrollOffset()
     }
 
+    /**
+     * Starts the calibration over, as after a size change: at the next layout pass a bar that is
+     * collapsed while the content is at its top expands again. For a bar that changes without a
+     * size change: shown, or switched between a large and an inline title.
+     */
+    public fun recalibrate() {
+        calibration = NavBarInsetCalibration()
+        scrollView.superview?.setNeedsLayout()
+    }
+
     /** Top inset for the content: stable while the large title collapses. See [NavBarInsetCalibration]. */
     public fun contentTopInset(liveTopInset: Double): Double =
         calibration.contentTopInset(liveTopInset)
