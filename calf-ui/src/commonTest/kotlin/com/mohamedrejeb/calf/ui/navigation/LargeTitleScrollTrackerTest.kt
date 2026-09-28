@@ -1,14 +1,13 @@
-package com.mohamedrejeb.calf.navigation
+package com.mohamedrejeb.calf.ui.navigation
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import com.mohamedrejeb.calf.navigation.internal.NavEntryScrollTracker
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class NavEntryScrollTrackerTest {
+class LargeTitleScrollTrackerTest {
     private val reported = mutableListOf<Float>()
-    private val tracker = NavEntryScrollTracker { reported.add(it) }
+    private val tracker = LargeTitleScrollTracker { reported.add(it) }
 
     private fun scroll(consumedY: Float) =
         tracker.onPostScroll(Offset(0f, consumedY), Offset.Zero, NestedScrollSource.UserInput)

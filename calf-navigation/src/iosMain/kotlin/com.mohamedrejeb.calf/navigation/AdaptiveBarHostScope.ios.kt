@@ -17,7 +17,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import com.mohamedrejeb.calf.navigation.internal.LocalNavEntrySafeArea
 import com.mohamedrejeb.calf.navigation.internal.LocalNavEntryScrollReporter
-import com.mohamedrejeb.calf.navigation.internal.NavEntryScrollTracker
+import com.mohamedrejeb.calf.ui.navigation.LargeTitleScrollTracker
 
 /**
  * iOS actual. The bar itself is owned by the parent `UINavigationController`,
@@ -63,7 +63,7 @@ internal actual fun AdaptiveBarHostScope(
     // which is what drives the native large-title collapse and scroll-edge
     // appearance. Any nested-scrolling child (LazyColumn, verticalScroll)
     // participates without extra setup.
-    val scrollTracker = remember(scrollReporter) { NavEntryScrollTracker(scrollReporter) }
+    val scrollTracker = remember(scrollReporter) { LargeTitleScrollTracker(scrollReporter) }
     Box(
         modifier = Modifier
             .fillMaxSize()

@@ -1,11 +1,12 @@
-package com.mohamedrejeb.calf.navigation.internal
+package com.mohamedrejeb.calf.ui.navigation
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import com.mohamedrejeb.calf.core.InternalCalfApi
 
 /**
- * Nested-scroll connection that tracks how far an entry's content has
+ * Nested-scroll connection that tracks how far a screen's content has
  * scrolled from its top, so a platform host can mirror it into a native
  * scroll view (iOS uses that to collapse large titles and switch the bar's
  * scroll-edge appearance).
@@ -14,10 +15,11 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
  * is clamped at zero so returning to the top always reports zero. Values are
  * in pixels, positive when scrolled down.
  */
-internal class NavEntryScrollTracker(
+@InternalCalfApi
+public class LargeTitleScrollTracker(
     private val onOffsetChange: (Float) -> Unit,
 ) : NestedScrollConnection {
-    var offset: Float = 0f
+    public var offset: Float = 0f
         private set
 
     override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {

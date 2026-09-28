@@ -1,7 +1,5 @@
-package com.mohamedrejeb.calf.navigation
+package com.mohamedrejeb.calf.ui.navigation
 
-import com.mohamedrejeb.calf.navigation.internal.NavBarInsetCalibration
-import com.mohamedrejeb.calf.navigation.internal.mirroredScrollPoints
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame

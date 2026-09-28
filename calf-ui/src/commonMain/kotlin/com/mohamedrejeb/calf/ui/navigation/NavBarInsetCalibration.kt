@@ -1,4 +1,4 @@
-package com.mohamedrejeb.calf.navigation.internal
+package com.mohamedrejeb.calf.ui.navigation
 
 import kotlin.math.round
 
