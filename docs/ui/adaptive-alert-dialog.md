@@ -276,4 +276,8 @@ val actions = listOf(
 
 ## Placement on iPad and iPhone Duo
 
-The alert is a `UIAlertController`, and iOS decides where it goes: centred on the window, or on a half-open iPhone Duo in the leading pane. It ignores the presentation context of the screen that shows it, so an alert from a detail column is not moved into that column. The action-sheet style becomes a popover on an iPad or an open iPhone Duo.
+The alert is a `UIAlertController`, and iOS decides where it goes: centred on the window (on an iPhone Duo opened flat, across the fold), or on a half-open iPhone Duo in the leading pane. Apple's own split-view apps behave the same way. iOS offers no way to move an alert into the column that raised it: it ignores the presentation context and the presentation style, and the iOS 27 sheet placement does not exist for alerts.
+
+The action-sheet style (`AlertDialogIosStyle.ActionSheet`) becomes a popover on an iPad or an open iPhone Duo. Calf centres that popover, without an arrow, in the column that raised it: the detail column of a calf-navigation split view, or with the bar host the pane of the screen that owns the bars. On compact width it slides up from the bottom as usual.
+
+<!-- MEDIA: an open iPhone Duo, the action-sheet style raised from the detail column, centred in that column -->
