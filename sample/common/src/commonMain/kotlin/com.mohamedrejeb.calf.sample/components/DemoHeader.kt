@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -16,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -79,30 +83,48 @@ fun CodePill(
     }
 }
 
-/** "● iOS · UISwitch": the platform the sample runs on and what draws the demo there. */
+/**
+ * `iOS | UISwitch`: the platform the sample runs on, and what draws the demo there. Two joined
+ * segments, the platform on the brand colour and the implementation on its container.
+ */
 @Composable
 fun NativeBadge(
     platform: Platform,
     implementation: String,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        shape = CircleShape,
-        modifier = modifier,
+    Row(
+        modifier = modifier
+            .height(IntrinsicSize.Min)
+            .clip(MaterialTheme.shapes.small),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s - 2.dp),
-            modifier = Modifier.padding(horizontal = Spacing.m - 2.dp, vertical = Spacing.xs),
-        ) {
-            StatusDot(color = MaterialTheme.colorScheme.tertiary)
-            Text(
-                text = "${platform.displayName} · $implementation",
-                style = MaterialTheme.typography.labelMedium,
-            )
-        }
+        BadgeSegment(
+            text = platform.displayName,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+        )
+        BadgeSegment(
+            text = implementation,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+    }
+}
+
+@Composable
+private fun BadgeSegment(text: String, containerColor: Color, contentColor: Color) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxHeight()
+            .background(containerColor)
+            .padding(horizontal = Spacing.s, vertical = Spacing.xs),
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = contentColor,
+        )
     }
 }
 
