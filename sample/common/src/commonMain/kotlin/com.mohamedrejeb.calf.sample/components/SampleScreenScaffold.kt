@@ -79,10 +79,7 @@ private fun SampleTopBarScaffold(
                 actions = actions,
                 iosTitle = title,
                 iosLeadingItems = listOf(
-                    UIKitUIBarButtonItem(
-                        title = "Back",
-                        onClick = navigateBack,
-                    )
+                    UIKitUIBarButtonItem.back(onClick = navigateBack)
                 ),
                 iosTrailingItems = iosTrailingItems,
             )

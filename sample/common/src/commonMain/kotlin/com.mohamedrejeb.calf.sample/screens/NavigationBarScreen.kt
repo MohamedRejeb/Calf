@@ -152,11 +152,7 @@ private fun TravelTopBar(
         },
         iosTitle = tab.title,
         iosLeadingItems = listOf(
-            UIKitUIBarButtonItem(
-                title = "Back",
-                image = UIKitImage.SystemName(SFSymbol.chevronLeft),
-                onClick = navigateBack,
-            ),
+            UIKitUIBarButtonItem.back(onClick = navigateBack),
         ),
         iosTrailingItems = listOf(
             UIKitUIBarButtonItem(

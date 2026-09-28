@@ -78,3 +78,24 @@ fun Screen.host(): SampleHost =
 
         else -> SampleHost.Detail
     }
+
+/**
+ * Which navigation the sample shows its demos with, switched from the home screen. The two are
+ * separate shells, never nested: calf-navigation's native containers, or plain Navigation 3 with
+ * the demos' own `AdaptiveScaffold` bars (on iOS in the bar host's containers).
+ */
+enum class SampleNavigation {
+    /** calf-navigation: `AdaptiveNavDisplay`, one UIKit controller per screen on iOS. */
+    Native,
+
+    /** Plain Navigation 3 `NavDisplay`; on iOS the screens' bars go to the bar host. */
+    Compose,
+}
+
+/** Whether the home list offers this demo in [navigation]: each shell leaves out the other one's navigation demo. */
+fun Screen.isShownIn(navigation: SampleNavigation): Boolean =
+    when (this) {
+        Screen.AdaptiveNavigation -> navigation == SampleNavigation.Native
+        Screen.Nav3ListDetail -> navigation == SampleNavigation.Compose
+        else -> true
+    }

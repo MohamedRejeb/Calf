@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,7 +35,9 @@ import com.mohamedrejeb.calf.sample.components.NativeBadge
 import com.mohamedrejeb.calf.sample.components.SectionTitle
 import com.mohamedrejeb.calf.sample.isLiquidGlassAvailable
 import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.sample.navigation.SampleNavigation
 import com.mohamedrejeb.calf.sample.navigation.ScreenCategory
+import com.mohamedrejeb.calf.sample.navigation.isShownIn
 import com.mohamedrejeb.calf.sample.resources.Res
 import com.mohamedrejeb.calf.sample.resources.calf_logo
 import com.mohamedrejeb.calf.sample.ui.theme.PageMaxWidth
@@ -44,6 +48,8 @@ import com.mohamedrejeb.calf.sample.ui.theme.TileCoral
 import com.mohamedrejeb.calf.sample.ui.theme.TileIndigo
 import com.mohamedrejeb.calf.sample.ui.theme.TileTeal
 import com.mohamedrejeb.calf.sample.ui.theme.TileViolet
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
 import org.jetbrains.compose.resources.painterResource
 
 /** Test tag of the home list, which is only composed while the list is on screen. */
@@ -53,10 +59,12 @@ private val HeaderLogoSize = 64.dp
 private val PlaceholderLogoSize = 120.dp
 private const val PLACEHOLDER_LOGO_ALPHA = 0.9f
 
-/** The home list's demos, grouped by category in display order. */
-private val demosByCategory: List<Pair<ScreenCategory, List<Screen>>> =
+/** The home list's demos in [navigation], grouped by category in display order. */
+private fun demosByCategory(navigation: SampleNavigation): List<Pair<ScreenCategory, List<Screen>>> =
     ScreenCategory.entries.map { category ->
-        category to Screen.entries.filter { it != Screen.Home && it.category == category }
+        category to Screen.entries.filter {
+            it != Screen.Home && it.category == category && it.isShownIn(navigation)
+        }
     }.filter { (_, screens) -> screens.isNotEmpty() }
 
 /**
@@ -66,12 +74,16 @@ private val demosByCategory: List<Pair<ScreenCategory, List<Screen>>> =
  *
  * @param contentPadding the insets of the navigation entry: the pane's own safe area, not the
  *   window's (in a split view the two differ).
+ * @param navigation the shell showing the list; its demos are listed.
+ * @param onNavigationChange switches shells; `null` hides the switch.
  */
 @Composable
 fun HomeScreen(
     navigate: (Screen) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
     selectedScreen: Screen? = null,
+    navigation: SampleNavigation = SampleNavigation.Native,
+    onNavigationChange: ((SampleNavigation) -> Unit)? = null,
 ) {
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -85,7 +97,17 @@ fun HomeScreen(
             HomeHeader(modifier = Modifier.homeColumn().padding(top = Spacing.l, bottom = Spacing.s))
         }
 
-        demosByCategory.forEach { (category, screens) ->
+        if (onNavigationChange != null) {
+            item(key = "navigation") {
+                NavigationSwitch(
+                    navigation = navigation,
+                    onNavigationChange = onNavigationChange,
+                    modifier = Modifier.homeColumn().padding(top = Spacing.l),
+                )
+            }
+        }
+
+        demosByCategory(navigation).forEach { (category, screens) ->
             item(key = category.name) {
                 Column(modifier = Modifier.homeColumn().padding(top = Spacing.xl)) {
                     SectionTitle(category.title)
@@ -152,6 +174,37 @@ private fun HomeHeader(modifier: Modifier = Modifier) {
             }
         }
         NativeBadge(platform = currentPlatform, implementation = platformLook())
+    }
+}
+
+/**
+ * Switches the whole sample between calf-navigation and plain Navigation 3. Both show the same
+ * demos; what differs is who owns the screens and, on iOS, the bars.
+ */
+@OptIn(ExperimentalCalfUiApi::class)
+@Composable
+private fun NavigationSwitch(
+    navigation: SampleNavigation,
+    onNavigationChange: (SampleNavigation) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isCompose = navigation == SampleNavigation.Compose
+    val toggle = {
+        onNavigationChange(if (isCompose) SampleNavigation.Native else SampleNavigation.Compose)
+    }
+    DemoListCard(modifier = modifier) {
+        DemoRow(
+            title = "Plain Compose navigation",
+            subtitle = if (isCompose)
+                "Navigation 3, with the demos' own bars in the bar host"
+            else
+                "Off: calf-navigation, a native container per screen",
+            leading = { IconTile(icon = Icons.Outlined.SwapHoriz, color = TileTeal) },
+            trailing = {
+                AdaptiveSwitch(checked = isCompose, onCheckedChange = { toggle() })
+            },
+            onClick = toggle,
+        )
     }
 }
 

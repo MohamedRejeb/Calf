@@ -176,7 +176,7 @@ private fun ShowcaseTopBar(
         },
         iosTitle = SCREEN_TITLE,
         iosLeadingItems = listOf(
-            UIKitUIBarButtonItem(title = "Back", onClick = navigateBack),
+            UIKitUIBarButtonItem.back(onClick = navigateBack),
         ),
         iosTrailingItems = listOf(
             UIKitUIBarButtonItem.image(

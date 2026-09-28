@@ -24,13 +24,14 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
+import com.mohamedrejeb.calf.sample.App
 import com.mohamedrejeb.calf.sample.screens.HOME_LIST_TAG
 import com.mohamedrejeb.calf.sample.ui.theme.CalfTheme
 import kotlin.test.Test
 
 /**
- * Walks the sample's navigation on the Material actual: every [Screen] opens from the home list
- * and comes back, in one pane and in two.
+ * Walks the sample's navigation on the Material actual, in both shells (calf-navigation and plain
+ * Navigation 3): every [Screen] opens from the home list and comes back, in one pane and in two.
  */
 @OptIn(ExperimentalTestApi::class)
 class SampleNavigationTest {
@@ -43,12 +44,19 @@ class SampleNavigationTest {
     }
 
     @Test
-    fun `every demo opens from the list and navigates back in one pane`() = runComposeUiTest {
-        setContent { Sample(FakeWindow(NARROW)) }
+    fun `every demo opens from the list and navigates back in one pane`() =
+        everyDemoOpensAndGoesBack(SampleNavigation.Native)
+
+    @Test
+    fun `every demo opens and navigates back on plain Compose navigation`() =
+        everyDemoOpensAndGoesBack(SampleNavigation.Compose)
+
+    private fun everyDemoOpensAndGoesBack(navigation: SampleNavigation) = runComposeUiTest {
+        setContent { Sample(FakeWindow(NARROW), navigation) }
         waitForIdle()
 
         // The desktop web view is a Swing panel, which the headless test host cannot show.
-        Screen.entries.filter { it != Screen.Home && it != Screen.WebView }.forEach { screen ->
+        Screen.entries.filter { it != Screen.Home && it != Screen.WebView && it.isShownIn(navigation) }.forEach { screen ->
             openFromList(screen)
             // The header scrolls with the list, so the list itself is what marks the home screen.
             onNodeWithTag(HOME_LIST_TAG).assertDoesNotExist()
@@ -60,8 +68,15 @@ class SampleNavigationTest {
     }
 
     @Test
-    fun `wide window shows the placeholder, then the selected demo beside the list`() = runComposeUiTest {
-        setContent { Sample(FakeWindow(WIDE)) }
+    fun `wide window shows the placeholder, then the selected demo beside the list`() =
+        detailOpensBesideTheList(SampleNavigation.Native)
+
+    @Test
+    fun `plain Compose navigation shows the selected demo beside the list`() =
+        detailOpensBesideTheList(SampleNavigation.Compose)
+
+    private fun detailOpensBesideTheList(navigation: SampleNavigation) = runComposeUiTest {
+        setContent { Sample(FakeWindow(WIDE), navigation) }
         waitForIdle()
         onNodeWithText("Select a component").assertIsDisplayed()
 
@@ -119,13 +134,41 @@ class SampleNavigationTest {
         waitForIdle()
     }
 
+    @Test
+    fun `the home switch changes the navigation and the demos it lists`() = runComposeUiTest {
+        setContent {
+            CompositionLocalProvider(
+                LocalWindowInfo provides FakeWindow(NARROW),
+                LocalDensity provides Density(1f),
+            ) { App() }
+        }
+        waitForIdle()
+        onNodeWithText(Screen.AdaptiveNavigation.title).assertExists()
+
+        onNodeWithText("Plain Compose navigation").performClick()
+        waitForIdle()
+        scrollListTo(Screen.Nav3ListDetail)
+        onNodeWithText(Screen.Nav3ListDetail.title).assertExists()
+        onNodeWithText(Screen.AdaptiveNavigation.title).assertDoesNotExist()
+
+        onAllNodes(hasScrollToNodeAction()).onFirst().performScrollToNode(hasText("Plain Compose navigation"))
+        onNodeWithText("Plain Compose navigation").performClick()
+        waitForIdle()
+        onNodeWithText(Screen.AdaptiveNavigation.title).assertExists()
+    }
+
     @Composable
-    private fun Sample(window: FakeWindow) {
+    private fun Sample(window: FakeWindow, navigation: SampleNavigation = SampleNavigation.Native) {
         CompositionLocalProvider(
             LocalWindowInfo provides window,
             LocalDensity provides Density(1f),
         ) {
-            CalfTheme { AppNavGraph() }
+            CalfTheme {
+                when (navigation) {
+                    SampleNavigation.Native -> AppNavGraph(onNavigationChange = {})
+                    SampleNavigation.Compose -> ComposeNavGraph(onNavigationChange = {})
+                }
+            }
         }
     }
 

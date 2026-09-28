@@ -59,7 +59,7 @@ import com.mohamedrejeb.calf.sample.screens.WebViewScreen
 private val HomeKey = SampleScreen(Screen.Home)
 
 /**
- * The sample's navigation, in two layers:
+ * The sample on calf-navigation ([SampleNavigation.Native]), in two layers:
  *
  *  - The **outer** display pushes the demos that own the whole screen (their own tabs or their
  *    own navigation display, see [SampleHost.FullScreen]) over everything, full screen.
@@ -71,7 +71,10 @@ private val HomeKey = SampleScreen(Screen.Home)
  * recreates the Activity) keeps the selected demo.
  */
 @Composable
-fun AppNavGraph(modifier: Modifier = Modifier) {
+fun AppNavGraph(
+    onNavigationChange: (SampleNavigation) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val outerStack = rememberAdaptiveNavBackStack(SampleRoot, configuration = SampleSavedState)
 
     AdaptiveNavDisplay(
@@ -80,7 +83,10 @@ fun AppNavGraph(modifier: Modifier = Modifier) {
     ) { key ->
         when (key) {
             is SampleRoot -> adaptiveNavEntry(key = key, barShown = false) {
-                HomeListDetail(openFullScreen = { screen -> outerStack.add(SampleScreen(screen)) })
+                HomeListDetail(
+                    openFullScreen = { screen -> outerStack.add(SampleScreen(screen)) },
+                    onNavigationChange = onNavigationChange,
+                )
             }
 
             is SampleScreen -> adaptiveNavEntry(key = key, barShown = false) {
@@ -93,7 +99,10 @@ fun AppNavGraph(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun HomeListDetail(openFullScreen: (Screen) -> Unit) {
+private fun HomeListDetail(
+    openFullScreen: (Screen) -> Unit,
+    onNavigationChange: (SampleNavigation) -> Unit,
+) {
     val stack = rememberAdaptiveNavBackStack(HomeKey, configuration = SampleSavedState)
     // Both columns stay visible on a portrait iPad instead of the list hiding behind a bar button.
     val listDetail = rememberAdaptiveListDetailSettings(
@@ -113,6 +122,7 @@ private fun HomeListDetail(openFullScreen: (Screen) -> Unit) {
             screen = screen,
             stack = stack,
             openFullScreen = openFullScreen,
+            onNavigationChange = onNavigationChange,
         )
     }
 }
@@ -122,6 +132,7 @@ private fun homeEntry(
     screen: Screen,
     stack: NavBackStack<NavKey>,
     openFullScreen: (Screen) -> Unit,
+    onNavigationChange: (SampleNavigation) -> Unit,
 ): NavEntry<NavKey> =
     when (screen.host()) {
         SampleHost.List -> adaptiveNavEntry(
@@ -133,6 +144,8 @@ private fun homeEntry(
                 contentPadding = padding,
                 // Read in the composition, so the highlight follows the stack on every platform.
                 selectedScreen = stack.selectedDemo(),
+                navigation = SampleNavigation.Native,
+                onNavigationChange = onNavigationChange,
                 navigate = { target ->
                     if (target.host().isDetail) {
                         stack.selectDetail(list = HomeKey, detail = SampleScreen(target))
@@ -175,9 +188,9 @@ private fun homeEntry(
 private fun NavBackStack<NavKey>.selectedDemo(): Screen? =
     filterIsInstance<SampleScreen>().lastOrNull { it.screen != Screen.Home }?.screen
 
-/** The demo for a [Screen]. Every entry of the enum except [Screen.Home] has one. */
+/** The demo for a [Screen], in either navigation. Every entry of the enum except [Screen.Home] has one. */
 @Composable
-private fun DemoScreen(screen: Screen, navigateBack: () -> Unit) {
+internal fun DemoScreen(screen: Screen, navigateBack: () -> Unit) {
     when (screen) {
         Screen.Home -> error("Home is the list, not a demo")
         Screen.Showcase -> ShowcaseScreen(navigateBack = navigateBack)

@@ -56,4 +56,13 @@ class SampleHostTest {
     fun oneKeyPerScreenComparesByScreen() {
         assertEquals(SampleScreen(Screen.Dialog), SampleScreen(Screen.Dialog))
     }
+
+    @Test
+    fun eachNavigationListsEveryDemoButTheOtherOnesNavigationDemo() {
+        val native = Screen.entries.filter { it.isShownIn(SampleNavigation.Native) }
+        val compose = Screen.entries.filter { it.isShownIn(SampleNavigation.Compose) }
+
+        assertEquals(Screen.entries - Screen.Nav3ListDetail, native)
+        assertEquals(Screen.entries - Screen.AdaptiveNavigation, compose)
+    }
 }

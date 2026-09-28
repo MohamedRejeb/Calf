@@ -134,7 +134,7 @@ private fun ScaffoldDemoTopBar(tab: ScaffoldTab, navigateBack: () -> Unit) {
         },
         iosTitle = tab.title,
         iosLeadingItems = listOf(
-            UIKitUIBarButtonItem(title = "Back", onClick = navigateBack),
+            UIKitUIBarButtonItem.back(onClick = navigateBack),
         ),
     )
 }

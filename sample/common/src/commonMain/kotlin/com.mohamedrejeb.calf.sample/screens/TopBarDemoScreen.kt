@@ -49,7 +49,7 @@ AdaptiveTopBar(
     },
     iosTitle = "Top Bar",
     iosLeadingItems = listOf(
-        UIKitUIBarButtonItem(title = "Back", onClick = navigateBack),
+        UIKitUIBarButtonItem.back(onClick = navigateBack),
     ),
     iosTrailingItems = listOf(
         UIKitUIBarButtonItem(
@@ -138,7 +138,7 @@ private fun TopBarDemoBar(
         },
         iosTitle = Screen.TopBarDemo.title,
         iosLeadingItems = listOf(
-            UIKitUIBarButtonItem(title = "Back", onClick = navigateBack),
+            UIKitUIBarButtonItem.back(onClick = navigateBack),
         ),
         iosTrailingItems = listOf(
             UIKitUIBarButtonItem(
