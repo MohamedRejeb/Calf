@@ -138,7 +138,7 @@ private fun homeEntry(
         SampleHost.List -> adaptiveNavEntry(
             key = key,
             barShown = false,
-            paneRole = AdaptivePaneRole.List(detailPlaceholder = { HomeDetailPlaceholder() }),
+            paneRole = AdaptivePaneRole.List(detailPlaceholder = { padding -> HomeDetailPlaceholder(padding) }),
         ) { padding ->
             HomeScreen(
                 contentPadding = padding,

@@ -58,7 +58,10 @@ private fun composeEntry(
     when (screen.host()) {
         SampleHost.List -> NavEntry(
             key = key,
-            metadata = ListDetailSceneStrategy.listPane(detailPlaceholder = { HomeDetailPlaceholder() }),
+            metadata = ListDetailSceneStrategy.listPane(
+                // Same bar-less scaffold as the list: its padding is the pane's share of the window insets.
+                detailPlaceholder = { AdaptiveScaffold { padding -> HomeDetailPlaceholder(padding) } },
+            ),
         ) {
             // A scaffold without bars: on iOS the host hides them while the list is alone and leaves
             // them to a detail beside it. Its padding is the window's insets as far as they reach this pane.

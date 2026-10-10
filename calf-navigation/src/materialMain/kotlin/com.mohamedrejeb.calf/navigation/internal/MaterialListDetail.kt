@@ -2,6 +2,7 @@
 
 package com.mohamedrejeb.calf.navigation.internal
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
@@ -61,7 +62,8 @@ internal fun materialListDetail(
     val roleKindOf = { key: NavKey -> roles.getValue(key).kind }
     val sides = paneSidesOf(keys, roleKindOf)
     val listRole = partitionListDetail(keys, roleKindOf).list?.let(roles::get) as? AdaptivePaneRole.List
-    val placeholder = listRole?.detailPlaceholder ?: {}
+    // Material3 Adaptive's placeholder pane has no bar of its own, so there is nothing to pad.
+    val placeholder: @Composable () -> Unit = listRole?.let { { it.detailPlaceholder(PaddingValues()) } } ?: {}
 
     return MaterialListDetail(
         sceneStrategies = listOf(strategy),

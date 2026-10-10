@@ -228,12 +228,14 @@ private val ScreenCategory.tileColor: Color
 
 /** Fills the detail pane while two panes are shown and no demo is open. */
 @Composable
-fun HomeDetailPlaceholder() {
+fun HomeDetailPlaceholder(contentPadding: PaddingValues) {
+    // Background before the padding: it fills the pane, the content keeps clear of the bars.
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(contentPadding),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

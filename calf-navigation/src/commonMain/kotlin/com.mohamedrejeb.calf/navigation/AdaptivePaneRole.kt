@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import com.mohamedrejeb.calf.navigation.internal.PaneRoleKind
@@ -25,10 +26,12 @@ sealed interface AdaptivePaneRole {
      *
      * @property detailPlaceholder fills the detail pane while two panes are shown and no detail
      *   is open ("Select a conversation"). It is not an entry: it has no bar and is never on the
-     *   back stack.
+     *   back stack. It is laid out edge to edge, so a background it draws fills the pane; the
+     *   [PaddingValues] are the pane's bars and safe area, to apply to its content the way an
+     *   entry applies its `padding` (zero on the Material platforms, where the pane has no bar).
      */
     class List(
-        val detailPlaceholder: @Composable () -> Unit = {},
+        val detailPlaceholder: @Composable (PaddingValues) -> Unit = {},
     ) : AdaptivePaneRole
 
     /**

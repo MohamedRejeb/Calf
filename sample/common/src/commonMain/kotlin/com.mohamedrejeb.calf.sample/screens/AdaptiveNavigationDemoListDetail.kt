@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +58,7 @@ internal fun navDemoListDetailEntry(key: NavKey, backStack: NavBackStack<NavKey>
             largeTitle = true,
             iosTitle = "Inbox",
             iosBackTitle = "Inbox",
-            paneRole = AdaptivePaneRole.List(detailPlaceholder = { NavDemoNoMessageSelected() }),
+            paneRole = AdaptivePaneRole.List(detailPlaceholder = { padding -> NavDemoNoMessageSelected(padding) }),
         ) { padding ->
             NavDemoInboxContent(
                 contentPadding = padding,
@@ -138,12 +139,14 @@ internal fun NavDemoMailStateCheck() {
 }
 
 @Composable
-private fun NavDemoNoMessageSelected() {
+private fun NavDemoNoMessageSelected(contentPadding: PaddingValues) {
+    // Background before the padding: it fills the pane, the content keeps clear of the bars.
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(contentPadding),
     ) {
         EmptyState(
             icon = Icons.Outlined.Email,

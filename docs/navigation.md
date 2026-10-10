@@ -196,7 +196,7 @@ AdaptiveNavDisplay(
             key = key,
             iosTitle = "Inbox",
             paneRole = AdaptivePaneRole.List(
-                detailPlaceholder = { Text("Select a message") },
+                detailPlaceholder = { padding -> Text("Select a message", Modifier.padding(padding)) },
             ),
         ) { padding ->
             InboxScreen(padding, onOpen = { id -> backStack.selectDetail(list = Inbox, detail = Message(id)) })
@@ -218,7 +218,7 @@ AdaptiveNavDisplay(
 }
 ```
 
-- `AdaptivePaneRole.List` marks the list. Its `detailPlaceholder` fills the detail pane while two panes are shown and nothing is open. It is not an entry: it has no bar and is never on the back stack.
+- `AdaptivePaneRole.List` marks the list. Its `detailPlaceholder` fills the detail pane while two panes are shown and nothing is open. It is not an entry: it has no bar and is never on the back stack. It is laid out edge to edge (a background it draws fills the pane) and receives the pane's bar and safe-area padding to apply to its content, like an entry's `padding`; on the Material platforms that padding is zero.
 - `AdaptivePaneRole.Detail` marks the **first** entry of the detail side. Whatever is pushed after it stays on the detail side without being marked, so a detail can push its own screens. An entry without a role that is pushed over the list *before* any detail (a filter screen) stays on the list side.
 - `backStack.selectDetail(list, detail)` replaces whatever is above `list` with `detail`. Use it instead of `add` for list taps: in two panes the list stays visible, and `add` would grow the stack by one detail per tap.
 - **Start the stack at the list.** Entries below the list are shown full screen on Android, Desktop and Web, but inside the narrow list column on iOS (like Mailboxes → Inbox in Mail). Screens that come before the list belong in an outer `AdaptiveNavDisplay`, the way the tabs are nested in [Quick start: tabs](#quick-start-tabs). A stack without a list entry is never split, so a deep link to a detail has to put the list below it: `rememberAdaptiveNavBackStack(Inbox, Message(42))`.
