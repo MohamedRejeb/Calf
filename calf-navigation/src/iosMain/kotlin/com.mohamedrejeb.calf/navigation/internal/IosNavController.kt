@@ -89,9 +89,13 @@ internal class IosNavController(
         if (!animated) deferredDisposal.disposeReleased()
     }
 
+    override fun refreshEntries(entryProvider: (NavKey) -> NavEntry<NavKey>) {
+        entryControllers.forEach { (key, controller) -> controller.updateEntry(entryProvider(key)) }
+    }
+
     private fun createController(key: NavKey): EntryHostingController =
         EntryHostingController(
-            entry = entryProvider(key),
+            initialEntry = entryProvider(key),
             parentLocals = parentLocals,
             density = density,
         )

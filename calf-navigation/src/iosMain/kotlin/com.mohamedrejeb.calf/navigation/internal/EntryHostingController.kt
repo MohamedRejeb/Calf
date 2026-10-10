@@ -65,12 +65,18 @@ import platform.darwin.dispatch_get_main_queue
  *     same turn.
  */
 internal class EntryHostingController(
-    private val entry: NavEntry<NavKey>,
+    initialEntry: NavEntry<NavKey>,
     private val parentLocals: State<CompositionLocalContext>,
     private val density: Float,
 ) : UIViewController(nibName = null, bundle = null) {
 
-    private val metadata = entry.adaptiveMetadata
+    /**
+     * The entry as last built by the display's `entryProvider`. Read inside the child composition,
+     * so a new entry (fresh captures in its content lambda) recomposes the screen, the way
+     * Navigation 3 rebuilds entries on the Material platforms.
+     */
+    private val entryState = mutableStateOf(initialEntry)
+    private var metadata = initialEntry.adaptiveMetadata
     private val entryScope = NavEntryScope()
 
     /** Kept as one reference so it can be unsubscribed; see [disposeEntry]. */
@@ -116,8 +122,7 @@ internal class EntryHostingController(
     )
 
     /** Retained so UIKit's weak bar-button targets stay alive and clicks keep working. */
-    @Suppress("unused")
-    private val itemBindings: NavBarItemBindings =
+    private var itemBindings: NavBarItemBindings =
         applyEntryMetadataToItem(this.navigationItem, metadata, density)
 
     init {
@@ -155,7 +160,7 @@ internal class EntryHostingController(
                         // would otherwise show the system background sliding in.
                         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                             if (contentAttached.value) {
-                                entry.Content()
+                                entryState.value.Content()
                             }
                         }
                     }
@@ -215,6 +220,33 @@ internal class EntryHostingController(
                 right = right.dp,
                 bottom = bottom.dp,
             )
+        }
+    }
+
+    /**
+     * The display composed again and built this entry anew. The content recomposes with the new
+     * lambda's captures; the bar follows what changed in the metadata (title, items, back title,
+     * title colour, large title), without rebuilding native items whose look is the same. A bar
+     * hidden or shown while this entry is on top animates like a push would. What UIKit reads at
+     * push time stays as it was for this entry: `tabBarShown`, `iosGestureEnabled` and the pane
+     * role take effect when the entry is pushed, or on the next push for a later value.
+     */
+    fun updateEntry(entry: NavEntry<NavKey>) {
+        if (isDisposed) return
+        entryState.value = entry
+        val previous = metadata
+        val next = entry.adaptiveMetadata
+        if (next == previous) return
+        metadata = next
+        itemBindings = updateEntryMetadataOnItem(navigationItem, previous, next, itemBindings, density)
+        hidesBottomBarWhenPushed = !next.tabBarShown
+        if (next.largeTitle != previous.largeTitle) scrollMirror.recalibrate()
+        val nav = navigationController ?: return
+        val isTopOnScreen = nav.topViewController === this && isViewLoaded() && view.window != null
+        if (!isTopOnScreen) return
+        if (next.barShown != previous.barShown) nav.setNavigationBarHidden(!next.barShown, animated = true)
+        if (next.iosConfiguration.isTranslucent != previous.iosConfiguration.isTranslucent) {
+            nav.navigationBar.translucent = next.iosConfiguration.isTranslucent
         }
     }
 

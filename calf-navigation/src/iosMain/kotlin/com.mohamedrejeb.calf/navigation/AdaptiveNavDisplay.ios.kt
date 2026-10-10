@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -75,6 +76,9 @@ private fun StackDisplay(
     LaunchedEffect(host) {
         snapshotFlow { backStack.toList() }.collect { snapshot -> host.syncToUiStack(snapshot) }
     }
+    // After every recomposition, like Navigation 3 rebuilding its entries: content lambdas get
+    // their fresh captures, bars follow changed titles and items.
+    SideEffect { host.refreshEntries(entryProvider) }
 
     UIKitViewController(
         factory = { host.uiNavigationController },
@@ -111,6 +115,7 @@ private fun SplitDisplay(
     LaunchedEffect(host) {
         snapshotFlow { backStack.toList() }.collect { snapshot -> host.syncToUiStack(snapshot) }
     }
+    SideEffect { host.refreshEntries(entryProvider) }
 
     UIKitViewController(
         factory = { host.uiSplitViewController },

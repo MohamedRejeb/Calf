@@ -1,10 +1,12 @@
 package com.mohamedrejeb.calf.ui.navigation
 
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
 import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
 
 /** What a native bar has to do when its [UIKitUIBarButtonItem]s are published again. */
-internal enum class BarItemsUpdate {
+@InternalCalfApi
+public enum class BarItemsUpdate {
     /** Nothing changed. */
     None,
 
@@ -18,9 +20,10 @@ internal enum class BarItemsUpdate {
 /**
  * Compares two publications of the same bar's items. Every recomposition of a screen builds new
  * `onClick` lambdas, so plain equality would rebuild (and, animated, crossfade) the native items
- * on every recomposition; only a visible difference should.
+ * on every recomposition; only a visible difference should. Shared with calf-navigation's entries.
  */
-internal fun barItemsUpdate(
+@InternalCalfApi
+public fun barItemsUpdate(
     old: List<UIKitUIBarButtonItem>?,
     new: List<UIKitUIBarButtonItem>?,
 ): BarItemsUpdate {

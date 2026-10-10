@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -87,6 +88,9 @@ actual fun <T : NavKey> AdaptiveTabDisplay(
             }
         }
     }
+    // After every recomposition, like Navigation 3 rebuilding its entries: content lambdas get
+    // their fresh captures, bars follow changed titles and items.
+    SideEffect { host.refreshEntries(entryProvider) }
 
     UIKitViewController(
         factory = { host.uiTabBarController },

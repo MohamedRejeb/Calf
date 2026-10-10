@@ -141,6 +141,11 @@ internal class IosTabController<T : NavKey>(
         hosts.getValue(tab).syncToUiStack(snapshot)
     }
 
+    /** The display composed again: every tab's entries are built anew. */
+    fun refreshEntries(entryProvider: (NavKey) -> NavEntry<NavKey>) {
+        hosts.values.forEach { it.refreshEntries(entryProvider) }
+    }
+
     /** Applies the split view configuration to every list-detail tab. */
     fun applySplitViewConfiguration(configuration: IosSplitViewConfiguration) {
         hosts.values.filterIsInstance<IosSplitController>().forEach { it.applyConfiguration(configuration) }

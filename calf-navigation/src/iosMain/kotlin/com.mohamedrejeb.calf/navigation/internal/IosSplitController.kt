@@ -145,7 +145,7 @@ internal class IosSplitController(
 
     private fun createController(key: NavKey): EntryHostingController =
         EntryHostingController(
-            entry = entryProvider(key),
+            initialEntry = entryProvider(key),
             parentLocals = parentLocals,
             density = density,
         )
@@ -251,13 +251,24 @@ internal class IosSplitController(
         // placeholder, not applied around it: applied around it, a background the placeholder
         // draws stops at the bars and the safe area, and the system background shows there.
         val controller = EntryHostingController(
-            entry = adaptiveNavEntry(key = DetailPlaceholderKey) { padding -> role.detailPlaceholder(padding) },
+            initialEntry = placeholderEntry(role),
             parentLocals = parentLocals,
             density = density,
         )
         placeholder?.second?.let { deferredDisposal.defer(listOf(it)) }
         placeholder = list to controller
         return controller
+    }
+
+    private fun placeholderEntry(role: AdaptivePaneRole.List): NavEntry<NavKey> =
+        adaptiveNavEntry(key = DetailPlaceholderKey) { padding -> role.detailPlaceholder(padding) }
+
+    override fun refreshEntries(entryProvider: (NavKey) -> NavEntry<NavKey>) {
+        entryControllers.forEach { (key, controller) -> controller.updateEntry(entryProvider(key)) }
+        // The placeholder is the list's: its lambda was rebuilt with the list's entry just above.
+        placeholder?.let { (list, controller) ->
+            (list.paneRole as? AdaptivePaneRole.List)?.let { role -> controller.updateEntry(placeholderEntry(role)) }
+        }
     }
 
     /** The split view is about to collapse or expand: move every entry to where it will be shown. */

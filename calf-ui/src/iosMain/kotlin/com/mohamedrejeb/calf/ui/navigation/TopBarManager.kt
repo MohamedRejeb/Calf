@@ -133,7 +133,7 @@ public class UIBarButtonItemsBinding internal constructor(
      * flickers. [newItems] must look like the items this binding was built from (see
      * [barItemsUpdate]); menus are rebuilt because their actions capture the callbacks.
      */
-    internal fun rebind(newItems: List<UIKitUIBarButtonItem>, density: Float) {
+    public fun rebind(newItems: List<UIKitUIBarButtonItem>, density: Float) {
         newItems.forEachIndexed { index, item ->
             handlers.getOrNull(index)?.onClick = if (item.hasMenu) ({}) else item.onClick
             if (item.hasMenu) {
