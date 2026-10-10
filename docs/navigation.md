@@ -510,6 +510,8 @@ The sample also runs on the other path. The **Plain Compose navigation** switch 
 
 <!-- MEDIA: the sample on plain Compose navigation on an open iPhone Duo: the list pane, a demo in the detail pane, its bar items in the vertical bar -->
 
-## Relationship to `AdaptiveNavHost`
+## Opting in
 
-The older string-route `AdaptiveNavHost` / `AdaptiveNavHostController` API is still available and unchanged. The sample no longer uses it. It will be deprecated in favor of `AdaptiveNavDisplay` once the new API stabilizes.
+Everything in `calf-navigation` is marked `@ExperimentalCalfNavigationApi`: this is the module's first release and its shape may still change. The opt-in is required (`RequiresOptIn.Level.ERROR`): add `@OptIn(ExperimentalCalfNavigationApi::class)` at the call site, or opt in a whole module with the compiler argument `-opt-in=com.mohamedrejeb.calf.navigation.ExperimentalCalfNavigationApi`.
+
+The string-route `AdaptiveNavHost` / `AdaptiveNavHostController` API that earlier snapshots carried is gone; it was never published. `AdaptiveNavDisplay` with a typed `NavKey` back stack replaces it.

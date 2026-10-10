@@ -11,7 +11,7 @@ package com.mohamedrejeb.calf.navigation
  * ```
  */
 @RequiresOptIn(
-    level = RequiresOptIn.Level.WARNING,
+    level = RequiresOptIn.Level.ERROR,
     message = "This Calf navigation API is experimental and may change in a future release.",
 )
 @Retention(AnnotationRetention.BINARY)
