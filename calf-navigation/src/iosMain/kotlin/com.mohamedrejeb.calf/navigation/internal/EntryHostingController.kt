@@ -2,13 +2,18 @@
 
 package com.mohamedrejeb.calf.navigation.internal
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalContext
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.State
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
@@ -68,6 +73,9 @@ internal class EntryHostingController(
     private val metadata = entry.adaptiveMetadata
     private val entryScope = NavEntryScope()
 
+    /** Kept as one reference so it can be unsubscribed; see [disposeEntry]. */
+    private val appStateListener: (AppForegroundState) -> Unit = entryScope::setAppState
+
     /** Read by the host's pop-gesture delegate to honour `iosGestureEnabled`. */
     val gestureEnabled: Boolean get() = metadata.iosGestureEnabled
 
@@ -115,6 +123,9 @@ internal class EntryHostingController(
     init {
         // Read by UIKit when this controller is pushed inside a UITabBarController.
         hidesBottomBarWhenPushed = !metadata.tabBarShown
+        // UIKit sends no appearance callback when the app leaves the foreground; the entry's
+        // lifecycle follows the app through this instead.
+        IosAppForegroundState.subscribe(appStateListener)
     }
 
     override fun loadView() {
@@ -139,8 +150,13 @@ internal class EntryHostingController(
                         LocalNavEntrySafeArea provides safeAreaPadding.value,
                         LocalNavEntryScrollReporter provides scrollMirror::reportScrollOffset,
                     ) {
-                        if (contentAttached.value) {
-                            entry.Content()
+                        // The theme's background under the content, and in its place during the
+                        // turn an animated push runs before the content attaches: the surface
+                        // would otherwise show the system background sliding in.
+                        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+                            if (contentAttached.value) {
+                                entry.Content()
+                            }
                         }
                     }
                 }
@@ -234,6 +250,7 @@ internal class EntryHostingController(
      */
     fun disposeEntry() {
         isDisposed = true
+        IosAppForegroundState.unsubscribe(appStateListener)
         entryScope.markDestroyed()
         if (isViewLoaded()) {
             cleanupChildren()

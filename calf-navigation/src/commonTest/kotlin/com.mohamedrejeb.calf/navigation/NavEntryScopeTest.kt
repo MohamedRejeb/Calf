@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.navigation
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
+import com.mohamedrejeb.calf.navigation.internal.AppForegroundState
 import com.mohamedrejeb.calf.navigation.internal.NavEntryScope
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -76,6 +77,72 @@ class NavEntryScopeTest {
         scope.markDestroyed()
 
         scope.markStarted()
+
+        assertEquals(Lifecycle.State.DESTROYED, scope.lifecycle.currentState)
+    }
+
+    @Test
+    fun `visible entry in the active app is resumed`() {
+        val scope = NavEntryScope()
+        scope.markStarted()
+        scope.setAppState(AppForegroundState.Active)
+
+        assertEquals(Lifecycle.State.RESUMED, scope.lifecycle.currentState)
+    }
+
+    @Test
+    fun `visible entry is only started while the app is inactive`() {
+        // Control Centre, an incoming call, the app switcher: Android's ON_PAUSE.
+        val scope = NavEntryScope()
+        scope.markStarted()
+
+        scope.setAppState(AppForegroundState.Inactive)
+
+        assertEquals(Lifecycle.State.STARTED, scope.lifecycle.currentState)
+    }
+
+    @Test
+    fun `visible entry stops while the app is in the background and resumes with it`() {
+        val scope = NavEntryScope()
+        scope.markStarted()
+
+        scope.setAppState(AppForegroundState.Background)
+        assertEquals(Lifecycle.State.CREATED, scope.lifecycle.currentState)
+
+        scope.setAppState(AppForegroundState.Active)
+        assertEquals(Lifecycle.State.RESUMED, scope.lifecycle.currentState)
+    }
+
+    @Test
+    fun `covered entry stays stopped whatever the app does`() {
+        val scope = NavEntryScope()
+        scope.markStarted()
+        scope.markStopped()
+
+        scope.setAppState(AppForegroundState.Active)
+
+        assertEquals(Lifecycle.State.CREATED, scope.lifecycle.currentState)
+    }
+
+    @Test
+    fun `entry shown while the app is in the background waits for the foreground`() {
+        val scope = NavEntryScope()
+        scope.setAppState(AppForegroundState.Background)
+
+        scope.markStarted()
+        assertEquals(Lifecycle.State.CREATED, scope.lifecycle.currentState)
+
+        scope.setAppState(AppForegroundState.Active)
+        assertEquals(Lifecycle.State.RESUMED, scope.lifecycle.currentState)
+    }
+
+    @Test
+    fun `app state is ignored once destroyed`() {
+        val scope = NavEntryScope()
+        scope.markStarted()
+        scope.markDestroyed()
+
+        scope.setAppState(AppForegroundState.Active)
 
         assertEquals(Lifecycle.State.DESTROYED, scope.lifecycle.currentState)
     }
