@@ -98,6 +98,13 @@ When no screen with an `AdaptiveScaffold` is left (say the app switches to scree
 - The navigation bar has no back button of its own: Compose owns the back stack. Use `UIKitUIBarButtonItem.back(onClick = …)` as the first leading item; unlike a titled "Back" item it moves into the iPhone Duo's vertical bar.
 - More than five tab items stay a standalone tab bar, because a `UITabBarController` would move the rest behind its own "More" tab.
 
+### What to rely on
+
+The host is `@ExperimentalCalfUiApi`. Its parts are not equally proven, so pick what a release can afford:
+
+- **Stable:** the hosted navigation bar and toolbar of one stack (title, items, crossfade on a screen change, bar hidden for a screen without one), who owns the bars, the content padding, and the fallback to standalone bars (no host installed, a sheet's content, more than five tabs).
+- **Experimental:** the hosted tab bar (a `UITabBarController` is put in place and the Compose view moves between its tabs the first time a screen shows tabs), the large-title collapse driven by Compose scrolling, and the bars of a pane in a two-pane layout. They work in the sample on iPhone, iPad and the iPhone Duo simulator, but they depend on UIKit timing that has no automated coverage yet. An app that needs only the first group can keep tabs in Compose (`AdaptiveNavigationBar` outside the host draws the standalone bar) and leave `prefersLargeTitles` off.
+
 ### Limits compared with calf-navigation
 
 The bar host is one set of bars for the whole window, whose items follow the screen. [calf-navigation](navigation.md) gives each screen its own UIKit controller instead:

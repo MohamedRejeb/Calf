@@ -59,6 +59,10 @@ public class LargeTitleScrollMirror(
     private var registeredEdges: NSDirectionalRectEdge = NSDirectionalRectEdgeTop
     private var trackedScrollPx: Float = 0f
     private var calibration = NavBarInsetCalibration()
+
+    /** The screen the current calibration belongs to, and what was learnt for recent screens. */
+    private var calibrationKey: Any? = null
+    private val rememberedCalibrations = LinkedHashMap<Any, NavBarInsetCalibration>()
     private val titleMovesWithContent = isIOSVersionAtLeast(LIQUID_GLASS_MIN_IOS)
 
     /**
@@ -120,10 +124,28 @@ public class LargeTitleScrollMirror(
      * Starts the calibration over, as after a size change: at the next layout pass a bar that is
      * collapsed while the content is at its top expands again. For a bar that changes without a
      * size change: shown, or switched between a large and an inline title.
+     *
+     * With a [memoryKey] (the screen whose bar is shown) the calibration learnt for that screen is
+     * brought back instead of starting over, and the one being left is kept for it. Popping back
+     * to a scrolled list thus keeps the expanded inset its content is padded with; starting over
+     * would pad it with the collapsed one until it scrolled to the top, a jump of the large title's
+     * height. Only the last few screens are remembered.
      */
-    public fun recalibrate() {
-        calibration = NavBarInsetCalibration()
+    public fun recalibrate(memoryKey: Any? = null) {
+        calibrationKey?.let { leaving ->
+            if (calibration.expandedTopInset > 0.0) rememberCalibration(leaving, calibration)
+        }
+        calibrationKey = memoryKey
+        calibration = memoryKey?.let(rememberedCalibrations::get) ?: NavBarInsetCalibration()
         scrollView.superview?.setNeedsLayout()
+    }
+
+    private fun rememberCalibration(key: Any, value: NavBarInsetCalibration) {
+        rememberedCalibrations.remove(key)
+        rememberedCalibrations[key] = value
+        while (rememberedCalibrations.size > REMEMBERED_SCREENS) {
+            rememberedCalibrations.remove(rememberedCalibrations.keys.first())
+        }
     }
 
     /** Top inset for the content: stable while the large title collapses. See [NavBarInsetCalibration]. */
@@ -197,6 +219,9 @@ private class MirrorScrollView(
 }
 
 private const val CONTENT_SCROLL_VIEW_MIN_IOS = 15
+
+/** Screens whose calibration is kept: a back stack a user walks back through, not an app's whole life. */
+private const val REMEMBERED_SCREENS = 8
 private const val LIQUID_GLASS_MIN_IOS = 26
 private const val CONTENT_SCROLL_EXTENT = 100_000.0
 private const val OFFSET_APPLY_PASSES = 2

@@ -102,8 +102,9 @@ internal class BarHostContainer(
         onSafeAreaInsetsChange = ::measure,
     )
 
-    // A new screen or title style: let the mirror expand a large title again.
-    private val driver = BarHostDriver(onTopBarLayoutChange = scrollMirror::recalibrate)
+    // A new screen or title style: let the mirror expand a large title again, or bring back what
+    // it had learnt for that screen (popping back to a scrolled list keeps its padding).
+    private val driver = BarHostDriver(onTopBarLayoutChange = { owner -> scrollMirror.recalibrate(memoryKey = owner) })
     private val barColumn = BarHostBarColumn()
 
     private val composeViewController: UIViewController = ComposeUIViewController(configure) {
@@ -192,14 +193,18 @@ internal class BarHostContainer(
         // Applying lays the containers out, which measures, which can report a change again.
         if (isApplying) return
         isApplying = true
-        val state = host.state
-        // Tabs first: selecting another tab moves the content, and the bars follow it.
-        applyTabBar(state.shownBars.tabBar, hasTabs = state.hasTabs, animated = hasAppliedBars)
-        driver.apply(state, navigationController, slot, host.density)
-        barColumn.apply(navigationController, slot, state.barColumnInsets())
-        rootController.view.layoutIfNeeded()
-        measure()
-        isApplying = false
+        try {
+            val state = host.state
+            // Tabs first: selecting another tab moves the content, and the bars follow it.
+            applyTabBar(state.shownBars.tabBar, hasTabs = state.hasTabs, animated = hasAppliedBars)
+            driver.apply(state, navigationController, slot, host.density)
+            barColumn.apply(navigationController, slot, state.barColumnInsets())
+            rootController.view.layoutIfNeeded()
+            measure()
+        } finally {
+            // Whatever threw above, the next change must still reach UIKit.
+            isApplying = false
+        }
     }
 
     /**
@@ -216,7 +221,10 @@ internal class BarHostContainer(
         }
         val tabBarController = tabBarController()
         val selected = tabBar.selectedIndex.coerceIn(tabBar.items.indices)
-        if (tabBar != appliedTabBar) {
+        // Items and configuration only: a selection change alone must not rebuild every tab bar
+        // item while UIKit animates the selection.
+        val itemsChanged = tabBar.items != appliedTabBar?.items || tabBar.configuration != appliedTabBar?.configuration
+        if (itemsChanged) {
             // Fewer tabs: move the content out of a slot that is about to go before dropping it.
             if (selectedIndex >= tabBar.items.size) moveContentTo(selected)
             setTabCount(tabBar.items.size)

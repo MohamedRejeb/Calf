@@ -23,7 +23,7 @@ import platform.UIKit.setToolbarItems
  * has no interactive transition of its own.
  */
 internal class BarHostDriver(
-    private val onTopBarLayoutChange: () -> Unit,
+    private val onTopBarLayoutChange: (owner: Any?) -> Unit,
 ) {
 
     private var applied: HostedBars? = null
@@ -81,7 +81,7 @@ internal class BarHostDriver(
         }
         setBarsHidden(navigationController, bars, animated = !isFirstApply)
         if (topBarNeedsRecalibration(previous.topBar, bars.topBar, isNewLayout = isFirstApply || ownerChanged)) {
-            onTopBarLayoutChange()
+            onTopBarLayoutChange(state.owner)
         }
 
         applied = bars
@@ -104,7 +104,7 @@ internal class BarHostDriver(
         trailingBinding = UIBarButtonItemsBinding.Empty
         toolbarBinding = UIBarButtonItemsBinding.Empty
         setBarsHidden(navigationController, HostedBars(), animated = false)
-        if (applied?.topBar != null) onTopBarLayoutChange()
+        if (applied?.topBar != null) onTopBarLayoutChange(null)
         applied = null
         appliedOwner = null
     }
@@ -118,6 +118,10 @@ internal class BarHostDriver(
         force: Boolean,
     ) {
         if (new == null) return
+        // A bar coming back after a screen without one: the item still holds the last bar's title
+        // and items (a hidden bar is not cleared), and nothing of it may be kept, an empty item
+        // list included. Comparing with "no bar" would read empty against empty as unchanged.
+        val force = force || old == null
         if (force || old?.title != new.title) item.title = new.title
         if (force || old?.configuration != new.configuration) {
             item.largeTitleDisplayMode =
