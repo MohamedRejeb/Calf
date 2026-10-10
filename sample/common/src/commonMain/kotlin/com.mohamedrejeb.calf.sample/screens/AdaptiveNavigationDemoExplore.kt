@@ -77,8 +77,8 @@ internal fun NavDemoExploreContent(
             code = "label, visibilityPriority",
             icon = Icons.Outlined.MoreHoriz,
             tint = TileTeal,
-            footer = "Eight trailing items. On an iPhone Duo the image items move to the vertical " +
-                "strip and overflow by priority.",
+            footer = "Eight trailing items, shown without the tab bar. On an iPhone Duo the image " +
+                "items move to the vertical strip and overflow by priority.",
             onClick = onOpenBarItems,
         )
         DemoSection(

@@ -37,7 +37,12 @@ import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonSystemItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import kotlinx.serialization.Serializable
 
-/** Pushed from the Explore tab: a bar with more items than a vertical strip can hold. */
+/**
+ * Pushed from the Explore tab: a bar with more items than a vertical strip can hold. Shown without
+ * the tab bar: on an iPhone Duo, UIKit sizes the strip's items as if the tab bar were not there
+ * when the tabs sit inside an outer stack (as here), so the two would overlap instead of the items
+ * overflowing. See "Bar items on iPhone Duo" in docs/navigation.md.
+ */
 @Serializable
 internal data object NavDemoBarItems : NavKey
 
@@ -63,7 +68,8 @@ private val demoBarItems = listOf(
  * Eight trailing items with mixed labels and visibility priorities. On an iPhone Duo the
  * image items move into the vertical strip; when it runs out of room the `Low` items go
  * to the overflow menu first and the `High` items last. Every image item has a label, so
- * VoiceOver and the overflow menu can name it.
+ * VoiceOver and the overflow menu can name it. The tab bar is hidden here on purpose, see
+ * [NavDemoBarItems].
  */
 internal fun navDemoBarItemsEntry(
     key: NavDemoBarItems,
@@ -74,6 +80,7 @@ internal fun navDemoBarItemsEntry(
     key = key,
     title = { Text("Bar items") },
     navigationIcon = { NavDemoBackButton { backStack.removeLastOrNull() } },
+    tabBarShown = false,
     actions = {
         IconButton(onClick = { onTapped("Add item") }) { Icon(Icons.Filled.Add, contentDescription = "Add item") }
         IconButton(onClick = { onTapped("Favorite") }) { Icon(Icons.Outlined.Star, contentDescription = "Favorite") }
@@ -148,10 +155,12 @@ internal fun NavDemoBarItemsContent(
         }
         DemoSection(
             title = "Trailing items, in order",
-            footer = "In the vertical bar of an iPhone Duo the image items share the strip with the tab " +
-                "bar. When there is no room for all of them, Low items move to the overflow menu first " +
-                "and High items stay the longest. Text items keep their place in the title row. Before " +
-                "iOS 27 the priority is ignored.",
+            footer = "On an iPhone Duo the image items move into the vertical strip. When there is no " +
+                "room for all of them, Low items move to the overflow menu first and High items stay " +
+                "the longest. Text items keep their place in the title row. Before iOS 27 the priority " +
+                "is ignored. This screen hides the tab bar: with the tabs inside an outer stack, UIKit " +
+                "does not share the strip between the items and the tab bar, so a screen that shows " +
+                "both should keep to a few image items.",
         ) {
             DemoListCard {
                 demoBarItems.forEachIndexed { index, item ->

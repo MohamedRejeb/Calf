@@ -353,9 +353,16 @@ iosTrailingItems = listOf(
 )
 ```
 
-The strip is shared with the tab bar: with a tab bar present, keep to a few image items per side and mark
-the rest `Low`, so the overflow menu, not the tab bar, takes them. The sample's Adaptive Navigation demo
-has a "Bar items and overflow" screen (Explore tab) with eight items of mixed kinds and priorities.
+The strip is shared with the tab bar, and UIKit only balances the two for a tab display that is the
+root of its presentation. With the tabs inside an outer `AdaptiveNavDisplay` (the layout of
+[Quick start: tabs](#quick-start-tabs), where the outer stack pushes screens over the tabs), UIKit sizes
+the items as if the tab bar were not there and the tab bar covers the lowest ones instead of them
+overflowing; `visibilityPriority` and `UINavigationItem.verticalBarCompressionBehavior` do not change
+that (iOS 27.1, reproduced with plain UIKit). So on a screen that shows the tab bar, keep to three image
+items per side, and hide the tab bar (`tabBarShown = false`) on a screen that needs more: the strip then
+holds seven image items on the open inner display in landscape and overflows past that. The sample's
+Adaptive Navigation demo has a "Bar items and overflow" screen (Explore tab) with eight items of mixed
+kinds and priorities, shown without the tab bar for this reason.
 
 <!-- MEDIA: iPhone Duo closed, the sample's "Bar items and overflow" screen: image items in the strip, the overflow menu open with the labelled items, the Sort text item in the title row -->
 
