@@ -12,6 +12,7 @@ import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
 import com.mohamedrejeb.calf.core.InternalCalfApi
+import com.mohamedrejeb.calf.ui.utils.SafeAreaIsolatingView
 
 @OptIn(ExperimentalMaterial3Api::class, InternalCalfApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -42,7 +43,7 @@ actual fun AdaptiveCompactDatePicker(
     key(datePickerManager) {
         UIKitView(
             factory = {
-                datePickerManager.view
+                SafeAreaIsolatingView(datePickerManager.view)
             },
             properties = UIKitInteropProperties(
                 interactionMode = UIKitInteropInteractionMode.NonCooperative,

@@ -20,6 +20,7 @@ import androidx.compose.ui.viewinterop.UIKitView
 import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
 import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
+import com.mohamedrejeb.calf.ui.utils.SafeAreaIsolatingView
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -96,7 +97,7 @@ actual fun AdaptiveDateRangePicker(
     Box(modifier = modifier) {
         key(backend) {
             UIKitView(
-                factory = { backend.view },
+                factory = { SafeAreaIsolatingView(backend.view) },
                 properties = UIKitInteropProperties(
                     interactionMode = UIKitInteropInteractionMode.NonCooperative,
                 ),

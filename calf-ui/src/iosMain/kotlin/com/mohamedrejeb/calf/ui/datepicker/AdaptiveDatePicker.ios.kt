@@ -21,6 +21,7 @@ import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
 import kotlinx.cinterop.ExperimentalForeignApi
+import com.mohamedrejeb.calf.ui.utils.SafeAreaIsolatingView
 
 @OptIn(
     ExperimentalForeignApi::class, ExperimentalMaterial3Api::class, InternalCalfApi::class,
@@ -57,7 +58,7 @@ actual fun AdaptiveDatePicker(
         key(datePickerManager) {
             UIKitView(
                 factory = {
-                    datePickerManager.view
+                    SafeAreaIsolatingView(datePickerManager.view)
                 },
                 properties = UIKitInteropProperties(
                     interactionMode = UIKitInteropInteractionMode.NonCooperative,

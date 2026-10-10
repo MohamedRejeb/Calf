@@ -22,6 +22,7 @@ import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
 import com.mohamedrejeb.calf.ui.utils.toUIColor
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIDatePicker
+import com.mohamedrejeb.calf.ui.utils.SafeAreaIsolatingView
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalForeignApi::class, InternalCalfApi::class,
     ExperimentalComposeUiApi::class
@@ -73,7 +74,7 @@ actual fun AdaptiveTimePicker(
 
     UIKitView(
         factory = {
-            datePicker
+            SafeAreaIsolatingView(datePicker)
         },
         properties = UIKitInteropProperties(
             interactionMode = UIKitInteropInteractionMode.NonCooperative,
