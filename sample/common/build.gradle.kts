@@ -5,6 +5,9 @@ plugins {
 }
 
 kotlin {
+    // commonTest runs in the browser, which needs the Skiko runtime bundled by webpack.
+    withBrowserTestBundling()
+
     android {
         // Packs composeResources (the logo, and calf-cupertino-icons' font) into the APK. The AGP 9
         // KMP library target leaves Android resources off by default.
