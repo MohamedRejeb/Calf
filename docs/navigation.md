@@ -164,7 +164,7 @@ fun App() {
 
 **Rapid taps and in-flight transitions**
 
-On iOS, a back-stack change that arrives while a push or pop is still animating is dropped and the stack reverted to what is on screen. `UINavigationController` cannot start a transition inside another one, and applying the change late leaves the Compose stack and the UIKit stack out of step (stalled or doubled navigation). A double tap on a list row therefore pushes once on iOS.
+On iOS, a back-stack change that arrives while a push or pop is still animating is applied when that transition ends: `UINavigationController` cannot start a transition inside another one, so the host waits for `didShow` and then shows whatever the back stack holds by then (a pop, a reset after a login, a deep link, a push of another entry). The one change that is dropped is pushing the entry being shown a second time, which is what a double tap on a row does; the stack is reverted to what is on screen so it pushes once.
 
 On Android, Desktop and Web, Calf adds nothing on top of Navigation 3: changes made mid-transition behave as in any Nav3 app. If you want a double tap to push once there as well, guard it where you navigate (for example, ignore the push when the key is already on top of the stack).
 

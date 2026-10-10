@@ -26,8 +26,9 @@ import platform.UIKit.UIViewController
  *
  * UIKit does not allow `viewControllers` to change while a transition is in
  * flight (an interactive swipe, or a push still animating). A Compose change
- * arriving mid-transition is therefore *dropped*: the back stack is reverted
- * to what is on screen, the way Flutter ignores navigation while animating.
+ * arriving mid-transition is therefore *deferred* and applied when the
+ * transition ends ([decideNavChange]); only pushing the entry being shown a
+ * second time (a double tap) is dropped.
  *
  * The navigation controller itself, its swipe-back policy and its transition
  * tracking live in [IosNavColumn].
@@ -53,6 +54,9 @@ internal class IosNavController(
 
     private val deferredDisposal = DeferredEntryDisposal()
 
+    /** A change arrived mid-transition; the back stack is read again when the transition ends. */
+    private var resyncAfterTransition: Boolean = false
+
     /** Makes the UIKit stack match [snapshot], the current Compose back stack. */
     override fun syncToUiStack(snapshot: List<NavKey>) {
         when (val decision = decideNavChange(lastSyncedSnapshot, snapshot, column.isTransitioning)) {
@@ -60,8 +64,13 @@ internal class IosNavController(
                 revertBackStack(decision.stack)
                 return
             }
+            NavChangeDecision.Defer -> {
+                resyncAfterTransition = true
+                return
+            }
             NavChangeDecision.Accept -> if (snapshot == lastSyncedSnapshot) return
         }
+        resyncAfterTransition = false
 
         val diff = reconcileNavStack(entryControllers, snapshot, ::createController)
         entryControllers = diff.stack
@@ -101,6 +110,18 @@ internal class IosNavController(
     private fun onTransitionFinished() {
         deferredDisposal.disposeReleased()
         mirrorNativePops()
+        applyDeferredChange()
+    }
+
+    /**
+     * Shows what Compose asked for while the transition ran. The back stack is read now rather
+     * than replayed from the deferred snapshot: it may have moved on since, and a native pop
+     * mirrored just before may have trimmed it.
+     */
+    private fun applyDeferredChange() {
+        if (!resyncAfterTransition) return
+        resyncAfterTransition = false
+        syncToUiStack(backStack.toList())
     }
 
     /**
@@ -137,5 +158,6 @@ internal class IosNavController(
         entryControllers = emptyList()
         acknowledged = emptySet()
         lastSyncedSnapshot = emptyList()
+        resyncAfterTransition = false
     }
 }

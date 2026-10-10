@@ -24,20 +24,37 @@ class NavTransitionGuardTest {
     }
 
     @Test
-    fun `push during a transition is dropped`() {
+    fun `push during a transition is deferred until it ends`() {
         val decision = decideNavChange(accepted, accepted + Detail(2), isTransitioning = true)
-        assertEquals(NavChangeDecision.Revert(accepted), decision)
+        assertEquals(NavChangeDecision.Defer, decision)
     }
 
     @Test
-    fun `replace during a transition is dropped`() {
+    fun `replace during a transition is deferred`() {
         val decision = decideNavChange(accepted, listOf(Home, Detail(9)), isTransitioning = true)
+        assertEquals(NavChangeDecision.Defer, decision)
+    }
+
+    @Test
+    fun `pop during a transition is deferred`() {
+        val decision = decideNavChange(accepted, listOf(Home), isTransitioning = true)
+        assertEquals(NavChangeDecision.Defer, decision)
+    }
+
+    @Test
+    fun `pushing the top entry again during its own transition is dropped as a double tap`() {
+        val decision = decideNavChange(accepted, accepted + Detail(1), isTransitioning = true)
         assertEquals(NavChangeDecision.Revert(accepted), decision)
     }
 
     @Test
-    fun `pop during a transition is dropped`() {
-        val decision = decideNavChange(accepted, listOf(Home), isTransitioning = true)
+    fun `pushing the top entry again once idle is a real push`() {
+        assertEquals(NavChangeDecision.Accept, decideNavChange(accepted, accepted + Detail(1), isTransitioning = false))
+    }
+
+    @Test
+    fun `pushing the top entry twice during a transition is dropped too`() {
+        val decision = decideNavChange(accepted, accepted + Detail(1) + Detail(1), isTransitioning = true)
         assertEquals(NavChangeDecision.Revert(accepted), decision)
     }
 }

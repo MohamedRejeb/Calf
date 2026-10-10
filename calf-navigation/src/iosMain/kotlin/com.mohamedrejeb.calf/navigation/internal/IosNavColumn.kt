@@ -7,10 +7,20 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCSignatureOverride
 import platform.UIKit.UIGestureRecognizer
 import platform.UIKit.UIGestureRecognizerDelegateProtocol
+import platform.UIKit.UIGestureRecognizerStateBegan
+import platform.UIKit.UIGestureRecognizerStateChanged
 import platform.UIKit.UINavigationController
 import platform.UIKit.UINavigationControllerDelegateProtocol
 import platform.UIKit.UIViewController
+import platform.UIKit.transitionCoordinator
+import platform.darwin.DISPATCH_TIME_NOW
 import platform.darwin.NSObject
+import platform.darwin.dispatch_after
+import platform.darwin.dispatch_get_main_queue
+import platform.darwin.dispatch_time
+
+/** Longer than UIKit's push and pop animation (about 0.35 s); a gesture keeps the watchdog waiting. */
+private const val TRANSITION_WATCHDOG_NANOS = 1_000_000_000L
 
 /**
  * One real [UINavigationController] and everything Calf attaches to it, whatever decides which
@@ -38,7 +48,7 @@ internal class IosNavColumn(
     private val managedGestures: List<PopGestureKind> = managedPopGestures(::isIOSVersionAtLeast)
     private val gestureDelegate = PopGestureDelegate(::canPopTopEntry)
     private val navigationDelegate = NavigationDelegate(
-        onWillShow = { animated -> if (animated) isTransitioning = true },
+        onWillShow = { animated -> if (animated) onUiKitWillShow() },
         onDidShow = ::onUiKitDidShow,
     )
 
@@ -55,6 +65,9 @@ internal class IosNavColumn(
 
     var isTransitioning: Boolean = false
         private set
+
+    /** Identifies the transition a watchdog was armed for; a later transition re-arms it. */
+    private var transitionGeneration: Int = 0
 
     /** What UIKit currently holds, bottom first. */
     val controllers: List<UIViewController>
@@ -79,13 +92,46 @@ internal class IosNavColumn(
      */
     fun resetTransition() {
         isTransitioning = false
+        transitionGeneration++
+    }
+
+    private fun onUiKitWillShow() {
+        isTransitioning = true
+        armWatchdog(++transitionGeneration)
     }
 
     private fun onUiKitDidShow() {
-        isTransitioning = false
+        resetTransition()
         refreshPopGesture()
         onDidShow()
     }
+
+    /**
+     * A `didShow` can fail to come: the tab was switched or the app backgrounded while a push
+     * animated, the controller left the window. [isTransitioning] would then stay true and every
+     * later change would be deferred for good. The watchdog looks at the controller after UIKit's
+     * push duration: while a pop gesture is in flight or a transition coordinator still exists it
+     * waits again; otherwise it ends the transition the way `didShow` would have.
+     */
+    private fun armWatchdog(generation: Int) {
+        dispatch_after(
+            dispatch_time(DISPATCH_TIME_NOW, TRANSITION_WATCHDOG_NANOS),
+            dispatch_get_main_queue(),
+        ) {
+            if (generation != transitionGeneration || !isTransitioning) return@dispatch_after
+            if (isPopGestureInFlight() || uiNavigationController.transitionCoordinator != null) {
+                armWatchdog(generation)
+            } else {
+                onUiKitDidShow()
+            }
+        }
+    }
+
+    private fun isPopGestureInFlight(): Boolean =
+        listOfNotNull(
+            uiNavigationController.interactivePopGestureRecognizer,
+            uiNavigationController.interactiveContentPopGestureRecognizer,
+        ).any { it.state == UIGestureRecognizerStateBegan || it.state == UIGestureRecognizerStateChanged }
 
     private fun canPopTopEntry(): Boolean =
         canPopInteractively(

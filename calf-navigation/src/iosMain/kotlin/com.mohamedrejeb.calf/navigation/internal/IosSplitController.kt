@@ -92,6 +92,9 @@ internal class IosSplitController(
 
     private val deferredDisposal = DeferredEntryDisposal()
 
+    /** A change arrived mid-transition; the back stack is read again when the transition ends. */
+    private var resyncAfterTransition: Boolean = false
+
     /**
      * True while the list column is hidden by us because the stack has no list entry. Tracked so that
      * showing it again only undoes our own hiding, never the user's (the sidebar button, a swipe).
@@ -117,8 +120,13 @@ internal class IosSplitController(
                 revertBackStack(decision.stack)
                 return
             }
+            NavChangeDecision.Defer -> {
+                resyncAfterTransition = true
+                return
+            }
             NavChangeDecision.Accept -> if (snapshot == lastSyncedSnapshot) return
         }
+        resyncAfterTransition = false
 
         val diff = reconcileNavStack(entryControllers, snapshot, ::createController)
         entryControllers = diff.stack
@@ -272,6 +280,18 @@ internal class IosSplitController(
         if (isArranging) return
         disposeControllersThatLeft()
         mirrorNativePops()
+        applyDeferredChange()
+    }
+
+    /**
+     * Shows what Compose asked for while a column's transition ran, unless another column is
+     * still animating. The back stack is read now rather than replayed: it may have moved on, and
+     * a native pop mirrored just before may have trimmed it.
+     */
+    private fun applyDeferredChange() {
+        if (!resyncAfterTransition || columns.any { it.isTransitioning }) return
+        resyncAfterTransition = false
+        syncToUiStack(backStack.toList())
     }
 
     private fun disposeControllersThatLeft() {
@@ -333,6 +353,7 @@ internal class IosSplitController(
         isListColumnHiddenForMissingList = false
         placeholder = null
         lastSyncedSnapshot = emptyList()
+        resyncAfterTransition = false
     }
 }
 
