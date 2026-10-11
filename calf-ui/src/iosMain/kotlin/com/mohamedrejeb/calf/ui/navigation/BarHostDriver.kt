@@ -20,7 +20,8 @@ import platform.UIKit.setToolbarItems
  * When the owner changes (a screen was pushed or popped in Compose) the whole bar crossfades,
  * the way UIKit crossfades a pushed controller's title and items; Compose runs its own
  * transition underneath. The swap cannot follow the transition's progress: a navigation item
- * has no interactive transition of its own.
+ * has no interactive transition of its own. A bar that appears or goes fades in place for the
+ * same reason, see [fadeBar].
  */
 internal class BarHostDriver(
     private val onTopBarLayoutChange: (owner: Any?) -> Unit,
@@ -55,7 +56,9 @@ internal class BarHostDriver(
             applyTopBar(previous.topBar, bars.topBar, navigationController, slot.navigationItem, density, isFirstApply)
             applyToolbar(previous.toolbarItems, bars.toolbarItems, slot, density, isFirstApply)
         }
-        if (ownerChanged) {
+        // A bar that appears fades in as a whole (setBarsHidden); crossfading its title and items
+        // from a bar that was not shown would snapshot a hidden bar.
+        if (ownerChanged && previous.topBar != null && bars.topBar != null) {
             UIView.transitionWithView(
                 view = navigationController.navigationBar,
                 duration = OWNER_CROSSFADE_SECONDS,
@@ -140,14 +143,19 @@ internal class BarHostDriver(
         }
     }
 
+    /** Bars come and go with a fade in place, see [fadeBar]; the layout changes at once. */
     private fun setBarsHidden(navigationController: UINavigationController, bars: HostedBars, animated: Boolean) {
         val hideNavigationBar = bars.topBar == null
         if (navigationController.navigationBarHidden != hideNavigationBar) {
-            navigationController.setNavigationBarHidden(hideNavigationBar, animated)
+            navigationController.fadeBar(navigationController.navigationBar, hideNavigationBar, animated) {
+                navigationController.setNavigationBarHidden(it, animated = false)
+            }
         }
         val hideToolbar = bars.toolbarItems.isNullOrEmpty()
         if (navigationController.toolbarHidden != hideToolbar) {
-            navigationController.setToolbarHidden(hideToolbar, animated)
+            navigationController.fadeBar(navigationController.toolbar, hideToolbar, animated) {
+                navigationController.setToolbarHidden(it, animated = false)
+            }
         }
     }
 

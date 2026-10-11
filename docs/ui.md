@@ -77,7 +77,7 @@ Nothing else changes in your code. Every screen that uses `AdaptiveScaffold` wit
 
 What you get:
 
-- **The bars stay in place** while Compose moves between screens. When another screen takes over, its title and items crossfade in, and a tab bar leaves as soon as a screen without one appears.
+- **The bars stay in place** while Compose moves between screens. When another screen takes over, its title and items crossfade in, a bar that only one of the two screens has fades in or out where it sits (its insets change at once, so the content never moves with it), and a tab bar leaves as soon as a screen without one appears.
 - **Large titles** (`UIKitNavigationBarConfiguration(prefersLargeTitles = true)`) expand and collapse with your content's scrolling. Any nested-scrolling child (`LazyColumn`, `verticalScroll`) takes part.
 - **iPhone Duo:** the bar items, the toolbar items and the tab bar move into the vertical bar next to the content, on the side iOS picks, and the content is inset on that side. When the vertical bar is full, items go to its overflow menu, lowest `visibilityPriority` first. With the Duo open in portrait the bar shares the status bar row, as native apps do.
 - **Padding:** `AdaptiveScaffold` passes the room the containers' bars leave to its `content`, on all four edges, as far as it reaches that scaffold. A scaffold nested in a padded one, or a pane beside another, is not padded twice. Compose's own `WindowInsets` include the containers' bars too.
