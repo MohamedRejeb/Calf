@@ -125,8 +125,7 @@ internal class BarHostContainer(
     private var navigationControllers: List<UINavigationController> = emptyList()
     private var selectedIndex = 0
 
-    /** The content's snapshot shown in the incoming slot of a tab switch, see [switchTab]. */
-    private var freezeSnapshot: UIView? = null
+
     private var switchGeneration = 0
 
     private val tabBarDelegate = BarHostTabBarDelegate(::onTabTapped)
@@ -258,48 +257,40 @@ internal class BarHostContainer(
     }
 
     /**
-     * A tab switch while the content is showing. The Compose view is not moved yet: re-parented,
-     * it draws nothing for about 200 ms and then does heavy work, which stalled the tab bar's
-     * selection animation, driven frame by frame on the main thread. Instead, the incoming slot
-     * shows a snapshot of the content under its own bars, the selection animates with the main
-     * thread free, and the content moves once the animation has settled; the snapshot then fades
-     * out over the view drawing again. The outgoing tab keeps the live view for UIKit's crossfade.
+     * A tab switch while the content is showing. Compose's view, re-parented, draws nothing until
+     * the next display pass and then draws a whole frame synchronously; done after the selection,
+     * that left the incoming tab blank and stalled the tab bar's selection animation, which UIKit
+     * drives frame by frame on the main thread. So the view moves into the incoming slot while
+     * that slot is still off screen, is laid out and displayed there at once, and only then does
+     * the selection animate, with nothing heavy left for its frames. The outgoing slot keeps a
+     * still of the content for UIKit's crossfade between the tabs.
+     *
+     * All of it on the next main-thread turn: the bars are applied from inside Compose's render
+     * callback, and a synchronous display there would re-enter Compose's redrawer, which it
+     * refuses. The incoming tab's bars are applied right away, to the still hidden tab.
      */
     private fun switchTab(tabBarController: UITabBarController, selected: Int) {
-        val incomingSlot = slots[selected]
-        val snapshot = composeViewController.view.snapshotViewAfterScreenUpdates(false)
+        leaveSnapshotBehind()
         selectedIndex = selected
-        if (snapshot != null) freezeFrame(snapshot, incomingSlot)
-        tabBarController.selectedIndex = selected.toULong()
         val generation = ++switchGeneration
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, TAB_SWITCH_SETTLE_NANOS), dispatch_get_main_queue()) {
+        dispatch_async(dispatch_get_main_queue()) {
             // A later tap took over: that switch moves the content.
-            if (generation != switchGeneration) return@dispatch_after
+            if (generation != switchGeneration) return@dispatch_async
             moveContentTo(selected)
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, FREEZE_FRAME_HOLD_NANOS), dispatch_get_main_queue()) {
-                if (snapshot != null && freezeSnapshot === snapshot) thaw(snapshot)
-            }
+            slot.view.layoutIfNeeded()
+            composeViewController.view.layer.displayIfNeeded()
+            tabBarController.selectedIndex = selected.toULong()
         }
     }
 
-    private fun freezeFrame(snapshot: UIView, incomingSlot: BarHostSlotController) {
-        val slotView = incomingSlot.view
-        freezeSnapshot?.removeFromSuperview()
+    /** A still of the content in the slot it is leaving; it goes when the content comes back. */
+    private fun leaveSnapshotBehind() {
+        val snapshot = composeViewController.view.snapshotViewAfterScreenUpdates(false) ?: return
         snapshot.tag = SNAPSHOT_TAG
-        snapshot.setFrame(slotView.bounds)
+        snapshot.setFrame(slot.view.bounds)
         snapshot.autoresizingMask = UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
         snapshot.userInteractionEnabled = false
-        slotView.addSubview(snapshot)
-        freezeSnapshot = snapshot
-    }
-
-    private fun thaw(snapshot: UIView) {
-        freezeSnapshot = null
-        UIView.animateWithDuration(
-            duration = FREEZE_FRAME_FADE_SECONDS,
-            animations = { snapshot.alpha = 0.0 },
-            completion = { snapshot.removeFromSuperview() },
-        )
+        slot.view.addSubview(snapshot)
     }
 
     /**
@@ -359,6 +350,8 @@ internal class BarHostContainer(
         val target = slots[index]
         selectedIndex = index
         if (composeViewController.parentViewController === target) return
+        // The still left behind when the content last left this slot.
+        target.view.subviews.filterIsInstance<UIView>().filter { it.tag == SNAPSHOT_TAG }.forEach { it.removeFromSuperview() }
         composeViewController.willMoveToParentViewController(null)
         composeViewController.view.removeFromSuperview()
         composeViewController.removeFromParentViewController()
@@ -484,11 +477,5 @@ internal class BarHostSlotController(
 
 private const val LIQUID_GLASS_MIN_IOS = 26
 
-/** The tab bar's selection animation, after which the content moves. */
-private const val TAB_SWITCH_SETTLE_NANOS = 350_000_000L
-
-/** How long the snapshot covers the moved Compose view before it fades. */
-private const val FREEZE_FRAME_HOLD_NANOS = 250_000_000L
-private const val FREEZE_FRAME_FADE_SECONDS = 0.12
 private const val SNAPSHOT_TAG = 0x43414C46L
 private const val TAB_BAR_HIDING_MIN_IOS = 18
