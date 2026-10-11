@@ -299,14 +299,14 @@ internal fun LiquidGlassSwitchColors.thumbBorderColor(enabled: Boolean, checked:
  */
 object LiquidGlassSwitchDefaults {
 
-    /** UISwitch's track: 51 by 31 points, with a 27-point thumb two points in. */
-    val TrackWidth = 51.dp
-    val TrackHeight = 31.dp
+    /** iOS 26's toggle: a low track with a wide, oval glass thumb, not UISwitch's round one. */
+    val TrackWidth = 64.dp
+    val TrackHeight = 28.dp
     val TrackShape = RoundedCornerShape(50)
     val TrackPadding = 2.dp
 
-    val ThumbWidth = 27.dp
-    val ThumbHeight = 27.dp
+    val ThumbWidth = 40.dp
+    val ThumbHeight = 24.dp
 
     /** Drag distance for the thumb (track - thumb - padding*2) */
     val DragWidth = 20.dp
