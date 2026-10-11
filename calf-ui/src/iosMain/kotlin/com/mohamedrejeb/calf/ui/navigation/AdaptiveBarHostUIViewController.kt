@@ -246,29 +246,42 @@ internal class BarHostContainer(
     }
 
     /**
-     * Back to the containers of a fresh host: the first tab's navigation controller as the root.
+     * Back to the containers of a fresh host: one navigation controller as the root, a new one.
      * A `UITabBarController` around the app, even with its tab bar hidden, takes an iPhone Duo's
      * vertical bar from the tab bars of containers inside the Compose content (a calf-navigation
      * `AdaptiveTabDisplay`).
+     *
+     * The navigation controllers that were its tabs are dropped, not reused: once such a controller
+     * is on its own again, UIKit no longer counts its navigation bar in its content's safe area
+     * (the bar shows, the content's safe area stays at the status bar; iOS 26.2 and 26.3). The
+     * content moves into a fresh slot in a fresh navigation controller, and the bars are applied
+     * to it again from scratch.
      */
     private fun removeTabBarController() {
         val controller = tabBarController ?: return
+        val freshSlot = BarHostSlotController(::onSlotLayout).also { it.loadViewIfNeeded() }
+        val freshNavigationController = hostNavigationController(freshSlot)
+        slots = listOf(freshSlot)
+        navigationControllers = listOf(freshNavigationController)
+        rootController.show(freshNavigationController)
         moveContentTo(0)
-        setTabCount(1)
         controller.setViewControllers(emptyList<UIViewController>(), animated = false)
         controller.delegate = null
         tabBarController = null
         appliedTabBar = null
-        rootController.show(navigationControllers.first())
     }
 
-    /** A tab tapped in UIKit: move the content right away, then tell the screen that shows the tabs. */
+    /**
+     * A tab tapped in UIKit: the screen that shows the tabs decides, as on every other platform.
+     * UIKit is told not to switch; once the screen publishes the new selection, [applyTabBar]
+     * selects the tab and moves the content. Switching here first and letting the screen catch up
+     * showed the previous tab's content for a frame or two when the screen was slow to recompose.
+     */
     private fun onTabTapped(viewController: UIViewController): Boolean {
         val index = navigationControllers.indexOf(viewController)
-        if (index < 0) return false
-        moveContentTo(index)
+        if (index < 0 || index == selectedIndex) return false
         host.onTabSelected(index)
-        return true
+        return false
     }
 
     private fun setTabCount(count: Int) {
