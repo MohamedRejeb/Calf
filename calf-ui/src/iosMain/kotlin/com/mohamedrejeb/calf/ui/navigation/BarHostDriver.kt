@@ -12,13 +12,9 @@ import platform.UIKit.UIViewAnimationOptionTransitionCrossDissolve
 import platform.UIKit.UIViewController
 import platform.UIKit.navigationItem
 import platform.UIKit.setToolbarItems
-import platform.darwin.DISPATCH_TIME_NOW
-import platform.darwin.dispatch_after
-import platform.darwin.dispatch_get_main_queue
-import platform.darwin.dispatch_time
 
 /**
- * Applies a [BarHostState]'s shown bars to one navigation controller and its content view
+ * Applies a [BarHostState]'s shown bars to the host's navigation controller and its content view
  * controller, touching UIKit only where something changed.
  *
  * When the owner changes (a screen was pushed or popped in Compose) the whole bar crossfades,
@@ -32,38 +28,19 @@ internal class BarHostDriver(
 
     private var applied: HostedBars? = null
     private var appliedOwner: Any? = null
-    private var target: Pair<UINavigationController, UIViewController>? = null
 
     // Retained: UIKit holds bar-button targets weakly.
     private var leadingBinding = UIBarButtonItemsBinding.Empty
     private var trailingBinding = UIBarButtonItemsBinding.Empty
     private var toolbarBinding = UIBarButtonItemsBinding.Empty
 
-    /**
-     * Shows [state]'s bars in [navigationController], whose content controller is [slot]. A new
-     * target (the container moved to another tab) gets everything applied again, unanimated.
-     */
+    /** Shows [state]'s bars in [navigationController], whose content controller is [slot]. */
     fun apply(
         state: BarHostState,
         navigationController: UINavigationController,
         slot: UIViewController,
         density: Float,
     ) {
-        val isNewTarget = target?.first !== navigationController || target?.second !== slot
-        if (isNewTarget) {
-            // Only the containers holding the content show bars. The ones it left hide theirs: moved
-            // back later (a tab switch, the tab bar controller going away), a bar left showing there
-            // gives the content its inset again, and UIKit keeps that inset after the bar hides.
-            // Hidden a moment later, not now: UIKit crossfades the tab being left into the new one,
-            // and its bars have to stay for that; by then it is off screen.
-            target?.first?.let { previous ->
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, PREVIOUS_BARS_HIDE_NANOS), dispatch_get_main_queue()) {
-                    if (previous !== target?.first) setBarsHidden(previous, HostedBars(), animated = false)
-                }
-            }
-            target = navigationController to slot
-            applied = null
-        }
         if (state.owner == null) {
             clear(navigationController, slot)
             return
@@ -214,6 +191,3 @@ public fun UINavigationItem.applyTitleAppearance(configuration: UIKitNavigationB
 }
 
 private const val OWNER_CROSSFADE_SECONDS = 0.25
-
-/** After a tab switch, when the tab left is off screen. */
-private const val PREVIOUS_BARS_HIDE_NANOS = 500_000_000L

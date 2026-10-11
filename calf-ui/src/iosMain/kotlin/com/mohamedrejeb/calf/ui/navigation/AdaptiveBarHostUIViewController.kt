@@ -11,31 +11,34 @@ import androidx.compose.ui.window.ComposeUIViewController
 import androidx.compose.ui.uikit.ComposeUIViewControllerConfiguration
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
+import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGSize
 import platform.UIKit.NSDirectionalRectEdgeBottom
 import platform.UIKit.NSDirectionalRectEdgeTop
 import platform.UIKit.UIColor
+import platform.UIKit.UIEdgeInsetsMake
 import platform.UIKit.UIGestureRecognizer
 import platform.UIKit.UINavigationController
 import platform.UIKit.UITabBarController
 import platform.UIKit.UITabBarControllerDelegateProtocol
-import platform.UIKit.tabBarItem
+import platform.UIKit.UIView
 import platform.UIKit.UIViewAutoresizingFlexibleHeight
 import platform.UIKit.UIViewAutoresizingFlexibleWidth
-import platform.UIKit.UIView
 import platform.UIKit.UIViewController
+import platform.UIKit.UIViewControllerTransitionCoordinatorProtocol
 import platform.UIKit.addChildViewController
+import platform.UIKit.additionalSafeAreaInsets
 import platform.UIKit.didMoveToParentViewController
 import platform.UIKit.removeFromParentViewController
+import platform.UIKit.tabBarItem
 import platform.UIKit.willMoveToParentViewController
 import platform.darwin.NSObject
-import platform.darwin.DISPATCH_TIME_NOW
-import platform.darwin.dispatch_after
 import platform.darwin.dispatch_async
-import platform.darwin.dispatch_time
 import platform.darwin.dispatch_get_main_queue
 import platform.objc.sel_registerName
+import kotlin.math.max
 
 /**
  * The iOS entry point of an app whose screens use [AdaptiveScaffold] with plain Compose
@@ -80,11 +83,18 @@ public fun AdaptiveBarHostUIViewController(
     BarHostContainer(configure, content).rootController
 
 /**
- * The containers: a `UINavigationController` whose one controller is a thin
- * [BarHostSlotController] holding the Compose view controller. Once a screen shows tabs, a
- * `UITabBarController` takes over with one such navigation controller per tab; the Compose view
- * controller moves into the selected tab's slot, and the tab bar is hidden while the shown
- * screen has none.
+ * The containers: one `UINavigationController` whose one controller is a thin
+ * [BarHostSlotController] holding the Compose view controller, for good. Once a screen shows
+ * tabs, a `UITabBarController` takes the root with one empty [BarHostTabPlaceholderController]
+ * per tab, and the navigation controller is layered over the tabs (see [layerContentOverTabs]);
+ * the tab bar is hidden while the shown screen has none.
+ *
+ * The content never changes container on a tab switch. UIKit switches tabs by taking the
+ * leaving tab's view out of the window and putting the entering one in, and Compose's view,
+ * re-entering the window, takes first responder, lays out and draws a whole frame synchronously
+ * with a wait for the GPU: tens of milliseconds on the main thread in the first frame of the tab
+ * bar's selection animation, which stalled it. With the content in place, a switch is UIKit
+ * animating its selection over two empty views while Compose transitions the content.
  *
  * The tab bar controller only exists once tabs were shown: a `UITabBarController` around the app
  * would take the vertical bar of an iPhone Duo from the tab bars of containers inside the Compose
@@ -121,12 +131,10 @@ internal class BarHostContainer(
         onOwnerScrollChange = scrollMirror::reportScrollOffset,
     )
 
-    private var slots: List<BarHostSlotController> = emptyList()
-    private var navigationControllers: List<UINavigationController> = emptyList()
+    private val slot = BarHostSlotController(::onSlotLayout)
+    private val navigationController = hostNavigationController(slot)
+    private var placeholders: List<BarHostTabPlaceholderController> = emptyList()
     private var selectedIndex = 0
-
-
-    private var switchGeneration = 0
 
     private val tabBarDelegate = BarHostTabBarDelegate(::onTabTapped)
     private var appliedTabBar: HostedTabBar? = null
@@ -139,22 +147,17 @@ internal class BarHostContainer(
     init {
         // The root is all the app keeps: it owns the container, and with it the host.
         rootController.container = this
-        setTabCount(1)
-        rootController.show(navigationControllers.first())
-        moveContentTo(0)
+        slot.loadViewIfNeeded()
+        slot.addChildViewController(composeViewController)
+        composeViewController.view.setFrame(slot.view.bounds)
+        composeViewController.view.autoresizingMask =
+            UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
+        slot.view.addSubview(composeViewController.view)
+        composeViewController.didMoveToParentViewController(slot)
+        // Above the Compose view, see LargeTitleScrollMirror.
+        scrollMirror.install(slot, edges = NSDirectionalRectEdgeTop or NSDirectionalRectEdgeBottom)
+        rootController.show(navigationController)
     }
-
-    /** The tab bar controller, created and put in place the first time a screen shows tabs. */
-    private fun tabBarController(): UITabBarController =
-        tabBarController ?: UITabBarController().also { controller ->
-            tabBarController = controller
-            controller.delegate = tabBarDelegate
-            defaultTintColor = controller.tabBar.tintColor
-            defaultUnselectedItemTintColor = controller.tabBar.unselectedItemTintColor
-            // Out of the root first: a controller has one parent.
-            rootController.show(controller)
-            controller.setViewControllers(navigationControllers, animated = false)
-        }
 
     @Composable
     private fun HostContent(content: @Composable () -> Unit) {
@@ -165,12 +168,6 @@ internal class BarHostContainer(
             content()
         }
     }
-
-    private val navigationController: UINavigationController
-        get() = navigationControllers[selectedIndex]
-
-    private val slot: BarHostSlotController
-        get() = slots[selectedIndex]
 
     /**
      * A change the containers must show now is applied right away: an entering screen publishes its
@@ -202,7 +199,6 @@ internal class BarHostContainer(
         isApplying = true
         try {
             val state = host.state
-            // Tabs first: selecting another tab moves the content, and the bars follow it.
             applyTabBar(state.shownBars.tabBar, hasTabs = state.hasTabs, animated = hasAppliedBars)
             driver.apply(state, navigationController, slot, host.density)
             barColumn.apply(navigationController, slot, state.barColumnInsets())
@@ -215,10 +211,13 @@ internal class BarHostContainer(
     }
 
     /**
-     * Shows [tabBar] in the tab bar controller, one tab per item, the content in the selected
-     * one; hides it when the shown screen has none. Hiding at the moment another screen takes the
-     * bars (the start of its transition) is what keeps the tab bar from lingering over it.
+     * Shows [tabBar] in the tab bar controller, one placeholder tab per item, the selected one
+     * selected; hides it when the shown screen has none. Hiding at the moment another screen takes
+     * the bars (the start of its transition) is what keeps the tab bar from lingering over it.
      * Once no screen publishes tabs any more ([hasTabs]), the tab bar controller goes.
+     *
+     * The selection is UIKit's own, animated as it animates a tap, and nothing else happens with
+     * it: the content stays where it is and Compose transitions it.
      */
     private fun applyTabBar(tabBar: HostedTabBar?, hasTabs: Boolean, animated: Boolean) {
         if (tabBar == null) {
@@ -226,18 +225,18 @@ internal class BarHostContainer(
             else removeTabBarController()
             return
         }
-        val tabBarController = tabBarController()
         val selected = tabBar.selectedIndex.coerceIn(tabBar.items.indices)
         // Items and configuration only: a selection change alone must not rebuild every tab bar
         // item while UIKit animates the selection.
         val itemsChanged = tabBar.items != appliedTabBar?.items || tabBar.configuration != appliedTabBar?.configuration
         if (itemsChanged) {
-            // Fewer tabs: move the content out of a slot that is about to go before dropping it.
-            if (selectedIndex >= tabBar.items.size) moveContentTo(selected)
             setTabCount(tabBar.items.size)
             tabBar.items.forEachIndexed { index, item ->
-                navigationControllers[index].tabBarItem = item.toUITabBarItem(index.toLong(), host.density)
+                placeholders[index].tabBarItem = item.toUITabBarItem(index.toLong(), host.density)
             }
+        }
+        val tabBarController = tabBarController()
+        if (itemsChanged) {
             tabBarController.tabBar.applyTabBarConfiguration(
                 configuration = tabBar.configuration,
                 defaultTintColor = defaultTintColor ?: tabBarController.tabBar.tintColor,
@@ -245,131 +244,149 @@ internal class BarHostContainer(
             )
             appliedTabBar = tabBar
         }
-        if (selected != selectedIndex && hasAppliedBars) {
-            switchTab(tabBarController, selected)
-        } else {
-            moveContentTo(selected)
-            if (tabBarController.selectedIndex.toInt() != selected) {
-                tabBarController.selectedIndex = selected.toULong()
-            }
-        }
-        tabBarController.setTabBarVisibility(hidden = false, animated = animated)
-    }
-
-    /**
-     * A tab switch while the content is showing. Compose's view, re-parented, draws nothing until
-     * the next display pass and then draws a whole frame synchronously; done after the selection,
-     * that left the incoming tab blank and stalled the tab bar's selection animation, which UIKit
-     * drives frame by frame on the main thread. So the view moves into the incoming slot while
-     * that slot is still off screen, is laid out and displayed there at once, and only then does
-     * the selection animate, with nothing heavy left for its frames. The outgoing slot keeps a
-     * still of the content for UIKit's crossfade between the tabs.
-     *
-     * All of it on the next main-thread turn: the bars are applied from inside Compose's render
-     * callback, and a synchronous display there would re-enter Compose's redrawer, which it
-     * refuses. The incoming tab's bars are applied right away, to the still hidden tab.
-     */
-    private fun switchTab(tabBarController: UITabBarController, selected: Int) {
-        leaveSnapshotBehind()
         selectedIndex = selected
-        val generation = ++switchGeneration
-        dispatch_async(dispatch_get_main_queue()) {
-            // A later tap took over: that switch moves the content.
-            if (generation != switchGeneration) return@dispatch_async
-            moveContentTo(selected)
-            slot.view.layoutIfNeeded()
-            composeViewController.view.layer.displayIfNeeded()
+        if (tabBarController.selectedIndex.toInt() != selected) {
             tabBarController.selectedIndex = selected.toULong()
         }
+        tabBarController.setTabBarVisibility(hidden = false, animated = animated)
+        layerContentOverTabs()
     }
 
-    /** A still of the content in the slot it is leaving; it goes when the content comes back. */
-    private fun leaveSnapshotBehind() {
-        val snapshot = composeViewController.view.snapshotViewAfterScreenUpdates(false) ?: return
-        snapshot.tag = SNAPSHOT_TAG
-        snapshot.setFrame(slot.view.bounds)
-        snapshot.autoresizingMask = UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
-        snapshot.userInteractionEnabled = false
-        slot.view.addSubview(snapshot)
+    /** The tab bar controller, created and put in place the first time a screen shows tabs. */
+    private fun tabBarController(): UITabBarController =
+        tabBarController ?: UITabBarController().also { controller ->
+            tabBarController = controller
+            controller.delegate = tabBarDelegate
+            defaultTintColor = controller.tabBar.tintColor
+            defaultUnselectedItemTintColor = controller.tabBar.unselectedItemTintColor
+            // The tab bar controller takes the root from the navigation controller, which goes over
+            // its tabs in the same turn: out of the window for longer, Compose would drop its scene.
+            rootController.show(controller)
+            controller.setViewControllers(placeholders, animated = false)
+            controller.view.layoutIfNeeded()
+            layerContentOverTabs()
+        }
+
+    /**
+     * Puts the content over the tabs: the navigation controller's view goes into the tab bar
+     * controller's view above the container of the tabs' views and under the tab bar's own
+     * container (which UIKit adds right above the tabs, after them), and the navigation
+     * controller is on its own, with no parent. Checked on every apply: it costs an index lookup.
+     *
+     * It cannot be the tab bar controller's child: UIKit insists that a controller's view placed
+     * inside another controller's view belongs to one of its children, and the tab bar controller
+     * gives a child that is not the selected tab no safe area at all, its `additionalSafeAreaInsets`
+     * included. On its own, the navigation controller takes the window's safe area through the
+     * view hierarchy, gets its appearance callbacks and trait changes from UIKit all the same, and
+     * only size transitions have to be forwarded to it, see [BarHostRootController]. The tab bar's
+     * share of the safe area is mirrored from the selected placeholder, see [mirrorTabInsets].
+     */
+    private fun layerContentOverTabs() {
+        val controller = tabBarController ?: return
+        val contentView = navigationController.view
+        val tabsContainer = controller.selectedViewController?.view?.ancestorDirectlyIn(controller.view)
+        contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
+        if (tabsContainer == null) {
+            // Before the tabs' views exist; the first placeholder layout puts it in order.
+            if (contentView.superview != controller.view) {
+                contentView.setFrame(controller.view.bounds)
+                controller.view.addSubview(contentView)
+            }
+            return
+        }
+        val barContainer = controller.tabBar.ancestorDirectlyIn(controller.view)
+        val subviews = controller.view.subviews
+        val contentIndex = subviews.indexOf(contentView)
+        val barIndex = barContainer?.let(subviews::indexOf) ?: subviews.size
+        if (contentIndex > subviews.indexOf(tabsContainer) && contentIndex < barIndex) return
+        contentView.setFrame(tabsContainer.frame)
+        if (barContainer != null) {
+            controller.view.insertSubview(contentView, belowSubview = barContainer)
+        } else {
+            controller.view.insertSubview(contentView, aboveSubview = tabsContainer)
+        }
     }
 
     /**
-     * Back to the containers of a fresh host: one navigation controller as the root, a new one.
-     * A `UITabBarController` around the app, even with its tab bar hidden, takes an iPhone Duo's
-     * vertical bar from the tab bars of containers inside the Compose content (a calf-navigation
-     * `AdaptiveTabDisplay`).
-     *
-     * The navigation controllers that were its tabs are dropped, not reused: once such a controller
-     * is on its own again, UIKit no longer counts its navigation bar in its content's safe area
-     * (the bar shows, the content's safe area stays at the status bar; iOS 26.2 and 26.3). The
-     * content moves into a fresh slot in a fresh navigation controller, and the bars are applied
-     * to it again from scratch.
+     * Back to the containers of a fresh host: the navigation controller as the root, its safe
+     * area the window's again. A `UITabBarController` around the app, even with its tab bar hidden,
+     * takes an iPhone Duo's vertical bar from the tab bars of containers inside the Compose content
+     * (a calf-navigation `AdaptiveTabDisplay`).
      */
     private fun removeTabBarController() {
         val controller = tabBarController ?: return
-        val freshSlot = BarHostSlotController(::onSlotLayout).also { it.loadViewIfNeeded() }
-        val freshNavigationController = hostNavigationController(freshSlot)
-        slots = listOf(freshSlot)
-        navigationControllers = listOf(freshNavigationController)
-        rootController.show(freshNavigationController)
-        moveContentTo(0)
+        navigationController.setAdditionalSafeAreaInsetsIfChanged(0.0, 0.0, 0.0, 0.0)
+        rootController.show(navigationController)
         controller.setViewControllers(emptyList<UIViewController>(), animated = false)
         controller.delegate = null
         tabBarController = null
+        placeholders = emptyList()
         appliedTabBar = null
     }
 
     /**
-     * A tab tapped in UIKit: the screen that shows the tabs decides, as on every other platform.
-     * UIKit is told not to switch; once the screen publishes the new selection, [applyTabBar]
-     * selects the tab and moves the content. Switching here first and letting the screen catch up
-     * showed the previous tab's content for a frame or two when the screen was slow to recompose.
+     * A tab tapped, or the selection dragged onto it (iOS 26), in UIKit. UIKit selects the empty tab
+     * at once, so the indicator answers the touch as in any app, and the screen that shows the tabs
+     * is told and decides, as on every other platform: it publishes the selection and the content
+     * follows, or keeps the old one and the apply scheduled here puts the tab back. Refusing here and
+     * selecting once the screen had confirmed took a dragged indicator back to the old item first.
      */
     private fun onTabTapped(viewController: UIViewController): Boolean {
-        val index = navigationControllers.indexOf(viewController)
+        val index = placeholders.indexOf(viewController)
         if (index < 0 || index == selectedIndex) return false
+        selectedIndex = index
         host.onTabSelected(index)
-        return false
+        scheduleApply()
+        return true
     }
 
     private fun setTabCount(count: Int) {
-        if (count == slots.size) return
-        val newSlots = List(count) { index ->
-            // Loaded now: the first visit of a tab took 0.3 s when the view loaded on selection.
-            slots.getOrNull(index) ?: BarHostSlotController(::onSlotLayout).also { it.loadViewIfNeeded() }
+        if (count == placeholders.size) return
+        placeholders = List(count) { index ->
+            placeholders.getOrNull(index) ?: BarHostTabPlaceholderController(::onPlaceholderLayout).also { placeholder ->
+                // Loaded now: the first visit of a tab took 0.3 s when the view loaded on selection.
+                placeholder.loadViewIfNeeded()
+                // The tab bar follows the content's scroll view, which is in the other container: without
+                // one for its edge UIKit draws it transparent over the content (iOS 15–18).
+                scrollMirror.share(placeholder, edges = NSDirectionalRectEdgeBottom)
+            }
         }
-        navigationControllers = newSlots.mapIndexed { index, slot ->
-            navigationControllers.getOrNull(index) ?: hostNavigationController(slot)
-        }
-        slots = newSlots
-        tabBarController?.setViewControllers(navigationControllers, animated = false)
+        tabBarController?.setViewControllers(placeholders, animated = false)
     }
 
-    /** Moves the Compose content into the slot of tab [index]; its composition stays alive. */
-    private fun moveContentTo(index: Int) {
-        val target = slots[index]
-        selectedIndex = index
-        if (composeViewController.parentViewController === target) return
-        // The still left behind when the content last left this slot.
-        target.view.subviews.filterIsInstance<UIView>().filter { it.tag == SNAPSHOT_TAG }.forEach { it.removeFromSuperview() }
-        composeViewController.willMoveToParentViewController(null)
-        composeViewController.view.removeFromSuperview()
-        composeViewController.removeFromParentViewController()
-
-        target.addChildViewController(composeViewController)
-        composeViewController.view.setFrame(target.view.bounds)
-        composeViewController.view.autoresizingMask =
-            UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
-        target.view.addSubview(composeViewController.view)
-        composeViewController.didMoveToParentViewController(target)
-        // Above the Compose view, see LargeTitleScrollMirror.
-        scrollMirror.install(target, edges = NSDirectionalRectEdgeTop or NSDirectionalRectEdgeBottom)
-        target.setNeedsStatusBarAppearanceUpdate()
-        scheduleApply()
+    private fun onPlaceholderLayout(placeholder: BarHostTabPlaceholderController) {
+        if (placeholder != tabBarController?.selectedViewController) return
+        layerContentOverTabs()
+        mirrorTabInsets(placeholder)
     }
 
-    private fun onSlotLayout(layoutSlot: BarHostSlotController) {
-        if (layoutSlot !== slot) return
+    /**
+     * The tab bar's share of the selected tab's safe area, what it has over the window's own, is
+     * given to the content as additional insets; the window's own it gets from the view hierarchy.
+     */
+    private fun mirrorTabInsets(placeholder: UIViewController) {
+        val system = rootController.view.safeAreaInsets
+        placeholder.view.safeAreaInsets.useContents {
+            val tab = this
+            system.useContents {
+                navigationController.setAdditionalSafeAreaInsetsIfChanged(
+                    top = max(0.0, tab.top - top),
+                    left = max(0.0, tab.left - left),
+                    bottom = max(0.0, tab.bottom - bottom),
+                    right = max(0.0, tab.right - right),
+                )
+            }
+        }
+    }
+
+    /** The root rotates or resizes: the navigation controller on its own has to hear of it. */
+    fun onSizeTransition(size: CValue<CGSize>, coordinator: UIViewControllerTransitionCoordinatorProtocol) {
+        if (navigationController.parentViewController == null) {
+            navigationController.viewWillTransitionToSize(size, coordinator)
+        }
+    }
+
+    private fun onSlotLayout() {
         scrollMirror.layout()
         measure()
     }
@@ -429,6 +446,24 @@ internal fun UITabBarController.setTabBarVisibility(hidden: Boolean, animated: B
     }
 }
 
+/**
+ * The ancestor of this view that is a direct subview of [root], or `null` when it is not inside it.
+ * Compared with `equals` (`isEqual:`): Kotlin wraps a UIKit object anew each time it is handed one,
+ * so identity never holds between two of them.
+ */
+private fun UIView.ancestorDirectlyIn(root: UIView): UIView? {
+    var view: UIView? = this
+    while (view != null && view.superview != root) view = view.superview
+    return view
+}
+
+private fun UIViewController.setAdditionalSafeAreaInsetsIfChanged(top: Double, left: Double, bottom: Double, right: Double) {
+    val unchanged = additionalSafeAreaInsets.useContents {
+        this.top == top && this.left == left && this.bottom == bottom && this.right == right
+    }
+    if (!unchanged) additionalSafeAreaInsets = UIEdgeInsetsMake(top, left, bottom, right)
+}
+
 /** The controller handed to the app: it shows one container, and swaps it when tabs appear. */
 internal class BarHostRootController : UIViewController(nibName = null, bundle = null) {
     /** Kept alive for as long as the app holds this controller. */
@@ -449,6 +484,14 @@ internal class BarHostRootController : UIViewController(nibName = null, bundle =
         container.didMoveToParentViewController(this)
         current = container
     }
+
+    override fun viewWillTransitionToSize(
+        size: CValue<CGSize>,
+        withTransitionCoordinator: UIViewControllerTransitionCoordinatorProtocol,
+    ) {
+        super.viewWillTransitionToSize(size, withTransitionCoordinator)
+        container?.onSizeTransition(size, withTransitionCoordinator)
+    }
 }
 
 /** Hands UIKit tab taps to the container before UIKit switches the tab. */
@@ -462,12 +505,34 @@ private class BarHostTabBarDelegate(
 }
 
 /**
- * The thin content controller of one tab: it holds the Compose view controller while its tab is
- * selected and reports its layout passes, which carry every safe-area change of the containers.
+ * The content controller of the host's navigation controller: it holds the Compose view
+ * controller and reports its layout passes, which carry every safe-area change of the containers.
  */
 internal class BarHostSlotController(
-    private val onLayout: (BarHostSlotController) -> Unit,
+    private val onLayout: () -> Unit,
 ) : UIViewController(nibName = null, bundle = null) {
+
+    override fun viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        onLayout()
+    }
+}
+
+/**
+ * One tab of the host's tab bar controller: an empty controller that gives UIKit something to
+ * select, with the item of its tab. Invisible and touch-transparent, it lies under the content
+ * (see [BarHostContainer.layerContentOverTabs]) and reports its layout passes, which carry the
+ * tab bar's share of the safe area.
+ */
+internal class BarHostTabPlaceholderController(
+    private val onLayout: (BarHostTabPlaceholderController) -> Unit,
+) : UIViewController(nibName = null, bundle = null) {
+
+    override fun viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = UIColor.clearColor
+        view.userInteractionEnabled = false
+    }
 
     override fun viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -476,6 +541,4 @@ internal class BarHostSlotController(
 }
 
 private const val LIQUID_GLASS_MIN_IOS = 26
-
-private const val SNAPSHOT_TAG = 0x43414C46L
 private const val TAB_BAR_HIDING_MIN_IOS = 18

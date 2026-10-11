@@ -92,6 +92,21 @@ public class LargeTitleScrollMirror(
         registeredEdges = edges
     }
 
+    /**
+     * Registers the scroll view for [edges] in [viewController] as well, without moving it: for a
+     * bar that belongs to a container other than the one the content is in (the bar host's tab bar,
+     * whose tabs are empty placeholders under the content). A bar whose edge has no scroll view is
+     * drawn transparent over the content on iOS 15–18.
+     */
+    public fun share(
+        viewController: UIViewController,
+        edges: NSDirectionalRectEdge,
+    ) {
+        if (isIOSVersionAtLeast(CONTENT_SCROLL_VIEW_MIN_IOS)) {
+            viewController.setContentScrollView(scrollView, forEdge = edges)
+        }
+    }
+
     public fun remove() {
         unregister()
         scrollView.removeFromSuperview()
