@@ -70,3 +70,7 @@ AdaptiveSwitch(
     },
 )
 ```
+
+## Platform notes
+
+On iOS the switch has UISwitch's geometry, a 51 by 31 point track with a 27 point thumb, and the whole switch is the touch target: a tap anywhere on it toggles, a drag anywhere moves the thumb, and the hit area is extended to the 48dp minimum, as for a Material `Switch`. `colors` apply to the Cupertino switch (iOS before 26); the Liquid Glass switch (iOS 26+) uses the system green and glass tones.

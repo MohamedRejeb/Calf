@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalAbsoluteTonalElevation
@@ -54,6 +55,7 @@ actual fun AdaptiveBottomSheet(
     val contentColorState = rememberUpdatedState(contentColor)
     val tonalElevationState = rememberUpdatedState(tonalElevation)
     val contentState = rememberUpdatedState(content)
+    val grabberShownState = rememberUpdatedState(dragHandle != null)
     val onDismissRequestState = rememberUpdatedState(onDismissRequest)
     val confirmValueChangeState = rememberUpdatedState(adaptiveSheetState.confirmValueChange)
 
@@ -86,18 +88,24 @@ actual fun AdaptiveBottomSheet(
 
                 CompositionLocalProvider(compositionLocalContext.value) {
                     CompositionLocalProvider(sheetCompositionLocalContext) {
+                        // The surface fills the whole sheet, not just the content's height, so the
+                        // sheet is one colour from the grabber to the bottom edge whatever the detent.
                         Surface(
                             color = containerColorState.value,
                             contentColor = contentColorState.value,
                             tonalElevation = tonalElevationState.value,
-                            modifier = modifierState.value.fillMaxWidth()
+                            modifier = modifierState.value.fillMaxSize()
                         ) {
-                            val insets = sheetContentInsets(sheetSafeArea.value)
+                            val insets = sheetContentInsets(
+                                sheetSafeArea = sheetSafeArea.value,
+                                grabberShown = grabberShownState.value,
+                            )
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    // Out of what the sheet reaches under (an iPhone Duo's vertical bar).
-                                    .absolutePadding(left = insets.left, right = insets.right),
+                                    // Below the grabber, and out of what the sheet reaches under
+                                    // (an iPhone Duo's vertical bar).
+                                    .absolutePadding(left = insets.left, top = insets.top, right = insets.right),
                                 content = contentState.value,
                             )
                         }
