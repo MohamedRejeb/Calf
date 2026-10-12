@@ -18,6 +18,7 @@ import platform.darwin.NSObject
 import platform.darwin.dispatch_after
 import platform.darwin.dispatch_get_main_queue
 import platform.darwin.dispatch_time
+import platform.objc.sel_registerName
 
 /** Longer than UIKit's push and pop animation (about 0.35 s); a gesture keeps the watchdog waiting. */
 private const val TRANSITION_WATCHDOG_NANOS = 1_000_000_000L
@@ -130,7 +131,7 @@ internal class IosNavColumn(
     private fun isPopGestureInFlight(): Boolean =
         listOfNotNull(
             uiNavigationController.interactivePopGestureRecognizer,
-            uiNavigationController.interactiveContentPopGestureRecognizer,
+            uiNavigationController.contentPopGestureRecognizer(),
         ).any { it.state == UIGestureRecognizerStateBegan || it.state == UIGestureRecognizerStateChanged }
 
     private fun canPopTopEntry(): Boolean =
@@ -158,11 +159,27 @@ internal class IosNavColumn(
                     recognizer.enabled = canPop
                 }
                 PopGestureKind.Content ->
-                    uiNavigationController.interactiveContentPopGestureRecognizer?.enabled = canPop
+                    uiNavigationController.contentPopGestureRecognizer()?.enabled = canPop
             }
         }
     }
 }
+
+/**
+ * `interactiveContentPopGestureRecognizer` (iOS 26): the full-width swipe back. Read through a
+ * selector check: Kotlin/Native binds the accessor whatever the system version, and iOS 18 raises
+ * "unrecognized selector" for it (seen in the watchdog after a push whose `didShow` never came).
+ */
+private fun UINavigationController.contentPopGestureRecognizer(): UIGestureRecognizer? =
+    if (isIOSVersionAtLeast(CONTENT_POP_GESTURE_MIN_IOS) &&
+        respondsToSelector(sel_registerName("interactiveContentPopGestureRecognizer"))
+    ) {
+        interactiveContentPopGestureRecognizer
+    } else {
+        null
+    }
+
+private const val CONTENT_POP_GESTURE_MIN_IOS = 26
 
 private class PopGestureDelegate(
     private val canPop: () -> Boolean,
