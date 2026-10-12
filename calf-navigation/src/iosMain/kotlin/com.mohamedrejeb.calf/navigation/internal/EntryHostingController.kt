@@ -27,6 +27,7 @@ import com.mohamedrejeb.calf.navigation.ExperimentalCalfNavigationApi
 import com.mohamedrejeb.calf.ui.navigation.LargeTitleScrollMirror
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import platform.UIKit.UINavigationController
 import platform.UIKit.UIView
 import platform.UIKit.UIViewAutoresizingFlexibleHeight
 import platform.UIKit.UIViewAutoresizingFlexibleWidth
@@ -38,6 +39,7 @@ import platform.UIKit.hidesBottomBarWhenPushed
 import platform.UIKit.navigationController
 import platform.UIKit.navigationItem
 import platform.UIKit.removeFromParentViewController
+import platform.UIKit.transitionCoordinator
 import platform.UIKit.willMoveToParentViewController
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
@@ -183,11 +185,35 @@ internal class EntryHostingController(
         super.viewWillAppear(animated)
         attachContent(deferred = animated)
         navigationController?.let { nav ->
-            // setNavigationBarHidden(animated:) coordinates with the push/pop
-            // transition, so per-entry barShown animates cleanly.
-            nav.setNavigationBarHidden(!metadata.barShown, animated)
+            if (animated && nav.navigationBarHidden && metadata.barShown) {
+                revealBar(nav)
+            } else {
+                // setNavigationBarHidden(animated:) coordinates with the push/pop
+                // transition, so per-entry barShown animates cleanly.
+                nav.setNavigationBarHidden(!metadata.barShown, animated)
+            }
             nav.navigationBar.translucent = metadata.iosConfiguration.isTranslucent
         }
+    }
+
+    /**
+     * Shows a hidden bar for a pushed entry without UIKit's coordination with the push. Shown
+     * along with a push, UIKit slides the bar in from the side and places it at the top edge of
+     * the controller, which is not always where it rests: on iOS 26 a bar under no status bar
+     * (an iPhone in landscape) rests 24 points lower, and UIKit's next layout pass, after the
+     * push, moves it there with a visible jump. Shown on its own the bar is laid out at its
+     * resting position at once, and fades in alongside the push instead of sliding.
+     */
+    private fun revealBar(nav: UINavigationController) {
+        nav.setNavigationBarHidden(false, animated = false)
+        val bar = nav.navigationBar
+        val coordinator = transitionCoordinator
+        if (coordinator == null) return
+        bar.alpha = 0.0
+        coordinator.animateAlongsideTransition(
+            animation = { _ -> bar.alpha = 1.0 },
+            completion = { _ -> bar.alpha = 1.0 },
+        )
     }
 
     private fun attachContent(deferred: Boolean) {
