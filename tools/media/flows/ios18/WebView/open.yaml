@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "WKWebView, Android WebView and more"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "WKWebView, Android WebView and more"
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Calf"
+    timeout: 20000
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "zzqq-never"
+    timeout: 14000
+    optional: true
+- takeScreenshot: WebView

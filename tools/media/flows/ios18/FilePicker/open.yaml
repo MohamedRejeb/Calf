@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "The system file picker on every platform"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "The system file picker on every platform"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveFilePicker
+- tapOn: "Attach files"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Cancel"
+    timeout: 10000
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveFilePicker-system
+- tapOn: "Cancel"
+- waitForAnimationToEnd

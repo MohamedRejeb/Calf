@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Press-to-scale on iOS, ripple on Material"
+    direction: DOWN
+- tapOn: "Press-to-scale on iOS, ripple on Material"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveClickable

@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Liquid Glass on iOS 26, Material 3 elsewhere"
+    direction: DOWN
+- tapOn: "Liquid Glass on iOS 26, Material 3 elsewhere"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveSlider

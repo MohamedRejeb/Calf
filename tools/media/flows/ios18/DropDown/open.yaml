@@ -1,0 +1,23 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "UIMenu on iOS, Material 3 menu elsewhere"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "UIMenu on iOS, Material 3 menu elsewhere"
+- waitForAnimationToEnd
+- tapOn:
+    text: "More options"
+    index: 0
+    optional: true
+- tapOn:
+    text: "More"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveDropdownMenu
+- tapOn: "Copy"

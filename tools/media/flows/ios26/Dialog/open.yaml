@@ -1,0 +1,27 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "UIAlertController on iOS, Material 3 elsewhere"
+    direction: DOWN
+- tapOn: "UIAlertController on iOS, Material 3 elsewhere"
+- waitForAnimationToEnd
+- tapOn: "Delete draft"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveAlertDialog
+- tapOn: "Cancel"
+- tapOn: "Rename file"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveAlertDialog-text-field
+- tapOn: "Cancel"
+- tapOn: "Photo options"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveAlertDialog-action-sheet
+- tapOn: "Duplicate"
+- waitForAnimationToEnd

@@ -1,0 +1,4 @@
+appId: ${APP_ID}
+---
+- tapOn: "24-hour time"
+- tapOn: "24-hour time"

@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+---
+- tapOn: "Share trip"
+- waitForAnimationToEnd
+- tapOn: "Allow editing"
+- tapOn: "Copy link"
+- swipe:
+    start: 50%, 60%
+    end: 50%, 95%
+    duration: 500
+- tapOn: "Schedule"
+- tapOn: "People"
+- tapOn: "Plan"

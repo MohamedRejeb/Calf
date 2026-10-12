@@ -1,0 +1,18 @@
+appId: ${APP_ID}
+---
+- tapOn: "Lisbon"
+- waitForAnimationToEnd
+- tapOn: "Increment"
+- tapOn: "Increment"
+- back
+- waitForAnimationToEnd
+- tapOn: "Mail"
+- waitForAnimationToEnd
+- back
+- waitForAnimationToEnd
+- tapOn: "Harbour Rentals.*"
+- waitForAnimationToEnd
+- back
+- tapOn: "Explore"
+- waitForAnimationToEnd
+- tapOn: "Home"

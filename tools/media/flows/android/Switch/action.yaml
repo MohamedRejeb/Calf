@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- tapOn:
+    point: "86%,31%"
+- tapOn:
+    point: "86%,61%"
+- tapOn:
+    point: "86%,53%"
+- tapOn:
+    point: "86%,31%"
+- tapOn:
+    point: "86%,61%"
+- tapOn:
+    point: "86%,53%"

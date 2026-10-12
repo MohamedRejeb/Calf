@@ -1,0 +1,7 @@
+appId: ${APP_ID}
+---
+- tapOn: "Saved"
+- tapOn: "Profile"
+- tapOn: "Home"
+- tapOn: "Saved"
+- runFlow: ../_sleep.yaml

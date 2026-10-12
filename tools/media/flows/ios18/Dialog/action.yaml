@@ -1,0 +1,8 @@
+appId: ${APP_ID}
+---
+- tapOn: "Delete draft"
+- waitForAnimationToEnd
+- tapOn: "Cancel"
+- tapOn: "Photo options"
+- waitForAnimationToEnd
+- tapOn: "Duplicate"

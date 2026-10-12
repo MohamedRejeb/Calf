@@ -1,0 +1,17 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "The system file picker on every platform"
+    direction: DOWN
+- tapOn: "The system file picker on every platform"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveFilePicker
+- tapOn: "Attach files"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveFilePicker-system

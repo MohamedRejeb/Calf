@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Ask for and track runtime permissions"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "Permissions"
+- waitForAnimationToEnd
+- takeScreenshot: Permissions

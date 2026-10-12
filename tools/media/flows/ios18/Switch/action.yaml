@@ -1,0 +1,20 @@
+appId: ${APP_ID}
+---
+- tapOn:
+    point: 85%, 30%
+- waitForAnimationToEnd
+- tapOn:
+    point: 85%, 62%
+- waitForAnimationToEnd
+- tapOn:
+    point: 85%, 54%
+- waitForAnimationToEnd
+- tapOn:
+    point: 85%, 30%
+- waitForAnimationToEnd
+- tapOn:
+    point: 85%, 62%
+- waitForAnimationToEnd
+- tapOn:
+    point: 85%, 54%
+- waitForAnimationToEnd

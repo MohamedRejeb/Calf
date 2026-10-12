@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "UITabBar on iOS, Material 3 navigation bar"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "UITabBar on iOS, Material 3 navigation bar"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveNavigationBar

@@ -1,0 +1,17 @@
+appId: ${APP_ID}
+---
+- tapOn: "From today"
+- waitForAnimationToEnd
+- tapOn: "Weekdays only"
+- waitForAnimationToEnd
+- swipe:
+    start: 50%, 80%
+    end: 50%, 25%
+    duration: 800
+- waitForAnimationToEnd
+- tapOn:
+    point: 38%, 55%
+- waitForAnimationToEnd
+- tapOn:
+    point: 62%, 55%
+- waitForAnimationToEnd

@@ -1,0 +1,6 @@
+appId: ${APP_ID}
+---
+- tapOn: "Lisbon itinerary.pdf"
+- tapOn: "Alfama at dusk.heic"
+- longPressOn: "Trip budget.xlsx"
+- runFlow: ../_sleep.yaml

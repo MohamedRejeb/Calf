@@ -1,0 +1,6 @@
+appId: ${APP_ID}
+---
+- extendedWaitUntil:
+    visible: "zzzNeverVisible"
+    timeout: 5000
+    optional: true

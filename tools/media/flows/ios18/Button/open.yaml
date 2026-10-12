@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Filled, icon and Liquid Glass buttons"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "Filled, icon and Liquid Glass buttons"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveButton

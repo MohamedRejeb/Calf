@@ -1,0 +1,17 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Photos from the gallery, previewed with Coil"
+    direction: DOWN
+- tapOn: "Photos from the gallery, previewed with Coil"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveImagePicker
+- tapOn: "Choose photos"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveImagePicker-system

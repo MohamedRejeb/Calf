@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Posture, fold, camera area and panes, drawn live"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "Posture, fold, camera area and panes, drawn live"
+- waitForAnimationToEnd
+- takeScreenshot: Foldable

@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "The iOS activity indicator and Material's spinner"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "The iOS activity indicator and Material's spinner"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveCircularProgressIndicator

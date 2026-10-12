@@ -1,0 +1,8 @@
+appId: ${APP_ID}
+---
+- tapOn: "One more"
+- tapOn: "One more"
+- tapOn: "Add to bag.*"
+- tapOn: "Favourite"
+- tapOn: "One less"
+- tapOn: "Add to bag.*"

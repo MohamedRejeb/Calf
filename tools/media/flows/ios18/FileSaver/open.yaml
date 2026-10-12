@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Pick, edit and save a file back to disk"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "Pick, edit and save a file back to disk"
+- waitForAnimationToEnd
+- takeScreenshot: FileSaver

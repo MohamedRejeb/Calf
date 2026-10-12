@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "UIDatePicker on iOS, Material 3 elsewhere"
+    direction: DOWN
+- tapOn: "UIDatePicker on iOS, Material 3 elsewhere"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveTimePicker
