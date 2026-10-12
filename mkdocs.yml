@@ -66,6 +66,7 @@ nav:
     - 'Top Bar': ui/adaptive-top-bar.md
   - 'Adaptive Navigation': navigation.md
   - 'Foldable': foldable.md
+  - 'iPhone Duo': iphone-duo.md
   - 'WebView': webview.md
   - 'File Picker': filepicker.md
   - 'Content Sharing': share.md
