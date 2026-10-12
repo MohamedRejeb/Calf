@@ -2,6 +2,10 @@
 
 Calf provides three date pickers that adapt to the platform they run on:
 
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveDatePicker material](../images/gif/AdaptiveDatePicker-material.gif) | ![AdaptiveDatePicker ios](../images/gif/AdaptiveDatePicker-ios.gif) | ![AdaptiveDatePicker ios-liquid-glass](../images/gif/AdaptiveDatePicker-ios-liquid-glass.gif) |
+
 1. **AdaptiveDatePicker**: the full calendar, always visible. Material3 `DatePicker` on Android, Desktop and Web; `UICalendarView` (iOS 16+) or `UIDatePicker` on iOS.
 2. **AdaptiveCompactDatePicker**: a field showing the selected date that opens the calendar on tap. A `DatePickerDialog` on Material platforms; the system compact `UIDatePicker` on iOS.
 3. **AdaptiveDateRangePicker**: picks a start and an end day. Material3 `DateRangePicker` on Material platforms; a native multi-date `UICalendarView` on iOS 16+.

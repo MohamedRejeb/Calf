@@ -4,9 +4,9 @@
 
 On iOS, a native UINavigationBar is created using the `iosTitle`, `iosLeadingItems`, `iosTrailingItems`, and `iosConfiguration` parameters. On Material platforms, the standard Material3 `TopAppBar` parameters are used.
 
-| Material (Android, Desktop, Web)                                               | Cupertino (iOS < 26)                                                        | Liquid Glass (iOS 26+)                                                                        |
-|--------------------------------------------------------------------------------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| ![AdaptiveTopAppBar Material](../images/gif/AdaptiveTopAppBar-material.gif)    | ![AdaptiveTopAppBar iOS](../images/gif/AdaptiveTopAppBar-ios.gif)           | ![AdaptiveTopAppBar Liquid Glass](../images/gif/AdaptiveTopAppBar-ios-liquid-glass.gif)       |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveTopAppBar material](../images/gif/AdaptiveTopAppBar-material.gif) | ![AdaptiveTopAppBar ios](../images/gif/AdaptiveTopAppBar-ios.gif) | ![AdaptiveTopAppBar ios-liquid-glass](../images/gif/AdaptiveTopAppBar-ios-liquid-glass.gif) |
 
 ## Usage
 

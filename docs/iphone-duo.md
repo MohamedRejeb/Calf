@@ -5,7 +5,7 @@ a fold down the middle. iOS 27.1 adds system behaviour for it, and Calf passes t
 Multiplatform app without platform code. This page gathers what Calf does on the Duo and where each part is
 documented; everything on it also works on Android foldables, iPad and ordinary iPhones.
 
-<!-- MEDIA: the sample's home on an open iPhone Duo: list column, selected demo highlighted, detail column -->
+![The sample's home on an open iPhone Duo: the list column and the Buttons demo in the detail column](images/Home-duo-open-detail.png)
 
 ## What you get, module by module
 
@@ -44,7 +44,7 @@ and shared elements in Compose; the bar host moves one set of Calf bars into the
 `calf-foldable-navigation3` gives the list-detail scene two panes around the fold.
 [Which path do I pick?](navigation.md#which-path-do-i-pick) compares them line by line.
 
-<!-- MEDIA: open iPhone Duo, Mail tab of the sample: list column, detail column, tab bar and the detail's bar items in the vertical strip -->
+![The Mail tab on an open iPhone Duo in landscape: list column, detail column, and the tab bar in the vertical strip](images/AdaptiveNavigation-duo-open-mail-landscape.png)
 <!-- MEDIA: the sample on plain Compose navigation on an open iPhone Duo: the list pane, a demo in the detail pane, its bar items in the vertical bar -->
 
 ## Things to know

@@ -4,9 +4,9 @@
 
 On iOS, the native UITabBar is created using the `iosItems`, `iosSelectedIndex`, and `iosOnItemSelected` parameters. On Material platforms, the `content` lambda is used to provide full customization of the NavigationBar content (typically `NavigationBarItem`s).
 
-| Material (Android, Desktop, Web)                                                       | Cupertino (iOS < 26)                                                            | Liquid Glass (iOS 26+)                                                                            |
-|----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| ![AdaptiveNavigationBar Material](../images/gif/AdaptiveNavigationBar-material.gif)    | ![AdaptiveNavigationBar iOS](../images/gif/AdaptiveNavigationBar-ios.gif)       | ![AdaptiveNavigationBar Liquid Glass](../images/gif/AdaptiveNavigationBar-ios-liquid-glass.gif)   |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveNavigationBar material](../images/gif/AdaptiveNavigationBar-material.gif) | ![AdaptiveNavigationBar ios](../images/gif/AdaptiveNavigationBar-ios.gif) | ![AdaptiveNavigationBar ios-liquid-glass](../images/gif/AdaptiveNavigationBar-ios-liquid-glass.gif) |
 
 !!! tip "Navigating between screens with tabs?"
     `AdaptiveNavigationBar` is a bar view laid over your Compose content. On iOS it cannot follow a Navigation 3 transition (it disappears only after the exit animation and reappears at the start of a back swipe). If your tabs own navigation stacks, use [`AdaptiveTabDisplay`](../navigation.md) from `calf-navigation` instead: it hosts a real `UITabBarController`, so the tab bar rides every transition natively.

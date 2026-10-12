@@ -2,9 +2,9 @@
 
 `AdaptiveSwitch` is a switch/toggle composable that adapts to the platform it is running on. On Android, Desktop, and Web, it uses the Material `Switch`. On iOS < 26, it uses a Cupertino-style switch, and on iOS 26+, it uses a Liquid Glass switch.
 
-| Material (Android, Desktop, Web)                                               | Cupertino (iOS < 26)                                                    | Liquid Glass (iOS 26+)                                                                    |
-|--------------------------------------------------------------------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| ![AdaptiveSwitch Material](../images/gif/AdaptiveSwitch-material.gif)          | ![AdaptiveSwitch iOS](../images/gif/AdaptiveSwitch-ios.gif)            | ![AdaptiveSwitch Liquid Glass](../images/gif/AdaptiveSwitch-ios-liquid-glass.gif)         |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveSwitch material](../images/gif/AdaptiveSwitch-material.gif) | ![AdaptiveSwitch ios](../images/gif/AdaptiveSwitch-ios.gif) | ![AdaptiveSwitch ios-liquid-glass](../images/gif/AdaptiveSwitch-ios-liquid-glass.gif) |
 
 ## Usage
 

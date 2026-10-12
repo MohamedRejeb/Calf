@@ -2,9 +2,9 @@
 
 `AdaptiveTimePicker` is a time picker that adapts to the platform it is running on. It is a wrapper around `TimePicker` on Android and `UIDatePicker` (in time mode) on iOS, providing a native time selection experience on each platform.
 
-| Material (Android, Desktop, Web)                              | Cupertino (iOS)                                       |
-|---------------------------------------------------------------|-------------------------------------------------------|
-| ![Time Picker Android](../images/AdaptiveTimePicker-android.png) | ![Time Picker iOS](../images/AdaptiveTimePicker-ios.png) |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveTimePicker material](../images/AdaptiveTimePicker-material.png) | ![AdaptiveTimePicker ios](../images/AdaptiveTimePicker-ios.png) | ![AdaptiveTimePicker ios-liquid-glass](../images/AdaptiveTimePicker-ios-liquid-glass.png) |
 
 ## Usage
 

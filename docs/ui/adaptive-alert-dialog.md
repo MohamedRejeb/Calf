@@ -7,9 +7,9 @@ Calf provides two different alert dialog composables that adapt to the platform 
 
 Both composables use native `UIAlertController` on iOS and Material dialogs on other platforms (Android, Desktop, Web).
 
-| Material (Android, Desktop, Web)                                       | Cupertino (iOS < 26)                                                   | Liquid Glass (iOS 26+)                                                                    |
-|------------------------------------------------------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| ![Alert Dialog Android](../images/AdaptiveAlertDialog-android.png)     | ![Alert Dialog iOS](../images/AdaptiveAlertDialog-ios.png)             | ![Alert Dialog Liquid Glass](../images/AdaptiveAlertDialog-ios-liquid-glass.png)          |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveAlertDialog material](../images/AdaptiveAlertDialog-material.png) | ![AdaptiveAlertDialog ios](../images/AdaptiveAlertDialog-ios.png) | ![AdaptiveAlertDialog ios-liquid-glass](../images/AdaptiveAlertDialog-ios-liquid-glass.png) |
 
 ## AdaptiveAlertDialog
 
@@ -180,9 +180,9 @@ if (showActionSheetDialog) {
 }
 ```
 
-| iOS Action Sheet (Cupertino, iOS < 26)                                          | iOS Action Sheet (Liquid Glass, iOS 26+)                                                                  |
-|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| ![iOS Action Sheet](../images/AdaptiveAlertDialog-ios-action-sheet.png)         | ![iOS Action Sheet Liquid Glass](../images/AdaptiveAlertDialog-ios-liquid-glass-action-sheet.png)         |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveAlertDialog material](../images/AdaptiveAlertDialog-material-action-sheet.png) | ![AdaptiveAlertDialog ios](../images/AdaptiveAlertDialog-ios-action-sheet.png) | ![AdaptiveAlertDialog ios-liquid-glass](../images/AdaptiveAlertDialog-ios-liquid-glass-action-sheet.png) |
 
 ## Dialog with Text Fields (iOS)
 
@@ -244,9 +244,9 @@ if (showComplexDialog) {
 }
 ```
 
-| iOS Dialog with Text Fields                                                  |
-|------------------------------------------------------------------------------|
-| ![iOS Dialog with Text Fields](../images/AdaptiveAlertDialog-ios-with-text-field.png) |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveAlertDialog material](../images/AdaptiveAlertDialog-material-text-field.png) | ![AdaptiveAlertDialog ios](../images/AdaptiveAlertDialog-ios-text-field.png) | ![AdaptiveAlertDialog ios-liquid-glass](../images/AdaptiveAlertDialog-ios-liquid-glass-text-field.png) |
 
 ## Customizing Action Styles (iOS)
 

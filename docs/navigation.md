@@ -3,6 +3,10 @@
 !!! warning "Experimental"
     The `AdaptiveNavDisplay` and `AdaptiveTabDisplay` APIs are experimental (`@ExperimentalCalfNavigationApi`) and may change in a future release.
 
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveNavigation material](images/gif/AdaptiveNavigation-material.gif) | ![AdaptiveNavigation ios](images/gif/AdaptiveNavigation-ios.gif) | ![AdaptiveNavigation ios-liquid-glass](images/gif/AdaptiveNavigation-ios-liquid-glass.gif) |
+
 ## Installation
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-navigation)](https://search.maven.org/search?q=g:%22com.mohamedrejeb.calf%22%20AND%20a:%calf-navigation%22)
@@ -232,7 +236,7 @@ Inside `entryProvider`, navigate on `state.backStackOf(tab)` or read `state.back
 
 On iOS the split view sits *inside* the tab. That is the nesting iOS adapts: on iPhone Duo the tab bar joins the detail's bar items in the vertical strip, open and closed.
 
-<!-- MEDIA: open iPhone Duo, Mail tab of the sample: list column, detail column, tab bar and the detail's bar items in the vertical strip -->
+![The Mail tab on an open iPhone Duo in landscape: list column, detail column, and the tab bar in the vertical strip](images/AdaptiveNavigation-duo-open-mail-landscape.png)
 
 ### What happens when
 

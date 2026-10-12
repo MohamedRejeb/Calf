@@ -2,9 +2,9 @@
 
 `AdaptiveButton` is a button composable that adapts to the platform it is running on. On Android, Desktop, and Web, it uses the Material `Button`. On iOS < 26, it uses a Cupertino-style button, and on iOS 26+, it uses a Liquid Glass button.
 
-| Material (Android, Desktop, Web)                                               | Cupertino (iOS < 26)                                                    | Liquid Glass (iOS 26+)                                                                    |
-|--------------------------------------------------------------------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| ![AdaptiveButton Material](../images/gif/AdaptiveButton-material.gif)          | ![AdaptiveButton iOS](../images/gif/AdaptiveButton-ios.gif)            | ![AdaptiveButton Liquid Glass](../images/gif/AdaptiveButton-ios-liquid-glass.gif)         |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveButton material](../images/gif/AdaptiveButton-material.gif) | ![AdaptiveButton ios](../images/gif/AdaptiveButton-ios.gif) | ![AdaptiveButton ios-liquid-glass](../images/gif/AdaptiveButton-ios-liquid-glass.gif) |
 
 ## Usage
 

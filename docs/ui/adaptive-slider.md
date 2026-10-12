@@ -2,9 +2,9 @@
 
 `AdaptiveSlider` is a slider composable that adapts to the platform it is running on. On Android, Desktop, and Web, it uses the Material `Slider`. On iOS < 26, it uses a Cupertino-style slider, and on iOS 26+, it uses a Liquid Glass slider.
 
-| Material (Android, Desktop, Web)                                               | Cupertino (iOS < 26)                                                    | Liquid Glass (iOS 26+)                                                                    |
-|--------------------------------------------------------------------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| ![AdaptiveSlider Material](../images/gif/AdaptiveSlider-material.gif)          | ![AdaptiveSlider iOS](../images/gif/AdaptiveSlider-ios.gif)            | ![AdaptiveSlider Liquid Glass](../images/gif/AdaptiveSlider-ios-liquid-glass.gif)         |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveSlider material](../images/gif/AdaptiveSlider-material.gif) | ![AdaptiveSlider ios](../images/gif/AdaptiveSlider-ios.gif) | ![AdaptiveSlider ios-liquid-glass](../images/gif/AdaptiveSlider-ios-liquid-glass.gif) |
 
 ## Usage
 

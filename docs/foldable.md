@@ -4,6 +4,10 @@
 and how many panes fit around it. The same API works on Android foldables and on iPhone Duo. On top of
 that it exposes the iPhone Duo values that a Compose developer has no other way to reach.
 
+| Android | iPhone | Desktop | Web |
+| --- | --- | --- | --- |
+| ![Foldable material](images/Foldable-material.png) | ![Foldable ios](images/Foldable-ios-liquid-glass.png) | ![Foldable desktop](images/Foldable-desktop.png) | ![Foldable web](images/Foldable-web.png) |
+
 <!-- MEDIA: the sample's Foldable screen on iPhone Duo, closed / book / open, side by side with a Pixel Fold -->
 
 ## Installation
@@ -214,6 +218,8 @@ Two things to know:
   two-pane scene, so it is the switch.
 
 <!-- MEDIA: the sample's Navigation 3 List-Detail demo on iPhone Duo: closed (one pane, a tap pushes the colour), open (two panes), book (the detail starts after the fold) -->
+
+![The Navigation 3 List-Detail demo on the web, two panes with an item open](images/Nav3ListDetail-web.png)
 
 ## Shared vs iOS only
 

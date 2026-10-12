@@ -10,13 +10,13 @@ implementation("com.mohamedrejeb.calf:calf-file-picker:{{ calf_version }}")
 
 ## Quick Start
 
-| Android                                                       | iOS                                                   |
-|---------------------------------------------------------------|-------------------------------------------------------|
-| ![File Picker Android](images/AdaptiveFilePicker-android.png) | ![File Picker iOS](images/AdaptiveFilePicker-ios.png) |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveFilePicker material](images/AdaptiveFilePicker-material.png) | ![AdaptiveFilePicker ios](images/AdaptiveFilePicker-ios.png) | ![AdaptiveFilePicker ios-liquid-glass](images/AdaptiveFilePicker-ios-liquid-glass.png) |
 
-| Desktop                                                       | Web                                                   |
-|---------------------------------------------------------------|-------------------------------------------------------|
-| ![File Picker Desktop](images/AdaptiveFilePicker-desktop.png) | ![File Picker Web](images/AdaptiveFilePicker-web.png) |
+| System picker (Android) | System picker (iOS) | Desktop | Web |
+| --- | --- | --- | --- |
+| ![File picker Android system](images/AdaptiveFilePicker-material-system.png) | ![File picker iOS system](images/AdaptiveFilePicker-ios-liquid-glass-system.png) | ![File picker desktop](images/AdaptiveFilePicker-desktop.png) | ![File picker web](images/AdaptiveFilePicker-web.png) |
 
 ```kotlin
 val scope = rememberCoroutineScope()

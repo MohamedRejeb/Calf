@@ -131,9 +131,9 @@ if (multiplePermissionsState.allPermissionsGranted) {
 }
 ```
 
-| Android                                                      | iOS                                                  |
-|--------------------------------------------------------------|------------------------------------------------------|
-| ![Permission Dialog Android](images/Permissions-android.png) | ![Permission Dialog iOS](images/Permissions-ios.png) |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![Permissions material](images/Permissions-material.png) | ![Permissions ios](images/Permissions-ios.png) | ![Permissions ios-liquid-glass](images/Permissions-ios-liquid-glass.png) |
 
 ## Permissions Reference
 
