@@ -1,3 +1,5 @@
+<p align="center"><img src="images/logo.svg" width="128" alt="Calf logo: a switch with squared Material corners on the left and round iOS corners on the right" /></p>
+
 # Calf - Compose Adaptive Look & Feel
 
 Write your UI once in Compose Multiplatform. Calf gives it the native look and feel on every platform: Material 3 on Android, Desktop and Web, Cupertino and Liquid Glass on iOS, real UIKit navigation, and the system APIs an app needs (file picker, camera, share sheet, permissions, WebView).

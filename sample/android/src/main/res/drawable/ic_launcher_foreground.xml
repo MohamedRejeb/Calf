@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Calf mark: a switch with squared Material corners on the left and round iOS corners on the
+     right. Drawn in the 1024-unit coordinates of the SVG, scaled into the 66 dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.0586"
+        android:scaleY="0.0586"
+        android:translateX="24"
+        android:translateY="24">
+        <path
+            android:pathData="M208 288H688a224 224 0 0 1 0 448H208a96 96 0 0 1-96-96V384a96 96 0 0 1 96-96z"
+            android:fillColor="#2EFFFFFF" />
+        <path
+            android:pathData="M208 288H688a224 224 0 0 1 0 448H208a96 96 0 0 1-96-96V384a96 96 0 0 1 96-96z"
+            android:strokeColor="#EBFFFFFF"
+            android:strokeWidth="28" />
+        <path
+            android:pathData="M688 352a160 160 0 1 1 0 320a160 160 0 1 1 0-320z"
+            android:fillColor="#FFFFFFFF" />
+    </group>
+</vector>
