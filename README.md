@@ -154,7 +154,7 @@ All artifacts are published under `com.mohamedrejeb.calf` with the same version:
 
 > **Android:** Calf 0.14.0+ is built on Compose Multiplatform 1.12, whose Android artifacts require `compileSdk = 37` (Android Gradle Plugin 9.4 is the first release that supports it). Calf's Android `minSdk` stays 23.
 
-> **iOS:** Calf sets no deployment target of its own; your Kotlin framework's `osVersionMin` applies. iOS 26 components fall back to their Cupertino look on earlier versions, and the iPhone Duo values are read only on iOS 27.1 and later, with a "no fold" answer elsewhere.
+> **iOS:** Calf sets no deployment target of its own; your Kotlin framework's `osVersionMin` applies (Kotlin 2.4's default is iOS 15, which is also the lowest target Xcode 27 accepts). iOS 26 components fall back to their Cupertino look on earlier versions, and the iPhone Duo values are read only on iOS 27.1 and later, with a "no fold" answer elsewhere.
 
 ## Documentation
 
