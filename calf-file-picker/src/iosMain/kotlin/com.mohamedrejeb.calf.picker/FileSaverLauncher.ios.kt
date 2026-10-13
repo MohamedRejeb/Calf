@@ -22,6 +22,7 @@ import platform.Foundation.NSData
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
+import platform.Foundation.URLByDeletingLastPathComponent
 import platform.Foundation.NSUUID
 import platform.Foundation.create
 import platform.Foundation.writeToURL
@@ -77,14 +78,12 @@ actual fun rememberFileSaverLauncher(
         }
     }
 
-    val launchWithData: (NSData, String) -> Unit = { data, fileName ->
+    val launchStaged: (suspend () -> NSURL) -> Unit = { stage ->
         scope.launch {
-            val tempUrl = withContext(Dispatchers.IO) {
-                writeTempFile(data, fileName)
-            }
-            pendingTempUrls.add(tempUrl)
+            val stagedUrl = withContext(Dispatchers.IO) { stage() }
+            pendingTempUrls.add(stagedUrl)
             withContext(Dispatchers.Main) {
-                presentExportPicker(tempUrl, delegate, currentUIViewController)
+                presentExportPicker(stagedUrl, delegate, currentUIViewController)
             }
         }
     }
@@ -102,37 +101,62 @@ actual fun rememberFileSaverLauncher(
                 } else {
                     NSData()
                 }
-                launchWithData(data, "$baseName.$extension")
+                launchStaged { stageExportData(data, "$baseName.$extension") }
             },
-            onLaunchFile = { file, _, _, _ ->
-                scope.launch(Dispatchers.Main) {
-                    presentExportPicker(file.url, delegate, currentUIViewController)
-                }
+            onLaunchFile = { file, baseName, extension, _ ->
+                launchStaged { stageExportFile(file.url, "$baseName.$extension") }
             },
             onLaunchData = { data, baseName, extension, _ ->
-                launchWithData(data, "$baseName.$extension")
+                launchStaged { stageExportData(data, "$baseName.$extension") }
             },
         )
     }
 }
 
-private fun writeTempFile(data: NSData, fileName: String): NSURL {
-    val tempPath = "${NSTemporaryDirectory().removeSuffix("/")}/${NSUUID().UUIDString}-$fileName"
-    val tempUrl = NSURL.fileURLWithPath(tempPath)
-    data.writeToURL(tempUrl, atomically = true)
-    return tempUrl
+/**
+ * The export picker shows, and saves under, the staged file's own name, so each export is staged in
+ * a directory of its own and the file keeps the name the caller asked for.
+ */
+@OptIn(ExperimentalForeignApi::class)
+private fun exportStagingUrl(fileName: String): NSURL {
+    val directory = "${NSTemporaryDirectory().removeSuffix("/")}/$EXPORT_STAGING_DIR/${NSUUID().UUIDString}"
+    NSFileManager.defaultManager.createDirectoryAtPath(
+        directory,
+        withIntermediateDirectories = true,
+        attributes = null,
+        error = null,
+    )
+    return NSURL.fileURLWithPath("$directory/$fileName")
 }
 
+/** Writes [data] to a fresh staging directory as [fileName]; see [exportStagingUrl]. */
+internal fun stageExportData(data: NSData, fileName: String): NSURL {
+    val url = exportStagingUrl(fileName)
+    data.writeToURL(url, atomically = true)
+    return url
+}
+
+/** Copies [source] into a fresh staging directory as [fileName]; the source is left in place. */
 @OptIn(ExperimentalForeignApi::class)
+internal fun stageExportFile(source: NSURL, fileName: String): NSURL {
+    val url = exportStagingUrl(fileName)
+    NSFileManager.defaultManager.copyItemAtURL(source, toURL = url, error = null)
+    return url
+}
+
+/** Removes a staged export together with its private directory. */
+@OptIn(ExperimentalForeignApi::class)
+internal fun removeExportStaging(stagedUrl: NSURL) {
+    val directory = stagedUrl.URLByDeletingLastPathComponent ?: return
+    NSFileManager.defaultManager.removeItemAtURL(directory, error = null)
+}
+
 private fun cleanUpTempFiles(tempUrls: MutableList<NSURL>) {
-    val fileManager = NSFileManager.defaultManager
-    tempUrls.forEach { url ->
-        url.path?.let { path ->
-            fileManager.removeItemAtPath(path, error = null)
-        }
-    }
+    tempUrls.forEach(::removeExportStaging)
     tempUrls.clear()
 }
+
+private const val EXPORT_STAGING_DIR = "calf-file-saver"
 
 private fun presentExportPicker(
     sourceUrl: NSURL,
