@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Copies the captured media into docs/images and rewrites the docs' image tables. Idempotent.
 
-usage: assemble_media.py [--dry]
+usage: assemble_media.py [--dry] [--prune]   (--prune deletes images nothing references)
 Input: build/media/final/<rig>/<Component>-<suffix>[-variant].png|gif (override with MEDIA_FINAL), rigs
 android (material), ios18 (ios), ios26 (ios-liquid-glass), web, desktop, duo. Files the docs do not reference
 stay in docs/images until you delete them; the script prints them.
@@ -13,6 +13,7 @@ S = os.environ.get("MEDIA_FINAL", f"{R}/build/media/final")
 IMG = f"{R}/docs/images"
 GIF = f"{IMG}/gif"
 DRY = "--dry" in sys.argv
+PRUNE = "--prune" in sys.argv
 RIGS = ["android", "ios18", "ios26", "web", "desktop", "duo"]
 SUFFIX = {"android": "material", "ios18": "ios", "ios26": "ios-liquid-glass", "web": "web", "desktop": "desktop", "duo": "duo"}
 
@@ -107,6 +108,16 @@ def insert_after_h1_para(text, block):
     return text[: m.end()] + "\n" + block + "\n" + text[m.end():]
 
 
+def insert_after_heading(text, heading, block):
+    """Inserts a block after the first paragraph under the given heading, unless the block is there already."""
+    if block in text:
+        return text
+    m = re.search(rf"^{re.escape(heading)}\n\n(?:[^\n#][^\n]*\n)+", text, re.M)
+    if not m:
+        return text
+    return text[: m.end()] + "\n" + block + "\n" + text[m.end():]
+
+
 edits = {}
 
 
@@ -134,16 +145,21 @@ doc("ui/adaptive-top-bar.md", U, tables=[three("AdaptiveTopAppBar", U)])  # the 
 doc("ui/adaptive-icon-button.md", U, tables=[three("AdaptiveButton", U)])
 doc("ui/adaptive-alert-dialog.md", U, tables=[three("AdaptiveAlertDialog", U, gif=False), three("AdaptiveAlertDialog", U, gif=False, variant="action-sheet"), three("AdaptiveAlertDialog", U, gif=False, variant="text-field")])
 doc("ui/adaptive-date-picker.md", U, insert=three("AdaptiveDatePicker", U))
-# module pages
-fp_system = table(["System picker (Android)", "System picker (iOS)", "Desktop", "Web"], [cell("File picker Android system", "AdaptiveFilePicker-material-system.png", D), cell("File picker iOS system", "AdaptiveFilePicker-ios-liquid-glass-system.png", D), cell("File picker desktop", "AdaptiveFilePicker-desktop.png", D), cell("File picker web", "AdaptiveFilePicker-web.png", D)])
-doc("filepicker.md", D, tables=[three("AdaptiveFilePicker", D, gif=False), fp_system])
-doc("webview.md", D, tables=[three("WebView", D, gif=False)])
-doc("permissions.md", D, tables=[three("Permissions", D, gif=False)])
+# module pages: platform APIs show the system UI only (picker, sheet, prompt), one iOS column
+def two(label, comp, variant, rel=D):
+    return table([f"{label} (Android)", f"{label} (iOS)"],
+                 [cell(f"{label} Android", f"{comp}-material-{variant}.png", rel), cell(f"{label} iOS", f"{comp}-ios-liquid-glass-{variant}.png", rel)])
+
+
+doc("filepicker.md", D, tables=[two("The file picker", "AdaptiveFilePicker", "system"), two("The image picker", "AdaptiveImagePicker", "system")])
+p = f"{R}/docs/filepicker.md"
+edits[p] = insert_after_heading(edits[p], "## File Saver", two("The save dialog", "FileSaver", "system") or "")
+doc("webview.md", D, tables=[table(["Android", "iOS", "Web"], [cell("WebView Android", "WebView-material.png", D), cell("WebView iOS", "WebView-ios-liquid-glass.png", D), cell("WebView web", "WebView-web.png", D)])])
+doc("permissions.md", D, tables=[two("The permission prompt", "Permissions", "prompt")])
 cup = table(["Android", "iOS", "Liquid Glass (iOS 26+)", "Desktop", "Web"], [cell("Cupertino icons " + s, f"CupertinoIcons-{s}.png", D) for s in ["material", "ios", "ios-liquid-glass", "desktop", "web"]])
 doc("sf-symbols.md", D, tables=[cup])
-share = table(["Android", "iOS", "The share sheet (Android)", "The share sheet (iOS)"],
-              [cell("Share material", "Share-material.png", D), cell("Share ios-liquid-glass", "Share-ios-liquid-glass.png", D), cell("Share sheet Android", "Share-material-sheet.png", D), cell("Share sheet iOS", "Share-ios-liquid-glass-sheet.png", D)])
-doc("share.md", D, insert=share)
+share = two("The share sheet", "Share", "sheet")
+doc("share.md", D, tables=[share], insert=share)
 fold = table(["Android", "iPhone", "Desktop", "Web"], [cell("Foldable material", "Foldable-material.png", D), cell("Foldable ios", "Foldable-ios-liquid-glass.png", D) or cell("Foldable ios", "Foldable-ios.png", D), cell("Foldable desktop", "Foldable-desktop.png", D), cell("Foldable web", "Foldable-web.png", D)])
 doc("foldable.md", D, insert=fold)
 nav = three("AdaptiveNavigation", D)
@@ -159,7 +175,7 @@ duo_map = {
 }
 p = f"{R}/docs/foldable.md"; t = edits[p]
 slot = "<!-- MEDIA: the sample's Navigation 3 List-Detail demo on iPhone Duo: closed (one pane, a tap pushes the colour), open (two panes), book (the detail starts after the fold) -->"
-if exists("Nav3ListDetail-web.png"):
+if exists("Nav3ListDetail-web.png") and "Nav3ListDetail-web.png" not in t:
     t = t.replace(slot, slot + "\n\n![The Navigation 3 List-Detail demo on the web, two panes with an item open](images/Nav3ListDetail-web.png)")
 edits[p] = t
 p = f"{R}/docs/iphone-duo.md"; t = open(p).read()
@@ -193,3 +209,7 @@ print("copied", len(copied), "files; missing references:", missing)
 unused = sorted(f for f in os.listdir(IMG) if f.endswith(".png") and f not in refs and f not in ("logo.png", "bmc-yellow-button.png"))
 unused += sorted(f"gif/{f}" for f in os.listdir(GIF) if f"gif/{f}" not in refs)
 print("unreferenced images:", unused)
+if PRUNE and not DRY:
+    for f in unused:
+        os.remove(f"{IMG}/{f}")
+    print("pruned", len(unused))

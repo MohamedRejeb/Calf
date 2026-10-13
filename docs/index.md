@@ -97,15 +97,17 @@ Read [Foldable](https://mohamedrejeb.github.io/Calf/foldable/) for the API and t
 
 Small Compose APIs over the system implementation. No Flutter-style plugin channel, no platform code in your app.
 
-| File picker | Image picker | Camera | Share |
+| File picker | Image picker | Share | File saver |
 |:---:|:---:|:---:|:---:|
-| <img src="images/AdaptiveFilePicker-ios-liquid-glass.png" width="160" alt="File picker on iOS" /> | <img src="images/AdaptiveImagePicker-ios-liquid-glass.png" width="160" alt="Image picker on iOS" /> | <img src="images/CameraPicker-material.png" width="160" alt="Camera picker on Android" /> | <img src="images/Share-ios-liquid-glass.png" width="160" alt="Share sheet on iOS" /> |
-| [`calf-file-picker`](https://mohamedrejeb.github.io/Calf/filepicker/) | [`calf-file-picker-coil`](https://mohamedrejeb.github.io/Calf/filepicker/) | `calf-camera-picker` | [`calf-share`](https://mohamedrejeb.github.io/Calf/share/) |
+| <img src="images/AdaptiveFilePicker-ios-liquid-glass-system.png" width="160" alt="The system file picker on iOS" /> | <img src="images/AdaptiveImagePicker-ios-liquid-glass-system.png" width="160" alt="The system photo picker on iOS" /> | <img src="images/Share-ios-liquid-glass-sheet.png" width="160" alt="The share sheet on iOS" /> | <img src="images/FileSaver-ios-liquid-glass-system.png" width="160" alt="The save dialog on iOS" /> |
+| [`calf-file-picker`](https://mohamedrejeb.github.io/Calf/filepicker/) | [`calf-file-picker-coil`](https://mohamedrejeb.github.io/Calf/filepicker/) | [`calf-share`](https://mohamedrejeb.github.io/Calf/share/) | [`calf-file-picker`](https://mohamedrejeb.github.io/Calf/filepicker/#file-saver) |
 
-| WebView | Permissions | File saver |
-|:---:|:---:|:---:|
-| <img src="images/WebView-ios-liquid-glass.png" width="160" alt="WebView on iOS" /> | <img src="images/Permissions-ios-liquid-glass.png" width="160" alt="Permissions on iOS" /> | <img src="images/FileSaver-ios-liquid-glass.png" width="160" alt="File saver on iOS" /> |
-| [`calf-webview`](https://mohamedrejeb.github.io/Calf/webview/) | [`calf-permissions`](https://mohamedrejeb.github.io/Calf/permissions/) | `calf-io` |
+| Permissions | WebView |
+|:---:|:---:|
+| <img src="images/Permissions-ios-liquid-glass-prompt.png" width="160" alt="The camera permission prompt on iOS" /> | <img src="images/WebView-ios-liquid-glass.png" width="160" alt="WebView on iOS" /> |
+| [`calf-permissions`](https://mohamedrejeb.github.io/Calf/permissions/) | [`calf-webview`](https://mohamedrejeb.github.io/Calf/webview/) |
+
+`calf-camera-picker` opens the system camera the same way (Android and iOS; a no-op on Desktop and Web).
 
 ```kotlin
 val picker = rememberFilePickerLauncher(type = FilePickerFileType.Image) { files ->

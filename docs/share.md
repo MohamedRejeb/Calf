@@ -2,9 +2,9 @@
 
 `calf-share` provides cross-platform content sharing using the platform's native share mechanism.
 
-| Android | iOS | The share sheet (Android) | The share sheet (iOS) |
-| --- | --- | --- | --- |
-| ![Share material](images/Share-material.png) | ![Share ios-liquid-glass](images/Share-ios-liquid-glass.png) | ![Share sheet Android](images/Share-material-sheet.png) | ![Share sheet iOS](images/Share-ios-liquid-glass-sheet.png) |
+| The share sheet (Android) | The share sheet (iOS) |
+| --- | --- |
+| ![The share sheet Android](images/Share-material-sheet.png) | ![The share sheet iOS](images/Share-ios-liquid-glass-sheet.png) |
 
 ## Installation
 

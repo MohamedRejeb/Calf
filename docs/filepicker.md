@@ -10,13 +10,13 @@ implementation("com.mohamedrejeb.calf:calf-file-picker:{{ calf_version }}")
 
 ## Quick Start
 
-| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
-| --- | --- | --- |
-| ![AdaptiveFilePicker material](images/AdaptiveFilePicker-material.png) | ![AdaptiveFilePicker ios](images/AdaptiveFilePicker-ios.png) | ![AdaptiveFilePicker ios-liquid-glass](images/AdaptiveFilePicker-ios-liquid-glass.png) |
+| The file picker (Android) | The file picker (iOS) |
+| --- | --- |
+| ![The file picker Android](images/AdaptiveFilePicker-material-system.png) | ![The file picker iOS](images/AdaptiveFilePicker-ios-liquid-glass-system.png) |
 
-| System picker (Android) | System picker (iOS) | Desktop | Web |
-| --- | --- | --- | --- |
-| ![File picker Android system](images/AdaptiveFilePicker-material-system.png) | ![File picker iOS system](images/AdaptiveFilePicker-ios-liquid-glass-system.png) | ![File picker desktop](images/AdaptiveFilePicker-desktop.png) | ![File picker web](images/AdaptiveFilePicker-web.png) |
+| The image picker (Android) | The image picker (iOS) |
+| --- | --- |
+| ![The image picker Android](images/AdaptiveImagePicker-material-system.png) | ![The image picker iOS](images/AdaptiveImagePicker-ios-liquid-glass-system.png) |
 
 ```kotlin
 val scope = rememberCoroutineScope()
@@ -278,6 +278,10 @@ val isDirectory = file.isDirectory()
 ## File Saver
 
 `rememberFileSaverLauncher` lets the user save a file to a location of their choice. Available on all platforms.
+
+| The save dialog (Android) | The save dialog (iOS) |
+| --- | --- |
+| ![The save dialog Android](images/FileSaver-material-system.png) | ![The save dialog iOS](images/FileSaver-ios-liquid-glass-system.png) |
 
 ```kotlin
 @OptIn(ExperimentalCalfApi::class)

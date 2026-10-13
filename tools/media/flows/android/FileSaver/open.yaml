@@ -9,4 +9,27 @@ appId: ${APP_ID}
     direction: DOWN
 - tapOn: "Pick, edit and save a file back to disk"
 - waitForAnimationToEnd
-- takeScreenshot: FileSaver
+- tapOn: "Choose photo"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "zzz"
+    timeout: 3000
+    optional: true
+- takeScreenshot: FileSaver-picker
+- tapOn:
+    point: "20%,40%"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "zzz"
+    timeout: 3000
+    optional: true
+- takeScreenshot: FileSaver-picked
+- tapOn: "Save photo"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "zzz"
+    timeout: 3000
+    optional: true
+- takeScreenshot: FileSaver-system
+# the save dialog is another app's activity; leave it before the next flow
+- back

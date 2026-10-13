@@ -14,9 +14,9 @@ implementation("com.mohamedrejeb.calf:calf-webview:{{ calf_version }}")
 
 `WebView` is a view that adapts to the platform it is running on. It is a wrapper around `WebView` on Android, `WKWebView` on iOS, JavaFX `WebView` on Desktop, and an `iframe` on Web (JS/WasmJS).
 
-| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| Android | iOS | Web |
 | --- | --- | --- |
-| ![WebView material](images/WebView-material.png) | ![WebView ios](images/WebView-ios.png) | ![WebView ios-liquid-glass](images/WebView-ios-liquid-glass.png) |
+| ![WebView Android](images/WebView-material.png) | ![WebView iOS](images/WebView-ios-liquid-glass.png) | ![WebView web](images/WebView-web.png) |
 
 ```kotlin
 val state = rememberWebViewState(

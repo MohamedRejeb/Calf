@@ -10,4 +10,13 @@ appId: ${APP_ID}
 - tapOn: "Pick, edit and save a file back to disk"
 - waitForAnimationToEnd
 - runFlow: ../_sleep.yaml
-- takeScreenshot: FileSaver
+- tapOn: "Choose photo"
+- runFlow: ../_sleep.yaml
+- takeScreenshot: FileSaver-picker
+- tapOn:
+    point: "20%,38%"
+- runFlow: ../_sleep.yaml
+- takeScreenshot: FileSaver-picked
+- tapOn: "Save photo"
+- runFlow: ../_sleep.yaml
+- takeScreenshot: FileSaver-system
