@@ -86,25 +86,8 @@ expect class AdaptiveDatePickerState(
      * from the epoch.
      *
      * In case no date was selected or provided, the state will hold a `null` value.
-     *
-     * @see [setSelection]
      */
     var selectedDateMillis: Long?
-
-    /**
-     * Sets the selected date.
-     *
-     * @param dateMillis timestamp in _UTC_ milliseconds from the epoch that represents the date
-     * selection, or `null` to indicate no selection.
-     *
-     * @throws IllegalArgumentException in case the given timestamps do not fall within the year
-     * range this state was created with.
-     */
-    @Deprecated(
-        message = "Use selectedDateMillis property instead",
-        replaceWith = ReplaceWith("selectedDateMillis = dateMillis"),
-    )
-    fun setSelection(dateMillis: Long?)
 
     /**
      * A mutable state of [DisplayMode] that represents the current display mode of the UI
