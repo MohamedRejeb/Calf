@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.io.getPath
+import com.mohamedrejeb.calf.io.toUriString
 import com.mohamedrejeb.calf.io.source
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
@@ -137,7 +138,8 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         onResult = { files ->
             val dir = files.firstOrNull()
             if (dir != null) {
-                initialDirectory = dir.getPath()
+                // Android's folder picker opens at a URI; the other platforms take a path.
+                initialDirectory = dir.getPath() ?: dir.toUriString()
             }
         },
     )
@@ -329,7 +331,8 @@ private fun KmpFile.toPickedFileInfo(streamingSummary: String): PickedFileInfo =
     PickedFileInfo(
         file = this,
         name = getName().orEmpty(),
-        path = getPath() ?: "Unknown path",
+        // Picked files on Android are content URIs, which have no file system path.
+        path = getPath() ?: toUriString() ?: "No path",
         streamingSummary = streamingSummary,
     )
 

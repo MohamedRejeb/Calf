@@ -14,7 +14,11 @@ actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray =
 
 actual fun KmpFile.getName(context: PlatformContext): String? = file.name
 
-actual fun KmpFile.getPath(context: PlatformContext): String? = file.name
+/** Browsers do not expose file system paths. */
+actual fun KmpFile.getPath(context: PlatformContext): String? = null
+
+/** Browser files have no URI. */
+actual fun KmpFile.toUriString(): String? = null
 
 actual fun KmpFile.isDirectory(context: PlatformContext): Boolean = !file.name.contains(".")
 

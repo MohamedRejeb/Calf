@@ -31,9 +31,9 @@ actual fun KmpFile.exists(context: PlatformContext): Boolean {
     return NSFileManager.defaultManager.fileExistsAtPath(url.path ?: return false)
 }
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, InternalCalfApi::class)
 actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
-    val data = NSData.dataWithContentsOfURL(url) ?: return ByteArray(0)
+    val data = url.withSecurityScopedAccess { NSData.dataWithContentsOfURL(url) } ?: return ByteArray(0)
     val byteArraySize: Int = if (data.length > Int.MAX_VALUE.toUInt()) Int.MAX_VALUE else data.length.toInt()
     return ByteArray(byteArraySize).apply {
         usePinned {
@@ -43,18 +43,33 @@ actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
 }
 
 actual fun KmpFile.getName(context: PlatformContext): String? =
-    originalUrl.absoluteString
-        ?.removeSuffix("/")
-        ?.split('/')
-        ?.lastOrNull()
+    originalUrl.lastPathComponent
 
+/** Only a `file:` URL has a file system path; [NSURL.path] is already percent-decoded. */
 actual fun KmpFile.getPath(context: PlatformContext): String? =
-    originalUrl.absoluteString
+    originalUrl.takeIf { it.isFileURL() }?.path
+
+actual fun KmpFile.toUriString(): String? = originalUrl.absoluteString
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun KmpFile.isDirectory(context: PlatformContext): Boolean {
     val result = originalUrl.resourceValuesForKeys(listOf(NSURLIsDirectoryKey), error = null)
     return result?.get(NSURLIsDirectoryKey) == true
+}
+
+/**
+ * Runs [block] with access to this URL's security-scoped resource, so a [KmpFile] built from a
+ * picker URL by hand can still be read after the picker callback. A URL that is not security
+ * scoped is accessed as is.
+ */
+@InternalCalfApi
+inline fun <T> NSURL.withSecurityScopedAccess(block: () -> T): T {
+    val accessing = startAccessingSecurityScopedResource()
+    try {
+        return block()
+    } finally {
+        if (accessing) stopAccessingSecurityScopedResource()
+    }
 }
 
 /**

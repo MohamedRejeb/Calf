@@ -78,7 +78,7 @@ val pickerLauncher = rememberFilePickerLauncher(
 Common properties available on all platforms:
 
 - `title` - Dialog window title
-- `initialDirectory` - Directory to open the dialog in
+- `initialDirectory` - Directory to open the dialog in: a path on Desktop (`getPath()`), a URI on Android (`toUriString()`)
 - `imageRepresentationMode` - Controls how iOS returns image assets (see [iOS Image Representation](#ios-image-representation))
 
 Desktop adds an additional property:
@@ -261,11 +261,26 @@ val exists = file.exists()
 val name = file.getName()
 ```
 
-* Get the file path using the `getPath` extension function:
+* Get the file system path using the `getPath` extension function. It is a decoded path, not a URL, or `null` when the file has no path:
 
 ```kotlin
 val path = file.getPath()
 ```
+
+| Platform | `getPath()` |
+|---|---|
+| Android | The path of a `file:` URI. `null` for the `content:` URIs the system pickers return; read those with `readByteArray()` or `source()`. |
+| iOS | The path of the original `file:` URL, for example `/private/var/…/Report Final.pdf`. For a picked file it is security scoped, so read the content with `readByteArray()` or `source()`. |
+| Desktop | The path of the file. |
+| Web | Always `null`, browsers do not expose paths. |
+
+* Get the file URI using the `toUriString` extension function, for example to store a reference to the file or to pass a picked folder as the Android `initialDirectory`:
+
+```kotlin
+val uri = file.toUriString() // content://… on Android, file:///… on iOS and Desktop, null on Web
+```
+
+> **Migration from 0.14.x:** `getPath()` used to return the URI string on Android (`content://…`) and iOS (`file:///…%20…`), and the file name on Web. Use `toUriString()` where you relied on the URI.
 
 * Check if the file is a directory using the `isDirectory` extension function:
 
@@ -384,7 +399,7 @@ suspend fun importFile(file: KmpFile) {
 
 | Platform | How the file is opened |
 |---|---|
-| Android | `ContentResolver.openInputStream`, so content URIs from the Storage Access Framework, Google Drive or Downloads stream directly. `getPath()` returns the URI string on Android, not a file system path, so use `source()` rather than opening the path yourself. |
+| Android | `ContentResolver.openInputStream`, so content URIs from the Storage Access Framework, Google Drive or Downloads stream directly. `getPath()` is `null` for these URIs, so use `source()` rather than opening a path yourself. |
 | iOS, Desktop | From the file system through `SystemFileSystem`. |
 | JS, Wasm | Browsers offer no synchronous file reads, so the whole file is read into memory first and served from a `Buffer`. |
 

@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.io
 
+import android.content.ContentResolver
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.mohamedrejeb.calf.core.PlatformContext
@@ -43,7 +44,11 @@ actual fun KmpFile.getName(context: PlatformContext): String? {
     return documentFile?.name
 }
 
-actual fun KmpFile.getPath(context: PlatformContext): String? = uri.toString()
+/** A `content:` URI has no file system path, so only `file:` URIs have one. */
+actual fun KmpFile.getPath(context: PlatformContext): String? =
+    uri.takeIf { it.scheme == ContentResolver.SCHEME_FILE }?.path
+
+actual fun KmpFile.toUriString(): String? = uri.toString()
 
 actual fun KmpFile.isDirectory(context: PlatformContext): Boolean {
     val documentFile = DocumentFile.fromSingleUri(context, uri)

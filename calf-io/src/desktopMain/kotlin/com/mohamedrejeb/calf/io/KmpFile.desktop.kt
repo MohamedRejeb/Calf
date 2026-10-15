@@ -15,6 +15,8 @@ actual fun KmpFile.getName(context: PlatformContext): String? = file.name
 
 actual fun KmpFile.getPath(context: PlatformContext): String? = file.path
 
+actual fun KmpFile.toUriString(): String? = file.toPath().toUri().toString()
+
 actual fun KmpFile.isDirectory(context: PlatformContext): Boolean = file.isDirectory
 
 /**
