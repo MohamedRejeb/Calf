@@ -78,8 +78,36 @@ val pickerLauncher = rememberFilePickerLauncher(
 Common properties available on all platforms:
 
 - `title` - Dialog window title
-- `initialDirectory` - Directory to open the dialog in: a path on Desktop (`getPath()`), a URI on Android (`toUriString()`)
+- `initialDirectory` - Directory to open the dialog in (see [Opening in a picked folder](#opening-in-a-picked-folder))
 - `imageRepresentationMode` - Controls how iOS returns image assets (see [iOS Image Representation](#ios-image-representation))
+
+### Opening in a picked folder
+
+To open the dialog in a folder the user picked earlier, pass the folder's `KmpFile` as `initialDirectory`. Calf hands it to each platform in the form it expects: its path on Desktop, its URI on Android (a picked folder is a `content:` tree URI with no path), and its URL on iOS:
+
+```kotlin
+var folder by remember { mutableStateOf<KmpFile?>(null) }
+
+val folderPicker = rememberFilePickerLauncher(
+    type = FilePickerFileType.Folder,
+    onResult = { files -> folder = files.firstOrNull() },
+)
+
+val filePicker = rememberFilePickerLauncher(
+    type = FilePickerFileType.Pdf,
+    settings = rememberFilePickerSettings(initialDirectory = folder),
+    onResult = { files -> /* ... */ },
+)
+```
+
+| Platform | Where `initialDirectory` applies |
+|---|---|
+| Android | The folder picker (`OpenDocumentTree`) |
+| iOS | The document picker and the save dialog (`directoryURL`); the photo picker has no folders |
+| Desktop | Every dialog |
+| Web | Ignored, browsers cannot open a dialog in a given folder |
+
+The `String` overload is still available, for example for a path typed on Desktop.
 
 Desktop adds an additional property:
 
@@ -261,7 +289,7 @@ val exists = file.exists()
 val name = file.getName()
 ```
 
-* Get the file system path using the `getPath` extension function. It is a decoded path, not a URL, or `null` when the file has no path:
+* Get the file system path using the `getPath` extension function. It is a decoded path you can open directly, or `null` when the file has no path:
 
 ```kotlin
 val path = file.getPath()
@@ -270,7 +298,7 @@ val path = file.getPath()
 | Platform | `getPath()` |
 |---|---|
 | Android | The path of a `file:` URI. `null` for the `content:` URIs the system pickers return; read those with `readByteArray()` or `source()`. |
-| iOS | The path of the original `file:` URL, for example `/private/var/…/Report Final.pdf`. For a picked file it is security scoped, so read the content with `readByteArray()` or `source()`. |
+| iOS | The path of the file the app can read. For a picked file that is the app's copy, for example `…/tmp/calf-file-picker/…/Report Final.pdf`, which keeps the picked file's name. |
 | Desktop | The path of the file. |
 | Web | Always `null`, browsers do not expose paths. |
 
@@ -367,8 +395,8 @@ val originalNsUrl: NSURL = kmpFile.originalUrl
 
 > **Note:** On iOS, file picker URLs are security-scoped and may become inaccessible shortly after
 > the picker callback returns. `url` points to a persistent copy in the app's temp directory that
-> remains readable and keeps the picked file's name. `originalUrl` holds the original picker URL — use it only for metadata
-> (e.g., the original file name or path via `getName()` / `getPath()`).
+> remains readable and keeps the picked file's name; `getPath()` returns its path. `originalUrl` holds the original picker URL — use it only for metadata
+> (e.g., the original file name or URI via `getName()` / `toUriString()`).
 >
 > **Migration from 0.10.x:** `KmpFile.url` on iOS previously referred to the original picker URL.
 > It now points to the persistent copy. If you were using `url` for the original file path,

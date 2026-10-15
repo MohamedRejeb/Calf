@@ -56,7 +56,7 @@ actual fun rememberFileSaverLauncher(
         )
     }
 
-    val launchStaged: (suspend () -> NSURL?) -> Unit = { stage ->
+    val launchStaged: (String?, suspend () -> NSURL?) -> Unit = { initialDirectory, stage ->
         scope.launch {
             val stagedUrl = withContext(Dispatchers.IO) { stage() }
             if (stagedUrl == null) {
@@ -65,14 +65,14 @@ actual fun rememberFileSaverLauncher(
             }
             pendingTempUrls.add(stagedUrl)
             withContext(Dispatchers.Main) {
-                presentExportPicker(stagedUrl, delegate, currentUIViewController)
+                presentExportPicker(stagedUrl, initialDirectory, delegate, currentUIViewController)
             }
         }
     }
 
     return remember(currentUIViewController) {
         FileSaverLauncher(
-            onLaunch = { bytes, baseName, extension, _ ->
+            onLaunch = { bytes, baseName, extension, initialDirectory ->
                 val data = if (bytes != null && bytes.isNotEmpty()) {
                     bytes.usePinned { pinned ->
                         NSData.create(
@@ -83,13 +83,13 @@ actual fun rememberFileSaverLauncher(
                 } else {
                     NSData()
                 }
-                launchStaged { stageExportData(data, "$baseName.$extension") }
+                launchStaged(initialDirectory) { stageExportData(data, "$baseName.$extension") }
             },
-            onLaunchFile = { file, baseName, extension, _ ->
-                launchStaged { stageExportFile(file.url, "$baseName.$extension") }
+            onLaunchFile = { file, baseName, extension, initialDirectory ->
+                launchStaged(initialDirectory) { stageExportFile(file.url, "$baseName.$extension") }
             },
-            onLaunchData = { data, baseName, extension, _ ->
-                launchStaged { stageExportData(data, "$baseName.$extension") }
+            onLaunchData = { data, baseName, extension, initialDirectory ->
+                launchStaged(initialDirectory) { stageExportData(data, "$baseName.$extension") }
             },
         )
     }
@@ -102,6 +102,7 @@ private fun cleanUpTempFiles(tempUrls: MutableList<NSURL>) {
 
 private fun presentExportPicker(
     sourceUrl: NSURL,
+    initialDirectory: String?,
     delegate: DocumentPickerDelegate,
     viewController: UIViewController,
 ) {
@@ -110,6 +111,7 @@ private fun presentExportPicker(
         forExportingURLs = listOf(sourceUrl),
         asCopy = true,
     )
+    picker.directoryURL = initialDirectoryUrl(initialDirectory)
     delegate.attachTo(picker)
     viewController.presentViewController(
         picker,

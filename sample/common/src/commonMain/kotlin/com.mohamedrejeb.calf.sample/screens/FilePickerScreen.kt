@@ -81,7 +81,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
     var pickedFiles by remember { mutableStateOf<List<PickedFileInfo>>(emptyList()) }
     var isMultiple by remember { mutableStateOf(false) }
     var dialogTitle by remember { mutableStateOf("Pick a file") }
-    var initialDirectory by remember { mutableStateOf<String?>(null) }
+    var initialDirectory by remember { mutableStateOf<KmpFile?>(null) }
     var selectedTypeIndex by remember { mutableStateOf(0) }
 
     val selectedFileType = fileTypeOptions[selectedTypeIndex].type
@@ -104,9 +104,10 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         pickedFiles = files.map { file -> file.toPickedFileInfo(DIRECTORY_NOT_STREAMED) }
     }
 
+    // A picked folder is handed over as is; each platform opens the dialog in it in its own way.
     val settings = rememberFilePickerSettings(
-        title = dialogTitle,
         initialDirectory = initialDirectory,
+        title = dialogTitle,
         imageRepresentationMode = ImageRepresentationMode.Current,
     )
 
@@ -138,8 +139,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         onResult = { files ->
             val dir = files.firstOrNull()
             if (dir != null) {
-                // Android's folder picker opens at a URI; the other platforms take a path.
-                initialDirectory = dir.getPath() ?: dir.toUriString()
+                initialDirectory = dir
             }
         },
     )
@@ -183,7 +183,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = initialDirectory ?: "System default",
+                text = initialDirectory?.let { it.getPath() ?: it.toUriString() } ?: "System default",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

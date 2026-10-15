@@ -54,7 +54,7 @@ actual fun rememberFilePickerLauncher(
     if (type == FilePickerFileType.Image || type == FilePickerFileType.Video || type == FilePickerFileType.ImageVideo) {
         rememberImageVideoPickerLauncher(type, selectionMode, settings, onResult)
     } else {
-        rememberDocumentPickerLauncher(type, selectionMode, onResult)
+        rememberDocumentPickerLauncher(type, selectionMode, settings, onResult)
     }
 
 @OptIn(InternalCalfApi::class, BetaInteropApi::class)
@@ -62,6 +62,7 @@ actual fun rememberFilePickerLauncher(
 private fun rememberDocumentPickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
+    settings: FilePickerSettings,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val scope = rememberCoroutineScope()
@@ -69,6 +70,7 @@ private fun rememberDocumentPickerLauncher(
     val currentOnResult by rememberUpdatedState(onResult)
     val currentType by rememberUpdatedState(type)
     val currentSelectionMode by rememberUpdatedState(selectionMode)
+    val currentInitialDirectory by rememberUpdatedState(settings.initialDirectory)
 
     val delegate = remember {
         DocumentPickerDelegate(
@@ -102,6 +104,7 @@ private fun rememberDocumentPickerLauncher(
                     createUIDocumentPickerViewController(
                         type = currentType,
                         selectionMode = currentSelectionMode,
+                        initialDirectory = currentInitialDirectory,
                     )
                 delegate.attachTo(pickerController)
 
@@ -249,6 +252,7 @@ private fun NSURL.toStagedKmpFile(): KmpFile? =
 private fun createUIDocumentPickerViewController(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
+    initialDirectory: String?,
 ): UIDocumentPickerViewController {
     val contentTypes =
         if (type is FilePickerFileType.Extension)
@@ -277,6 +281,7 @@ private fun createUIDocumentPickerViewController(
             asCopy = type != FilePickerFileType.Folder,
         )
     pickerController.allowsMultipleSelection = selectionMode is FilePickerSelectionMode.Multiple
+    pickerController.directoryURL = initialDirectoryUrl(initialDirectory)
     return pickerController
 }
 
