@@ -85,7 +85,7 @@ What you get:
 - **Two panes:** when the screen that owns the bars is a pane (the detail of a list-detail layout on an iPad or an open iPhone Duo), the bars cover only that pane, the way a split view's detail column has its own bar: the title starts after the list, the items still go to the Duo's vertical bar, and the list keeps its own insets.
 
 <!-- MEDIA: #530 before / after: the same Navigation 3 push on an iPhone, standalone bars sliding with the page vs. the hosted bar staying put -->
-<!-- MEDIA: an open iPhone Duo, a Navigation 3 screen with its bar items, toolbar and tab bar in the vertical bar -->
+![The sample on plain Compose navigation on an open iPhone Duo: the Showcase with its bar items and tab bar in the vertical strip](images/BarHost-duo-showcase.png)
 
 ### Who owns the bars
 

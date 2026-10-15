@@ -79,7 +79,7 @@ iosLeadingItems = listOf(
 ),
 ```
 
-<!-- MEDIA: a hosted top bar on iPhone during a Navigation 3 push: the bar stays, the title crossfades -->
+![The Top Bar demo hosted on an open iPhone Duo: the bar items in the vertical strip](../images/BarHost-duo-topbar.png)
 
 ## iOS Configuration
 

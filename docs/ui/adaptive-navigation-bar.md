@@ -69,7 +69,7 @@ The tab bar belongs to the screen whose `AdaptiveScaffold` shows it, and to the 
 
 With more than five items the bar stays standalone: a `UITabBarController` would move the rest behind its own "More" tab.
 
-<!-- MEDIA: a hosted tab bar on an open iPhone Duo, in the vertical bar below the screen's bar items -->
+![The sample on plain Compose navigation on an open iPhone Duo: the Showcase with its bar items and tab bar in the vertical strip](../images/BarHost-duo-showcase.png)
 
 ## iOS Configuration
 

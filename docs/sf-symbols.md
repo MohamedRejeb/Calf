@@ -69,9 +69,9 @@ Cross-platform Cupertino icon rendering using a bundled open-source font (MIT li
 
 Renders 1,322 icons on **all platforms** — Android, iOS, Desktop, and Web.
 
-| Android | iOS | Liquid Glass (iOS 26+) | Web |
-| --- | --- | --- | --- |
-| ![Cupertino icons material](images/CupertinoIcons-material.png) | ![Cupertino icons ios](images/CupertinoIcons-ios.png) | ![Cupertino icons ios-liquid-glass](images/CupertinoIcons-ios-liquid-glass.png) | ![Cupertino icons web](images/CupertinoIcons-web.png) |
+| Android | iOS | Liquid Glass (iOS 26+) | Desktop | Web |
+| --- | --- | --- | --- | --- |
+| ![Cupertino icons material](images/CupertinoIcons-material.png) | ![Cupertino icons ios](images/CupertinoIcons-ios.png) | ![Cupertino icons ios-liquid-glass](images/CupertinoIcons-ios-liquid-glass.png) | ![Cupertino icons desktop](images/CupertinoIcons-desktop.png) | ![Cupertino icons web](images/CupertinoIcons-web.png) |
 
 ### Installation
 

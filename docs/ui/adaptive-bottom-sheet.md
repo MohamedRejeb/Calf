@@ -86,4 +86,4 @@ The native sheet goes where iOS puts it, like the sheets of Apple's own apps: ce
 
 When the sheet does reach under an unsafe part of the window (the vertical bar of a closed iPhone Duo, the Dynamic Island in iPhone landscape), its content is kept out of it on the sides: Calf pads it by the sheet's own safe area, so no control ends up under the bar. The bottom is left to your content, as in any UIKit sheet. Compose's `WindowInsets` inside the sheet describe the window, not the sheet, so don't pad the sheet's content with them.
 
-<!-- MEDIA: a closed iPhone Duo with AdaptiveBottomSheet at the large detent, content clear of the vertical bar -->
+![AdaptiveBottomSheet on an open iPhone Duo, raised over the detail column](../images/AdaptiveBottomSheet-duo-open.png)

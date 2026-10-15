@@ -280,4 +280,4 @@ The alert is a `UIAlertController`, and iOS decides where it goes: centred on th
 
 The action-sheet style (`AlertDialogIosStyle.ActionSheet`) becomes a popover on an iPad or an open iPhone Duo. Calf centres that popover, without an arrow, in the column that raised it: the detail column of a calf-navigation split view, or with the bar host the pane of the screen that owns the bars. On compact width it slides up from the bottom as usual.
 
-<!-- MEDIA: an open iPhone Duo, the action-sheet style raised from the detail column, centred in that column -->
+![The action-sheet style on an open iPhone Duo, raised from the detail column and centred in it](../images/AdaptiveAlertDialog-duo-open-action-sheet.png)

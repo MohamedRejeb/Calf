@@ -368,7 +368,7 @@ holds seven image items on the open inner display in landscape and overflows pas
 Adaptive Navigation demo has a "Bar items and overflow" screen (Explore tab) with eight items of mixed
 kinds and priorities, shown without the tab bar for this reason.
 
-<!-- MEDIA: iPhone Duo closed, the sample's "Bar items and overflow" screen: image items in the strip, the overflow menu open with the labelled items, the Sort text item in the title row -->
+![The "Bar items and overflow" screen on an open iPhone Duo in landscape: the image items in the vertical strip, the Sort text item in the title row](images/AdaptiveNavigation-duo-open-bar-items.png)
 
 ## `adaptiveTab`
 
@@ -515,11 +515,11 @@ The Calf sample (`sample/common`) is wired the way this page recommends, so open
 - `navigation/AppNavGraph.kt`: two layers. The **outer** `AdaptiveNavDisplay` pushes the demos that own the whole screen (their own tabs, their own navigation display, or, for Foldable, the window's whole geometry) full screen: a `UISplitViewController` must never be pushed, so they cannot live in a detail column. Its root entry hosts the **inner** `AdaptiveNavDisplay` with `listDetail`: the home list is the `AdaptivePaneRole.List` entry with a "Select a component" placeholder, every other demo an `AdaptivePaneRole.Detail`. A list tap calls `selectDetail`, and the list highlights the demo whose key is on top of the stack.
 - `components/SampleScreenScaffold.kt`: the demos' shared scaffold. Inside a detail entry the navigator paints the bar (title, back button, and on iPhone Duo the vertical strip), so the scaffold renders only the body; demos whose subject is the bar itself keep drawing their own and use `barShown = false`.
 
-<!-- MEDIA: the sample's home on an open iPhone Duo: list column, selected demo highlighted, detail column -->
+![The sample's home on an open iPhone Duo: the list column and the Buttons demo in the detail column](images/Home-duo-open-detail.png)
 
 The sample also runs on the other path. The **Plain Compose navigation** switch at the top of its home screen swaps the whole app to `navigation/ComposeNavGraph.kt`: one Navigation 3 `NavDisplay` with `rememberCalfListDetailSceneStrategy()`, the same demos in the list and detail panes, full-screen demos pushed over both, and every demo drawing its own `AdaptiveScaffold` bars. The sample's iOS entry point is the [bar host](ui.md#installing-the-bar-host-ios), so on iOS those bars are the host's container bars; the calf-navigation shell is unaffected by it. The two paths are never nested: the Adaptive Navigation demo is only listed on calf-navigation, the **Navigation 3 List-Detail** demo (`screens/Nav3ListDetailScreen.kt`, a plain `NavDisplay` with Navigation 3's own transitions) only on plain Compose navigation.
 
-<!-- MEDIA: the sample on plain Compose navigation on an open iPhone Duo: the list pane, a demo in the detail pane, its bar items in the vertical bar -->
+![The sample on plain Compose navigation on an open iPhone Duo: the Showcase with its bar items and tab bar in the vertical strip](images/BarHost-duo-showcase.png)
 
 ## Opting in
 

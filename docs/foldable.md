@@ -8,7 +8,9 @@ that it exposes the iPhone Duo values that a Compose developer has no other way 
 | --- | --- | --- | --- |
 | ![Foldable material](images/Foldable-material.png) | ![Foldable ios](images/Foldable-ios-liquid-glass.png) | ![Foldable desktop](images/Foldable-desktop.png) | ![Foldable web](images/Foldable-web.png) |
 
-<!-- MEDIA: the sample's Foldable screen on iPhone Duo, closed / book / open, side by side with a Pixel Fold -->
+| Book | Open |
+| --- | --- |
+| ![The sample's Foldable screen on an iPhone Duo in Book pose: the fold across the screen, posture above it, details below](images/Foldable-duo-book.png) | ![The sample's Foldable screen on an open iPhone Duo: posture, fold and the two panes drawn live](images/Foldable-duo-open.png) |
 
 ## Installation
 
@@ -90,7 +92,7 @@ than `minPaneSize`. While the fold separates the content on iOS, the gap also in
 asks to keep clear around it. `calculateFoldPanes(...)` is the same logic as a pure function, if you want
 to feed it your own values.
 
-<!-- MEDIA: two panes laid out from FoldPanes on an open iPhone Duo, with the gap highlighted -->
+![The sample's Foldable screen on an open iPhone Duo: posture, fold and the two panes drawn live](images/Foldable-duo-open.png)
 
 ### A tabletop layout from the raw values
 
@@ -130,7 +132,7 @@ fun Player() {
 
 The same helper keeps a Material `ModalBottomSheet` in the lower pane: give it `Modifier.padding(top = lowerPane.top.toDp())` (the sample's Bottom Sheet screen does this). Use a top padding rather than a height cap: the sheet computes its anchors from the space it is given, and a capped sheet would open half way up the pane.
 
-<!-- MEDIA: the sample's Foldable screen half open with the fold across (iPhone Duo in Book pose rotated, Pixel Fold in landscape): posture above the fold, details below -->
+![The sample's Foldable screen on an iPhone Duo in Book pose: the fold across the screen, posture above it, details below](images/Foldable-duo-book.png)
 
 ### Material3 Adaptive
 
@@ -217,7 +219,9 @@ Two things to know:
   one key are not a transition. `LocalListDetailSceneScope.current` is non-null only inside the
   two-pane scene, so it is the switch.
 
-<!-- MEDIA: the sample's Navigation 3 List-Detail demo on iPhone Duo: closed (one pane, a tap pushes the colour), open (two panes), book (the detail starts after the fold) -->
+| Open | Book |
+| --- | --- |
+| ![The Navigation 3 List-Detail demo on an open iPhone Duo: two panes](images/Nav3ListDetail-duo-open.png) | ![The same demo in Book pose: the detail starts after the fold](images/Nav3ListDetail-duo-book.png) |
 
 ![The Navigation 3 List-Detail demo on the web, two panes with an item open](images/Nav3ListDetail-web.png)
 

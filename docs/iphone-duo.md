@@ -45,7 +45,7 @@ and shared elements in Compose; the bar host moves one set of Calf bars into the
 [Which path do I pick?](navigation.md#which-path-do-i-pick) compares them line by line.
 
 ![The Mail tab on an open iPhone Duo in landscape: list column, detail column, and the tab bar in the vertical strip](images/AdaptiveNavigation-duo-open-mail-landscape.png)
-<!-- MEDIA: the sample on plain Compose navigation on an open iPhone Duo: the list pane, a demo in the detail pane, its bar items in the vertical bar -->
+![The sample on plain Compose navigation on an open iPhone Duo: the Showcase with its bar items and tab bar in the vertical strip](images/BarHost-duo-showcase.png)
 
 ## Things to know
 
@@ -70,4 +70,6 @@ camera area and the panes live; the Adaptive Navigation demo's Mail tab shows th
 the "Bar items and overflow" screen shows eight items of mixed kinds and priorities; and the switch at the top
 of the home screen runs the same screens on plain Navigation 3 with the bar host.
 
-<!-- MEDIA: the sample's Foldable screen on iPhone Duo, closed / book / open, side by side with a Pixel Fold -->
+| Book | Open |
+| --- | --- |
+| ![The sample's Foldable screen on an iPhone Duo in Book pose: the fold across the screen, posture above it, details below](images/Foldable-duo-book.png) | ![The sample's Foldable screen on an open iPhone Duo: posture, fold and the two panes drawn live](images/Foldable-duo-open.png) |

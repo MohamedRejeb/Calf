@@ -147,8 +147,10 @@ doc("ui/adaptive-alert-dialog.md", U, tables=[three("AdaptiveAlertDialog", U, gi
 doc("ui/adaptive-date-picker.md", U, insert=three("AdaptiveDatePicker", U))
 # module pages: platform APIs show the system UI only (picker, sheet, prompt), one iOS column
 def two(label, comp, variant, rel=D):
-    return table([f"{label} (Android)", f"{label} (iOS)"],
-                 [cell(f"{label} Android", f"{comp}-material-{variant}.png", rel), cell(f"{label} iOS", f"{comp}-ios-liquid-glass-{variant}.png", rel)])
+    """Android | iOS | Desktop (the desktop column only when that capture exists)."""
+    return table([f"{label} (Android)", f"{label} (iOS)", f"{label} (Desktop)"],
+                 [cell(f"{label} Android", f"{comp}-material-{variant}.png", rel), cell(f"{label} iOS", f"{comp}-ios-liquid-glass-{variant}.png", rel),
+                  cell(f"{label} Desktop", f"{comp}-desktop-{variant}.png", rel)])
 
 
 doc("filepicker.md", D, tables=[two("The file picker", "AdaptiveFilePicker", "system"), two("The image picker", "AdaptiveImagePicker", "system")])
@@ -188,6 +190,46 @@ slot = "<!-- MEDIA: open iPhone Duo, Mail tab of the sample: list column, detail
 if exists("AdaptiveNavigation-duo-open-mail-landscape.png"):
     t = t.replace(slot, "![The Mail tab on an open iPhone Duo in landscape: list column, detail column, and the tab bar in the vertical strip](images/AdaptiveNavigation-duo-open-mail-landscape.png)")
 edits[p] = t
+
+# MEDIA slots filled from the Duo and desktop rigs: the comment line is replaced by the image(s) once they exist.
+# (page, images-relative prefix, slot text prefix, [(file, alt)], column headers or None for a single image)
+F_BOOK = ("Foldable-duo-book.png", "The sample's Foldable screen on an iPhone Duo in Book pose: the fold across the screen, posture above it, details below")
+F_OPEN = ("Foldable-duo-open.png", "The sample's Foldable screen on an open iPhone Duo: posture, fold and the two panes drawn live")
+HOST = ("BarHost-duo-showcase.png", "The sample on plain Compose navigation on an open iPhone Duo: the Showcase with its bar items and tab bar in the vertical strip")
+SLOTS = [
+    ("../README.md", "docs/images/", "the sample's Foldable screen on iPhone Duo, closed / book / open", [F_BOOK, F_OPEN], ["Book", "Open"]),
+    ("index.md", D, "the sample's Foldable screen on iPhone Duo, closed / book / open", [F_BOOK, F_OPEN], ["Book", "Open"]),
+    ("iphone-duo.md", D, "the sample's Foldable screen on iPhone Duo, closed / book / open", [F_BOOK, F_OPEN], ["Book", "Open"]),
+    ("foldable.md", D, "the sample's Foldable screen on iPhone Duo, closed / book / open", [F_BOOK, F_OPEN], ["Book", "Open"]),
+    ("foldable.md", D, "the sample's Foldable screen half open with the fold across", [F_BOOK], None),
+    ("foldable.md", D, "two panes laid out from FoldPanes on an open iPhone Duo", [F_OPEN], None),
+    ("foldable.md", D, "the sample's Navigation 3 List-Detail demo on iPhone Duo",
+     [("Nav3ListDetail-duo-open.png", "The Navigation 3 List-Detail demo on an open iPhone Duo: two panes"), ("Nav3ListDetail-duo-book.png", "The same demo in Book pose: the detail starts after the fold")], ["Open", "Book"]),
+    ("iphone-duo.md", D, "the sample on plain Compose navigation on an open iPhone Duo", [HOST], None),
+    ("navigation.md", D, "the sample on plain Compose navigation on an open iPhone Duo", [HOST], None),
+    ("navigation.md", D, "the sample's home on an open iPhone Duo",
+     [("Home-duo-open-detail.png", "The sample's home on an open iPhone Duo: the list column and the Buttons demo in the detail column")], None),
+    ("navigation.md", D, "iPhone Duo closed, the sample's \"Bar items and overflow\" screen",
+     [("AdaptiveNavigation-duo-open-bar-items.png", "The \"Bar items and overflow\" screen on an open iPhone Duo in landscape: the image items in the vertical strip, the Sort text item in the title row")], None),
+    ("ui.md", D, "an open iPhone Duo, a Navigation 3 screen with its bar items", [HOST], None),
+    ("ui/adaptive-navigation-bar.md", U, "a hosted tab bar on an open iPhone Duo", [HOST], None),
+    ("ui/adaptive-top-bar.md", U, "a hosted top bar on iPhone during a Navigation 3 push",
+     [("BarHost-duo-topbar.png", "The Top Bar demo hosted on an open iPhone Duo: the bar items in the vertical strip")], None),
+    ("ui/adaptive-bottom-sheet.md", U, "a closed iPhone Duo with AdaptiveBottomSheet at the large detent",
+     [("AdaptiveBottomSheet-duo-open.png", "AdaptiveBottomSheet on an open iPhone Duo, raised over the detail column")], None),
+    ("ui/adaptive-alert-dialog.md", U, "an open iPhone Duo, the action-sheet style raised from the detail column",
+     [("AdaptiveAlertDialog-duo-open-action-sheet.png", "The action-sheet style on an open iPhone Duo, raised from the detail column and centred in it")], None),
+]
+SLOT_RE = re.compile(r"^<!-- MEDIA: ([^\n]*?) -->\n", re.M)
+for page, rel, prefix, images, headers in SLOTS:
+    path = f"{R}/docs/{page}"
+    text = edits.get(path) or open(path).read()
+    cells = [cell(alt, f, rel) for f, alt in images]
+    if not all(cells):
+        continue
+    block = table(headers, cells) if headers else cells[0]
+    text = SLOT_RE.sub(lambda m: (block + "\n") if m.group(1).startswith(prefix) else m.group(0), text)
+    edits[path] = text
 
 if DRY:
     for p, t in edits.items():

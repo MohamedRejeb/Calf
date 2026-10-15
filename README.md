@@ -89,7 +89,9 @@ Keeping plain Navigation 3 for shared elements and custom transitions? The [bar 
 |:---:|:---:|
 | <img src="docs/images/Foldable-material.png" width="230" alt="The Foldable screen on Android" /> | <img src="docs/images/Foldable-ios-liquid-glass.png" width="230" alt="The Foldable screen on iPhone" /> |
 
-<!-- MEDIA: the sample's Foldable screen on iPhone Duo, closed / book / open, next to a Pixel Fold -->
+| Book | Open |
+| --- | --- |
+| ![The sample's Foldable screen on an iPhone Duo in Book pose: the fold across the screen, posture above it, details below](docs/images/Foldable-duo-book.png) | ![The sample's Foldable screen on an open iPhone Duo: posture, fold and the two panes drawn live](docs/images/Foldable-duo-open.png) |
 
 Read [Foldable](https://mohamedrejeb.github.io/Calf/foldable/) for the API and the list-detail strategies.
 
