@@ -31,8 +31,8 @@ actual class AdaptiveTimePickerState actual constructor(
     is24Hour: Boolean,
 ) {
     init {
-        require(initialHour in 0..23) { "initialHour should in [0..23] range" }
-        require(initialHour in 0..59) { "initialMinute should be in [0..59] range" }
+        require(initialHour in 0..23) { "initialHour should be in [0..23] range" }
+        require(initialMinute in 0..59) { "initialMinute should be in [0..59] range" }
     }
 
     internal var hourState by mutableStateOf(initialHour)
