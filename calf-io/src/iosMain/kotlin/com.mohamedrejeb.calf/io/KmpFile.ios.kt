@@ -16,8 +16,9 @@ import platform.posix.memcpy
  * A wrapper class for a file in the platform-specific implementation.
  *
  * @property url A persistent copy of the file that remains accessible after the picker callback.
+ * It keeps the picked file's name, and [getPath] returns its path.
  * @property originalUrl The original URL returned by the file picker. May become inaccessible
- * due to iOS security scoping — use for metadata only (file name, path).
+ * due to iOS security scoping — use for metadata only ([getName], [toUriString]).
  */
 actual class KmpFile @InternalCalfApi constructor(
     val url: NSURL,
@@ -45,10 +46,15 @@ actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
 actual fun KmpFile.getName(context: PlatformContext): String? =
     originalUrl.lastPathComponent
 
-/** Only a `file:` URL has a file system path; [NSURL.path] is already percent-decoded. */
+/**
+ * The path of [KmpFile.url], the copy the app can read, so the path can be opened directly; a
+ * picked file's copy keeps the picked file's name. Only a `file:` URL has a path, and
+ * [NSURL.path] is already percent-decoded.
+ */
 actual fun KmpFile.getPath(context: PlatformContext): String? =
-    originalUrl.takeIf { it.isFileURL() }?.path
+    url.takeIf { it.isFileURL() }?.path
 
+/** The URL of the original file, for example to reopen a picked folder later. */
 actual fun KmpFile.toUriString(): String? = originalUrl.absoluteString
 
 @OptIn(ExperimentalForeignApi::class)

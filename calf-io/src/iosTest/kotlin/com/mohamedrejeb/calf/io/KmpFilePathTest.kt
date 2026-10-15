@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.io
 
+import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.core.PlatformContext
 import platform.Foundation.NSURL
 import kotlin.test.Test
@@ -17,6 +18,27 @@ class KmpFilePathTest {
     fun getPathOfAFileUrlIsTheDecodedFileSystemPath() {
         val file = KmpFile(NSURL.fileURLWithPath("/private/var/mobile/Report Final.pdf"))
         assertEquals("/private/var/mobile/Report Final.pdf", file.getPath(context))
+    }
+
+    @OptIn(InternalCalfApi::class)
+    @Test
+    fun getPathOfAPickedFileIsTheReadableCopy() {
+        val file = KmpFile(
+            url = NSURL.fileURLWithPath("/tmp/calf-file-picker/1234/Report Final.pdf"),
+            originalUrl = NSURL.fileURLWithPath("/private/var/mobile/Inbox/Report Final.pdf"),
+        )
+        assertEquals("/tmp/calf-file-picker/1234/Report Final.pdf", file.getPath(context))
+    }
+
+    @OptIn(InternalCalfApi::class)
+    @Test
+    fun getNameAndToUriStringDescribeTheOriginal() {
+        val file = KmpFile(
+            url = NSURL.fileURLWithPath("/tmp/calf-file-picker/1234/copy.pdf"),
+            originalUrl = NSURL.fileURLWithPath("/private/var/mobile/Inbox/Report.pdf"),
+        )
+        assertEquals("Report.pdf", file.getName(context))
+        assertEquals("file:///private/var/mobile/Inbox/Report.pdf", file.toUriString())
     }
 
     @Test

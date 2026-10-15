@@ -34,13 +34,12 @@ expect fun KmpFile.getName(context: PlatformContext): String?
 /**
  * Reads the file system path of the KmpFile.
  *
- * The result is a decoded path, usable with kotlinx-io's `Path` or `java.io.File`, or `null` when
- * the file has no file system path:
+ * The result is a decoded path that can be opened directly, for example with kotlinx-io's `Path`
+ * or `java.io.File`, or `null` when the file has no file system path:
  * - **Android**: the path of a `file:` URI; `null` for `content:` URIs, which is what the system
  *   pickers return. Read those with [readByteArray] or `source()`, or use [toUriString].
- * - **iOS**: the path of the original `file:` URL; `null` for any other URL. For a picked file
- *   that location is security scoped, so read the content with [readByteArray] or `source()`,
- *   which use the app's own copy.
+ * - **iOS**: the path of the file the app can read. For a picked file that is the app's copy,
+ *   which keeps the picked file's name; the original location is security scoped.
  * - **Desktop**: the path of the file.
  * - **JS** and **Wasm**: always `null`, browsers do not expose file paths.
  *
