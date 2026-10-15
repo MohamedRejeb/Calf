@@ -49,12 +49,13 @@ actual fun rememberFilePickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher =
     if (type == FilePickerFileType.Image || type == FilePickerFileType.Video || type == FilePickerFileType.ImageVideo) {
-        rememberImageVideoPickerLauncher(type, selectionMode, settings, onResult)
+        rememberImageVideoPickerLauncher(type, selectionMode, settings, onError, onResult)
     } else {
-        rememberDocumentPickerLauncher(type, selectionMode, settings, onResult)
+        rememberDocumentPickerLauncher(type, selectionMode, settings, onError, onResult)
     }
 
 @OptIn(InternalCalfApi::class, BetaInteropApi::class)
@@ -63,11 +64,13 @@ private fun rememberDocumentPickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val scope = rememberCoroutineScope()
     val currentUIViewController = LocalUIViewController.current
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnError by rememberUpdatedState(onError)
     val currentType by rememberUpdatedState(type)
     val currentSelectionMode by rememberUpdatedState(selectionMode)
     val currentInitialDirectory by rememberUpdatedState(settings.initialDirectory)
@@ -78,13 +81,14 @@ private fun rememberDocumentPickerLauncher(
                 scope.launch(Dispatchers.Main) {
                     val maxItems = (currentSelectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
                     val picked = if (maxItems != null) urls.take(maxItems) else urls
-                    val files =
+                    val staged =
                         if (currentType == FilePickerFileType.Folder)
-                            picked.map { KmpFile(it) }
+                            StagedPick(files = picked.map { KmpFile(it) }, failure = null)
                         else
-                            withContext(Dispatchers.IO) { picked.mapNotNull { it.toStagedKmpFile() } }
+                            withContext(Dispatchers.IO) { stagePickedUrls(picked) }
 
-                    currentOnResult(files)
+                    staged.failure?.let { currentOnError(it) }
+                    currentOnResult(staged.files)
                 }
             },
             onCancelled = {
@@ -124,11 +128,13 @@ private fun rememberImageVideoPickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val scope = rememberCoroutineScope()
     val currentUIViewController = LocalUIViewController.current
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnError by rememberUpdatedState(onError)
     val currentType by rememberUpdatedState(type)
     val currentSelectionMode by rememberUpdatedState(selectionMode)
 
@@ -146,7 +152,7 @@ private fun rememberImageVideoPickerLauncher(
 
                 if (didFinishPicking.isNotEmpty()) {
                     scope.launch {
-                        val results = didFinishPicking
+                        val loaded = didFinishPicking
                             .mapNotNull {
                                 val result = it as? PHPickerResult ?: return@mapNotNull null
 
@@ -157,10 +163,12 @@ private fun rememberImageVideoPickerLauncher(
                                 }
                             }
                             .awaitAll()
-                            .filterNotNull()
+                        val files = loaded.filterNotNull()
 
                         withContext(Dispatchers.Main) {
-                            currentOnResult(results)
+                            partialPickFailure(failed = loaded.size - files.size, picked = loaded.size)
+                                ?.let { currentOnError(it) }
+                            currentOnResult(files)
                         }
                     }
                 } else if (processResult) {
@@ -243,11 +251,6 @@ private suspend fun NSItemProvider.loadFileRepresentationForTypeIdentifierSuspen
         }
     }
 }
-
-/** A [KmpFile] that reads from a staged copy of this picked URL and reports the URL as its origin. */
-@OptIn(InternalCalfApi::class)
-private fun NSURL.toStagedKmpFile(): KmpFile? =
-    stagePickedFile(this)?.let { copy -> KmpFile(url = copy, originalUrl = this) }
 
 private fun createUIDocumentPickerViewController(
     type: FilePickerFileType,

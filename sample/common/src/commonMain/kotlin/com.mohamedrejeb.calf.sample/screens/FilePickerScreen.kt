@@ -35,6 +35,7 @@ import com.mohamedrejeb.calf.io.getPath
 import com.mohamedrejeb.calf.io.getSize
 import com.mohamedrejeb.calf.io.toUriString
 import com.mohamedrejeb.calf.io.source
+import com.mohamedrejeb.calf.picker.FilePickerException
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.FilePickerSettings
@@ -84,6 +85,7 @@ private data class PickedFileInfo(
 @Composable
 fun FilePickerScreen(navigateBack: () -> Unit) {
     var pickedFiles by remember { mutableStateOf<List<PickedFileInfo>>(emptyList()) }
+    var pickError by remember { mutableStateOf<String?>(null) }
     var isMultiple by remember { mutableStateOf(false) }
     var dialogTitle by remember { mutableStateOf("Pick a file") }
     // Kept as its URI so it survives configuration changes and process death.
@@ -95,6 +97,9 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
 
     val scope = rememberCoroutineScope()
     var streamingJob: Job? by remember { mutableStateOf(null) }
+
+    // Reported before onResult, which still receives the files that could be read.
+    val onPickError: (FilePickerException) -> Unit = { error -> pickError = error.message }
 
     val onFilesPicked: (List<KmpFile>) -> Unit = { files ->
         pickedFiles = files.map { file -> file.toPickedFileInfo(STREAMING_IN_PROGRESS) }
@@ -122,6 +127,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         type = selectedFileType,
         selectionMode = FilePickerSelectionMode.Single,
         settings = settings,
+        onError = onPickError,
         onResult = onFilesPicked,
     )
 
@@ -129,6 +135,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         type = selectedFileType,
         selectionMode = FilePickerSelectionMode.Multiple,
         settings = settings,
+        onError = onPickError,
         onResult = onFilesPicked,
     )
 
@@ -136,6 +143,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         type = FilePickerFileType.Folder,
         selectionMode = FilePickerSelectionMode.Single,
         settings = FilePickerSettings(title = "Pick a directory"),
+        onError = onPickError,
         onResult = onDirectoryPicked,
     )
 
@@ -256,6 +264,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             // Action buttons
             AdaptiveButton(
                 onClick = {
+                    pickError = null
                     if (isMultiple) {
                         multiplePickerLauncher.launch()
                     } else {
@@ -269,7 +278,10 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             AdaptiveButton(
-                onClick = { directoryPickerLauncher.launch() },
+                onClick = {
+                    pickError = null
+                    directoryPickerLauncher.launch()
+                },
                 enabled = currentPlatform != Platform.Web,
             ) {
                 Text(
@@ -294,6 +306,14 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )
+
+            pickError?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 

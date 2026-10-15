@@ -10,56 +10,62 @@ import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
 import java.io.File
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @ExperimentalCalfApi
 @Composable
 actual fun rememberFileSaverLauncher(
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher {
     val scope = rememberCoroutineScope()
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnError by rememberUpdatedState(onError)
     val currentSettings by rememberUpdatedState(settings)
 
     // Resolve parent window from local if not set explicitly
     val localWindow = LocalFilePickerParentWindow.current
     val resolvedParentWindow = settings.parentWindow ?: localWindow
 
+    // Shows the save dialog and writes the chosen file with [save]; null means the user cancelled.
+    val launchSave: (String, String, String?, suspend (Long) -> File?) -> Unit =
+        { baseName, extension, initialDirectory, save ->
+            scope.launch {
+                val saved = try {
+                    val handle = PlatformFilePicker.createSaveDialogHandle(
+                        initialDirectory = initialDirectory ?: currentSettings.initialDirectory,
+                        baseName = baseName,
+                        extension = extension,
+                        title = currentSettings.title,
+                        parentWindow = resolvedParentWindow,
+                    )
+                    try {
+                        save(handle)
+                    } finally {
+                        PlatformFilePicker.destroyDialog(handle)
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    currentOnError(FilePickerException("Could not save the file", e))
+                    return@launch
+                }
+                currentOnResult(saved?.let { KmpFile(it) })
+            }
+        }
+
     return remember {
         FileSaverLauncher(
             onLaunch = { bytes, baseName, extension, initialDirectory ->
-                scope.launch {
-                    val handle = PlatformFilePicker.createSaveDialogHandle(
-                        initialDirectory = initialDirectory ?: currentSettings.initialDirectory,
-                        baseName = baseName,
-                        extension = extension,
-                        title = currentSettings.title,
-                        parentWindow = resolvedParentWindow,
-                    )
-                    try {
-                        val file = PlatformFilePicker.showSaveDialog(handle, bytes)
-                        currentOnResult(file?.let { KmpFile(it) })
-                    } finally {
-                        PlatformFilePicker.destroyDialog(handle)
-                    }
+                launchSave(baseName, extension, initialDirectory) { handle ->
+                    PlatformFilePicker.showSaveDialog(handle, bytes)
                 }
             },
             onLaunchFile = { kmpFile, baseName, extension, initialDirectory ->
-                scope.launch {
-                    val handle = PlatformFilePicker.createSaveDialogHandle(
-                        initialDirectory = initialDirectory ?: currentSettings.initialDirectory,
-                        baseName = baseName,
-                        extension = extension,
-                        title = currentSettings.title,
-                        parentWindow = resolvedParentWindow,
-                    )
-                    try {
-                        val file = PlatformFilePicker.showSaveDialogWithFile(handle, kmpFile.file)
-                        currentOnResult(file?.let { KmpFile(it) })
-                    } finally {
-                        PlatformFilePicker.destroyDialog(handle)
-                    }
+                launchSave(baseName, extension, initialDirectory) { handle ->
+                    PlatformFilePicker.showSaveDialogWithFile(handle, kmpFile.file)
                 }
             },
         )

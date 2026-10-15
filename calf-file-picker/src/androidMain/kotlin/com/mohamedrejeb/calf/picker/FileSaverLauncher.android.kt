@@ -8,6 +8,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.webkit.MimeTypeMap
 import java.io.File
+import java.io.FileNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -30,16 +31,18 @@ import kotlinx.coroutines.withContext
  *
  * A [KmpFile] source survives process death while the sheet is open; a `ByteArray` source does
  * not, because it can be larger than the saved instance state allows. If the source is lost, or
- * cannot be written, the created document is deleted and `onResult` receives `null`.
+ * cannot be written, the created document is deleted and `onError` is called.
  */
 @ExperimentalCalfApi
 @Composable
 actual fun rememberFileSaverLauncher(
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher {
     val scope = rememberCoroutineScope()
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnError by rememberUpdatedState(onError)
     val contentResolver = LocalContext.current.applicationContext.contentResolver
 
     val pendingSource = rememberSaveable(saver = PendingSaveSource.Saver) { PendingSaveSource() }
@@ -54,8 +57,8 @@ actual fun rememberFileSaverLauncher(
             }
 
             scope.launch {
-                val saved = contentResolver.writeSaveSource(source, uri)
-                currentOnResult(if (saved) KmpFile(uri) else null)
+                val failure = contentResolver.writeSaveSource(source, uri)
+                if (failure == null) currentOnResult(KmpFile(uri)) else currentOnError(failure)
             }
         },
     )
@@ -64,10 +67,10 @@ actual fun rememberFileSaverLauncher(
         pendingSource.set(source)
         try {
             launcher.launch(fileName)
-        } catch (_: ActivityNotFoundException) {
+        } catch (e: ActivityNotFoundException) {
             // No app handles ACTION_CREATE_DOCUMENT, e.g. the documents app is disabled.
             pendingSource.take()
-            currentOnResult(null)
+            currentOnError(FilePickerException("No app on this device can save files", e))
         }
     }
 
@@ -86,33 +89,36 @@ actual fun rememberFileSaverLauncher(
 /**
  * Writes [source] into the document the save sheet created at [destination].
  *
- * @return `true` if the source was written; otherwise the empty document is deleted.
+ * @return `null` if the source was written; otherwise why not, and the empty document is deleted.
  */
-private suspend fun ContentResolver.writeSaveSource(source: SaveSource?, destination: Uri): Boolean =
+private suspend fun ContentResolver.writeSaveSource(source: SaveSource?, destination: Uri): FilePickerException? =
     withContext(Dispatchers.IO) {
-        val written = try {
-            source != null && write(source, destination)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            false
+        val failure = if (source == null) {
+            FilePickerException("The content to save was lost, likely because the app was restarted while the save dialog was open")
+        } else {
+            try {
+                write(source, destination)
+                null
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                FilePickerException("Could not write the saved file", e)
+            }
         }
-        if (!written) deleteCreatedDocument(destination)
-        written
+        if (failure != null) deleteCreatedDocument(destination)
+        failure
     }
 
-private fun ContentResolver.write(source: SaveSource, destination: Uri): Boolean {
-    val output = openOutputStream(destination, TRUNCATE_WRITE_MODE) ?: return false
-    return output.use { outputStream ->
+private fun ContentResolver.write(source: SaveSource, destination: Uri) {
+    val output = openOutputStream(destination, TRUNCATE_WRITE_MODE)
+        ?: throw FileNotFoundException("The provider gave no output stream for $destination")
+    output.use { outputStream ->
         when (source) {
-            is SaveSource.Bytes -> {
-                outputStream.write(source.bytes)
-                true
-            }
+            is SaveSource.Bytes -> outputStream.write(source.bytes)
             is SaveSource.File -> {
-                val input = openInputStream(source.file.uri) ?: return false
+                val input = openInputStream(source.file.uri)
+                    ?: throw FileNotFoundException("The provider gave no input stream for ${source.file.uri}")
                 input.use { it.copyTo(outputStream) }
-                true
             }
         }
     }

@@ -45,6 +45,20 @@ Button(
 }
 ```
 
+## Error Handling
+
+Pass `onError` to observe failures: no app on the device can pick files, the dialog could not be shown (for example, the Desktop native library failed to load), or picked files could not be read. Cancelling is not a failure; `onResult` receives an empty list.
+
+```kotlin
+val pickerLauncher = rememberFilePickerLauncher(
+    type = FilePickerFileType.Pdf,
+    onError = { error: FilePickerException -> showMessage("Could not pick: ${error.message}") },
+    onResult = { files -> /* ... */ },
+)
+```
+
+When only some of the picked files fail, `onError` is called once and `onResult` still receives the files that could be read. Without `onError`, failures are not reported.
+
 ## Settings
 
 Use `FilePickerSettings` to customize the dialog behavior:
@@ -362,6 +376,15 @@ fun SaveFileExample() {
 }
 ```
 
+Pass `onError` to tell a failure apart from a cancellation. A failure is reported only through `onError`: no app can save files, the source could not be read, or the chosen file could not be written. Without `onError`, a failure reaches `onResult` as `null`, like a cancellation.
+
+```kotlin
+val saverLauncher = rememberFileSaverLauncher(
+    onError = { error -> showMessage("Could not save: ${error.message}") },
+    onResult = { file -> /* saved file, or null if cancelled */ },
+)
+```
+
 ### Saving from a KmpFile
 
 If you already have a `KmpFile` (e.g., from a file picker), you can pass it directly instead of loading bytes into memory:
@@ -385,9 +408,9 @@ This avoids loading the entire file content into memory. On each platform, the f
 | Desktop | Native save dialog via rfd |
 | Web | The browser's save dialog (`showSaveFilePicker`) in Chrome, Edge and other Chromium browsers; `onResult` receives the saved file, or `null` if the user cancels. Safari and Firefox have no save dialog API, so the file is downloaded where the browser's settings say and `onResult` is not called. |
 
-If the source cannot be read or written, `onResult` receives `null`, and on Android the empty document is deleted.
+If the source cannot be read or written, the failure is reported as described above, and on Android the empty document is deleted.
 
-> **Android process death:** the save dialog runs in another app, so Android may kill yours while it is open. A `KmpFile` source is restored when the result arrives; a `ByteArray` source is not, because it can be larger than the saved instance state allows. In that case `onResult` receives `null`. Save from a `KmpFile` when that matters.
+> **Android process death:** the save dialog runs in another app, so Android may kill yours while it is open. A `KmpFile` source is restored when the result arrives; a `ByteArray` source is not, because it can be larger than the saved instance state allows. In that case saving fails. Save from a `KmpFile` when that matters.
 
 > `rememberFileSaverLauncher` is annotated with `@ExperimentalCalfApi`.
 

@@ -49,9 +49,11 @@ internal expect fun showSaveFilePicker(
 @Composable
 actual fun rememberFileSaverLauncher(
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher {
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnError by rememberUpdatedState(onError)
 
     val save: (Blob, String, String) -> Unit = { blob, baseName, extension ->
         val fileName = "$baseName.$extension"
@@ -64,7 +66,7 @@ actual fun rememberFileSaverLauncher(
                 onSaved = { file -> currentOnResult(KmpFile(file)) },
                 onCancelled = { currentOnResult(null) },
                 onPickerFailed = { triggerDownload(blob, fileName) },
-                onWriteFailed = { currentOnResult(null) },
+                onWriteFailed = { currentOnError(FilePickerException("Could not write the saved file")) },
             )
         } else {
             triggerDownload(blob, fileName)

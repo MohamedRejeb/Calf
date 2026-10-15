@@ -22,9 +22,13 @@ actual fun rememberFilePickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     initializeKmpFileContext(LocalContext.current.applicationContext)
+
+    val currentOnError by rememberUpdatedState(onError)
+    val reportError: (FilePickerException) -> Unit = remember { { error -> currentOnError(error) } }
 
     return when (selectionMode) {
         FilePickerSelectionMode.Single -> {
@@ -32,17 +36,20 @@ actual fun rememberFilePickerLauncher(
                 FilePickerFileType.Image, FilePickerFileType.Video, FilePickerFileType.ImageVideo ->
                     pickSingleVisualMedia(
                         type = type,
+                        onError = reportError,
                         onResult = onResult,
                     )
                 FilePickerFileType.Folder ->
                     pickFolder(
                         type = type,
                         initialDirectory = settings.initialDirectory,
+                        onError = reportError,
                         onResult = onResult,
                     )
                 else ->
                     pickSingleFile(
                         type = type,
+                        onError = reportError,
                         onResult = onResult,
                     )
             }
@@ -53,18 +60,21 @@ actual fun rememberFilePickerLauncher(
                     pickMultipleVisualMedia(
                         type = type,
                         maxItems = selectionMode.maxItems,
+                        onError = reportError,
                         onResult = onResult,
                     )
                 FilePickerFileType.Folder ->
                     pickFolder(
                         type = type,
                         initialDirectory = settings.initialDirectory,
+                        onError = reportError,
                         onResult = onResult,
                     )
                 else ->
                     pickMultipleFiles(
                         type = type,
                         maxItems = selectionMode.maxItems,
+                        onError = reportError,
                         onResult = onResult,
                     )
             }
@@ -75,6 +85,7 @@ actual fun rememberFilePickerLauncher(
 @Composable
 private fun pickSingleVisualMedia(
     type: FilePickerFileType,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val currentType by rememberUpdatedState(type)
@@ -105,9 +116,11 @@ private fun pickSingleVisualMedia(
                         currentType.toPickVisualMediaRequest(),
                     )
                 } catch (_: ActivityNotFoundException) {
-                    documentFallbackLauncher.launch(
-                        currentType.toVisualMediaMimeTypes(),
-                    )
+                    launchOrReport(onError) {
+                        documentFallbackLauncher.launch(
+                            currentType.toVisualMediaMimeTypes(),
+                        )
+                    }
                 }
             },
         )
@@ -118,6 +131,7 @@ private fun pickSingleVisualMedia(
 private fun pickMultipleVisualMedia(
     type: FilePickerFileType,
     maxItems: Int?,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val currentType by rememberUpdatedState(type)
@@ -161,9 +175,11 @@ private fun pickMultipleVisualMedia(
                         currentType.toPickVisualMediaRequest(),
                     )
                 } catch (_: ActivityNotFoundException) {
-                    documentFallbackLauncher.launch(
-                        currentType.toVisualMediaMimeTypes(),
-                    )
+                    launchOrReport(onError) {
+                        documentFallbackLauncher.launch(
+                            currentType.toVisualMediaMimeTypes(),
+                        )
+                    }
                 }
             },
         )
@@ -173,6 +189,7 @@ private fun pickMultipleVisualMedia(
 @Composable
 private fun pickSingleFile(
     type: FilePickerFileType,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val currentType by rememberUpdatedState(type)
@@ -190,7 +207,7 @@ private fun pickSingleFile(
             type = type,
             selectionMode = FilePickerSelectionMode.Single,
             onLaunch = {
-                filePickerLauncher.launch(currentType.toMimeTypes())
+                launchOrReport(onError) { filePickerLauncher.launch(currentType.toMimeTypes()) }
             },
         )
     }
@@ -200,6 +217,7 @@ private fun pickSingleFile(
 private fun pickMultipleFiles(
     type: FilePickerFileType,
     maxItems: Int?,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val currentType by rememberUpdatedState(type)
@@ -220,7 +238,7 @@ private fun pickMultipleFiles(
             type = type,
             selectionMode = FilePickerSelectionMode.Multiple,
             onLaunch = {
-                filePickerLauncher.launch(currentType.toMimeTypes())
+                launchOrReport(onError) { filePickerLauncher.launch(currentType.toMimeTypes()) }
             },
         )
     }
@@ -230,6 +248,7 @@ private fun pickMultipleFiles(
 private fun pickFolder(
     type: FilePickerFileType,
     initialDirectory: String?,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     val currentInitialDirectory by rememberUpdatedState(initialDirectory)
@@ -248,9 +267,21 @@ private fun pickFolder(
             selectionMode = FilePickerSelectionMode.Single,
             onLaunch = {
                 val initialUri = currentInitialDirectory?.let { Uri.parse(it) }
-                folderPickerLauncher.launch(initialUri)
+                launchOrReport(onError) { folderPickerLauncher.launch(initialUri) }
             },
         )
+    }
+}
+
+/**
+ * Runs [launch], reporting a device without an app for the request, for example with the documents
+ * app disabled, instead of crashing.
+ */
+private inline fun launchOrReport(onError: (FilePickerException) -> Unit, launch: () -> Unit) {
+    try {
+        launch()
+    } catch (e: ActivityNotFoundException) {
+        onError(FilePickerException("No app on this device can pick files", e))
     }
 }
 

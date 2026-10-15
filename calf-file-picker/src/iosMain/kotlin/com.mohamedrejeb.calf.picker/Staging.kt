@@ -1,6 +1,7 @@
 package com.mohamedrejeb.calf.picker
 
 import com.mohamedrejeb.calf.core.InternalCalfApi
+import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.io.withSecurityScopedAccess
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSData
@@ -38,6 +39,20 @@ internal fun stagePickedFile(source: NSURL): NSURL? {
     val fileName = source.lastPathComponent ?: return null
     return copyToStaging(source, stagingUrl(PICKER_STAGING_AREA, fileName))
 }
+
+/** The picked files that could be staged, and the failure to report for those that could not. */
+internal class StagedPick(val files: List<KmpFile>, val failure: FilePickerException?)
+
+/** Stages each picked URL; see [stagePickedFile]. */
+internal fun stagePickedUrls(urls: List<NSURL>): StagedPick {
+    val files = urls.mapNotNull { it.toStagedKmpFile() }
+    return StagedPick(files, partialPickFailure(failed = urls.size - files.size, picked = urls.size))
+}
+
+/** A [KmpFile] that reads from a staged copy of this picked URL and reports the URL as its origin. */
+@OptIn(InternalCalfApi::class)
+internal fun NSURL.toStagedKmpFile(): KmpFile? =
+    stagePickedFile(this)?.let { copy -> KmpFile(url = copy, originalUrl = this) }
 
 /**
  * Writes [data] to a fresh export staging directory as [fileName]. The export picker shows, and

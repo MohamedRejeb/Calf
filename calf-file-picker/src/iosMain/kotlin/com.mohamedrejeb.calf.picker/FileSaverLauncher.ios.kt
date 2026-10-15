@@ -29,11 +29,13 @@ import platform.UIKit.UIViewController
 @Composable
 actual fun rememberFileSaverLauncher(
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher {
     val scope = rememberCoroutineScope()
     val currentUIViewController = LocalUIViewController.current
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnError by rememberUpdatedState(onError)
 
     // Temp files created by onLaunch (bytes) and onLaunchData paths.
     // Cleaned up after the picker finishes (save or cancel).
@@ -60,7 +62,7 @@ actual fun rememberFileSaverLauncher(
         scope.launch {
             val stagedUrl = withContext(Dispatchers.IO) { stage() }
             if (stagedUrl == null) {
-                currentOnResult(null)
+                currentOnError(FilePickerException("Could not prepare the file to save"))
                 return@launch
             }
             pendingTempUrls.add(stagedUrl)

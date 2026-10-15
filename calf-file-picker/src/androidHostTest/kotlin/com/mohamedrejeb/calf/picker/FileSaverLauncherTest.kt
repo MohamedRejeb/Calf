@@ -1,17 +1,13 @@
 package com.mohamedrejeb.calf.picker
 
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.ActivityResultRegistry
 import androidx.activity.result.ActivityResultRegistryOwner
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.core.app.ActivityOptionsCompat
-import androidx.test.core.app.ApplicationProvider
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import org.junit.Rule
@@ -40,6 +36,7 @@ class FileSaverLauncherTest {
     private val registry = RecordingActivityResultRegistry()
     private val recompositions = mutableIntStateOf(0)
     private var result: SaverResult? = null
+    private var error: FilePickerException? = null
     private lateinit var launcher: FileSaverLauncher
 
     @Test
@@ -129,7 +126,42 @@ class FileSaverLauncherTest {
         assertNull(result?.file)
     }
 
-    private fun setContent() {
+    @Test
+    fun withOnErrorAFailedSaveIsOnlyAnError() {
+        setContent(withOnError = true)
+        val missing = KmpFile(Uri.fromFile(tempFolder.root.resolve("missing.pdf")))
+        val destination = tempFolder.newFile("Copy.pdf")
+
+        composeRule.runOnIdle { launcher.launch(file = missing, baseName = "Copy", extension = "pdf") }
+        composeRule.runOnIdle { registry.dispatchLast(Uri.fromFile(destination)) }
+        composeRule.waitUntil(timeoutMillis = 5_000) { error != null }
+
+        assertNull(result, "a failure does not also report a result")
+    }
+
+    @Test
+    fun withOnErrorADeviceWithoutADocumentsAppIsAnError() {
+        registry.hasDocumentsApp = false
+        setContent(withOnError = true)
+
+        composeRule.runOnIdle { launcher.launch(bytes = byteArrayOf(1), baseName = "Report", extension = "pdf") }
+        composeRule.waitUntil(timeoutMillis = 5_000) { error != null }
+
+        assertNull(result)
+    }
+
+    @Test
+    fun withOnErrorCancellingIsAResultNotAnError() {
+        setContent(withOnError = true)
+
+        composeRule.runOnIdle { launcher.launch(bytes = byteArrayOf(1), baseName = "Report", extension = "pdf") }
+        deliver(null)
+
+        assertNull(result?.file)
+        assertNull(error)
+    }
+
+    private fun setContent(withOnError: Boolean = false) {
         val owner = object : ActivityResultRegistryOwner {
             override val activityResultRegistry: ActivityResultRegistry = registry
         }
@@ -138,8 +170,11 @@ class FileSaverLauncherTest {
                 // Reading the counter here, and capturing it in onResult, makes every bump re-run
                 // rememberFileSaverLauncher, like the resume after the system sheet does.
                 val generation = recompositions.intValue
-                launcher = rememberFileSaverLauncher { file ->
-                    result = SaverResult(file, generation)
+                val onResult: (KmpFile?) -> Unit = { file -> result = SaverResult(file, generation) }
+                launcher = if (withOnError) {
+                    rememberFileSaverLauncher(onError = { error = it }, onResult = onResult)
+                } else {
+                    rememberFileSaverLauncher(onResult = onResult)
                 }
             }
         }
@@ -156,35 +191,4 @@ class FileSaverLauncherTest {
     }
 
     private class SaverResult(val file: KmpFile?, val generation: Int)
-}
-
-/** Records launches instead of starting activities, so the test can deliver the result itself. */
-private class RecordingActivityResultRegistry : ActivityResultRegistry() {
-    private class Launch(val requestCode: Int, val contract: ActivityResultContract<*, *>, val input: Any?)
-
-    private val launches = mutableListOf<Launch>()
-
-    /** When false, launches fail the way they do on devices with the documents app disabled. */
-    var hasDocumentsApp = true
-
-    override fun <I, O> onLaunch(
-        requestCode: Int,
-        contract: ActivityResultContract<I, O>,
-        input: I,
-        options: ActivityOptionsCompat?,
-    ) {
-        if (!hasDocumentsApp) throw ActivityNotFoundException("No activity for ACTION_CREATE_DOCUMENT")
-        launches += Launch(requestCode, contract, input)
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun lastIntent(): Intent {
-        val launch = launches.last()
-        val contract = launch.contract as ActivityResultContract<Any?, *>
-        return contract.createIntent(ApplicationProvider.getApplicationContext(), launch.input)
-    }
-
-    fun dispatchLast(uri: Uri?) {
-        dispatchResult(launches.last().requestCode, uri)
-    }
 }
