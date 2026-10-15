@@ -4,12 +4,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mohamedrejeb.calf.sample.components.CodeSnippet
 import com.mohamedrejeb.calf.sample.components.DemoCard
@@ -62,7 +66,11 @@ private const val MAX_TEXT_SIZE = 24f
 /** Ticks between the ends of the text size range: 12, 14, ..., 24 pt. */
 private const val TEXT_SIZE_STEPS = 5
 private const val DISABLED_VALUE = 0.4f
+private const val INITIAL_SLIM_VALUE = 0.3f
 private const val PERCENT = 100
+
+/** Height of the custom track of the Track section; Material's own is 16 dp. */
+private val SlimTrackHeight = 4.dp
 
 /** Line height of the preview text, relative to its size. */
 private const val LINE_HEIGHT_RATIO = 1.4f
@@ -141,6 +149,7 @@ fun SliderScreen(navigateBack: () -> Unit) {
                     )
                 }
             }
+            TrackSection()
             DemoSection(title = "Usage") {
                 CodeSnippet(USAGE.trimIndent())
             }
@@ -173,6 +182,42 @@ private fun PreviewSection(textSize: Float, savedVolume: Float) {
             ValueRow(label = "Saved volume", value = savedVolume.asPercent())
         }
     }
+}
+
+/** The `track` slot swaps Material's track for [SlimTrack]; iOS ignores it and keeps the native slider. */
+@Composable
+private fun TrackSection() {
+    var slimValue by rememberSaveable { mutableFloatStateOf(INITIAL_SLIM_VALUE) }
+
+    DemoSection(
+        title = "Track",
+        footer = "The track slot replaces Material's track. iOS ignores it and keeps the native slider.",
+    ) {
+        DemoCard {
+            Text(
+                text = "Slim track",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            AdaptiveSlider(
+                value = slimValue,
+                onValueChange = { slimValue = it },
+                modifier = Modifier.fillMaxWidth(),
+                track = { sliderState -> SlimTrack(sliderState) },
+            )
+        }
+    }
+}
+
+/** A [SlimTrackHeight] track with no gap around the thumb and no stop indicator at its end. */
+@Composable
+private fun SlimTrack(sliderState: SliderState) {
+    SliderDefaults.Track(
+        sliderState = sliderState,
+        modifier = Modifier.height(SlimTrackHeight),
+        thumbTrackGapSize = 0.dp,
+        drawStopIndicator = null,
+    )
 }
 
 /** One setting of the panel: an icon, a title and the live value, with its slider below. */

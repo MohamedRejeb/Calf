@@ -52,10 +52,40 @@ fun MyToolbar() {
 |----------------------|------------------------------------------------------------------------------------------------------------------|
 | `expanded`           | Whether the toolbar is in its expanded state.                                                                    |
 | `modifier`           | The modifier to be applied to the toolbar.                                                                       |
+| `colors`             | The colors of the Material 3 Expressive floating toolbar. Uses `FloatingToolbarDefaults.standardFloatingToolbarColors()` by default. Material only, ignored on iOS. |
+| `contentPadding`     | The padding around the floating toolbar's content. Uses `FloatingToolbarDefaults.ContentPadding` by default. Material only, ignored on iOS. |
+| `scrollBehavior`     | Hides and shows the floating toolbar as the content under it scrolls, see `FloatingToolbarDefaults.exitAlwaysScrollBehavior`. Material only, ignored on iOS. |
+| `shape`              | The shape of the floating toolbar's container. Uses `FloatingToolbarDefaults.ContainerShape` by default. Material only, ignored on iOS. |
 | `leadingContent`     | Optional leading content for the Material 3 Expressive floating toolbar.                                         |
 | `trailingContent`    | Optional trailing content for the Material 3 Expressive floating toolbar.                                        |
+| `expandedShadowElevation` | The shadow elevation of the floating toolbar while expanded. Uses `FloatingToolbarDefaults.ContainerExpandedElevation` by default. Material only, ignored on iOS. |
+| `collapsedShadowElevation` | The shadow elevation of the floating toolbar while collapsed. Uses `FloatingToolbarDefaults.ContainerCollapsedElevation` by default. Material only, ignored on iOS. |
 | `content`            | The main content composable for the Material 3 Expressive floating toolbar. Typically a row of `IconButton`s.    |
 | `iosItems`           | The list of bar button items for the iOS native toolbar. See `UIKitUIBarButtonItem`.                             |
+
+## Scroll behavior and colors (Material)
+
+On Material platforms the floating toolbar can slide away while the content under it scrolls and come back when the scroll reverses. Attach the behavior's nested scroll connection to the scrolling container and pass it to the toolbar; iOS ignores it and keeps the native toolbar in place.
+
+```kotlin
+val scrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehavior(
+    exitDirection = FloatingToolbarExitDirection.Bottom,
+)
+
+Column(
+    modifier = Modifier
+        .nestedScroll(scrollBehavior)
+        .verticalScroll(rememberScrollState()),
+) { /* page content */ }
+
+AdaptiveToolbar(
+    expanded = true,
+    scrollBehavior = scrollBehavior,
+    colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(),
+    content = { /* icon buttons */ },
+    iosItems = items,
+)
+```
 
 ## Inside the bar host (iOS)
 

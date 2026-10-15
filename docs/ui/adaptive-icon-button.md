@@ -27,6 +27,7 @@ AdaptiveIconButton(
 | `modifier`           | The modifier to be applied to the icon button.                                                               |
 | `enabled`            | Whether the icon button is enabled or disabled.                                                              |
 | `colors`             | The colors for the icon button on Material platforms. Uses `IconButtonDefaults.iconButtonColors()` by default.|
+| `shape`              | The shape of the container and of the ripple. Uses `IconButtonDefaults.standardShape` by default. Material only, ignored on iOS. |
 | `liquidGlassColors`  | Optional color configuration for the Liquid Glass button style on iOS 26+.                                   |
 | `interactionSource`  | The `MutableInteractionSource` for the icon button.                                                          |
 | `content`            | The content of the icon button (typically an `Icon` composable).                                             |
@@ -73,6 +74,18 @@ AdaptiveIconButton(
     Icon(
         imageVector = Icons.Default.Delete,
         contentDescription = "Delete",
+    )
+}
+
+// Squared tonal container: shape is Material only, iOS keeps the platform button
+AdaptiveIconButton(
+    onClick = { /* Handle click */ },
+    colors = IconButtonDefaults.filledTonalIconButtonColors(),
+    shape = MaterialTheme.shapes.small,
+) {
+    Icon(
+        imageVector = Icons.Default.Edit,
+        contentDescription = "Edit",
     )
 }
 

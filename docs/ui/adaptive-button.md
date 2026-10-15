@@ -25,6 +25,8 @@ AdaptiveButton(
 | `enabled`            | Whether the button is enabled or disabled.                                                           |
 | `shape`              | The shape of the button. Uses `ButtonDefaults.shape` by default (Material platforms).                |
 | `colors`             | The colors for the button on Material platforms. Uses `ButtonDefaults.buttonColors()` by default.    |
+| `elevation`          | The elevation in each interaction state; `null` draws no shadow. Uses `ButtonDefaults.buttonElevation()` by default. Material only, ignored on iOS. |
+| `border`             | An optional `BorderStroke` around the button, e.g. `ButtonDefaults.outlinedButtonBorder()`. Material only, ignored on iOS. |
 | `liquidGlassColors`  | Optional color configuration for the Liquid Glass button style on iOS 26+.                           |
 | `contentPadding`     | The padding applied to the button content. Uses `ButtonDefaults.ContentPadding` by default.          |
 | `interactionSource`  | The `MutableInteractionSource` for the button.                                                       |
@@ -65,6 +67,16 @@ AdaptiveButton(
     ),
 ) {
     Text("Custom Colors")
+}
+
+// Outlined: border and elevation are Material only, iOS keeps the platform button
+AdaptiveButton(
+    onClick = { /* Handle click */ },
+    colors = ButtonDefaults.outlinedButtonColors(),
+    border = ButtonDefaults.outlinedButtonBorder(),
+    elevation = null,
+) {
+    Text("Outlined")
 }
 
 // Disabled button

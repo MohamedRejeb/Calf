@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,8 +25,8 @@ import platform.UIKit.UINavigationBar
  *
  * This implementation uses UIKit's UINavigationBar to create a native iOS navigation bar. Inside an
  * [AdaptiveBarHostUIViewController] the bar is the host container's own navigation bar instead.
- * The Material3 parameters ([title], [navigationIcon], [actions]) are ignored on iOS —
- * the bar is built from [iosTitle], [iosLeadingItems], and [iosTrailingItems].
+ * The Material3 parameters ([title], [navigationIcon], [actions], [contentPadding]...) are ignored
+ * on iOS — the bar is built from [iosTitle], [iosLeadingItems], and [iosTrailingItems].
  */
 @OptIn(
     ExperimentalForeignApi::class,
@@ -43,6 +44,7 @@ actual fun AdaptiveTopBar(
     windowInsets: WindowInsets,
     colors: TopAppBarColors,
     scrollBehavior: TopAppBarScrollBehavior?,
+    contentPadding: PaddingValues,
     iosTitle: String,
     iosLeadingItems: List<UIKitUIBarButtonItem>,
     iosTrailingItems: List<UIKitUIBarButtonItem>,

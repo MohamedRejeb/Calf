@@ -14,6 +14,8 @@ import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material.icons.filled.FormatUnderlined
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.material3.FloatingToolbarExitDirection
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +68,8 @@ AdaptiveToolbar(
             Icon(Icons.Filled.FormatBold, contentDescription = "Bold")
         }
     },
+    // Material: slides away while the page under it scrolls down
+    scrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehavior(FloatingToolbarExitDirection.Bottom),
 )
 """
 
@@ -102,12 +107,28 @@ fun ToolbarScreen(navigateBack: () -> Unit) {
     }
     val iosItems = remember(format, spacing) { draftToolbarItems(format, actions, spacing) }
 
+    // Material only: the floating toolbar slides out below the screen while the page scrolls down
+    // and back in when it scrolls up. The page's scroll reaches it through the nested scroll chain.
+    val scrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehavior(
+        exitDirection = FloatingToolbarExitDirection.Bottom,
+    )
+
     SampleScreenScaffold(title = Screen.Toolbar.title, navigateBack = navigateBack) { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            DemoPage(contentPadding = padding.plusBottom(ToolbarClearance)) {
+            DemoPage(
+                contentPadding = padding.plusBottom(ToolbarClearance),
+                modifier = Modifier.nestedScroll(scrollBehavior),
+            ) {
                 DemoHeader(Screen.Toolbar)
                 DraftSection(format = format)
-                DemoSection(title = "Toolbar") {
+                DemoSection(
+                    title = "Toolbar",
+                    footer = if (currentPlatform.isIOS) {
+                        null
+                    } else {
+                        "Scroll down and the toolbar slides away through scrollBehavior; scroll up to bring it back."
+                    },
+                ) {
                     DemoCard {
                         ValueRow(label = "Last action", value = lastAction)
                         ValueRow(label = "Style", value = format.description)
@@ -125,6 +146,7 @@ fun ToolbarScreen(navigateBack: () -> Unit) {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = padding.calculateBottomPadding() + Spacing.l),
+                scrollBehavior = scrollBehavior,
                 iosItems = iosItems,
                 content = { MaterialToolbarItems(format = format, actions = actions) },
             )

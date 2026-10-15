@@ -19,7 +19,10 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.ShoppingBag
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -64,6 +68,10 @@ AdaptiveIconButton(onClick = { isFavourite = !isFavourite }) {
 private const val UNIT_PRICE_EUROS = 89
 private const val MAX_QUANTITY = 5
 private const val DISABLED_GLASS_ALPHA = 0.4f
+
+/** Closes the Variants footer: the rows that pass Material-only parameters. */
+private const val MATERIAL_ONLY_FOOTER =
+    "Outlined, elevated and squared pass border, elevation and shape, which are Material only."
 private val ThumbnailSize = 56.dp
 private val ButtonIconSize = 18.dp
 private val QuantityWidth = 24.dp
@@ -215,9 +223,10 @@ private fun VariantsSection() {
     DemoSection(
         title = "Variants",
         footer = if (isLiquidGlassAvailable) {
-            null
+            MATERIAL_ONLY_FOOTER
         } else {
-            "On iOS 26 these are Liquid Glass buttons, and liquidGlassColors sets their glass colours."
+            "On iOS 26 these are Liquid Glass buttons, and liquidGlassColors sets their glass colours. " +
+                MATERIAL_ONLY_FOOTER
         },
     ) {
         DemoListCard {
@@ -225,6 +234,10 @@ private fun VariantsSection() {
                 title = "Filled",
                 trailing = { AdaptiveButton(onClick = {}) { Text("Checkout") } },
             )
+            DemoDivider()
+            DemoRow(title = "Outlined", trailing = { OutlinedCheckout() })
+            DemoDivider()
+            DemoRow(title = "Elevated", trailing = { ElevatedCheckout() })
             DemoDivider()
             DemoRow(
                 title = "Disabled",
@@ -252,11 +265,50 @@ private fun VariantsSection() {
                 },
             )
             DemoDivider()
+            DemoRow(title = "Tonal, squared", trailing = { TonalSquaredIconButtons() })
+            DemoDivider()
             DemoRow(
                 title = "Icon button, disabled",
                 trailing = { IconOnlyButton(Icons.Outlined.FavoriteBorder, "Favourite", enabled = false) },
             )
         }
+    }
+}
+
+/** Material's outlined button: transparent container, `border` around it and no shadow. */
+@Composable
+private fun OutlinedCheckout() {
+    AdaptiveButton(
+        onClick = {},
+        colors = ButtonDefaults.outlinedButtonColors(),
+        elevation = null,
+        border = ButtonDefaults.outlinedButtonBorder(),
+    ) {
+        Text("Checkout")
+    }
+}
+
+/** Material's elevated button: a surface container lifted by `elevation`. */
+@Composable
+private fun ElevatedCheckout() {
+    AdaptiveButton(
+        onClick = {},
+        colors = ButtonDefaults.elevatedButtonColors(),
+        elevation = ButtonDefaults.elevatedButtonElevation(),
+    ) {
+        Text("Checkout")
+    }
+}
+
+/** Tonal containers squared off through `shape`. */
+@Composable
+private fun TonalSquaredIconButtons() {
+    val tonal = IconButtonDefaults.filledTonalIconButtonColors()
+    val squared = MaterialTheme.shapes.small
+    Row {
+        IconOnlyButton(Icons.Outlined.FavoriteBorder, "Favourite", colors = tonal, shape = squared)
+        IconOnlyButton(Icons.Outlined.Share, "Share", colors = tonal, shape = squared)
+        IconOnlyButton(Icons.Outlined.Add, "Add", colors = tonal, shape = squared)
     }
 }
 
@@ -300,8 +352,10 @@ private fun IconOnlyButton(
     icon: ImageVector,
     contentDescription: String,
     enabled: Boolean = true,
+    colors: IconButtonColors = IconButtonDefaults.iconButtonColors(),
+    shape: Shape = IconButtonDefaults.standardShape,
 ) {
-    AdaptiveIconButton(onClick = {}, enabled = enabled) {
+    AdaptiveIconButton(onClick = {}, enabled = enabled, colors = colors, shape = shape) {
         Icon(imageVector = icon, contentDescription = contentDescription)
     }
 }

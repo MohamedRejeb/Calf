@@ -56,6 +56,7 @@ fun MyScreen() {
 | `windowInsets`       | The window insets for the Material3 TopAppBar.                                                                   |
 | `colors`             | The colors for the Material3 TopAppBar. Uses `TopAppBarDefaults.topAppBarColors()` by default.                   |
 | `scrollBehavior`     | The scroll behavior for the Material3 TopAppBar.                                                                 |
+| `contentPadding`     | The padding around the content of the Material3 TopAppBar. Uses `TopAppBarDefaults.ContentPadding` by default. Material only, ignored on iOS. |
 | `iosTitle`           | The title string for the iOS UINavigationBar.                                                                    |
 | `iosLeadingItems`    | The list of bar button items on the leading side of the iOS navigation bar. See `UIKitUIBarButtonItem`.          |
 | `iosTrailingItems`   | The list of bar button items on the trailing side of the iOS navigation bar. See `UIKitUIBarButtonItem`.         |
