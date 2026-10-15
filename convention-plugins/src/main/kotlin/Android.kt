@@ -13,6 +13,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  */
 private const val ANDROID_LIBRARY_EXTENSION_NAME = "android"
 
+/** Android-only host tests, which run on Robolectric. */
+private const val ANDROID_HOST_TEST_SOURCES = "src/androidHostTest"
+
 /**
  * Configures the Android target declared by the `com.android.kotlin.multiplatform.library` plugin.
  *
@@ -34,7 +37,11 @@ fun Project.androidLibrarySetup() {
             minSdk = libs.versions.android.minSdk.get().toInt()
             compilerOptions.jvmTarget.set(jvmTarget)
             // Runs commonTest on the Android JVM, like the old androidUnitTest source set did.
-            withHostTest {}
+            withHostTest {
+                // Robolectric tests in androidHostTest start activities, which have to be declared
+                // in the merged test manifest. Other modules skip the resource merge.
+                isIncludeAndroidResources = file(ANDROID_HOST_TEST_SOURCES).exists()
+            }
         }
     }
 }

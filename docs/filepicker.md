@@ -335,10 +335,14 @@ This avoids loading the entire file content into memory. On each platform, the f
 
 | Platform | Mechanism |
 |----------|-----------|
-| Android | System document creation dialog (`CreateDocument`) |
-| iOS | Export dialog (`UIDocumentPickerViewController`) |
+| Android | System document creation dialog (`CreateDocument`), typed after `extension` (for example `application/pdf`). Calf writes the source into the created document. |
+| iOS | Export dialog (`UIDocumentPickerViewController`) that saves a copy under `baseName.extension`. The source is staged in the app's temporary directory and never moved; the staged copy is removed when the dialog closes. |
 | Desktop | Native save dialog via rfd |
 | Web | Browser download — `onResult` is not called since downloads are fire-and-forget |
+
+If the source cannot be read or written, `onResult` receives `null`, and on Android the empty document is deleted.
+
+> **Android process death:** the save dialog runs in another app, so Android may kill yours while it is open. A `KmpFile` source is restored when the result arrives; a `ByteArray` source is not, because it can be larger than the saved instance state allows. In that case `onResult` receives `null`. Save from a `KmpFile` when that matters.
 
 > `rememberFileSaverLauncher` is annotated with `@ExperimentalCalfApi`.
 

@@ -10,6 +10,7 @@ import androidx.compose.ui.uikit.LocalUIViewController
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
+import com.mohamedrejeb.calf.io.withSecurityScopedAccess
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
@@ -78,9 +79,13 @@ actual fun rememberFileSaverLauncher(
         }
     }
 
-    val launchStaged: (suspend () -> NSURL) -> Unit = { stage ->
+    val launchStaged: (suspend () -> NSURL?) -> Unit = { stage ->
         scope.launch {
             val stagedUrl = withContext(Dispatchers.IO) { stage() }
+            if (stagedUrl == null) {
+                currentOnResult(null)
+                return@launch
+            }
             pendingTempUrls.add(stagedUrl)
             withContext(Dispatchers.Main) {
                 presentExportPicker(stagedUrl, delegate, currentUIViewController)
@@ -129,19 +134,32 @@ private fun exportStagingUrl(fileName: String): NSURL {
     return NSURL.fileURLWithPath("$directory/$fileName")
 }
 
-/** Writes [data] to a fresh staging directory as [fileName]; see [exportStagingUrl]. */
-internal fun stageExportData(data: NSData, fileName: String): NSURL {
+/**
+ * Writes [data] to a fresh staging directory as [fileName]; see [exportStagingUrl].
+ *
+ * @return The staged file, or `null` if it could not be written.
+ */
+internal fun stageExportData(data: NSData, fileName: String): NSURL? {
     val url = exportStagingUrl(fileName)
-    data.writeToURL(url, atomically = true)
-    return url
+    if (data.writeToURL(url, atomically = true)) return url
+    removeExportStaging(url)
+    return null
 }
 
-/** Copies [source] into a fresh staging directory as [fileName]; the source is left in place. */
-@OptIn(ExperimentalForeignApi::class)
-internal fun stageExportFile(source: NSURL, fileName: String): NSURL {
+/**
+ * Copies [source] into a fresh staging directory as [fileName]; the source is left in place.
+ *
+ * @return The staged copy, or `null` if [source] could not be copied.
+ */
+@OptIn(ExperimentalForeignApi::class, InternalCalfApi::class)
+internal fun stageExportFile(source: NSURL, fileName: String): NSURL? {
     val url = exportStagingUrl(fileName)
-    NSFileManager.defaultManager.copyItemAtURL(source, toURL = url, error = null)
-    return url
+    val copied = source.withSecurityScopedAccess {
+        NSFileManager.defaultManager.copyItemAtURL(source, toURL = url, error = null)
+    }
+    if (copied) return url
+    removeExportStaging(url)
+    return null
 }
 
 /** Removes a staged export together with its private directory. */
@@ -163,8 +181,10 @@ private fun presentExportPicker(
     delegate: UIDocumentPickerDelegateProtocol,
     viewController: UIViewController,
 ) {
+    // asCopy makes the sheet offer "Save" rather than "Move"; the staged file is removed afterwards.
     val picker = UIDocumentPickerViewController(
         forExportingURLs = listOf(sourceUrl),
+        asCopy = true,
     )
     picker.delegate = delegate
     viewController.presentViewController(

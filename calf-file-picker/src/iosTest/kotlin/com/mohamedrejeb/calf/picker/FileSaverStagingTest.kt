@@ -6,10 +6,13 @@ import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSTemporaryDirectory
+import platform.Foundation.NSURL
 import platform.Foundation.dataWithBytes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -20,15 +23,15 @@ import kotlin.test.assertTrue
 class FileSaverStagingTest {
     @Test
     fun stagedFileKeepsTheRequestedName() {
-        val url = stageExportData(NSData(), "profile_picture.png")
+        val url = assertNotNull(stageExportData(NSData(), "profile_picture.png"))
         assertEquals("profile_picture.png", url.lastPathComponent)
         removeExportStaging(url)
     }
 
     @Test
     fun twoStagingsOfTheSameNameDoNotCollide() {
-        val first = stageExportData(NSData(), "report.pdf")
-        val second = stageExportData(NSData(), "report.pdf")
+        val first = assertNotNull(stageExportData(NSData(), "report.pdf"))
+        val second = assertNotNull(stageExportData(NSData(), "report.pdf"))
         assertNotEquals(first.path, second.path)
         removeExportStaging(first)
         removeExportStaging(second)
@@ -38,7 +41,7 @@ class FileSaverStagingTest {
     fun stagedFileLivesUnderTheTemporaryDirectoryAndIsWritten() {
         val bytes = byteArrayOf(1, 2, 3)
         val data = bytes.usePinnedData()
-        val url = stageExportData(data, "bytes.bin")
+        val url = assertNotNull(stageExportData(data, "bytes.bin"))
         assertTrue(url.path!!.startsWith(NSTemporaryDirectory().removeSuffix("/")))
         assertTrue(NSFileManager.defaultManager.fileExistsAtPath(url.path!!))
         removeExportStaging(url)
@@ -47,13 +50,19 @@ class FileSaverStagingTest {
 
     @Test
     fun stagingAnExistingFileCopiesItUnderTheRequestedName() {
-        val source = stageExportData(byteArrayOf(9).usePinnedData(), "source.tmp")
-        val staged = stageExportFile(source, "photo.png")
+        val source = assertNotNull(stageExportData(byteArrayOf(9).usePinnedData(), "source.tmp"))
+        val staged = assertNotNull(stageExportFile(source, "photo.png"))
         assertEquals("photo.png", staged.lastPathComponent)
         assertTrue(NSFileManager.defaultManager.fileExistsAtPath(staged.path!!))
         assertTrue(NSFileManager.defaultManager.fileExistsAtPath(source.path!!), "the source is left in place")
         removeExportStaging(source)
         removeExportStaging(staged)
+    }
+
+    @Test
+    fun stagingAMissingFileFails() {
+        val missing = NSURL.fileURLWithPath("${NSTemporaryDirectory().removeSuffix("/")}/calf-missing-source.pdf")
+        assertNull(stageExportFile(missing, "photo.png"))
     }
 }
 
