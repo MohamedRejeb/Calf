@@ -7,9 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlin.concurrent.Volatile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Stable
@@ -18,7 +16,7 @@ actual constructor(
     internal val skipPartiallyExpanded: Boolean,
     internal val confirmValueChange: (SheetValue) -> Boolean,
     initialValue: SheetValue,
-    skipHiddenState: Boolean,
+    internal val skipHiddenState: Boolean,
     positionalThreshold: () -> Float,
     velocityThreshold: () -> Float,
 ) {
@@ -43,59 +41,88 @@ actual constructor(
     actual val targetValue: SheetValue get() = iosTargetValue
     actual val isVisible get() = currentValue != SheetValue.Hidden
 
+    /** The large detent is always offered. */
+    actual val hasExpandedState: Boolean get() = true
+
+    /** The medium detent is offered unless `skipPartiallyExpanded`. */
+    actual val hasPartiallyExpandedState: Boolean get() = !skipPartiallyExpanded
+
     internal var iosSheetManager: BottomSheetManager? = null
 
-    internal var showDragHandle: Boolean = true
-
-    @Volatile
-    private var deferredUntilShown = CompletableDeferred<Unit>()
-
-    @Volatile
-    private var deferredUntilHidden = CompletableDeferred<Unit>()
-
-    /**
-     * Expand the bottom sheet with animation and suspend until it is [PartiallyExpanded] if defined
-     * else [Expanded].
-     * @throws [CancellationException] if the animation is interrupted
-     */
     actual suspend fun show() {
-        val isShowingSheet = iosSheetManager?.show(
-            skipPartiallyExpanded = skipPartiallyExpanded,
-            showDragHandle = showDragHandle,
-            completion = {
-                deferredUntilShown.complete(Unit)
-            }
-        ) ?: false
-
-        if (!isShowingSheet) return
-
-        iosTargetValue = SheetValue.Expanded
-
-        deferredUntilShown.await()
-        deferredUntilShown = CompletableDeferred()
-
-        iosCurrentValue = SheetValue.Expanded
+        animateTo(if (hasPartiallyExpandedState) SheetValue.PartiallyExpanded else SheetValue.Expanded)
     }
 
-    /**
-     * Hide the bottom sheet with animation and suspend until it is fully hidden or animation has
-     * been cancelled.
-     * @throws [CancellationException] if the animation is interrupted
-     */
     actual suspend fun hide() {
-        val isHidingSheet = iosSheetManager?.hide(
-            completion = {
-                deferredUntilHidden.complete(Unit)
-            }
-        ) ?: false
+        check(!skipHiddenState) {
+            "Attempted to animate to hidden when skipHiddenState was enabled. Set skipHiddenState" +
+                " to false to use this function."
+        }
+        if (!confirmValueChange(SheetValue.Hidden)) return
 
+        val hidden = CompletableDeferred<Unit>()
+        val isHidingSheet = iosSheetManager?.hide(completion = { hidden.complete(Unit) }) ?: false
         if (!isHidingSheet) return
 
         iosTargetValue = SheetValue.Hidden
+        hidden.await()
+        iosCurrentValue = SheetValue.Hidden
+    }
 
-        deferredUntilHidden.await()
-        deferredUntilHidden = CompletableDeferred()
+    actual suspend fun expand() {
+        animateTo(SheetValue.Expanded)
+    }
 
+    actual suspend fun partialExpand() {
+        check(hasPartiallyExpandedState) {
+            "Attempted to animate to partial expanded when skipPartiallyExpanded was enabled. Set" +
+                " skipPartiallyExpanded to false to use this function."
+        }
+        animateTo(SheetValue.PartiallyExpanded)
+    }
+
+    /**
+     * Presents the sheet at [value]'s detent, or moves it there when it is already on screen, and
+     * suspends until it is presented.
+     */
+    private suspend fun animateTo(value: SheetValue) {
+        val manager = iosSheetManager ?: return
+        if (!confirmValueChange(value)) return
+
+        val presented = CompletableDeferred<Unit>()
+        val isPresenting = manager.present(value, completion = { presented.complete(Unit) })
+        if (!isPresenting) return
+
+        iosTargetValue = value
+        presented.await()
+        iosCurrentValue = value
+    }
+
+    /**
+     * Brings the sheet on screen when its [AdaptiveBottomSheet] enters composition: at the value it
+     * already holds (an initial or restored value), else as [show] does.
+     */
+    internal suspend fun presentOnEnter() {
+        when (currentValue) {
+            SheetValue.Hidden -> show()
+            SheetValue.PartiallyExpanded -> partialExpand()
+            SheetValue.Expanded -> expand()
+        }
+    }
+
+    /** The user dragged the sheet to another detent. */
+    internal fun onDetentSelected(value: SheetValue) {
+        iosTargetValue = value
+        iosCurrentValue = value
+    }
+
+    /**
+     * The sheet left the screen: the user swiped it away, or its [AdaptiveBottomSheet] left
+     * composition. A sheet without a hidden state keeps its value, as Material does.
+     */
+    internal fun onSheetGone() {
+        if (skipHiddenState) return
+        iosTargetValue = SheetValue.Hidden
         iosCurrentValue = SheetValue.Hidden
     }
 

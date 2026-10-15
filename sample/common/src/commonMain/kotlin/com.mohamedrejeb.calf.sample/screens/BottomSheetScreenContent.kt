@@ -9,6 +9,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.LinkOff
+import androidx.compose.material.icons.outlined.UnfoldLess
+import androidx.compose.material.icons.outlined.UnfoldMore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,13 +48,30 @@ private val Contacts = listOf(
 private val AvatarColors = listOf(TileIndigo, TileTeal, TileCoral, TileAmber, TileViolet, TileBlue)
 
 /**
+ * The row that moves the sheet between its two heights through `expand()` and `partialExpand()`.
+ * Null when the sheet has no half height to go back to (`skipPartiallyExpanded`).
+ */
+internal data class SheetHeightToggle(
+    val isExpanded: Boolean,
+    val onToggle: () -> Unit,
+)
+
+internal fun sheetHeightToggle(
+    isExpanded: Boolean,
+    canToggle: Boolean,
+    onToggle: () -> Unit,
+): SheetHeightToggle? = if (canToggle) SheetHeightToggle(isExpanded, onToggle) else null
+
+/**
  * A share sheet for the album: a Done button that hides the sheet through its state, the swipe
- * option, an alert shown on top of the sheet, and a long list of people to send the album to.
+ * option, the height toggle, an alert shown on top of the sheet, and a long list of people to send
+ * the album to.
  */
 @Composable
 internal fun ShareSheetContent(
     allowHide: Boolean,
     onAllowHideChange: (Boolean) -> Unit,
+    heightToggle: SheetHeightToggle?,
     onAction: (String) -> Unit,
     onDone: () -> Unit,
 ) {
@@ -79,6 +98,10 @@ internal fun ShareSheetContent(
             )
             DemoDivider(startIndent = DividerIndentWithIcon)
             SwipeToCloseRow(allowHide = allowHide, onAllowHideChange = onAllowHideChange)
+            if (heightToggle != null) {
+                DemoDivider(startIndent = DividerIndentWithIcon)
+                SheetHeightRow(heightToggle)
+            }
             DemoDivider(startIndent = DividerIndentWithIcon)
             DemoRow(
                 title = "Stop sharing",
@@ -105,6 +128,21 @@ internal fun ShareSheetContent(
             iosDismissButtonStyle = AlertDialogIosActionStyle.Cancel,
         )
     }
+}
+
+@Composable
+private fun SheetHeightRow(toggle: SheetHeightToggle) {
+    DemoRow(
+        title = if (toggle.isExpanded) "Half height" else "Full height",
+        subtitle = if (toggle.isExpanded) "partialExpand()" else "expand()",
+        leading = {
+            IconTile(
+                icon = if (toggle.isExpanded) Icons.Outlined.UnfoldLess else Icons.Outlined.UnfoldMore,
+                color = TileViolet,
+            )
+        },
+        onClick = toggle.onToggle,
+    )
 }
 
 @Composable

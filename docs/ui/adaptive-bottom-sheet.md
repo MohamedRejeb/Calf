@@ -74,9 +74,64 @@ Box(
 }
 ```
 
+## State
+
+`rememberAdaptiveSheetState` creates the state the sheet is driven and observed through. It survives configuration changes and process death: the sheet's value is saved, and the flags are applied again on restore.
+
+```kotlin
+val sheetState = rememberAdaptiveSheetState(
+    // No half-height stop: Material drops the anchor, iOS offers the large detent only.
+    skipPartiallyExpanded = false,
+    // Veto a value change; return false for SheetValue.Hidden to refuse the swipe down.
+    confirmValueChange = { true },
+    // Where the sheet starts; a visible value shows the sheet at that height when it enters composition.
+    initialValue = SheetValue.Hidden,
+    // The sheet cannot be hidden by the user, and hide() throws; close it by leaving composition.
+    skipHiddenState = false,
+)
+```
+
+`SheetValue` maps onto the native sheet on iOS: `Expanded` is the large detent, `PartiallyExpanded` the medium one, `Hidden` a sheet that is not presented. `currentValue` follows the user's drags between the two detents, so it reads the same on every platform.
+
+| Member | Material (Android, Desktop, Web) | iOS |
+| --- | --- | --- |
+| `currentValue`, `targetValue`, `isVisible` | `SheetState`'s | The selected detent; `Hidden` when not presented |
+| `hasExpandedState` | Always true | Always true, the large detent is always offered |
+| `hasPartiallyExpandedState` | `skipPartiallyExpanded == false`; once laid out, also false when the content is too short for a half-height stop | `skipPartiallyExpanded == false`, the medium detent is offered |
+| `show()` | Animates to `PartiallyExpanded` if defined, else `Expanded` | Presents at the medium detent if offered, else the large one |
+| `hide()` | Animates to `Hidden`; throws `IllegalStateException` if `skipHiddenState` | Dismisses the sheet; same exception |
+| `expand()` | Animates to `Expanded` | Selects the large detent, presenting the sheet first if needed |
+| `partialExpand()` | Animates to `PartiallyExpanded`; throws `IllegalStateException` if `skipPartiallyExpanded` | Selects the medium detent, presenting first if needed; same exception |
+
+Every move goes through `confirmValueChange` first and does nothing when it returns false. On iOS `expand()` and `partialExpand()` return once the detent change has been requested when the sheet is already on screen, since UIKit animates the change without reporting its end.
+
+```kotlin
+// A "Full height" action inside the sheet.
+Button(onClick = { scope.launch { sheetState.expand() } }) { Text("Full height") }
+
+// Back to half height, only where a half-height stop exists.
+if (sheetState.hasPartiallyExpandedState) {
+    Button(onClick = { scope.launch { sheetState.partialExpand() } }) { Text("Half height") }
+}
+```
+
+## Locking the sheet
+
+`sheetGesturesEnabled = false` keeps the user from dragging the sheet. Material ignores drags on the sheet; iOS presents it with `isModalInPresentation` and without the grabber, so a swipe down bounces back. The user can still drag the native sheet between its medium and large detents, UIKit has no switch for that short of a single detent (`skipPartiallyExpanded = true`). The sheet is still closed by `sheetState.hide()` or by leaving composition, so always give it a Close action.
+
+```kotlin
+AdaptiveBottomSheet(
+    onDismissRequest = { openBottomSheet = false },
+    adaptiveSheetState = sheetState,
+    sheetGesturesEnabled = false,
+) { /* ... */ }
+```
+
+A state with `skipHiddenState = true` is presented the same way on iOS: the sheet refuses the swipe down because it has no hidden value to go to.
+
 ## The grabber and the sheet's colour on iOS
 
-`dragHandle` decides whether the sheet shows the system grabber (`prefersGrabberVisible`); the composable itself is not drawn, UIKit draws its own. UIKit draws the grabber over the content without insetting it, so when it is shown Calf keeps the content 24dp down from the top, the iOS counterpart of the room Material's drag handle slot takes. Pass `dragHandle = null` for no grabber and no inset.
+`dragHandle` decides whether the sheet shows the system grabber (`prefersGrabberVisible`), and a sheet without gestures shows none; the composable itself is not drawn, UIKit draws its own. UIKit draws the grabber over the content without insetting it, so when it is shown Calf keeps the content 24dp down from the top, the iOS counterpart of the room Material's drag handle slot takes. Pass `dragHandle = null` for no grabber and no inset.
 
 `containerColor` paints the whole sheet, from the grabber to the bottom edge at every detent, not only the height of your content. The content itself is a `Column`: give it its own padding and, for more than fits the medium detent, its own vertical scroll.
 

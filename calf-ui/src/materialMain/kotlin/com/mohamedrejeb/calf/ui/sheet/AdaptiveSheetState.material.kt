@@ -6,7 +6,6 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.saveable.Saver
 import com.mohamedrejeb.calf.ui.sheet.AdaptiveSheetState.Companion.Saver
-import kotlinx.coroutines.CancellationException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Stable
@@ -32,8 +31,10 @@ actual class AdaptiveSheetState actual constructor(
         }
     }
 
+    private val enabledValues = enabledSheetValues(skipPartiallyExpanded, skipHiddenState)
+
     val materialSheetState = SheetState(
-        enabledValues = enabledSheetValues(skipPartiallyExpanded, skipHiddenState),
+        enabledValues = enabledValues,
         positionalThreshold = positionalThreshold,
         velocityThreshold = velocityThreshold,
         initialValue = initialValue,
@@ -43,22 +44,32 @@ actual class AdaptiveSheetState actual constructor(
     actual val targetValue: SheetValue get() = materialSheetState.targetValue
     actual val isVisible get() = materialSheetState.isVisible
 
+    actual val hasExpandedState: Boolean
+        get() = SheetValue.Expanded in enabledValues
+
     /**
-     * Expand the bottom sheet with animation and suspend until it is [PartiallyExpanded] if defined
-     * else [Expanded].
-     * @throws [CancellationException] if the animation is interrupted
+     * Configured, and once the sheet is laid out, actually anchored: Material drops the
+     * half-height stop of a sheet whose content is too short for it. Before layout the sheet has
+     * no anchors at all, so the configuration answers.
      */
+    actual val hasPartiallyExpandedState: Boolean
+        get() = SheetValue.PartiallyExpanded in enabledValues &&
+            (!materialSheetState.hasExpandedState || materialSheetState.hasPartiallyExpandedState)
+
     actual suspend fun show() {
         materialSheetState.show()
     }
 
-    /**
-     * Hide the bottom sheet with animation and suspend until it is fully hidden or animation has
-     * been cancelled.
-     * @throws [CancellationException] if the animation is interrupted
-     */
     actual suspend fun hide() {
         materialSheetState.hide()
+    }
+
+    actual suspend fun expand() {
+        materialSheetState.expand()
+    }
+
+    actual suspend fun partialExpand() {
+        materialSheetState.partialExpand()
     }
 
     actual companion object {

@@ -2,6 +2,7 @@ package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.SwipeDown
 import androidx.compose.material.icons.outlined.UnfoldMore
@@ -39,6 +40,7 @@ import com.mohamedrejeb.calf.sample.components.tabletopPanes
 import com.mohamedrejeb.calf.sample.currentPlatform
 import com.mohamedrejeb.calf.sample.navigation.Screen
 import com.mohamedrejeb.calf.sample.ui.theme.TileAmber
+import com.mohamedrejeb.calf.sample.ui.theme.TileCoral
 import com.mohamedrejeb.calf.sample.ui.theme.TileIndigo
 import com.mohamedrejeb.calf.sample.ui.theme.TileTeal
 import com.mohamedrejeb.calf.ui.button.AdaptiveButton
@@ -55,8 +57,9 @@ if (showSheet) {
     AdaptiveBottomSheet(
         onDismissRequest = { showSheet = false },
         adaptiveSheetState = sheetState,
+        sheetGesturesEnabled = !locked,
     ) {
-        ShareOptions()
+        ShareOptions(onFullHeight = { scope.launch { sheetState.expand() } })
     }
 }
 """
@@ -68,6 +71,7 @@ private const val NO_ACTION = "None yet"
 fun BottomSheetScreen(navigateBack: () -> Unit) {
     var allowHide by rememberSaveable { mutableStateOf(true) }
     var fullHeight by rememberSaveable { mutableStateOf(false) }
+    var locked by rememberSaveable { mutableStateOf(false) }
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
     var lastAction by rememberSaveable { mutableStateOf(NO_ACTION) }
     val scope = rememberCoroutineScope()
@@ -85,12 +89,16 @@ fun BottomSheetScreen(navigateBack: () -> Unit) {
             OptionsSection(
                 fullHeight = fullHeight,
                 onFullHeightChange = { fullHeight = it },
+                locked = locked,
+                onLockedChange = { locked = it },
                 allowHide = allowHide,
                 onAllowHideChange = { allowHide = it },
             )
             DemoSection(title = "Result") {
                 DemoCard {
                     ValueRow(label = "Last action", value = lastAction)
+                    DemoDivider()
+                    ValueRow(label = "Sheet value", value = sheetState.currentValue.name)
                 }
             }
             DemoSection(title = "Usage") {
@@ -104,11 +112,22 @@ fun BottomSheetScreen(navigateBack: () -> Unit) {
             onDismissRequest = { openBottomSheet = false },
             modifier = Modifier.padding(top = sheetTopInset),
             adaptiveSheetState = sheetState,
+            sheetGesturesEnabled = !locked,
             containerColor = MaterialTheme.colorScheme.background,
         ) {
             ShareSheetContent(
                 allowHide = allowHide,
                 onAllowHideChange = { allowHide = it },
+                heightToggle = sheetHeightToggle(
+                    isExpanded = sheetState.currentValue == SheetValue.Expanded,
+                    canToggle = sheetState.hasPartiallyExpandedState,
+                    onToggle = {
+                        scope.launch {
+                            if (sheetState.currentValue == SheetValue.Expanded) sheetState.partialExpand()
+                            else sheetState.expand()
+                        }
+                    },
+                ),
                 onAction = { lastAction = it },
                 onDone = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
@@ -165,12 +184,15 @@ private fun AlbumSection(onShare: () -> Unit) {
 private fun OptionsSection(
     fullHeight: Boolean,
     onFullHeightChange: (Boolean) -> Unit,
+    locked: Boolean,
+    onLockedChange: (Boolean) -> Unit,
     allowHide: Boolean,
     onAllowHideChange: (Boolean) -> Unit,
 ) {
     DemoSection(
         title = "Options",
-        footer = "With swipe to close off, confirmValueChange refuses SheetValue.Hidden. On a foldable in " +
+        footer = "A locked sheet cannot be dragged down, only Done closes it; on iOS it loses its grabber. " +
+            "With swipe to close off, confirmValueChange refuses SheetValue.Hidden. On a foldable in " +
             "tabletop posture, the Material sheet stays below the fold.",
     ) {
         DemoListCard {
@@ -179,6 +201,13 @@ private fun OptionsSection(
                 subtitle = "skipPartiallyExpanded",
                 leading = { IconTile(icon = Icons.Outlined.UnfoldMore, color = TileIndigo) },
                 trailing = { AdaptiveSwitch(checked = fullHeight, onCheckedChange = onFullHeightChange) },
+            )
+            DemoDivider(startIndent = DividerIndentWithIcon)
+            DemoRow(
+                title = "Lock the sheet",
+                subtitle = "sheetGesturesEnabled = false, no drag to dismiss",
+                leading = { IconTile(icon = Icons.Outlined.Lock, color = TileCoral) },
+                trailing = { AdaptiveSwitch(checked = locked, onCheckedChange = onLockedChange) },
             )
             DemoDivider(startIndent = DividerIndentWithIcon)
             SwipeToCloseRow(allowHide = allowHide, onAllowHideChange = onAllowHideChange)
