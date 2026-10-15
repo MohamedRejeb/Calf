@@ -28,7 +28,8 @@ class AdaptiveNavEntryTest {
         val entry = adaptiveNavEntry(Home) {}
 
         assertEquals(AdaptiveNavEntryMetadata.Default, entry.adaptiveMetadata)
-        assertEquals(Home.toString(), entry.contentKey)
+        // Calf keeps Nav3's default content key, whatever shape the runtime gives it.
+        assertEquals(NavEntry(Home) {}.contentKey, entry.contentKey)
     }
 
     @Test
