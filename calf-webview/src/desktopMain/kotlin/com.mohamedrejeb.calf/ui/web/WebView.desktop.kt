@@ -125,10 +125,7 @@ actual fun WebView(
 
                     is WebContent.Data -> {
                         Platform.runLater {
-                            if (content.mimeType.isNullOrBlank())
-                                wv.engine.loadContent(content.data)
-                            else
-                                wv.engine.loadContent(content.data, content.mimeType)
+                            wv.engine.loadContent(content.data, htmlContentType(content.mimeType))
                         }
                     }
 
@@ -238,7 +235,7 @@ internal suspend fun WebViewNavigator.handleNavigationEvents(
                     is WebViewNavigator.NavigationEvent.StopLoading ->
                         stopLoading()
                     is WebViewNavigator.NavigationEvent.LoadHtml ->
-                        loadContent(event.html, event.mimeType)
+                        loadContent(event.html, htmlContentType(event.mimeType))
                     is WebViewNavigator.NavigationEvent.LoadUrl -> {
                         this.load(event.url)
                     }

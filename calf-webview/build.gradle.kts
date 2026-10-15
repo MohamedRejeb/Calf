@@ -33,6 +33,10 @@ kotlin {
         implementation(libs.kotlinx.coroutines.core)
     }
 
+    sourceSets.commonTest.dependencies {
+        implementation(libs.kotlin.test)
+    }
+
     sourceSets.androidMain.dependencies {
         implementation(libs.activity.compose)
         implementation(libs.kotlinx.coroutines.android)
