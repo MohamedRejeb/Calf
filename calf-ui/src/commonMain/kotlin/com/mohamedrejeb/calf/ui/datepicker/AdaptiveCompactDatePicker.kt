@@ -7,6 +7,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.window.DialogProperties
 
 /**
  * A compact date picker that shows the selected date and opens the full picker on tap.
@@ -32,6 +36,16 @@ import androidx.compose.ui.Modifier
  * `null` shows the Material3 default rather than hiding it, because a dialog needs a header.
  * @param materialHeadline the dialog headline slot on Material platforms; `null` shows the
  * Material3 default, which displays the day picked so far.
+ * @param materialShowModeToggle whether the dialog on Material platforms offers the text input
+ * mode. iOS has no input mode and ignores it.
+ * @param materialFocusRequester the requester the dialog's text field takes in input mode on
+ * Material platforms, so it is focused as soon as the mode opens; `null` leaves the field
+ * unfocused. Ignored on iOS.
+ * @param materialDialogShape the shape of the dialog on Material platforms. Ignored on iOS.
+ * @param materialDialogTonalElevation the tonal elevation of the dialog on Material platforms.
+ * Ignored on iOS.
+ * @param materialDialogProperties the platform properties of the dialog on Material platforms,
+ * such as whether tapping outside dismisses it. Ignored on iOS.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,4 +60,9 @@ expect fun AdaptiveCompactDatePicker(
     materialDismissText: String = "Cancel",
     materialTitle: (@Composable () -> Unit)? = null,
     materialHeadline: (@Composable () -> Unit)? = null,
+    materialShowModeToggle: Boolean = true,
+    materialFocusRequester: FocusRequester? = remember { FocusRequester() },
+    materialDialogShape: Shape = DatePickerDefaults.shape,
+    materialDialogTonalElevation: Dp = DatePickerDefaults.TonalElevation,
+    materialDialogProperties: DialogProperties = DialogProperties(usePlatformDefaultWidth = false),
 )

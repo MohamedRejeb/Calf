@@ -41,6 +41,31 @@ AdaptiveDatePicker(
 
 The examples use [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime) for date math. Any source of UTC epoch milliseconds works.
 
+### State
+
+`rememberAdaptiveDatePickerState(...)` creates and remembers an `AdaptiveDatePickerState`, shared by `AdaptiveDatePicker` and `AdaptiveCompactDatePicker`.
+
+| Member | Description | Platform notes |
+|---|---|---|
+| `var selectedDateMillis: Long?` | The UTC start of the selected day, or `null`. Observable. | Every platform. |
+| `var displayedMonthMillis: Long` | The UTC start of the month the calendar shows. Observable. Setting it scrolls the calendar; a month outside `yearRange` is ignored. | Material: also follows the month the user scrolls to. iOS 16+ inline calendar: scrolls to it, and selecting a day moves it to that day's month, which is what the native calendar does; iOS does not report the month the user scrolls to. Wheels and compact picker: only stored. |
+| `var displayMode: DisplayMode` | Calendar or text input. | Material only. |
+| `var selectableDates: SelectableDates` | The rule deciding which days can be picked, see below. | Every platform. |
+| `val yearRange: IntRange` | The years the picker is limited to. | Every platform. |
+| `val initialUIKitDisplayMode: UIKitDisplayMode` | Calendar or wheels. | iOS only. |
+| `val locale: CalendarLocale` | The locale used to format dates and to choose the input format: the system default when the state was created. | Every platform. |
+
+```kotlin
+val state = rememberAdaptiveDatePickerState()
+
+// Scroll the calendar to the current month without changing the selection
+Button(onClick = { state.displayedMonthMillis = thisMonthMillis }) { Text("Jump to this month") }
+```
+
+### Material-only parameters
+
+`AdaptiveDatePicker` and `AdaptiveDateRangePicker` take the Material3 parameters `dateFormatter`, `title`, `headline`, `showModeToggle`, `colors` and `focusRequester`. `focusRequester` is the requester the text field takes in input mode, so it is focused as soon as the mode opens; pass `null` to leave the field unfocused. iOS has no input mode and ignores all of them except `colors`, whose selected day color tints the native picker.
+
 ## Restricting selectable dates
 
 Every picker takes a Material3 `SelectableDates` rule through `selectableDates`. Calf ships `DateBounds` for the common case of a minimum and maximum day, and an infix `and` to combine rules.
@@ -122,6 +147,21 @@ AdaptiveCompactDatePicker(
 )
 ```
 
+The `material*` parameters configure the Material dialog and are ignored on iOS:
+
+| Parameter | Default | Description |
+|---|---|---|
+| `materialPlaceholder` | `"Select date"` | Field text while nothing is selected. |
+| `materialConfirmText`, `materialDismissText` | `"OK"`, `"Cancel"` | Labels of the dialog buttons. |
+| `materialTitle`, `materialHeadline` | `null` | Dialog slots; `null` shows the Material3 defaults. |
+| `materialShowModeToggle` | `true` | Whether the dialog offers the text input mode. |
+| `materialFocusRequester` | `remember { FocusRequester() }` | Requester the text field takes in input mode; `null` leaves it unfocused. |
+| `materialDialogShape` | `DatePickerDefaults.shape` | Shape of the dialog. |
+| `materialDialogTonalElevation` | `DatePickerDefaults.TonalElevation` | Tonal elevation of the dialog. |
+| `materialDialogProperties` | `DialogProperties(usePlatformDefaultWidth = false)` | Platform properties of the dialog, such as whether tapping outside dismisses it. |
+
+The dialog opens on the selected day's month, or on `state.displayedMonthMillis` while nothing is selected.
+
 | Platform | Behaviour |
 |---|---|
 | Material (Android, Desktop, Web) | An outlined button with the formatted date opens a `DatePickerDialog`. The day picked in the dialog reaches the state only on confirm; dismiss, or tapping outside, discards it. |
@@ -129,7 +169,7 @@ AdaptiveCompactDatePicker(
 
 ## Range picker
 
-`AdaptiveDateRangePicker` selects a start and an end day. Its state exposes `selectedStartDateMillis` and `selectedEndDateMillis`, both UTC start-of-day timestamps, and `setSelection(start, end)`.
+`AdaptiveDateRangePicker` selects a start and an end day. Its state exposes `selectedStartDateMillis` and `selectedEndDateMillis`, both UTC start-of-day timestamps, `setSelection(start, end)`, the observable `displayedMonthMillis` (the month the Material picker shows; setting it scrolls there, and the iOS 16+ calendar, which manages its own scrolling, only stores it), `displayMode`, `yearRange`, `selectableDates` and `locale`.
 
 ```kotlin
 val rangeState = rememberAdaptiveDateRangePickerState(

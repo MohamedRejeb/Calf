@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.datepicker
 
+import androidx.compose.material3.CalendarLocale
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -7,7 +8,6 @@ import androidx.compose.material3.SelectableDates
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.listSaver
 
 /**
  * A state object that can be hoisted to observe the date picker state. See
@@ -37,9 +37,9 @@ import androidx.compose.runtime.saveable.listSaver
 actual class AdaptiveDatePickerState actual constructor(
     val initialSelectedDateMillis: Long?,
     val initialDisplayedMonthMillis: Long?,
-    val yearRange: IntRange,
+    actual val yearRange: IntRange,
     val initialMaterialDisplayMode: DisplayMode,
-    val initialUIKitDisplayMode: UIKitDisplayMode,
+    actual val initialUIKitDisplayMode: UIKitDisplayMode,
     selectableDates: SelectableDates,
 ) {
     private val selectableDatesState = mutableStateOf(selectableDates)
@@ -90,6 +90,21 @@ actual class AdaptiveDatePickerState actual constructor(
             datePickerState.displayMode = value
         }
 
+    /**
+     * The _start_ of the displayed month in _UTC_ milliseconds, delegated to the Material3 state:
+     * setting it scrolls the calendar, scrolling the calendar updates it, and a month outside
+     * [yearRange] is ignored.
+     */
+    actual var displayedMonthMillis: Long
+        get() = datePickerState.displayedMonthMillis
+        set(value) {
+            datePickerState.displayedMonthMillis = value
+        }
+
+    /** The locale the Material3 state formats with; the system default when the state was created. */
+    actual val locale: CalendarLocale
+        get() = datePickerState.locale
+
     actual companion object {
         /**
          * The default [Saver] implementation for [AdaptiveDatePickerState].
@@ -97,26 +112,6 @@ actual class AdaptiveDatePickerState actual constructor(
          * @param selectableDates the rule to re-attach on restore, since it cannot be saved.
          */
         actual fun Saver(selectableDates: SelectableDates): Saver<AdaptiveDatePickerState, Any> =
-            listSaver(
-                save = {
-                    listOf(
-                        it.selectedDateMillis,
-                        it.yearRange.first,
-                        it.yearRange.last,
-                        it.displayMode.value,
-                        it.initialUIKitDisplayMode.value,
-                    )
-                },
-                restore = { value ->
-                    AdaptiveDatePickerState(
-                        initialSelectedDateMillis = value[0] as Long?,
-                        initialDisplayedMonthMillis = value[0] as Long?,
-                        yearRange = IntRange(value[1] as Int, value[2] as Int),
-                        initialMaterialDisplayMode = displayModeFromValue(value[3] as Int),
-                        initialUIKitDisplayMode = uiKitDisplayModeFromValue(value[4] as Int),
-                        selectableDates = selectableDates,
-                    )
-                },
-            )
+            adaptiveDatePickerStateSaver(selectableDates)
     }
 }

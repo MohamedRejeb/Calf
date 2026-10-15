@@ -13,6 +13,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
@@ -35,7 +36,8 @@ actual fun AdaptiveDatePicker(
     title: @Composable (() -> Unit)?,
     headline: @Composable (() -> Unit)?,
     showModeToggle: Boolean,
-    colors: DatePickerColors
+    colors: DatePickerColors,
+    focusRequester: FocusRequester?,
 ) {
     val datePickerManager = rememberDatePickerManager(
         state = state,
@@ -125,6 +127,11 @@ internal fun SyncNativeDatePicker(
 
     LaunchedEffect(state.selectedDateMillis) {
         manager.setSelectedDate(state.selectedDateMillis)
+    }
+
+    // After the selection, so the displayed month wins when both change in the same frame.
+    LaunchedEffect(state.displayedMonthMillis) {
+        manager.showMonth(state.displayedMonthMillis)
     }
 
     LaunchedEffect(enabled) {

@@ -5,20 +5,14 @@ import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.saveable.Saver
 
-
 /**
- * A class to handle state changes in a [TimePicker]
+ * State of an [AdaptiveTimePicker]: the selected time and the hour format, delegated to a
+ * Material3 [TimePickerState].
  *
- * @sample androidx.compose.material3.samples.TimePickerSample
- *
- * @param initialHour
- *  starting hour for this state, will be displayed in the time picker when launched
- *  Ranges from 0 to 23
- * @param initialMinute
- *  starting minute for this state, will be displayed in the time picker when launched.
- *  Ranges from 0 to 59
- * @param is24Hour The format for this time picker `false` for 12 hour format with an AM/PM toggle
- *  or `true` for 24 hour format without toggle.
+ * @param initialHour the hour shown first, 0 to 23.
+ * @param initialMinute the minute shown first, 0 to 59.
+ * @param is24Hour initial value of [is24hour].
+ * @throws IllegalArgumentException if [initialHour] or [initialMinute] is out of range.
  */
 @Stable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,23 +22,45 @@ actual class AdaptiveTimePickerState actual constructor(
     is24Hour: Boolean,
 ) {
     init {
-        require(initialHour in 0..23) { "initialHour should be in [0..23] range" }
-        require(initialMinute in 0..59) { "initialMinute should be in [0..59] range" }
+        requireValidHour(initialHour, name = "initialHour")
+        requireValidMinute(initialMinute, name = "initialMinute")
     }
 
-    val timePickerState = TimePickerState(
-        initialHour = initialHour,
-        initialMinute = initialMinute,
-        is24Hour = is24Hour
+    /**
+     * The Material3 state this state delegates to. Its [TimePickerState.is24hour] is observable,
+     * unlike the Material3 default's, so the picker re-lays out when the format changes.
+     */
+    val timePickerState: TimePickerState = FormatTrackingTimePickerState(
+        TimePickerState(
+            initialHour = initialHour,
+            initialMinute = initialMinute,
+            is24Hour = is24Hour,
+        ),
     )
 
-    actual val minute: Int get() = timePickerState.minute
-    actual val hour: Int get() = timePickerState.hour
-    actual val is24hour: Boolean get() = timePickerState.is24hour
+    actual var minute: Int
+        get() = timePickerState.minute
+        set(value) {
+            requireValidMinute(value, name = "minute")
+            timePickerState.minute = value
+        }
+
+    actual var hour: Int
+        get() = timePickerState.hour
+        set(value) {
+            requireValidHour(value, name = "hour")
+            timePickerState.hour = value
+        }
+
+    actual var is24hour: Boolean
+        get() = timePickerState.is24hour
+        set(value) {
+            timePickerState.is24hour = value
+        }
 
     actual companion object {
         /**
-         * The default [Saver] implementation for [TimePickerState].
+         * The default [Saver] implementation for [AdaptiveTimePickerState].
          */
         actual fun Saver(): Saver<AdaptiveTimePickerState, *> = Saver(
             save = {

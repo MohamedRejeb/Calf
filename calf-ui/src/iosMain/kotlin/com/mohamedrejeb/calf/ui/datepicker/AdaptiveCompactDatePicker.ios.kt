@@ -8,9 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
+import androidx.compose.ui.window.DialogProperties
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.SafeAreaIsolatingView
 
@@ -27,6 +31,11 @@ actual fun AdaptiveCompactDatePicker(
     materialDismissText: String,
     materialTitle: (@Composable () -> Unit)?,
     materialHeadline: (@Composable () -> Unit)?,
+    materialShowModeToggle: Boolean,
+    materialFocusRequester: FocusRequester?,
+    materialDialogShape: Shape,
+    materialDialogTonalElevation: Dp,
+    materialDialogProperties: DialogProperties,
 ) {
     val datePickerManager = rememberDatePickerManager(
         state = state,

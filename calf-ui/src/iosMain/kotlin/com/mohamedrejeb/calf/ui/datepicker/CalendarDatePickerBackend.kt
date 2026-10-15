@@ -63,6 +63,10 @@ internal class CalendarDatePickerBackend(
         utcTimeMillis?.let { millis -> host.showMonth(millis, animated = true) }
     }
 
+    override fun showMonth(utcTimeMillis: Long) {
+        host.showMonth(utcTimeMillis, animated = true)
+    }
+
     override fun applyDateBounds(minDateMillis: Long?, maxDateMillis: Long?) {
         host.applyDateBounds(minDateMillis, maxDateMillis)
     }

@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FlightTakeoff
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.mohamedrejeb.calf.sample.components.DemoCard
 import com.mohamedrejeb.calf.sample.components.DemoDivider
@@ -24,6 +27,7 @@ import com.mohamedrejeb.calf.sample.components.IconTile
 import com.mohamedrejeb.calf.sample.components.ValueRow
 import com.mohamedrejeb.calf.sample.ui.theme.Spacing
 import com.mohamedrejeb.calf.sample.ui.theme.TileBlue
+import com.mohamedrejeb.calf.ui.button.AdaptiveButton
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveCompactDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePickerState
@@ -32,7 +36,10 @@ import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDateRangePickerState
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -89,12 +96,26 @@ internal fun StaySection(state: AdaptiveDateRangePickerState) {
 
 @Composable
 internal fun TourSection(state: AdaptiveDatePickerState) {
+    val thisMonthMillis = remember {
+        Clock.System.todayIn(TimeZone.currentSystemDefault()).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+    }
     DemoSection(
         title = "City tour",
-        footer = "AdaptiveDatePicker: the full calendar, always visible.",
+        footer = "AdaptiveDatePicker: the full calendar, always visible. displayedMonthMillis is the " +
+            "month on screen; setting it scrolls the calendar.",
     ) {
         PickerCard(
-            readouts = { ValueRow(label = "Tour day", value = state.selectedDateMillis.toDateLabel()) },
+            readouts = {
+                ValueRow(label = "Tour day", value = state.selectedDateMillis.toDateLabel())
+                ValueRow(label = "Showing", value = state.displayedMonthMillis.toMonthLabel())
+                AdaptiveButton(
+                    onClick = { state.displayedMonthMillis = thisMonthMillis },
+                    colors = ButtonDefaults.filledTonalButtonColors(),
+                    contentPadding = PaddingValues(horizontal = Spacing.l, vertical = Spacing.xs),
+                ) {
+                    Text("Jump to this month")
+                }
+            },
         ) {
             AdaptiveDatePicker(
                 state = state,
@@ -164,6 +185,12 @@ private fun Long?.toDateLabel(): String =
         val date = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC).date
         "${date.dayOfWeek.shortName()}, ${date.month.shortName()} ${date.day}, ${date.year}"
     } ?: NOT_SET
+
+/** "Oct 2026": the month a UTC month-start timestamp falls in. */
+private fun Long.toMonthLabel(): String {
+    val date = Instant.fromEpochMilliseconds(this).toLocalDateTime(TimeZone.UTC).date
+    return "${date.month.shortName()} ${date.year}"
+}
 
 private fun DayOfWeek.shortName(): String = name.toShortName()
 

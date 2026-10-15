@@ -44,12 +44,17 @@ actual fun AdaptiveTimePicker(
             initialHour = state.hour,
             is24Hour = state.is24hour,
             onHourChanged = { hour ->
-                state.hourState = hour
+                state.hour = hour
             },
             onMinuteChanged = { minute ->
-                state.minuteState = minute
+                state.minute = minute
             }
         )
+    }
+
+    // A time set on the state moves the wheels; a time picked on the wheels is already shown.
+    LaunchedEffect(state.hour, state.minute) {
+        datePickerManager.setTime(hour = state.hour, minute = state.minute)
     }
 
     val layoutDirection = LocalLayoutDirection.current

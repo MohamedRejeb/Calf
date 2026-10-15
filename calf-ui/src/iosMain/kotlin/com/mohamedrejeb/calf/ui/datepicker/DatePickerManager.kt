@@ -111,6 +111,10 @@ class DatePickerManager internal constructor(
         remeasureCompactView()
     }
 
+    internal fun showMonth(utcTimeMillis: Long) {
+        backend.showMonth(utcTimeMillis)
+    }
+
     private fun remeasureCompactView() {
         if (presentation != IosDatePickerPresentation.Compact) return
         backend.view.sizeToFit()

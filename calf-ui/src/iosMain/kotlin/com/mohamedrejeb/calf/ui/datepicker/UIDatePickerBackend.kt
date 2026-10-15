@@ -68,6 +68,10 @@ internal class UIDatePickerBackend(
         datePicker.setDate(localStartOfDay(target), animated = true)
     }
 
+    override fun showMonth(utcTimeMillis: Long) {
+        // The wheels show no month, and the compact popover opens on the selected date.
+    }
+
     override fun applyDateBounds(minDateMillis: Long?, maxDateMillis: Long?) {
         datePicker.minimumDate = minDateMillis?.let(::localStartOfDay)
         datePicker.maximumDate = maxDateMillis?.let(::localEndOfDay)

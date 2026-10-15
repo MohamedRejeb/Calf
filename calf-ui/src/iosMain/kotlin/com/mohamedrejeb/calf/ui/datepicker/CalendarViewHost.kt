@@ -51,8 +51,16 @@ internal class CalendarViewHost {
         calendarView.delegate = decorationDelegate
     }
 
+    /** Scrolls to the month of [utcTimeMillis]; a no-op when that month is already visible. */
     fun showMonth(utcTimeMillis: Long, animated: Boolean) {
-        calendarView.setVisibleDateComponents(utcDayToDateComponents(utcTimeMillis), animated = animated)
+        val target = utcDayToDateComponents(utcTimeMillis)
+        if (isShowingMonth(target)) return
+        calendarView.setVisibleDateComponents(target, animated = animated)
+    }
+
+    private fun isShowingMonth(components: NSDateComponents): Boolean {
+        val visible = calendarView.visibleDateComponents
+        return visible.year == components.year && visible.month == components.month
     }
 
     fun applyDateBounds(minDateMillis: Long?, maxDateMillis: Long?) {

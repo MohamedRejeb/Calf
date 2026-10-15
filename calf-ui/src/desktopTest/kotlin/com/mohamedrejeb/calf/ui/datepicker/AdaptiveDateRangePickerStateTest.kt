@@ -165,4 +165,31 @@ class AdaptiveDateRangePickerStateTest {
         }
         waitForIdle()
     }
+
+    @Test
+    fun `displayed month delegates to the material state`() {
+        val state = state()
+
+        state.displayedMonthMillis = MAR_15_2026
+
+        assertEquals(MAR_1_2026, state.displayedMonthMillis)
+        assertEquals(MAR_1_2026, state.dateRangePickerState.displayedMonthMillis)
+    }
+
+    @Test
+    fun `exposes the default locale`() {
+        assertEquals(getCalendarLocalDefault(), state().locale)
+    }
+
+    @Test
+    fun `saver round-trips the displayed month`() {
+        val saver = AdaptiveDateRangePickerState.Saver()
+        val original = state()
+        original.displayedMonthMillis = MAR_15_2026
+
+        val saved = requireNotNull(with(saver) { SaverScope { true }.save(original) })
+        val restored = requireNotNull(saver.restore(saved))
+
+        assertEquals(MAR_1_2026, restored.displayedMonthMillis)
+    }
 }

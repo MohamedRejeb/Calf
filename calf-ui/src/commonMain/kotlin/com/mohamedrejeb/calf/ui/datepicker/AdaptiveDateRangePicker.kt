@@ -12,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -30,6 +31,9 @@ import androidx.compose.ui.unit.dp
  * @param headline the headline slot on Material platforms; hidden when `null`.
  * @param showModeToggle whether Material platforms offer the text input mode.
  * @param colors colors of the picker; the selected day color tints the native iOS calendar.
+ * @param focusRequester the requester the Material start-date field takes in input mode, so it
+ * is focused as soon as the mode opens; `null` leaves the field unfocused. The iOS 16+ calendar
+ * has no input mode and ignores it; the Material fallback below iOS 16 honours it.
  *
  * On Material platforms the picker scrolls through months, so it needs a bounded height. When
  * the parent gives none, for example inside a vertically scrolling column, it falls back to
@@ -45,6 +49,7 @@ expect fun AdaptiveDateRangePicker(
     headline: (@Composable () -> Unit)? = null,
     showModeToggle: Boolean = true,
     colors: DatePickerColors = DatePickerDefaults.colors(),
+    focusRequester: FocusRequester? = remember { FocusRequester() },
 )
 
 /** Height of the Material range picker when its parent gives no vertical bound. */
@@ -65,6 +70,7 @@ internal fun MaterialDateRangePicker(
     headline: (@Composable () -> Unit)?,
     showModeToggle: Boolean,
     colors: DatePickerColors,
+    focusRequester: FocusRequester?,
 ) {
     BoundedMaterial3DateRangePicker(
         state = state.dateRangePickerState,
@@ -74,6 +80,7 @@ internal fun MaterialDateRangePicker(
         headline = headline,
         showModeToggle = showModeToggle,
         colors = colors,
+        focusRequester = focusRequester,
     )
 }
 
@@ -88,6 +95,7 @@ internal fun BoundedMaterial3DateRangePicker(
     headline: (@Composable () -> Unit)?,
     showModeToggle: Boolean,
     colors: DatePickerColors,
+    focusRequester: FocusRequester?,
 ) {
     // Material3's DateRangePicker scrolls its months and throws under an unbounded height.
     BoxWithConstraints(modifier = modifier) {
@@ -104,6 +112,7 @@ internal fun BoundedMaterial3DateRangePicker(
             title = title,
             headline = headline,
             showModeToggle = showModeToggle,
+            focusRequester = focusRequester,
         )
     }
 }

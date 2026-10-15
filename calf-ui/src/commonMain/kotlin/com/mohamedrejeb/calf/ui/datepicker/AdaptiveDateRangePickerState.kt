@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.ui.datepicker
 
+import androidx.compose.material3.CalendarLocale
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DateRangePickerState
 import androidx.compose.material3.DisplayMode
@@ -127,6 +128,28 @@ class AdaptiveDateRangePickerState(
         }
 
     /**
+     * A timestamp that represents the _start_ of the currently displayed month in _UTC_
+     * milliseconds from the epoch. Observable.
+     *
+     * Setting it moves the Material picker to that month; a value whose year is outside
+     * [yearRange] is ignored. It also follows the month the user scrolls to on Material
+     * platforms. The iOS 16+ calendar manages its own scrolling and does not report it, so there
+     * the value is only stored.
+     */
+    var displayedMonthMillis: Long
+        get() = dateRangePickerState.displayedMonthMillis
+        set(value) {
+            dateRangePickerState.displayedMonthMillis = value
+        }
+
+    /**
+     * The locale used to format dates and to choose the input format: the system default on
+     * every platform, read when the state is created.
+     */
+    val locale: CalendarLocale
+        get() = dateRangePickerState.locale
+
+    /**
      * Sets the selected range.
      *
      * @param startDateMillis the start day in _UTC_ milliseconds, or `null` to clear the range.
@@ -156,7 +179,7 @@ class AdaptiveDateRangePickerState(
                     listOf(
                         it.selectedStartDateMillis,
                         it.selectedEndDateMillis,
-                        it.dateRangePickerState.displayedMonthMillis,
+                        it.displayedMonthMillis,
                         it.yearRange.first,
                         it.yearRange.last,
                         it.displayMode.value,

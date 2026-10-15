@@ -10,6 +10,7 @@ internal const val NOON_OFFSET_MILLIS = 12L * 60 * 60 * 1000
 
 // Day counts since 1970-01-01 (UTC) for the dates used in the date picker tests.
 // 2026-03-01 is a Sunday, so 2026-03-14 is a Saturday and 2026-03-15 a Sunday.
+internal val JAN_1_1870 = utcDay(-36524) // before DatePickerDefaults.YearRange
 internal val FEB_29_2000 = utcDay(11016)
 internal val JAN_1_2025 = utcDay(20089)
 internal val FEB_28_2026 = utcDay(20512)
