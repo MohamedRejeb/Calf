@@ -308,6 +308,23 @@ val path = file.getPath()
 val uri = file.toUriString() // content://… on Android, file:///… on iOS and Desktop, null on Web
 ```
 
+* Restore a file from a string returned by `toUriString()`, for example one you stored to reopen a folder later. An absolute path works too:
+
+```kotlin
+val folder: KmpFile? = KmpFile.fromUriString(savedUri) // null if it is not a file reference, always null on Web
+```
+
+> `fromUriString` restores the reference, not access to it. After the app restarts, a `content:` URI on Android needs a persisted URI permission and a picked location on iOS needs a security-scoped bookmark to stay readable.
+
+* Get the size in bytes and the MIME type using the `getSize` and `getMimeType` extension functions. Both return `null` when the value is unknown:
+
+```kotlin
+val size: Long? = file.getSize()
+val mimeType: String? = file.getMimeType() // e.g. "application/pdf"
+```
+
+On Android both come from the content provider, with the file extension as a fallback for the type. iOS and Desktop use the file system and the extension, and the web uses what the browser reports.
+
 > **Migration from 0.14.x:** `getPath()` used to return the URI string on Android (`content://…`) and iOS (`file:///…%20…`), and the file name on Web. Use `toUriString()` where you relied on the URI.
 
 * Check if the file is a directory using the `isDirectory` extension function:

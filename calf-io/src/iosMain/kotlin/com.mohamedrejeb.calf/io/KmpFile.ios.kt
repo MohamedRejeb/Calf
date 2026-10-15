@@ -8,7 +8,12 @@ import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSURL
+import platform.Foundation.NSFileSize
+import platform.Foundation.NSFileType
+import platform.Foundation.NSFileTypeRegular
+import platform.Foundation.NSNumber
 import platform.Foundation.NSURLIsDirectoryKey
+import platform.UniformTypeIdentifiers.UTType
 import platform.Foundation.dataWithContentsOfURL
 import platform.posix.memcpy
 
@@ -26,6 +31,8 @@ actual class KmpFile @InternalCalfApi constructor(
 ) {
     @OptIn(InternalCalfApi::class)
     constructor(url: NSURL) : this(originalUrl = url, url = url)
+
+    actual companion object
 }
 
 actual fun KmpFile.exists(context: PlatformContext): Boolean {
@@ -56,6 +63,34 @@ actual fun KmpFile.getPath(context: PlatformContext): String? =
 
 /** The URL of the original file, for example to reopen a picked folder later. */
 actual fun KmpFile.toUriString(): String? = originalUrl.absoluteString
+
+actual fun KmpFile.Companion.fromUriString(uriString: String): KmpFile? {
+    val url = when {
+        uriString.startsWith(FILE_URL_PREFIX) -> NSURL(string = uriString)
+        uriString.startsWith(PATH_SEPARATOR) -> NSURL.fileURLWithPath(uriString)
+        else -> null
+    }
+    return url?.takeIf { it.isFileURL() }?.let(::KmpFile)
+}
+
+/** The size of the readable file; a directory has none. */
+@OptIn(ExperimentalForeignApi::class)
+actual fun KmpFile.getSize(context: PlatformContext): Long? {
+    val path = url.path ?: return null
+    val attributes = NSFileManager.defaultManager.attributesOfItemAtPath(path, error = null) ?: return null
+    if (attributes[NSFileType] != NSFileTypeRegular) return null
+    return (attributes[NSFileSize] as? NSNumber)?.longLongValue
+}
+
+/** The MIME type registered for the original file's extension. */
+@OptIn(ExperimentalForeignApi::class)
+actual fun KmpFile.getMimeType(context: PlatformContext): String? {
+    val extension = originalUrl.pathExtension?.lowercase()?.takeIf { it.isNotEmpty() } ?: return null
+    return UTType.typeWithFilenameExtension(extension)?.preferredMIMEType
+}
+
+private const val FILE_URL_PREFIX = "file:"
+private const val PATH_SEPARATOR = "/"
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun KmpFile.isDirectory(context: PlatformContext): Boolean {

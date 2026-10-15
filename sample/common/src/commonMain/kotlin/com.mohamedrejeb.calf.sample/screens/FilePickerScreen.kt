@@ -21,14 +21,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.io.KmpFile
+import com.mohamedrejeb.calf.io.fromUriString
 import com.mohamedrejeb.calf.io.getName
+import com.mohamedrejeb.calf.io.getMimeType
 import com.mohamedrejeb.calf.io.getPath
+import com.mohamedrejeb.calf.io.getSize
 import com.mohamedrejeb.calf.io.toUriString
 import com.mohamedrejeb.calf.io.source
 import com.mohamedrejeb.calf.picker.FilePickerFileType
@@ -73,6 +77,7 @@ private data class PickedFileInfo(
     val file: KmpFile,
     val name: String,
     val path: String,
+    val details: String,
     val streamingSummary: String,
 )
 
@@ -81,7 +86,9 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
     var pickedFiles by remember { mutableStateOf<List<PickedFileInfo>>(emptyList()) }
     var isMultiple by remember { mutableStateOf(false) }
     var dialogTitle by remember { mutableStateOf("Pick a file") }
-    var initialDirectory by remember { mutableStateOf<KmpFile?>(null) }
+    // Kept as its URI so it survives configuration changes and process death.
+    var initialDirectoryUri by rememberSaveable { mutableStateOf<String?>(null) }
+    val initialDirectory = remember(initialDirectoryUri) { initialDirectoryUri?.let { KmpFile.fromUriString(it) } }
     var selectedTypeIndex by remember { mutableStateOf(0) }
 
     val selectedFileType = fileTypeOptions[selectedTypeIndex].type
@@ -139,7 +146,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         onResult = { files ->
             val dir = files.firstOrNull()
             if (dir != null) {
-                initialDirectory = dir
+                initialDirectoryUri = dir.toUriString()
             }
         },
     )
@@ -197,7 +204,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
                 }
 
                 if (initialDirectory != null) {
-                    TextButton(onClick = { initialDirectory = null }) {
+                    TextButton(onClick = { initialDirectoryUri = null }) {
                         Text("Reset")
                     }
                 }
@@ -302,6 +309,11 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
+                        text = fileInfo.details,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
                         text = fileInfo.streamingSummary,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
@@ -333,8 +345,15 @@ private fun KmpFile.toPickedFileInfo(streamingSummary: String): PickedFileInfo =
         name = getName().orEmpty(),
         // Picked files on Android are content URIs, which have no file system path.
         path = getPath() ?: toUriString() ?: "No path",
+        details = describeMetadata(),
         streamingSummary = streamingSummary,
     )
+
+private fun KmpFile.describeMetadata(): String {
+    val size = getSize()?.let { "$it bytes" } ?: "Unknown size"
+    val mimeType = getMimeType() ?: "unknown type"
+    return "$size · $mimeType"
+}
 
 private fun RawSource.countBytes(): Long {
     val chunk = Buffer()
