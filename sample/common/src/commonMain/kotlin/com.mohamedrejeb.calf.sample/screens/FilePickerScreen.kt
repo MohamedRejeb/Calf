@@ -28,7 +28,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.io.KmpFile
+import com.mohamedrejeb.calf.io.createBookmark
+import com.mohamedrejeb.calf.io.fromBookmark
 import com.mohamedrejeb.calf.io.fromUriString
+import com.mohamedrejeb.calf.io.releaseBookmark
 import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.io.getMimeType
 import com.mohamedrejeb.calf.io.getPath
@@ -88,9 +91,20 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
     var pickError by remember { mutableStateOf<String?>(null) }
     var isMultiple by remember { mutableStateOf(false) }
     var dialogTitle by remember { mutableStateOf("Pick a file") }
-    // Kept as its URI so it survives configuration changes and process death.
+    // Kept as a bookmark, which keeps the access to the folder, or as its URI where it cannot be
+    // bookmarked. Saved instance state survives process death; store the bookmark in preferences
+    // to keep the folder across app restarts.
+    var initialDirectoryBookmark by rememberSaveable { mutableStateOf<String?>(null) }
     var initialDirectoryUri by rememberSaveable { mutableStateOf<String?>(null) }
-    val initialDirectory = remember(initialDirectoryUri) { initialDirectoryUri?.let { KmpFile.fromUriString(it) } }
+    val initialDirectory = remember(initialDirectoryBookmark, initialDirectoryUri) {
+        initialDirectoryBookmark?.let { KmpFile.fromBookmark(it) }
+            ?: initialDirectoryUri?.let { KmpFile.fromUriString(it) }
+    }
+    val setInitialDirectory: (KmpFile?) -> Unit = { dir ->
+        initialDirectory?.releaseBookmark()
+        initialDirectoryBookmark = dir?.createBookmark()
+        initialDirectoryUri = dir?.toUriString()
+    }
     var selectedTypeIndex by remember { mutableStateOf(0) }
 
     val selectedFileType = fileTypeOptions[selectedTypeIndex].type
@@ -154,7 +168,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         onResult = { files ->
             val dir = files.firstOrNull()
             if (dir != null) {
-                initialDirectoryUri = dir.toUriString()
+                setInitialDirectory(dir)
             }
         },
     )
@@ -212,7 +226,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
                 }
 
                 if (initialDirectory != null) {
-                    TextButton(onClick = { initialDirectoryUri = null }) {
+                    TextButton(onClick = { setInitialDirectory(null) }) {
                         Text("Reset")
                     }
                 }

@@ -32,6 +32,14 @@ actual class KmpFile @InternalCalfApi constructor(
     @OptIn(InternalCalfApi::class)
     constructor(url: NSURL) : this(originalUrl = url, url = url)
 
+    /** The access held by a file reopened from a bookmark; given up by [releaseBookmark]. */
+    internal var bookmarkAccess: SecurityScopedAccess? = null
+        private set
+
+    internal constructor(url: NSURL, bookmarkAccess: SecurityScopedAccess) : this(url) {
+        this.bookmarkAccess = bookmarkAccess
+    }
+
     actual companion object
 }
 

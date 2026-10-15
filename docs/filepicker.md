@@ -328,7 +328,30 @@ val uri = file.toUriString() // content://… on Android, file:///… on iOS and
 val folder: KmpFile? = KmpFile.fromUriString(savedUri) // null if it is not a file reference, always null on Web
 ```
 
-> `fromUriString` restores the reference, not access to it. After the app restarts, a `content:` URI on Android needs a persisted URI permission and a picked location on iOS needs a security-scoped bookmark to stay readable.
+> `fromUriString` restores the reference, not access to it. To keep a picked file or folder readable after the app restarts, store a bookmark instead.
+
+* Keep access to a picked file or folder across app restarts with `createBookmark`, and reopen it with `KmpFile.fromBookmark`:
+
+```kotlin
+// After picking a folder
+val bookmark: String? = folder.createBookmark()
+preferences.putString("exportFolder", bookmark)
+
+// After the app restarts
+val folder: KmpFile? = preferences.getString("exportFolder")?.let { KmpFile.fromBookmark(it) }
+
+// When the folder is no longer needed
+folder?.releaseBookmark()
+```
+
+| Platform | What a bookmark keeps |
+|---|---|
+| Android | A persisted permission for the picked `content:` URI. Items picked with the document or folder picker support it; `createBookmark` returns `null` for a URI whose grant is not persistable. Android limits how many persisted permissions an app holds, so release the ones you no longer need. |
+| iOS | A bookmark of the picked location. The reopened file holds its security-scoped access until `releaseBookmark`, so a folder and the files inside it can be used through its `url` or path. Picked files are copies the app owns, so bookmarks matter mostly for folders. |
+| Desktop | The path. Sandboxed macOS apps would need security-scoped bookmarks, which Calf does not create. |
+| Web | Not supported, `createBookmark` returns `null`. |
+
+`fromBookmark` returns `null` when access was lost: the permission was released or revoked, or the item was deleted. A bookmark can go stale when the item is moved or renamed, so create a new one from the reopened file and store it each time.
 
 * Get the size in bytes and the MIME type using the `getSize` and `getMimeType` extension functions. Both return `null` when the value is unknown:
 
