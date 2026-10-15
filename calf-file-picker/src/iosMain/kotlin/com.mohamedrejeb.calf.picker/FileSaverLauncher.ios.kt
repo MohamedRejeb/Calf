@@ -10,7 +10,6 @@ import androidx.compose.ui.uikit.LocalUIViewController
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
-import com.mohamedrejeb.calf.io.withSecurityScopedAccess
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
@@ -20,17 +19,10 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSData
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
-import platform.Foundation.URLByDeletingLastPathComponent
-import platform.Foundation.NSUUID
 import platform.Foundation.create
-import platform.Foundation.writeToURL
-import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
 import platform.UIKit.UIViewController
-import platform.darwin.NSObject
 
 @OptIn(BetaInteropApi::class, InternalCalfApi::class, ExperimentalForeignApi::class)
 @ExperimentalCalfApi
@@ -48,35 +40,20 @@ actual fun rememberFileSaverLauncher(
     val pendingTempUrls = remember { mutableListOf<NSURL>() }
 
     val delegate = remember {
-        object : NSObject(), UIDocumentPickerDelegateProtocol {
-            override fun documentPicker(
-                controller: UIDocumentPickerViewController,
-                didPickDocumentAtURL: NSURL,
-            ) {
+        DocumentPickerDelegate(
+            onPicked = { urls ->
                 cleanUpTempFiles(pendingTempUrls)
                 scope.launch(Dispatchers.Main) {
-                    currentOnResult(KmpFile(didPickDocumentAtURL))
+                    currentOnResult(urls.firstOrNull()?.let { KmpFile(it) })
                 }
-            }
-
-            override fun documentPicker(
-                controller: UIDocumentPickerViewController,
-                didPickDocumentsAtURLs: List<*>,
-            ) {
-                cleanUpTempFiles(pendingTempUrls)
-                scope.launch(Dispatchers.Main) {
-                    val url = didPickDocumentsAtURLs.firstOrNull() as? NSURL
-                    currentOnResult(url?.let { KmpFile(it) })
-                }
-            }
-
-            override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
+            },
+            onCancelled = {
                 cleanUpTempFiles(pendingTempUrls)
                 scope.launch(Dispatchers.Main) {
                     currentOnResult(null)
                 }
-            }
-        }
+            },
+        )
     }
 
     val launchStaged: (suspend () -> NSURL?) -> Unit = { stage ->
@@ -118,67 +95,14 @@ actual fun rememberFileSaverLauncher(
     }
 }
 
-/**
- * The export picker shows, and saves under, the staged file's own name, so each export is staged in
- * a directory of its own and the file keeps the name the caller asked for.
- */
-@OptIn(ExperimentalForeignApi::class)
-private fun exportStagingUrl(fileName: String): NSURL {
-    val directory = "${NSTemporaryDirectory().removeSuffix("/")}/$EXPORT_STAGING_DIR/${NSUUID().UUIDString}"
-    NSFileManager.defaultManager.createDirectoryAtPath(
-        directory,
-        withIntermediateDirectories = true,
-        attributes = null,
-        error = null,
-    )
-    return NSURL.fileURLWithPath("$directory/$fileName")
-}
-
-/**
- * Writes [data] to a fresh staging directory as [fileName]; see [exportStagingUrl].
- *
- * @return The staged file, or `null` if it could not be written.
- */
-internal fun stageExportData(data: NSData, fileName: String): NSURL? {
-    val url = exportStagingUrl(fileName)
-    if (data.writeToURL(url, atomically = true)) return url
-    removeExportStaging(url)
-    return null
-}
-
-/**
- * Copies [source] into a fresh staging directory as [fileName]; the source is left in place.
- *
- * @return The staged copy, or `null` if [source] could not be copied.
- */
-@OptIn(ExperimentalForeignApi::class, InternalCalfApi::class)
-internal fun stageExportFile(source: NSURL, fileName: String): NSURL? {
-    val url = exportStagingUrl(fileName)
-    val copied = source.withSecurityScopedAccess {
-        NSFileManager.defaultManager.copyItemAtURL(source, toURL = url, error = null)
-    }
-    if (copied) return url
-    removeExportStaging(url)
-    return null
-}
-
-/** Removes a staged export together with its private directory. */
-@OptIn(ExperimentalForeignApi::class)
-internal fun removeExportStaging(stagedUrl: NSURL) {
-    val directory = stagedUrl.URLByDeletingLastPathComponent ?: return
-    NSFileManager.defaultManager.removeItemAtURL(directory, error = null)
-}
-
 private fun cleanUpTempFiles(tempUrls: MutableList<NSURL>) {
-    tempUrls.forEach(::removeExportStaging)
+    tempUrls.forEach(::removeStaging)
     tempUrls.clear()
 }
 
-private const val EXPORT_STAGING_DIR = "calf-file-saver"
-
 private fun presentExportPicker(
     sourceUrl: NSURL,
-    delegate: UIDocumentPickerDelegateProtocol,
+    delegate: DocumentPickerDelegate,
     viewController: UIViewController,
 ) {
     // asCopy makes the sheet offer "Save" rather than "Move"; the staged file is removed afterwards.
@@ -186,7 +110,7 @@ private fun presentExportPicker(
         forExportingURLs = listOf(sourceUrl),
         asCopy = true,
     )
-    picker.delegate = delegate
+    delegate.attachTo(picker)
     viewController.presentViewController(
         picker,
         animated = true,

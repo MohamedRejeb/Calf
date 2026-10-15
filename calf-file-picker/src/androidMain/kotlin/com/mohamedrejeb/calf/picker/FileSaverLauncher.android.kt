@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.picker
 
+import android.content.ActivityNotFoundException
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -59,15 +60,24 @@ actual fun rememberFileSaverLauncher(
         },
     )
 
+    val launchSave: (SaveSource, String) -> Unit = { source, fileName ->
+        pendingSource.set(source)
+        try {
+            launcher.launch(fileName)
+        } catch (_: ActivityNotFoundException) {
+            // No app handles ACTION_CREATE_DOCUMENT, e.g. the documents app is disabled.
+            pendingSource.take()
+            currentOnResult(null)
+        }
+    }
+
     return remember {
         FileSaverLauncher(
             onLaunch = { bytes, baseName, extension, _ ->
-                pendingSource.set(SaveSource.Bytes(bytes ?: ByteArray(0)))
-                launcher.launch("$baseName.$extension")
+                launchSave(SaveSource.Bytes(bytes ?: ByteArray(0)), "$baseName.$extension")
             },
             onLaunchFile = { file, baseName, extension, _ ->
-                pendingSource.set(SaveSource.File(file))
-                launcher.launch("$baseName.$extension")
+                launchSave(SaveSource.File(file), "$baseName.$extension")
             },
         )
     }

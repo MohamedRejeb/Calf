@@ -1,5 +1,6 @@
 package com.mohamedrejeb.calf.picker
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.LocalActivityResultRegistryOwner
@@ -117,6 +118,17 @@ class FileSaverLauncherTest {
         assertEquals("application/octet-stream", intent.type)
     }
 
+    @Test
+    fun aDeviceWithoutADocumentsAppReportsNullInsteadOfCrashing() {
+        registry.hasDocumentsApp = false
+        setContent()
+
+        composeRule.runOnIdle { launcher.launch(bytes = byteArrayOf(1), baseName = "Report", extension = "pdf") }
+        composeRule.waitUntil(timeoutMillis = 5_000) { result != null }
+
+        assertNull(result?.file)
+    }
+
     private fun setContent() {
         val owner = object : ActivityResultRegistryOwner {
             override val activityResultRegistry: ActivityResultRegistry = registry
@@ -152,12 +164,16 @@ private class RecordingActivityResultRegistry : ActivityResultRegistry() {
 
     private val launches = mutableListOf<Launch>()
 
+    /** When false, launches fail the way they do on devices with the documents app disabled. */
+    var hasDocumentsApp = true
+
     override fun <I, O> onLaunch(
         requestCode: Int,
         contract: ActivityResultContract<I, O>,
         input: I,
         options: ActivityOptionsCompat?,
     ) {
+        if (!hasDocumentsApp) throw ActivityNotFoundException("No activity for ACTION_CREATE_DOCUMENT")
         launches += Launch(requestCode, contract, input)
     }
 

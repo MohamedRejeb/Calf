@@ -367,7 +367,7 @@ val originalNsUrl: NSURL = kmpFile.originalUrl
 
 > **Note:** On iOS, file picker URLs are security-scoped and may become inaccessible shortly after
 > the picker callback returns. `url` points to a persistent copy in the app's temp directory that
-> remains readable. `originalUrl` holds the original picker URL — use it only for metadata
+> remains readable and keeps the picked file's name. `originalUrl` holds the original picker URL — use it only for metadata
 > (e.g., the original file name or path via `getName()` / `getPath()`).
 >
 > **Migration from 0.10.x:** `KmpFile.url` on iOS previously referred to the original picker URL.

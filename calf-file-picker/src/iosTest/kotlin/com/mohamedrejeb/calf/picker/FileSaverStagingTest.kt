@@ -25,7 +25,7 @@ class FileSaverStagingTest {
     fun stagedFileKeepsTheRequestedName() {
         val url = assertNotNull(stageExportData(NSData(), "profile_picture.png"))
         assertEquals("profile_picture.png", url.lastPathComponent)
-        removeExportStaging(url)
+        removeStaging(url)
     }
 
     @Test
@@ -33,8 +33,8 @@ class FileSaverStagingTest {
         val first = assertNotNull(stageExportData(NSData(), "report.pdf"))
         val second = assertNotNull(stageExportData(NSData(), "report.pdf"))
         assertNotEquals(first.path, second.path)
-        removeExportStaging(first)
-        removeExportStaging(second)
+        removeStaging(first)
+        removeStaging(second)
     }
 
     @Test
@@ -44,7 +44,7 @@ class FileSaverStagingTest {
         val url = assertNotNull(stageExportData(data, "bytes.bin"))
         assertTrue(url.path!!.startsWith(NSTemporaryDirectory().removeSuffix("/")))
         assertTrue(NSFileManager.defaultManager.fileExistsAtPath(url.path!!))
-        removeExportStaging(url)
+        removeStaging(url)
         assertTrue(!NSFileManager.defaultManager.fileExistsAtPath(url.path!!))
     }
 
@@ -55,8 +55,8 @@ class FileSaverStagingTest {
         assertEquals("photo.png", staged.lastPathComponent)
         assertTrue(NSFileManager.defaultManager.fileExistsAtPath(staged.path!!))
         assertTrue(NSFileManager.defaultManager.fileExistsAtPath(source.path!!), "the source is left in place")
-        removeExportStaging(source)
-        removeExportStaging(staged)
+        removeStaging(source)
+        removeStaging(staged)
     }
 
     @Test
