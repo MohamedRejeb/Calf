@@ -346,7 +346,7 @@ fun SaveFileExample() {
     val saverLauncher = rememberFileSaverLauncher(
         onResult = { file ->
             // file is the saved KmpFile, or null if cancelled
-            // On web, onResult is not called (downloads are fire-and-forget)
+            // In Safari and Firefox, which only download, onResult is not called
         }
     )
 
@@ -383,7 +383,7 @@ This avoids loading the entire file content into memory. On each platform, the f
 | Android | System document creation dialog (`CreateDocument`), typed after `extension` (for example `application/pdf`). Calf writes the source into the created document. |
 | iOS | Export dialog (`UIDocumentPickerViewController`) that saves a copy under `baseName.extension`. The source is staged in the app's temporary directory and never moved; the staged copy is removed when the dialog closes. |
 | Desktop | Native save dialog via rfd |
-| Web | Browser download — `onResult` is not called since downloads are fire-and-forget |
+| Web | The browser's save dialog (`showSaveFilePicker`) in Chrome, Edge and other Chromium browsers; `onResult` receives the saved file, or `null` if the user cancels. Safari and Firefox have no save dialog API, so the file is downloaded where the browser's settings say and `onResult` is not called. |
 
 If the source cannot be read or written, `onResult` receives `null`, and on Android the empty document is deleted.
 
