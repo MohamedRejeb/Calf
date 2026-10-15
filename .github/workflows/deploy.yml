@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g., 0.11.0)'
+        description: 'Release version (e.g., 1.0.0)'
         required: true
         type: string
 
@@ -130,6 +130,10 @@ jobs:
     - name: Update mkdocs.yml
       run: |
         sed -i "s/calf_version: .*/calf_version: '${{ inputs.version }}'/" mkdocs.yml
+
+    - name: Update README quick start
+      run: |
+        sed -i "s/\(com\.mohamedrejeb\.calf:calf-ui:\)[^\"]*\"/\1${{ inputs.version }}\"/" README.md
 
     - name: Update compatibility tables
       run: |
