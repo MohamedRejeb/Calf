@@ -23,7 +23,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
  * remembered value) so the picker does not re-evaluate on every recomposition.
  */
 @Composable
-@ExperimentalMaterial3Api
 fun rememberAdaptiveDatePickerState(
     initialSelectedDateMillis: Long? = null,
     initialDisplayedMonthMillis: Long? = initialSelectedDateMillis,

@@ -33,12 +33,11 @@ actual class AdaptiveSheetState actual constructor(
     }
 
     val materialSheetState = SheetState(
-        skipPartiallyExpanded = skipPartiallyExpanded,
+        enabledValues = enabledSheetValues(skipPartiallyExpanded, skipHiddenState),
         positionalThreshold = positionalThreshold,
         velocityThreshold = velocityThreshold,
         initialValue = initialValue,
         confirmValueChange = confirmValueChange,
-        skipHiddenState = skipHiddenState,
     )
     actual val currentValue: SheetValue get() = materialSheetState.currentValue
     actual val targetValue: SheetValue get() = materialSheetState.targetValue
@@ -87,4 +86,15 @@ actual class AdaptiveSheetState actual constructor(
                 },
             )
     }
+}
+
+/** The [SheetValue]s a sheet may settle in, from the two legacy skip flags. */
+@OptIn(ExperimentalMaterial3Api::class)
+internal fun enabledSheetValues(
+    skipPartiallyExpanded: Boolean,
+    skipHiddenState: Boolean,
+): Set<SheetValue> = buildSet {
+    add(SheetValue.Expanded)
+    if (!skipPartiallyExpanded) add(SheetValue.PartiallyExpanded)
+    if (!skipHiddenState) add(SheetValue.Hidden)
 }

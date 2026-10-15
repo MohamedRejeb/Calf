@@ -35,7 +35,6 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
  * @param iosTrailingItems The list of bar button items on the trailing side of the iOS navigation bar.
  * @param iosConfiguration Configuration for the iOS UINavigationBar appearance.
  */
-@ExperimentalMaterial3Api
 @ExperimentalCalfUiApi
 @Composable
 expect fun AdaptiveTopBar(

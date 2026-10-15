@@ -11,7 +11,7 @@ On iOS, a native UINavigationBar is created using the `iosTitle`, `iosLeadingIte
 ## Usage
 
 ```kotlin
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
+@OptIn(ExperimentalCalfUiApi::class)
 @Composable
 fun MyScreen() {
     AdaptiveTopBar(
@@ -159,7 +159,7 @@ On Material platforms, use a standard `DropdownMenu` inside the `actions` slot.
 | ![AdaptiveTopBarDropdown Material](../images/gif/AdaptiveTopBarDropdown-material.gif) | ![AdaptiveTopBarDropdown iOS](../images/gif/AdaptiveTopBarDropdown-ios.gif) | ![AdaptiveTopBarDropdown Liquid Glass](../images/gif/AdaptiveTopBarDropdown-ios-liquid-glass.gif) |
 
 ```kotlin
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
+@OptIn(ExperimentalCalfUiApi::class)
 @Composable
 fun MyScreen() {
     var expanded by remember { mutableStateOf(false) }

@@ -80,6 +80,7 @@ actual fun AdaptiveCompactDatePicker(
                 DatePickerDefaults.DatePickerTitle(
                     displayMode = dialogState.displayMode,
                     modifier = Modifier.padding(DatePickerTitlePadding),
+                    contentColor = colors.titleContentColor,
                 )
             },
             headline = materialHeadline ?: {
@@ -88,6 +89,7 @@ actual fun AdaptiveCompactDatePicker(
                     displayMode = dialogState.displayMode,
                     dateFormatter = dateFormatter,
                     modifier = Modifier.padding(DatePickerHeadlinePadding),
+                    contentColor = colors.headlineContentColor,
                 )
             },
             colors = colors,

@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
  * day and [and] to combine rules. Pass a stable instance.
  */
 @Composable
-@ExperimentalMaterial3Api
 fun rememberAdaptiveDateRangePickerState(
     initialSelectedStartDateMillis: Long? = null,
     initialSelectedEndDateMillis: Long? = null,
