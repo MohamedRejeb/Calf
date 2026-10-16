@@ -21,6 +21,7 @@ import com.mohamedrejeb.calf.camerapicker.rememberCameraPickerLauncher
 import com.mohamedrejeb.calf.core.LocalPlatformContext
 import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.io.getPath
+import com.mohamedrejeb.calf.io.toUriString
 import com.mohamedrejeb.calf.permissions.ExperimentalPermissionsApi
 import com.mohamedrejeb.calf.permissions.Camera
 import com.mohamedrejeb.calf.permissions.Permission
@@ -41,7 +42,7 @@ fun CameraPickerScreen(
     val cameraPickerLauncher = rememberCameraPickerLauncher(
         onResult = { file ->
             fileName = file.getName(context).orEmpty()
-            path = file.getPath(context).orEmpty()
+            path = file.getPath(context) ?: file.toUriString().orEmpty()
         },
     )
 

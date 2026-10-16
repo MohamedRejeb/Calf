@@ -18,12 +18,14 @@ actual fun rememberFilePickerLauncher(
     type: FilePickerFileType,
     selectionMode: FilePickerSelectionMode,
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher {
     var fileDialogVisible by rememberSaveable { mutableStateOf(false) }
     val currentType by rememberUpdatedState(type)
     val currentSelectionMode by rememberUpdatedState(selectionMode)
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnError by rememberUpdatedState(onError)
 
     return remember {
         FilePickerLauncher(
@@ -56,25 +58,28 @@ actual fun rememberFilePickerLauncher(
                     multiple = currentSelectionMode is FilePickerSelectionMode.Multiple
 
                     onchange = { event ->
-                        try {
-                            // Get the selected files
-                            val files = event.target
+                        // Only reading the selection is guarded, so an exception thrown by the
+                        // caller's onResult is not mistaken for a picker failure.
+                        val files = try {
+                            event.target
                                 ?.unsafeCast<HTMLInputElement>()
                                 ?.files
                                 ?.asList()
                                 .orEmpty()
+                        } catch (e: Throwable) {
+                            currentOnError(FilePickerException("Could not read the picked files", e))
+                            null
+                        } finally {
+                            cleanup()
+                        }
 
+                        if (files != null) {
                             // Apply maxItems limit if set
                             val maxItems = (currentSelectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
                             val limitedFiles = if (maxItems != null) files.take(maxItems) else files
 
-                            // Return the result
                             currentOnResult(limitedFiles.map { KmpFile(it) })
                             fileDialogVisible = false
-                        } catch (_: Throwable) {
-                            currentOnResult(emptyList())
-                        } finally {
-                            cleanup()
                         }
                     }
 

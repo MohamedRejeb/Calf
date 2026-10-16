@@ -5,13 +5,44 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.mohamedrejeb.calf.io.KmpFile
 
+/**
+ * Remembers a [FilePickerLauncher] that lets the user pick files or a folder.
+ *
+ * Failures are reported through [onError]: no app on the device can pick files, the picker could
+ * not be shown, or picked files could not be read. When only some of the picked files fail,
+ * [onError] is called once and [onResult] still receives the files that could be read.
+ *
+ * @param onError Called when picking fails. Cancelling the picker is not a failure.
+ * @param onResult Called with the picked files, or an empty list if the user cancelled.
+ */
 @Composable
 expect fun rememberFilePickerLauncher(
     type: FilePickerFileType = FilePickerFileType.All,
     selectionMode: FilePickerSelectionMode = FilePickerSelectionMode.Single,
     settings: FilePickerSettings = defaultFilePickerSettings(),
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher
+
+/**
+ * Remembers a [FilePickerLauncher] that lets the user pick files or a folder. Failures are not
+ * reported; use the overload with `onError` to observe them.
+ *
+ * @param onResult Called with the picked files, or an empty list if the user cancelled.
+ */
+@Composable
+fun rememberFilePickerLauncher(
+    type: FilePickerFileType = FilePickerFileType.All,
+    selectionMode: FilePickerSelectionMode = FilePickerSelectionMode.Single,
+    settings: FilePickerSettings = defaultFilePickerSettings(),
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher = rememberFilePickerLauncher(
+    type = type,
+    selectionMode = selectionMode,
+    settings = settings,
+    onError = {},
+    onResult = onResult,
+)
 
 @Immutable
 sealed class FilePickerFileType(vararg val value: String) {

@@ -89,6 +89,7 @@ fun FileSaverScreen(navigateBack: () -> Unit) {
     )
 
     val saverLauncher = rememberFileSaverLauncher(
+        onError = { error -> saveMessage = "Save failed: ${error.message}" },
         onResult = { file ->
             saveMessage = if (file != null) "Saved successfully" else "Save cancelled"
         },

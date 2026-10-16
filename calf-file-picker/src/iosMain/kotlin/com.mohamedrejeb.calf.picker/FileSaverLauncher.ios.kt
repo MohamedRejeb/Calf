@@ -19,79 +19,62 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSData
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
-import platform.Foundation.NSUUID
 import platform.Foundation.create
-import platform.Foundation.writeToURL
-import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
 import platform.UIKit.UIViewController
-import platform.darwin.NSObject
 
 @OptIn(BetaInteropApi::class, InternalCalfApi::class, ExperimentalForeignApi::class)
 @ExperimentalCalfApi
 @Composable
 actual fun rememberFileSaverLauncher(
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher {
     val scope = rememberCoroutineScope()
     val currentUIViewController = LocalUIViewController.current
     val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnError by rememberUpdatedState(onError)
 
     // Temp files created by onLaunch (bytes) and onLaunchData paths.
     // Cleaned up after the picker finishes (save or cancel).
     val pendingTempUrls = remember { mutableListOf<NSURL>() }
 
     val delegate = remember {
-        object : NSObject(), UIDocumentPickerDelegateProtocol {
-            override fun documentPicker(
-                controller: UIDocumentPickerViewController,
-                didPickDocumentAtURL: NSURL,
-            ) {
+        DocumentPickerDelegate(
+            onPicked = { urls ->
                 cleanUpTempFiles(pendingTempUrls)
                 scope.launch(Dispatchers.Main) {
-                    currentOnResult(KmpFile(didPickDocumentAtURL))
+                    currentOnResult(urls.firstOrNull()?.let { KmpFile(it) })
                 }
-            }
-
-            override fun documentPicker(
-                controller: UIDocumentPickerViewController,
-                didPickDocumentsAtURLs: List<*>,
-            ) {
-                cleanUpTempFiles(pendingTempUrls)
-                scope.launch(Dispatchers.Main) {
-                    val url = didPickDocumentsAtURLs.firstOrNull() as? NSURL
-                    currentOnResult(url?.let { KmpFile(it) })
-                }
-            }
-
-            override fun documentPickerWasCancelled(controller: UIDocumentPickerViewController) {
+            },
+            onCancelled = {
                 cleanUpTempFiles(pendingTempUrls)
                 scope.launch(Dispatchers.Main) {
                     currentOnResult(null)
                 }
-            }
-        }
+            },
+        )
     }
 
-    val launchWithData: (NSData, String) -> Unit = { data, fileName ->
+    val launchStaged: (String?, suspend () -> NSURL?) -> Unit = { initialDirectory, stage ->
         scope.launch {
-            val tempUrl = withContext(Dispatchers.IO) {
-                writeTempFile(data, fileName)
+            val stagedUrl = withContext(Dispatchers.IO) { stage() }
+            if (stagedUrl == null) {
+                currentOnError(FilePickerException("Could not prepare the file to save"))
+                return@launch
             }
-            pendingTempUrls.add(tempUrl)
+            pendingTempUrls.add(stagedUrl)
             withContext(Dispatchers.Main) {
-                presentExportPicker(tempUrl, delegate, currentUIViewController)
+                presentExportPicker(stagedUrl, initialDirectory, delegate, currentUIViewController)
             }
         }
     }
 
     return remember(currentUIViewController) {
         FileSaverLauncher(
-            onLaunch = { bytes, baseName, extension, _ ->
+            onLaunch = { bytes, baseName, extension, initialDirectory ->
                 val data = if (bytes != null && bytes.isNotEmpty()) {
                     bytes.usePinned { pinned ->
                         NSData.create(
@@ -102,47 +85,36 @@ actual fun rememberFileSaverLauncher(
                 } else {
                     NSData()
                 }
-                launchWithData(data, "$baseName.$extension")
+                launchStaged(initialDirectory) { stageExportData(data, "$baseName.$extension") }
             },
-            onLaunchFile = { file, _, _, _ ->
-                scope.launch(Dispatchers.Main) {
-                    presentExportPicker(file.url, delegate, currentUIViewController)
-                }
+            onLaunchFile = { file, baseName, extension, initialDirectory ->
+                launchStaged(initialDirectory) { stageExportFile(file.url, "$baseName.$extension") }
             },
-            onLaunchData = { data, baseName, extension, _ ->
-                launchWithData(data, "$baseName.$extension")
+            onLaunchData = { data, baseName, extension, initialDirectory ->
+                launchStaged(initialDirectory) { stageExportData(data, "$baseName.$extension") }
             },
         )
     }
 }
 
-private fun writeTempFile(data: NSData, fileName: String): NSURL {
-    val tempPath = "${NSTemporaryDirectory().removeSuffix("/")}/${NSUUID().UUIDString}-$fileName"
-    val tempUrl = NSURL.fileURLWithPath(tempPath)
-    data.writeToURL(tempUrl, atomically = true)
-    return tempUrl
-}
-
-@OptIn(ExperimentalForeignApi::class)
 private fun cleanUpTempFiles(tempUrls: MutableList<NSURL>) {
-    val fileManager = NSFileManager.defaultManager
-    tempUrls.forEach { url ->
-        url.path?.let { path ->
-            fileManager.removeItemAtPath(path, error = null)
-        }
-    }
+    tempUrls.forEach(::removeStaging)
     tempUrls.clear()
 }
 
 private fun presentExportPicker(
     sourceUrl: NSURL,
-    delegate: UIDocumentPickerDelegateProtocol,
+    initialDirectory: String?,
+    delegate: DocumentPickerDelegate,
     viewController: UIViewController,
 ) {
+    // asCopy makes the sheet offer "Save" rather than "Move"; the staged file is removed afterwards.
     val picker = UIDocumentPickerViewController(
         forExportingURLs = listOf(sourceUrl),
+        asCopy = true,
     )
-    picker.delegate = delegate
+    picker.directoryURL = initialDirectoryUrl(initialDirectory)
+    delegate.attachTo(picker)
     viewController.presentViewController(
         picker,
         animated = true,
