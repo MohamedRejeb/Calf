@@ -33,6 +33,7 @@ private val TrailingTextMaxWidth = 96.dp
 @Composable
 internal fun FilePickerAttachmentsSection(
     files: List<PickedFile>,
+    error: String?,
     multiple: Boolean,
     foldersSupported: Boolean,
     onPickFiles: () -> Unit,
@@ -58,6 +59,13 @@ internal fun FilePickerAttachmentsSection(
                 }
             }
         }
+        if (error != null) {
+            Text(
+                text = error,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.m),
             modifier = Modifier.fillMaxWidth(),
@@ -82,7 +90,11 @@ private fun PickedFileRow(file: PickedFile) {
     val read = file.read
     DemoRow(
         title = file.name.ifEmpty { "Untitled" },
-        subtitle = if (read is ReadResult.Failed) "Could not read: ${read.reason}" else file.path,
+        subtitle = if (read is ReadResult.Failed) {
+            "Could not read: ${read.reason}"
+        } else {
+            "${file.path}\n${file.details}"
+        },
         leading = { FileKindTile(file.kind) },
         trailing = {
             Text(

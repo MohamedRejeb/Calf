@@ -101,6 +101,7 @@ fun FileSaverScreen(navigateBack: () -> Unit) {
         },
     )
     val saverLauncher = rememberFileSaverLauncher(
+        onError = { error -> status = ExportStatus.Failed(error.message ?: "Saving failed") },
         onResult = { file ->
             status = if (file != null) ExportStatus.Saved(file.getName()) else ExportStatus.Cancelled
         },

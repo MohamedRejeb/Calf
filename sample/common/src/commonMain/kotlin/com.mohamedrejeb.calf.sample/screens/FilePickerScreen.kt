@@ -11,9 +11,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.mohamedrejeb.calf.io.KmpFile
+import com.mohamedrejeb.calf.io.createBookmark
+import com.mohamedrejeb.calf.io.fromBookmark
+import com.mohamedrejeb.calf.io.fromUriString
+import com.mohamedrejeb.calf.io.getMimeType
 import com.mohamedrejeb.calf.io.getName
 import com.mohamedrejeb.calf.io.getPath
+import com.mohamedrejeb.calf.io.getSize
+import com.mohamedrejeb.calf.io.releaseBookmark
 import com.mohamedrejeb.calf.io.source
+import com.mohamedrejeb.calf.io.toUriString
+import com.mohamedrejeb.calf.picker.FilePickerException
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.FilePickerSettings
@@ -84,6 +92,8 @@ internal data class PickedFile(
     val file: KmpFile,
     val name: String,
     val path: String,
+    /** Size and MIME type as the platform reports them, without reading the file. */
+    val details: String,
     val kind: FileKind,
     val read: ReadResult,
 )
@@ -92,14 +102,28 @@ internal data class PickedFile(
 fun FilePickerScreen(navigateBack: () -> Unit) {
     var multiple by rememberSaveable { mutableStateOf(true) }
     var dialogTitle by rememberSaveable { mutableStateOf(DEFAULT_DIALOG_TITLE) }
-    var startFolder by rememberSaveable { mutableStateOf<String?>(null) }
+    // The start folder is kept as a bookmark, which keeps the access to it, or as its URI where it
+    // cannot be bookmarked. Saved instance state survives process death; an app that wants the
+    // folder across restarts stores the bookmark in its preferences.
+    var startFolderBookmark by rememberSaveable { mutableStateOf<String?>(null) }
+    var startFolderUri by rememberSaveable { mutableStateOf<String?>(null) }
+    val startFolder = remember(startFolderBookmark, startFolderUri) {
+        startFolderBookmark?.let { KmpFile.fromBookmark(it) }
+            ?: startFolderUri?.let { KmpFile.fromUriString(it) }
+    }
+    val setStartFolder: (KmpFile?) -> Unit = { folder ->
+        startFolder?.releaseBookmark()
+        startFolderBookmark = folder?.createBookmark()
+        startFolderUri = folder?.toUriString()
+    }
     var typeIndex by rememberSaveable { mutableIntStateOf(0) }
     val attachments = rememberAttachmentsState()
     val foldersSupported = !currentPlatform.isWeb
 
+    // A picked folder is handed over as is; each platform opens the dialog in it in its own way.
     val settings = rememberFilePickerSettings(
-        title = dialogTitle,
         initialDirectory = startFolder,
+        title = dialogTitle,
         // Keeps photos in their original format on iOS (HEIC included); ignored elsewhere.
         imageRepresentationMode = ImageRepresentationMode.Current,
     )
@@ -108,23 +132,27 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         type = type,
         selectionMode = FilePickerSelectionMode.Single,
         settings = settings,
+        onError = attachments::onPickError,
         onResult = attachments::onFilesPicked,
     )
     val multipleLauncher = rememberFilePickerLauncher(
         type = type,
         selectionMode = FilePickerSelectionMode.Multiple,
         settings = settings,
+        onError = attachments::onPickError,
         onResult = attachments::onFilesPicked,
     )
     val folderLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Folder,
         settings = FilePickerSettings(title = FOLDER_DIALOG_TITLE),
+        onError = attachments::onPickError,
         onResult = attachments::onFolderPicked,
     )
     val startFolderLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Folder,
         settings = FilePickerSettings(title = START_FOLDER_DIALOG_TITLE),
-        onResult = { folders -> folders.firstOrNull()?.getPath()?.let { startFolder = it } },
+        onError = attachments::onPickError,
+        onResult = { folders -> folders.firstOrNull()?.let(setStartFolder) },
     )
 
     SampleScreenScaffold(title = Screen.FilePicker.title, navigateBack = navigateBack) { padding ->
@@ -132,10 +160,17 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             DemoHeader(Screen.FilePicker)
             FilePickerAttachmentsSection(
                 files = attachments.files,
+                error = attachments.error,
                 multiple = multiple,
                 foldersSupported = foldersSupported,
-                onPickFiles = { if (multiple) multipleLauncher.launch() else singleLauncher.launch() },
-                onPickFolder = { folderLauncher.launch() },
+                onPickFiles = {
+                    attachments.clearError()
+                    if (multiple) multipleLauncher.launch() else singleLauncher.launch()
+                },
+                onPickFolder = {
+                    attachments.clearError()
+                    folderLauncher.launch()
+                },
             )
             FilePickerTypeSection(selectedIndex = typeIndex, onSelect = { typeIndex = it })
             FilePickerOptionsSection(
@@ -143,9 +178,9 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
                 onMultipleChange = { multiple = it },
                 dialogTitle = dialogTitle,
                 onDialogTitleChange = { dialogTitle = it },
-                startFolder = startFolder,
+                startFolder = startFolder?.let { it.getPath() ?: it.toUriString() },
                 onPickStartFolder = if (foldersSupported) ({ startFolderLauncher.launch() }) else null,
-                onResetStartFolder = { startFolder = null },
+                onResetStartFolder = { setStartFolder(null) },
             )
             DemoSection(title = "Usage") {
                 CodeSnippet(USAGE.trimIndent())
@@ -169,7 +204,19 @@ private class AttachmentsState(private val scope: CoroutineScope) {
     var files by mutableStateOf<List<PickedFile>>(emptyList())
         private set
 
+    /** The last pick's failure; reported before onResult, which still gets the readable files. */
+    var error by mutableStateOf<String?>(null)
+        private set
+
     private var readJob: Job? = null
+
+    fun onPickError(exception: FilePickerException) {
+        error = exception.message ?: "Picking failed"
+    }
+
+    fun clearError() {
+        error = null
+    }
 
     fun onFilesPicked(picked: List<KmpFile>) {
         readJob?.cancel()
@@ -193,10 +240,18 @@ private fun KmpFile.toPickedFile(read: ReadResult): PickedFile {
     return PickedFile(
         file = this,
         name = name,
-        path = getPath() ?: "Unknown path",
+        // Picked files on Android are content URIs, which have no file system path.
+        path = getPath() ?: toUriString() ?: "No path",
+        details = describeMetadata(),
         kind = FileKind.of(name),
         read = read,
     )
+}
+
+private fun KmpFile.describeMetadata(): String {
+    val size = getSize()?.let(::formatFileSize) ?: "Unknown size"
+    val mimeType = getMimeType() ?: "unknown type"
+    return "$size · $mimeType"
 }
 
 /**

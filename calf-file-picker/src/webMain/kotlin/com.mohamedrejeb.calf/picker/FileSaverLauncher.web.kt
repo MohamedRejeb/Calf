@@ -2,7 +2,9 @@ package com.mohamedrejeb.calf.picker
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
 import kotlinx.browser.document
@@ -16,37 +18,79 @@ import org.w3c.files.Blob
  */
 internal expect fun createBlob(bytes: ByteArray, mimeType: String): Blob
 
+/**
+ * Whether the browser has the File System Access save dialog (`window.showSaveFilePicker`).
+ * Chromium browsers have it; Safari and Firefox do not.
+ */
+internal expect fun isSaveFilePickerSupported(): Boolean
+
+/**
+ * Shows the browser's save dialog for [blob] and writes it to the file the user chooses. Exactly
+ * one callback runs: [onPickerFailed] when the browser refuses to show the dialog, for example
+ * without a user gesture, and [onWriteFailed] when the chosen file cannot be written.
+ */
+internal expect fun showSaveFilePicker(
+    blob: Blob,
+    suggestedName: String,
+    mimeType: String,
+    extension: String,
+    onSaved: (File) -> Unit,
+    onCancelled: () -> Unit,
+    onPickerFailed: () -> Unit,
+    onWriteFailed: () -> Unit,
+)
+
+/**
+ * Saves through the browser's save dialog where there is one, so the user picks the location and
+ * `onResult` receives the saved file, or `null` when they cancel. Elsewhere the file is downloaded:
+ * the browser decides where it goes and `onResult` is not called.
+ */
 @ExperimentalCalfApi
 @Composable
 actual fun rememberFileSaverLauncher(
     settings: FilePickerSettings,
+    onError: (FilePickerException) -> Unit,
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher {
+    val currentOnResult by rememberUpdatedState(onResult)
+    val currentOnError by rememberUpdatedState(onError)
+
+    val save: (Blob, String, String) -> Unit = { blob, baseName, extension ->
+        val fileName = "$baseName.$extension"
+        if (isSaveFilePickerSupported()) {
+            showSaveFilePicker(
+                blob = blob,
+                suggestedName = fileName,
+                mimeType = extensionToMimeType(extension),
+                extension = extension,
+                onSaved = { file -> currentOnResult(KmpFile(file)) },
+                onCancelled = { currentOnResult(null) },
+                onPickerFailed = { triggerDownload(blob, fileName) },
+                onWriteFailed = { currentOnError(FilePickerException("Could not write the saved file")) },
+            )
+        } else {
+            triggerDownload(blob, fileName)
+        }
+    }
+
     return remember {
         FileSaverLauncher(
             onLaunch = { bytes, baseName, extension, _ ->
-                val fileName = "$baseName.$extension"
-                val mimeType = extensionToMimeType(extension)
-                val content = bytes ?: byteArrayOf()
-
-                val blob = createBlob(content, mimeType)
-                triggerDownload(blob, fileName)
+                save(createBlob(bytes ?: byteArrayOf(), extensionToMimeType(extension)), baseName, extension)
             },
             onLaunchFile = { file, baseName, extension, _ ->
-                val fileName = "$baseName.$extension"
-                triggerDownload(file.file, fileName)
+                save(file.file, baseName, extension)
             },
             onLaunchBlob = { blob, baseName, extension, _ ->
-                val fileName = "$baseName.$extension"
-                triggerDownload(blob, fileName)
+                save(blob, baseName, extension)
             },
         )
     }
 }
 
 /**
- * Triggers a browser download for the given [Blob] with the specified file name.
- * Downloads are fire-and-forget — the browser handles the save dialog.
+ * Triggers a browser download for the given [Blob] with the specified file name. The browser
+ * decides whether to ask where to save it, and no result is reported.
  */
 private fun triggerDownload(blob: Blob, fileName: String) {
     val url = URL.createObjectURL(blob)
@@ -125,9 +169,9 @@ actual class FileSaverLauncher(
     }
 
     /**
-     * Launches a browser download using a W3C [File] as the source.
+     * Saves a W3C [File]; see [rememberFileSaverLauncher] for when the browser shows a save dialog.
      *
-     * @param file The source [org.w3c.files.File] to download.
+     * @param file The source [org.w3c.files.File] to save.
      * @param baseName The suggested file name without extension (e.g. "document").
      * @param extension The file extension without dot (e.g. "pdf").
      * @param initialDirectory Ignored on web.
@@ -142,9 +186,9 @@ actual class FileSaverLauncher(
     }
 
     /**
-     * Launches a browser download using a [Blob] as the source.
+     * Saves a [Blob]; see [rememberFileSaverLauncher] for when the browser shows a save dialog.
      *
-     * @param blob The source [Blob] to download.
+     * @param blob The source [Blob] to save.
      * @param baseName The suggested file name without extension (e.g. "document").
      * @param extension The file extension without dot (e.g. "pdf").
      * @param initialDirectory Ignored on web.

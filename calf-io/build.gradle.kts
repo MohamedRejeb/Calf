@@ -21,6 +21,12 @@ kotlin {
         implementation(libs.documentfile)
     }
 
+    // Robolectric tests for the Uri-based Android implementation.
+    sourceSets.named("androidHostTest").dependencies {
+        implementation(libs.junit)
+        implementation(libs.robolectric)
+    }
+
     sourceSets.webMain.dependencies {
         implementation(libs.kotlinx.browser)
     }
