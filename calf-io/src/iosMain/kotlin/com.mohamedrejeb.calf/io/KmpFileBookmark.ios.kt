@@ -4,7 +4,9 @@ import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.core.PlatformContext
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSData
+import platform.Foundation.NSLock
 import platform.Foundation.NSURL
+import platform.Foundation.URLByStandardizingPath
 import platform.Foundation.base64EncodedStringWithOptions
 import platform.Foundation.create
 import kotlin.concurrent.AtomicInt
@@ -27,9 +29,10 @@ actual fun KmpFile.createBookmark(context: PlatformContext): String? {
 }
 
 /**
- * The reopened file starts its security-scoped access at once and holds it until
- * [releaseBookmark]. Starting access per operation on paths rebuilt from the URL is not enough
- * after a device restart, while access held on the resolved URL covers the files inside a folder.
+ * The reopened file holds security-scoped access to its location until [releaseBookmark].
+ * Starting access per operation on paths rebuilt from the URL is not enough after a device
+ * restart, while access held on the resolved URL covers the files inside a folder. Files reopened
+ * from the same location share one access, which stops when the last of them is released.
  */
 @OptIn(ExperimentalForeignApi::class)
 actual fun KmpFile.Companion.fromBookmark(bookmark: String, context: PlatformContext): KmpFile? {
@@ -42,18 +45,79 @@ actual fun KmpFile.Companion.fromBookmark(bookmark: String, context: PlatformCon
         bookmarkDataIsStale = null,
         error = null,
     ) ?: return null
-    return KmpFile(url, SecurityScopedAccess(url))
+    return KmpFile(url, SecurityScopedAccessRegistry.Shared.acquire(url))
 }
 
 actual fun KmpFile.releaseBookmark(context: PlatformContext) {
     bookmarkAccess?.release()
 }
 
-/** Security-scoped access started once on [url] and stopped at most once. */
-internal class SecurityScopedAccess(private val url: NSURL) {
-    private val held = AtomicInt(if (url.startAccessingSecurityScopedResource()) 1 else 0)
+/**
+ * One file's claim on the access to its location, given up at most once.
+ */
+internal class SecurityScopedAccess(private val onRelease: () -> Unit) {
+    private val held = AtomicInt(1)
 
     fun release() {
-        if (held.compareAndSet(1, 0)) url.stopAccessingSecurityScopedResource()
+        if (held.compareAndSet(1, 0)) onRelease()
+    }
+}
+
+/**
+ * Counts the files holding access to each location, so access starts once per location and stops
+ * when the last file is released. Every start must be balanced by a stop, or the app leaks kernel
+ * resources and eventually cannot open more security-scoped locations until it is relaunched.
+ */
+internal class SecurityScopedAccessRegistry(
+    private val start: (NSURL) -> Boolean,
+    private val stop: (NSURL) -> Unit,
+) {
+    private class Location(val url: NSURL, val isAccessing: Boolean, val holders: Int)
+
+    private val lock = NSLock()
+    private var locations: Map<String, Location> = emptyMap()
+
+    fun acquire(url: NSURL): SecurityScopedAccess {
+        val key = url.locationKey()
+        locked {
+            val location = locations[key]
+            locations = locations + (key to when (location) {
+                null -> Location(url, isAccessing = start(url), holders = 1)
+                else -> Location(location.url, location.isAccessing, location.holders + 1)
+            })
+        }
+        return SecurityScopedAccess { release(key) }
+    }
+
+    private fun release(key: String) {
+        val stopped = locked {
+            val location = locations[key] ?: return@locked null
+            if (location.holders > 1) {
+                locations = locations + (key to Location(location.url, location.isAccessing, location.holders - 1))
+                null
+            } else {
+                locations = locations - key
+                location.takeIf { it.isAccessing }
+            }
+        }
+        stopped?.let { stop(it.url) }
+    }
+
+    private inline fun <T> locked(block: () -> T): T {
+        lock.lock()
+        try {
+            return block()
+        } finally {
+            lock.unlock()
+        }
+    }
+
+    private fun NSURL.locationKey(): String = (URLByStandardizingPath ?: this).absoluteString ?: toString()
+
+    companion object {
+        val Shared = SecurityScopedAccessRegistry(
+            start = { it.startAccessingSecurityScopedResource() },
+            stop = { it.stopAccessingSecurityScopedResource() },
+        )
     }
 }

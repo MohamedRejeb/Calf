@@ -347,7 +347,7 @@ folder?.releaseBookmark()
 | Platform | What a bookmark keeps |
 |---|---|
 | Android | A persisted permission for the picked `content:` URI. Items picked with the document or folder picker support it; `createBookmark` returns `null` for a URI whose grant is not persistable. Android limits how many persisted permissions an app holds, so release the ones you no longer need. |
-| iOS | A bookmark of the picked location. The reopened file holds its security-scoped access until `releaseBookmark`, so a folder and the files inside it can be used through its `url` or path. Picked files are copies the app owns, so bookmarks matter mostly for folders. |
+| iOS | A bookmark of the picked location. The reopened file holds its security-scoped access until `releaseBookmark`, so a folder and the files inside it can be used through its `url` or path. Files reopened from the same location share one access, which ends when the last of them is released, so reopening a bookmark again does not add up. Picked files are copies the app owns, so bookmarks matter mostly for folders. |
 | Desktop | The path. Sandboxed macOS apps would need security-scoped bookmarks, which Calf does not create. |
 | Web | Not supported, `createBookmark` returns `null`. |
 
