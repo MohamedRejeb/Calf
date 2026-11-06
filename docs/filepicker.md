@@ -57,7 +57,9 @@ val pickerLauncher = rememberFilePickerLauncher(
 )
 ```
 
-When only some of the picked files fail, `onError` is called once and `onResult` still receives the files that could be read. Without `onError`, failures are not reported.
+Every launch ends with exactly one `onResult` call, so a loading state can always be cleared there. When picking fails, `onError` is called first and `onResult` then receives the files that could be read: an empty list when none could, or the others when only some failed. Without `onError`, failures are not reported, but `onResult` still ends the launch.
+
+> **Migration from 0.14.x:** source code that calls `rememberFilePickerLauncher` or `rememberFileSaverLauncher` compiles unchanged, but a library *compiled* against 0.14.x that calls them must be rebuilt against this version.
 
 ## Settings
 
@@ -93,6 +95,8 @@ Common properties available on all platforms:
 
 - `title` - Dialog window title
 - `initialDirectory` - Directory to open the dialog in (see [Opening in a picked folder](#opening-in-a-picked-folder))
+
+> **Migration from 0.14.x:** `initialDirectory` now also accepts a `KmpFile`, so a literal `initialDirectory = null` matches both overloads and no longer compiles. Leave the argument out instead; `null` is its default.
 - `imageRepresentationMode` - Controls how iOS returns image assets (see [iOS Image Representation](#ios-image-representation))
 
 ### Opening in a picked folder
@@ -399,12 +403,16 @@ fun SaveFileExample() {
 }
 ```
 
-Pass `onError` to tell a failure apart from a cancellation. A failure is reported only through `onError`: no app can save files, the source could not be read, or the chosen file could not be written. Without `onError`, a failure reaches `onResult` as `null`, like a cancellation.
+Like the picker, every save ends with exactly one `onResult` call (except a web download, see below). Pass `onError` to tell a failure apart from a cancellation: it is called first, with why the save failed (no app can save files, the source could not be read, or the chosen file could not be written), and `onResult` then receives `null`. Without `onError`, a failure looks like a cancellation.
 
 ```kotlin
+var failure by remember { mutableStateOf<FilePickerException?>(null) }
 val saverLauncher = rememberFileSaverLauncher(
-    onError = { error -> showMessage("Could not save: ${error.message}") },
-    onResult = { file -> /* saved file, or null if cancelled */ },
+    onError = { error -> failure = error },
+    onResult = { file ->
+        // file: the saved file, or null if the user cancelled or saving failed (failure != null)
+        failure = null
+    },
 )
 ```
 

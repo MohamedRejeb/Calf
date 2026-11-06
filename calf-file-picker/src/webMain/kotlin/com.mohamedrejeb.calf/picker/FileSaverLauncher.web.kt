@@ -75,7 +75,9 @@ actual fun rememberFileSaverLauncher(
                 onSaved = { file -> currentOnResult(KmpFile(file)) },
                 onCancelled = { currentOnResult(null) },
                 onPickerFailed = { triggerDownload(blob, fileName) },
-                onWriteFailed = { currentOnError(FilePickerException("Could not write the saved file")) },
+                onWriteFailed = {
+                    failSave(FilePickerException("Could not write the saved file"), currentOnError, currentOnResult)
+                },
             )
         } else {
             triggerDownload(blob, fileName)

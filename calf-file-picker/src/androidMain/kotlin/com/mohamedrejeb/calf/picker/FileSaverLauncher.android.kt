@@ -63,7 +63,7 @@ actual fun rememberFileSaverLauncher(
 
             scope.launch {
                 val failure = context.writeSaveSource(source, uri)
-                if (failure == null) currentOnResult(KmpFile(uri)) else currentOnError(failure)
+                if (failure == null) currentOnResult(KmpFile(uri)) else failSave(failure, currentOnError, currentOnResult)
             }
         },
     )
@@ -75,7 +75,7 @@ actual fun rememberFileSaverLauncher(
         } catch (e: ActivityNotFoundException) {
             // No app handles ACTION_CREATE_DOCUMENT, e.g. the documents app is disabled.
             pendingSource.take()
-            currentOnError(FilePickerException("No app on this device can save files", e))
+            failSave(FilePickerException("No app on this device can save files", e), currentOnError, currentOnResult)
         }
     }
 

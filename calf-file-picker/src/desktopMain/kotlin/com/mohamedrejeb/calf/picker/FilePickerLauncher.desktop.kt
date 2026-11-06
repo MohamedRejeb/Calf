@@ -184,9 +184,12 @@ private fun rememberFilePickerLauncherInternal(
                     dialogMutex.withLock {
                         val handle = dialogHandle.longValue
                         if (handle == 0L) {
-                            dialogFailure.value?.let { failure ->
-                                currentOnError(FilePickerException("Could not create the file dialog", failure))
-                            }
+                            // No handle also covers a native call that returned none without throwing.
+                            failPick(
+                                FilePickerException("Could not create the file dialog", dialogFailure.value),
+                                currentOnError,
+                                currentOnResult,
+                            )
                             return@launch
                         }
 
@@ -201,7 +204,7 @@ private fun rememberFilePickerLauncherInternal(
                         } catch (e: CancellationException) {
                             throw e
                         } catch (e: Throwable) {
-                            currentOnError(FilePickerException("Could not show the file dialog", e))
+                            failPick(FilePickerException("Could not show the file dialog", e), currentOnError, currentOnResult)
                             return@launch
                         }
                         currentOnResult(picked.map { KmpFile(it) })
