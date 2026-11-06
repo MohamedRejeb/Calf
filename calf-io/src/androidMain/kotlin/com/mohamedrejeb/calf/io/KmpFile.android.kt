@@ -78,13 +78,23 @@ actual fun KmpFile.getSize(context: PlatformContext): Long? = when (uri.scheme) 
     else -> queryProviderSize(context)
 }
 
-/** Asks the provider; it may not know the size, and a folder has none. */
+/**
+ * Asks the provider in one query; it may not know the size, and a folder has none. Only documents
+ * providers are asked for the type as well, since other providers may reject an unknown column.
+ */
 private fun KmpFile.queryProviderSize(context: PlatformContext): Long? {
-    if (isDirectory(context)) return null
+    val target = queryUri
+    val isDocument = target.pathSegments.firstOrNull() in DOCUMENT_PATH_SEGMENTS
+    val projection =
+        if (isDocument) arrayOf(OpenableColumns.SIZE, DocumentsContract.Document.COLUMN_MIME_TYPE)
+        else arrayOf(OpenableColumns.SIZE)
     return try {
-        context.contentResolver.query(queryUri, arrayOf(OpenableColumns.SIZE), null, null, null)?.use { cursor ->
-            val column = cursor.getColumnIndex(OpenableColumns.SIZE)
-            if (column >= 0 && cursor.moveToFirst() && !cursor.isNull(column)) cursor.getLong(column) else null
+        context.contentResolver.query(target, projection, null, null, null)?.use { cursor ->
+            if (!cursor.moveToFirst()) return@use null
+            val typeColumn = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            val isFolder = typeColumn >= 0 && cursor.getString(typeColumn) == DocumentsContract.Document.MIME_TYPE_DIR
+            val sizeColumn = cursor.getColumnIndex(OpenableColumns.SIZE)
+            if (isFolder || sizeColumn < 0 || cursor.isNull(sizeColumn)) null else cursor.getLong(sizeColumn)
         }
     } catch (e: RuntimeException) {
         // Providers refuse a query in their own ways (SecurityException, IllegalArgumentException,
@@ -117,6 +127,9 @@ private const val PATH_SEPARATOR = "/"
 
 /** The first path segment of a tree URI, as built by DocumentsContract.buildTreeDocumentUri. */
 private const val TREE_PATH_SEGMENT = "tree"
+
+/** First path segments of the URIs a documents provider serves. */
+private val DOCUMENT_PATH_SEGMENTS = setOf("document", TREE_PATH_SEGMENT)
 
 private val FILE_REFERENCE_SCHEMES = setOf(ContentResolver.SCHEME_CONTENT, ContentResolver.SCHEME_FILE)
 

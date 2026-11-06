@@ -52,10 +52,16 @@ internal fun stagePickedUrls(urls: List<NSURL>, isAppsOwnCopy: Boolean = false):
     return StagedPick(files, partialPickFailure(failed = urls.size - files.size, picked = urls.size))
 }
 
-/** A [KmpFile] that reads from a staged copy of this picked URL and reports the URL as its origin. */
+/**
+ * A [KmpFile] that reads from a staged copy of this picked URL and reports the URL as its origin.
+ * A moved copy no longer exists at this URL, and was itself only the picker's copy, so the staged
+ * file is its origin.
+ */
 @OptIn(InternalCalfApi::class)
 internal fun NSURL.toStagedKmpFile(isAppsOwnCopy: Boolean = false): KmpFile? =
-    stagePickedFile(this, isAppsOwnCopy)?.let { staged -> KmpFile(url = staged, originalUrl = this) }
+    stagePickedFile(this, isAppsOwnCopy)?.let { staged ->
+        KmpFile(url = staged, originalUrl = if (isAppsOwnCopy) staged else this)
+    }
 
 /**
  * Writes [data] to a fresh export staging directory as [fileName]. The export picker shows, and

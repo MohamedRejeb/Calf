@@ -69,6 +69,23 @@ class SecurityScopedAccessRegistryTest {
     }
 
     @Test
+    fun aStartThatFailedIsRetriedByTheNextFile() {
+        val results = ArrayDeque(listOf(false, true))
+        val retrying = SecurityScopedAccessRegistry(
+            start = { started++; results.removeFirst() },
+            stop = { stopped++ },
+        )
+
+        val first = retrying.acquire(folder)
+        val second = retrying.acquire(folder)
+        first.release()
+        second.release()
+
+        assertEquals(2, started)
+        assertEquals(1, stopped, "the access that did start is stopped once")
+    }
+
+    @Test
     fun aUrlThatIsNotSecurityScopedIsNeverStopped() {
         val unscoped = SecurityScopedAccessRegistry(start = { started++; false }, stop = { stopped++ })
 

@@ -83,7 +83,8 @@ internal class SecurityScopedAccessRegistry(
             val location = locations[key]
             locations = locations + (key to when (location) {
                 null -> Location(url, isAccessing = start(url), holders = 1)
-                else -> Location(location.url, location.isAccessing, location.holders + 1)
+                // A start that failed earlier is retried, so one failure does not stick to the location.
+                else -> Location(location.url, location.isAccessing || start(location.url), location.holders + 1)
             })
         }
         return SecurityScopedAccess { release(key) }

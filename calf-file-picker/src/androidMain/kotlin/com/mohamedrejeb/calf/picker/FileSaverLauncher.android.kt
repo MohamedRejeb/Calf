@@ -95,8 +95,10 @@ actual fun rememberFileSaverLauncher(
  * Writes [source] into [destination], the document the save sheet returned: a new, empty document,
  * or an existing one the user chose to overwrite.
  *
- * @return `null` if the source was written; otherwise why not. An empty document is then deleted,
- * and a document with content is left as it was.
+ * @return `null` if the source was written; otherwise why not. An empty document is then deleted.
+ * A document with content is untouched when the failure comes before writing starts (the source
+ * is lost or unreadable, or the provider refuses to open it); a failure while writing can leave
+ * it partly written, as any in-place overwrite can.
  */
 private suspend fun Context.writeSaveSource(source: SaveSource?, destination: Uri): FilePickerException? =
     withContext(Dispatchers.IO) {
@@ -138,11 +140,10 @@ private fun ContentResolver.openSource(source: SaveSource): InputStream = when (
 private fun ContentResolver.openDestination(destination: Uri, isEmpty: Boolean): OutputStream {
     val output = try {
         openOutputStream(destination, TRUNCATE_WRITE_MODE)
-    } catch (e: IllegalArgumentException) {
-        if (!isEmpty) throw e
-        openOutputStream(destination, WRITE_MODE)
-    } catch (e: FileNotFoundException) {
-        if (!isEmpty) throw e
+    } catch (e: Exception) {
+        // A provider refusing the mode throws one of these; anything else is a real failure.
+        val refusedMode = e is IllegalArgumentException || e is FileNotFoundException
+        if (!isEmpty || !refusedMode) throw e
         openOutputStream(destination, WRITE_MODE)
     }
     return output ?: throw FileNotFoundException("The provider gave no output stream for $destination")

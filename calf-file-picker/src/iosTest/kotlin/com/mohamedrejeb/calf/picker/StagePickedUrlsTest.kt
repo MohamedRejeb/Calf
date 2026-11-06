@@ -1,5 +1,7 @@
 package com.mohamedrejeb.calf.picker
 
+import com.mohamedrejeb.calf.io.getName
+import com.mohamedrejeb.calf.io.toUriString
 import platform.Foundation.NSData
 import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
@@ -20,6 +22,20 @@ class StagePickedUrlsTest {
         assertNull(staged.failure)
         staged.files.forEach { removeStaging(it.url) }
         removeStaging(source)
+    }
+
+    /** A moved copy no longer exists where the picker put it, so the staged file is the origin. */
+    @Test
+    fun aMovedCopyReportsTheStagedFileAsItsOrigin() {
+        val pickersCopy = assertNotNull(stageExportData(NSData(), "a.pdf"))
+
+        val staged = stagePickedUrls(listOf(pickersCopy), isAppsOwnCopy = true).files.single()
+
+        assertEquals(staged.url.path, staged.originalUrl.path)
+        assertEquals("a.pdf", staged.getName())
+        assertEquals(staged.url.absoluteString, staged.toUriString())
+        removeStaging(staged.url)
+        removeStaging(pickersCopy)
     }
 
     @Test

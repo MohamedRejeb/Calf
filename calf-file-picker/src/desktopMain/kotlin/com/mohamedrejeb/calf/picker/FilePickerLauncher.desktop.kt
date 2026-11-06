@@ -15,6 +15,7 @@ import androidx.compose.ui.window.FrameWindowScope
 import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -125,6 +126,9 @@ private fun rememberFilePickerLauncherInternal(
     // Settings update acquires the lock to safely destroy/recreate the handle.
     // launch() acquires the lock to show the dialog with a valid handle.
     val dialogMutex = remember { Mutex() }
+    // Completed once the first creation attempt is over, so an early launch() waits for it instead
+    // of taking a dialog that does not exist yet for a failed one.
+    val firstDialogCreated = remember { CompletableDeferred<Unit>() }
 
     // Create the native dialog handle off the main thread
     LaunchedEffect(
@@ -162,6 +166,7 @@ private fun rememberFilePickerLauncherInternal(
                 }
             }
             dialogHandle.longValue = handle
+            firstDialogCreated.complete(Unit)
         }
     }
 
@@ -181,10 +186,11 @@ private fun rememberFilePickerLauncherInternal(
             selectionMode = selectionMode,
             onLaunch = {
                 scope.launch {
+                    firstDialogCreated.await()
                     dialogMutex.withLock {
                         val handle = dialogHandle.longValue
                         if (handle == 0L) {
-                            // No handle also covers a native call that returned none without throwing.
+                            // Creation was attempted and failed, by throwing or by returning no handle.
                             failPick(
                                 FilePickerException("Could not create the file dialog", dialogFailure.value),
                                 currentOnError,

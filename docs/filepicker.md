@@ -387,7 +387,7 @@ fun SaveFileExample() {
     val saverLauncher = rememberFileSaverLauncher(
         onResult = { file ->
             // file is the saved KmpFile, or null if cancelled
-            // In Safari and Firefox, which only download, onResult is not called
+            // In Safari and Firefox, which only download, it is the downloaded file
         }
     )
 
@@ -403,7 +403,7 @@ fun SaveFileExample() {
 }
 ```
 
-Like the picker, every save ends with exactly one `onResult` call (except a web download, see below). Pass `onError` to tell a failure apart from a cancellation: it is called first, with why the save failed (no app can save files, the source could not be read, or the chosen file could not be written), and `onResult` then receives `null`. Without `onError`, a failure looks like a cancellation.
+Like the picker, every save ends with exactly one `onResult` call. Pass `onError` to tell a failure apart from a cancellation: it is called first, with why the save failed (no app can save files, the source could not be read, or the chosen file could not be written), and `onResult` then receives `null`. Without `onError`, a failure looks like a cancellation.
 
 ```kotlin
 var failure by remember { mutableStateOf<FilePickerException?>(null) }
@@ -437,11 +437,11 @@ This avoids loading the entire file content into memory. On each platform, the f
 | Android | System document creation dialog (`CreateDocument`), typed after `extension` (for example `application/pdf`). Calf writes the source into the created document. |
 | iOS | Export dialog (`UIDocumentPickerViewController`) that saves a copy under `baseName.extension`. The source is staged in the app's temporary directory and never moved; the staged copy is removed when the dialog closes. |
 | Desktop | Native save dialog via rfd |
-| Web | The browser's save dialog (`showSaveFilePicker`) in Chrome, Edge and other Chromium browsers, including Chrome on Android 132 and later; `onResult` receives the saved file, or `null` if the user cancels. Safari and Firefox have no save dialog API, so the file is downloaded where the browser's settings say and `onResult` is not called. |
+| Web | The browser's save dialog (`showSaveFilePicker`) in Chrome, Edge and other Chromium browsers, including Chrome on Android 132 and later; `onResult` receives the saved file, or `null` if the user cancels. Safari and Firefox have no save dialog API, so the file is downloaded where the browser's settings say, as it is when a browser refuses to show its dialog; `onResult` then receives the downloaded file once the download is handed to the browser. |
 
-> **Safari and Firefox:** a web page cannot open a save dialog in these browsers; where a download goes is the user's browser setting. To be asked for a location on every download, users can set Safari → Settings → General → *File download location* to **Ask for each download**, or turn on **Always ask you where to save files** in Firefox's settings. Calf's download then opens the system save panel, though `onResult` is still not called.
+> **Safari and Firefox:** a web page cannot open a save dialog in these browsers; where a download goes is the user's browser setting. To be asked for a location on every download, users can set Safari → Settings → General → *File download location* to **Ask for each download**, or turn on **Always ask you where to save files** in Firefox's settings. Calf's download then opens the system save panel; `onResult` cannot tell whether the user kept the download.
 
-If the source cannot be read or written, the failure is reported as described above. On Android the save sheet returns either a new, empty document, which is then deleted, or an existing file the user chose to overwrite, which is left as it was.
+If the source cannot be read or written, the failure is reported as described above. On Android the save sheet returns either a new, empty document, which is then deleted, or an existing file the user chose to overwrite. That file is untouched when the save fails before writing starts, for example because the source cannot be read; a failure while writing can leave it partly written, as with any in-place overwrite.
 
 > **Android process death:** the save dialog runs in another app, so Android may kill yours while it is open. A `KmpFile` source is restored when the result arrives; a `ByteArray` source is not, because it can be larger than the saved instance state allows. In that case saving fails. Save from a `KmpFile` when that matters.
 
