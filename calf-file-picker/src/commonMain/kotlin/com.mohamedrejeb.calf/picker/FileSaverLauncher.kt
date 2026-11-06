@@ -8,15 +8,40 @@ import com.mohamedrejeb.calf.io.KmpFile
 /**
  * Remembers a [FileSaverLauncher] that can save a file to a user-chosen location.
  *
+ * Every save ends with exactly one [onResult] call. Failures are reported through [onError] first:
+ * no app on the device can save files, the source could not be read, or the chosen file could not
+ * be written. [onResult] then receives `null`. On the web, a browser without a save dialog
+ * downloads the file instead, and [onResult] receives the downloaded file.
+ *
  * @param settings Dialog settings (title, initial directory, etc.).
- * @param onResult Called with the saved [KmpFile], or `null` if the user cancelled.
+ * @param onError Called before [onResult] when saving fails. Cancelling the dialog is not a failure.
+ * @param onResult Called with the saved [KmpFile], or `null` if the user cancelled or saving failed.
  */
 @ExperimentalCalfApi
 @Composable
 expect fun rememberFileSaverLauncher(
     settings: FilePickerSettings = defaultFilePickerSettings(),
+    onError: (FilePickerException) -> Unit,
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher
+
+/**
+ * Remembers a [FileSaverLauncher] that can save a file to a user-chosen location. A failure is
+ * reported as `null`, like a cancellation; use the overload with `onError` to tell them apart.
+ *
+ * @param settings Dialog settings (title, initial directory, etc.).
+ * @param onResult Called with the saved [KmpFile], or `null` if the user cancelled or saving failed.
+ */
+@ExperimentalCalfApi
+@Composable
+fun rememberFileSaverLauncher(
+    settings: FilePickerSettings = defaultFilePickerSettings(),
+    onResult: (KmpFile?) -> Unit,
+): FileSaverLauncher = rememberFileSaverLauncher(
+    settings = settings,
+    onError = {},
+    onResult = onResult,
+)
 
 /**
  * Launcher for saving a file. Call [launch] with the bytes or a [KmpFile] and file name

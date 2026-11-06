@@ -21,15 +21,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.io.KmpFile
+import com.mohamedrejeb.calf.io.createBookmark
+import com.mohamedrejeb.calf.io.fromBookmark
+import com.mohamedrejeb.calf.io.fromUriString
+import com.mohamedrejeb.calf.io.releaseBookmark
 import com.mohamedrejeb.calf.io.getName
+import com.mohamedrejeb.calf.io.getMimeType
 import com.mohamedrejeb.calf.io.getPath
+import com.mohamedrejeb.calf.io.getSize
+import com.mohamedrejeb.calf.io.toUriString
 import com.mohamedrejeb.calf.io.source
+import com.mohamedrejeb.calf.picker.FilePickerException
 import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.FilePickerSettings
@@ -72,21 +81,39 @@ private data class PickedFileInfo(
     val file: KmpFile,
     val name: String,
     val path: String,
+    val details: String,
     val streamingSummary: String,
 )
 
 @Composable
 fun FilePickerScreen(navigateBack: () -> Unit) {
     var pickedFiles by remember { mutableStateOf<List<PickedFileInfo>>(emptyList()) }
+    var pickError by remember { mutableStateOf<String?>(null) }
     var isMultiple by remember { mutableStateOf(false) }
     var dialogTitle by remember { mutableStateOf("Pick a file") }
-    var initialDirectory by remember { mutableStateOf<String?>(null) }
+    // Kept as a bookmark, which keeps the access to the folder, or as its URI where it cannot be
+    // bookmarked. Saved instance state survives process death; store the bookmark in preferences
+    // to keep the folder across app restarts.
+    var initialDirectoryBookmark by rememberSaveable { mutableStateOf<String?>(null) }
+    var initialDirectoryUri by rememberSaveable { mutableStateOf<String?>(null) }
+    val initialDirectory = remember(initialDirectoryBookmark, initialDirectoryUri) {
+        initialDirectoryBookmark?.let { KmpFile.fromBookmark(it) }
+            ?: initialDirectoryUri?.let { KmpFile.fromUriString(it) }
+    }
+    val setInitialDirectory: (KmpFile?) -> Unit = { dir ->
+        initialDirectory?.releaseBookmark()
+        initialDirectoryBookmark = dir?.createBookmark()
+        initialDirectoryUri = dir?.toUriString()
+    }
     var selectedTypeIndex by remember { mutableStateOf(0) }
 
     val selectedFileType = fileTypeOptions[selectedTypeIndex].type
 
     val scope = rememberCoroutineScope()
     var streamingJob: Job? by remember { mutableStateOf(null) }
+
+    // Reported before onResult, which still receives the files that could be read.
+    val onPickError: (FilePickerException) -> Unit = { error -> pickError = error.message }
 
     val onFilesPicked: (List<KmpFile>) -> Unit = { files ->
         pickedFiles = files.map { file -> file.toPickedFileInfo(STREAMING_IN_PROGRESS) }
@@ -103,9 +130,10 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         pickedFiles = files.map { file -> file.toPickedFileInfo(DIRECTORY_NOT_STREAMED) }
     }
 
+    // A picked folder is handed over as is; each platform opens the dialog in it in its own way.
     val settings = rememberFilePickerSettings(
-        title = dialogTitle,
         initialDirectory = initialDirectory,
+        title = dialogTitle,
         imageRepresentationMode = ImageRepresentationMode.Current,
     )
 
@@ -113,6 +141,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         type = selectedFileType,
         selectionMode = FilePickerSelectionMode.Single,
         settings = settings,
+        onError = onPickError,
         onResult = onFilesPicked,
     )
 
@@ -120,6 +149,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         type = selectedFileType,
         selectionMode = FilePickerSelectionMode.Multiple,
         settings = settings,
+        onError = onPickError,
         onResult = onFilesPicked,
     )
 
@@ -127,6 +157,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         type = FilePickerFileType.Folder,
         selectionMode = FilePickerSelectionMode.Single,
         settings = FilePickerSettings(title = "Pick a directory"),
+        onError = onPickError,
         onResult = onDirectoryPicked,
     )
 
@@ -137,7 +168,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
         onResult = { files ->
             val dir = files.firstOrNull()
             if (dir != null) {
-                initialDirectory = dir.getPath()
+                setInitialDirectory(dir)
             }
         },
     )
@@ -181,7 +212,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = initialDirectory ?: "System default",
+                text = initialDirectory?.let { it.getPath() ?: it.toUriString() } ?: "System default",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -195,7 +226,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
                 }
 
                 if (initialDirectory != null) {
-                    TextButton(onClick = { initialDirectory = null }) {
+                    TextButton(onClick = { setInitialDirectory(null) }) {
                         Text("Reset")
                     }
                 }
@@ -247,6 +278,7 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             // Action buttons
             AdaptiveButton(
                 onClick = {
+                    pickError = null
                     if (isMultiple) {
                         multiplePickerLauncher.launch()
                     } else {
@@ -260,7 +292,10 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             AdaptiveButton(
-                onClick = { directoryPickerLauncher.launch() },
+                onClick = {
+                    pickError = null
+                    directoryPickerLauncher.launch()
+                },
                 enabled = currentPlatform != Platform.Web,
             ) {
                 Text(
@@ -286,6 +321,14 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurface,
             )
 
+            pickError?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             pickedFiles.forEach { fileInfo ->
@@ -296,6 +339,11 @@ fun FilePickerScreen(navigateBack: () -> Unit) {
                     )
                     Text(
                         text = fileInfo.path,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = fileInfo.details,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -329,9 +377,17 @@ private fun KmpFile.toPickedFileInfo(streamingSummary: String): PickedFileInfo =
     PickedFileInfo(
         file = this,
         name = getName().orEmpty(),
-        path = getPath() ?: "Unknown path",
+        // Picked files on Android are content URIs, which have no file system path.
+        path = getPath() ?: toUriString() ?: "No path",
+        details = describeMetadata(),
         streamingSummary = streamingSummary,
     )
+
+private fun KmpFile.describeMetadata(): String {
+    val size = getSize()?.let { "$it bytes" } ?: "Unknown size"
+    val mimeType = getMimeType() ?: "unknown type"
+    return "$size · $mimeType"
+}
 
 private fun RawSource.countBytes(): Long {
     val chunk = Buffer()

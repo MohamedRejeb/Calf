@@ -45,6 +45,22 @@ Button(
 }
 ```
 
+## Error Handling
+
+Pass `onError` to observe failures: no app on the device can pick files, the dialog could not be shown (for example, the Desktop native library failed to load), or picked files could not be read. Cancelling is not a failure; `onResult` receives an empty list.
+
+```kotlin
+val pickerLauncher = rememberFilePickerLauncher(
+    type = FilePickerFileType.Pdf,
+    onError = { error: FilePickerException -> showMessage("Could not pick: ${error.message}") },
+    onResult = { files -> /* ... */ },
+)
+```
+
+Every launch ends with exactly one `onResult` call, so a loading state can always be cleared there. When picking fails, `onError` is called first and `onResult` then receives the files that could be read: an empty list when none could, or the others when only some failed. Without `onError`, failures are not reported, but `onResult` still ends the launch.
+
+> **Migration from 0.14.x:** source code that calls `rememberFilePickerLauncher` or `rememberFileSaverLauncher` compiles unchanged, but a library *compiled* against 0.14.x that calls them must be rebuilt against this version.
+
 ## Settings
 
 Use `FilePickerSettings` to customize the dialog behavior:
@@ -78,8 +94,38 @@ val pickerLauncher = rememberFilePickerLauncher(
 Common properties available on all platforms:
 
 - `title` - Dialog window title
-- `initialDirectory` - Directory to open the dialog in
+- `initialDirectory` - Directory to open the dialog in (see [Opening in a picked folder](#opening-in-a-picked-folder))
+
+> **Migration from 0.14.x:** `initialDirectory` now also accepts a `KmpFile`, so a literal `initialDirectory = null` matches both overloads and no longer compiles. Leave the argument out instead; `null` is its default.
 - `imageRepresentationMode` - Controls how iOS returns image assets (see [iOS Image Representation](#ios-image-representation))
+
+### Opening in a picked folder
+
+To open the dialog in a folder the user picked earlier, pass the folder's `KmpFile` as `initialDirectory`. Calf hands it to each platform in the form it expects: its path on Desktop, its URI on Android (a picked folder is a `content:` tree URI with no path), and its URL on iOS:
+
+```kotlin
+var folder by remember { mutableStateOf<KmpFile?>(null) }
+
+val folderPicker = rememberFilePickerLauncher(
+    type = FilePickerFileType.Folder,
+    onResult = { files -> folder = files.firstOrNull() },
+)
+
+val filePicker = rememberFilePickerLauncher(
+    type = FilePickerFileType.Pdf,
+    settings = rememberFilePickerSettings(initialDirectory = folder),
+    onResult = { files -> /* ... */ },
+)
+```
+
+| Platform | Where `initialDirectory` applies |
+|---|---|
+| Android | The folder picker (`OpenDocumentTree`) |
+| iOS | The document picker and the save dialog (`directoryURL`); the photo picker has no folders |
+| Desktop | Every dialog |
+| Web | Ignored, browsers cannot open a dialog in a given folder |
+
+The `String` overload is still available, for example for a path typed on Desktop.
 
 Desktop adds an additional property:
 
@@ -261,11 +307,66 @@ val exists = file.exists()
 val name = file.getName()
 ```
 
-* Get the file path using the `getPath` extension function:
+* Get the file system path using the `getPath` extension function. It is a decoded path you can open directly, or `null` when the file has no path:
 
 ```kotlin
 val path = file.getPath()
 ```
+
+| Platform | `getPath()` |
+|---|---|
+| Android | The path of a `file:` URI. `null` for the `content:` URIs the system pickers return; read those with `readByteArray()` or `source()`. |
+| iOS | The path of the file the app can read. For a picked file that is the app's copy, for example `…/tmp/calf-file-picker/…/Report Final.pdf`, which keeps the picked file's name. |
+| Desktop | The path of the file. |
+| Web | Always `null`, browsers do not expose paths. |
+
+* Get the file URI using the `toUriString` extension function, for example to store a reference to the file or to pass a picked folder as the Android `initialDirectory`:
+
+```kotlin
+val uri = file.toUriString() // content://… on Android, file:///… on iOS and Desktop, null on Web
+```
+
+* Restore a file from a string returned by `toUriString()`, for example one you stored to reopen a folder later. An absolute path works too:
+
+```kotlin
+val folder: KmpFile? = KmpFile.fromUriString(savedUri) // null if it is not a file reference, always null on Web
+```
+
+> `fromUriString` restores the reference, not access to it. To keep a picked file or folder readable after the app restarts, store a bookmark instead.
+
+* Keep access to a picked file or folder across app restarts with `createBookmark`, and reopen it with `KmpFile.fromBookmark`:
+
+```kotlin
+// After picking a folder
+val bookmark: String? = folder.createBookmark()
+preferences.putString("exportFolder", bookmark)
+
+// After the app restarts
+val folder: KmpFile? = preferences.getString("exportFolder")?.let { KmpFile.fromBookmark(it) }
+
+// When the folder is no longer needed
+folder?.releaseBookmark()
+```
+
+| Platform | What a bookmark keeps |
+|---|---|
+| Android | A persisted permission for the picked `content:` URI. Items picked with the document or folder picker support it; `createBookmark` returns `null` for a URI whose grant is not persistable. Android limits how many persisted permissions an app holds, so release the ones you no longer need. |
+| iOS | A bookmark of the picked location. The reopened file holds its security-scoped access until `releaseBookmark`, so a folder and the files inside it can be used through its `url` or path. Files reopened from the same location share one access, which ends when the last of them is released, so reopening a bookmark again does not add up. Picked files are copies the app owns, so bookmarks matter mostly for folders. |
+| Desktop | The path. Sandboxed macOS apps would need security-scoped bookmarks, which Calf does not create. |
+| Web | Not supported, `createBookmark` returns `null`. |
+
+`fromBookmark` returns `null` when access was lost: the permission was released or revoked, or the item was deleted. A bookmark can go stale when the item is moved or renamed, so create a new one from the reopened file and store it each time.
+
+* Get the size in bytes and the MIME type using the `getSize` and `getMimeType` extension functions. Both return `null` when the value is unknown, and `getSize` is `null` for a folder:
+
+```kotlin
+val size: Long? = file.getSize()
+val mimeType: String? = file.getMimeType() // e.g. "application/pdf"
+```
+
+On Android both come from the content provider, with the file extension as a fallback for the type. iOS and Desktop use the file system and the extension, and the web uses what the browser reports.
+
+> **Migration from 0.14.x:** `getPath()` used to return the URI string on Android (`content://…`) and iOS (`file:///…%20…`), and the file name on Web. Use `toUriString()` where you relied on the URI.
 
 * Check if the file is a directory using the `isDirectory` extension function:
 
@@ -286,7 +387,7 @@ fun SaveFileExample() {
     val saverLauncher = rememberFileSaverLauncher(
         onResult = { file ->
             // file is the saved KmpFile, or null if cancelled
-            // On web, onResult is not called (downloads are fire-and-forget)
+            // In Safari and Firefox, which only download, it is the downloaded file
         }
     )
 
@@ -300,6 +401,19 @@ fun SaveFileExample() {
         Text("Save File")
     }
 }
+```
+
+Like the picker, every save ends with exactly one `onResult` call. Pass `onError` to tell a failure apart from a cancellation: it is called first, with why the save failed (no app can save files, the source could not be read, or the chosen file could not be written), and `onResult` then receives `null`. Without `onError`, a failure looks like a cancellation.
+
+```kotlin
+var failure by remember { mutableStateOf<FilePickerException?>(null) }
+val saverLauncher = rememberFileSaverLauncher(
+    onError = { error -> failure = error },
+    onResult = { file ->
+        // file: the saved file, or null if the user cancelled or saving failed (failure != null)
+        failure = null
+    },
+)
 ```
 
 ### Saving from a KmpFile
@@ -320,10 +434,16 @@ This avoids loading the entire file content into memory. On each platform, the f
 
 | Platform | Mechanism |
 |----------|-----------|
-| Android | System document creation dialog (`CreateDocument`) |
-| iOS | Export dialog (`UIDocumentPickerViewController`) |
+| Android | System document creation dialog (`CreateDocument`), typed after `extension` (for example `application/pdf`). Calf writes the source into the created document. |
+| iOS | Export dialog (`UIDocumentPickerViewController`) that saves a copy under `baseName.extension`. The source is staged in the app's temporary directory and never moved; the staged copy is removed when the dialog closes. |
 | Desktop | Native save dialog via rfd |
-| Web | Browser download — `onResult` is not called since downloads are fire-and-forget |
+| Web | The browser's save dialog (`showSaveFilePicker`) in Chrome, Edge and other Chromium browsers, including Chrome on Android 132 and later; `onResult` receives the saved file, or `null` if the user cancels. Safari and Firefox have no save dialog API, so the file is downloaded where the browser's settings say, as it is when a browser refuses to show its dialog; `onResult` then receives the downloaded file once the download is handed to the browser. |
+
+> **Safari and Firefox:** a web page cannot open a save dialog in these browsers; where a download goes is the user's browser setting. To be asked for a location on every download, users can set Safari → Settings → General → *File download location* to **Ask for each download**, or turn on **Always ask you where to save files** in Firefox's settings. Calf's download then opens the system save panel; `onResult` cannot tell whether the user kept the download.
+
+If the source cannot be read or written, the failure is reported as described above. On Android the save sheet returns either a new, empty document, which is then deleted, or an existing file the user chose to overwrite. That file is untouched when the save fails before writing starts, for example because the source cannot be read; a failure while writing can leave it partly written, as with any in-place overwrite.
+
+> **Android process death:** the save dialog runs in another app, so Android may kill yours while it is open. A `KmpFile` source is restored when the result arrives; a `ByteArray` source is not, because it can be larger than the saved instance state allows. In that case saving fails. Save from a `KmpFile` when that matters.
 
 > `rememberFileSaverLauncher` is annotated with `@ExperimentalCalfApi`.
 
@@ -348,8 +468,8 @@ val originalNsUrl: NSURL = kmpFile.originalUrl
 
 > **Note:** On iOS, file picker URLs are security-scoped and may become inaccessible shortly after
 > the picker callback returns. `url` points to a persistent copy in the app's temp directory that
-> remains readable. `originalUrl` holds the original picker URL — use it only for metadata
-> (e.g., the original file name or path via `getName()` / `getPath()`).
+> remains readable and keeps the picked file's name; `getPath()` returns its path. `originalUrl` holds the original picker URL — use it only for metadata
+> (e.g., the original file name or URI via `getName()` / `toUriString()`).
 >
 > **Migration from 0.10.x:** `KmpFile.url` on iOS previously referred to the original picker URL.
 > It now points to the persistent copy. If you were using `url` for the original file path,
@@ -384,7 +504,7 @@ suspend fun importFile(file: KmpFile) {
 
 | Platform | How the file is opened |
 |---|---|
-| Android | `ContentResolver.openInputStream`, so content URIs from the Storage Access Framework, Google Drive or Downloads stream directly. `getPath()` returns the URI string on Android, not a file system path, so use `source()` rather than opening the path yourself. |
+| Android | `ContentResolver.openInputStream`, so content URIs from the Storage Access Framework, Google Drive or Downloads stream directly. `getPath()` is `null` for these URIs, so use `source()` rather than opening a path yourself. |
 | iOS, Desktop | From the file system through `SystemFileSystem`. |
 | JS, Wasm | Browsers offer no synchronous file reads, so the whole file is read into memory first and served from a `Buffer`. |
 
