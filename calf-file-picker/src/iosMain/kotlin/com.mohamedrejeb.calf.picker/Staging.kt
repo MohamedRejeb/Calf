@@ -29,30 +29,33 @@ private fun stagingUrl(area: String, fileName: String): NSURL {
 }
 
 /**
- * Copies a picked file while the picker still grants access to it. The copy keeps the picked
- * file's name, so `KmpFile.url` is readable for as long as the app needs it and its path still
- * ends in the real name.
+ * Stages a picked file while the picker still grants access to it. The staged file keeps the
+ * picked file's name, so `KmpFile.url` is readable for as long as the app needs it and its path
+ * still ends in the real name.
  *
- * @return The copy, or `null` if [source] could not be copied.
+ * @param isAppsOwnCopy Whether [source] is a copy the picker already made for the app, as a
+ * document picker opened with `asCopy` does. That copy is moved, so the file is not stored twice.
+ * @return The staged file, or `null` if [source] could not be staged.
  */
-internal fun stagePickedFile(source: NSURL): NSURL? {
+internal fun stagePickedFile(source: NSURL, isAppsOwnCopy: Boolean = false): NSURL? {
     val fileName = source.lastPathComponent ?: return null
-    return copyToStaging(source, stagingUrl(PICKER_STAGING_AREA, fileName))
+    val destination = stagingUrl(PICKER_STAGING_AREA, fileName)
+    return if (isAppsOwnCopy) moveToStaging(source, destination) else copyToStaging(source, destination)
 }
 
 /** The picked files that could be staged, and the failure to report for those that could not. */
 internal class StagedPick(val files: List<KmpFile>, val failure: FilePickerException?)
 
 /** Stages each picked URL; see [stagePickedFile]. */
-internal fun stagePickedUrls(urls: List<NSURL>): StagedPick {
-    val files = urls.mapNotNull { it.toStagedKmpFile() }
+internal fun stagePickedUrls(urls: List<NSURL>, isAppsOwnCopy: Boolean = false): StagedPick {
+    val files = urls.mapNotNull { it.toStagedKmpFile(isAppsOwnCopy) }
     return StagedPick(files, partialPickFailure(failed = urls.size - files.size, picked = urls.size))
 }
 
 /** A [KmpFile] that reads from a staged copy of this picked URL and reports the URL as its origin. */
 @OptIn(InternalCalfApi::class)
-internal fun NSURL.toStagedKmpFile(): KmpFile? =
-    stagePickedFile(this)?.let { copy -> KmpFile(url = copy, originalUrl = this) }
+internal fun NSURL.toStagedKmpFile(isAppsOwnCopy: Boolean = false): KmpFile? =
+    stagePickedFile(this, isAppsOwnCopy)?.let { staged -> KmpFile(url = staged, originalUrl = this) }
 
 /**
  * Writes [data] to a fresh export staging directory as [fileName]. The export picker shows, and
@@ -83,6 +86,13 @@ private fun copyToStaging(source: NSURL, destination: NSURL): NSURL? {
     if (copied) return destination
     removeStaging(destination)
     return null
+}
+
+/** Moves [source] into staging, or copies it when it cannot be moved, e.g. from another volume. */
+@OptIn(ExperimentalForeignApi::class)
+private fun moveToStaging(source: NSURL, destination: NSURL): NSURL? {
+    if (NSFileManager.defaultManager.moveItemAtURL(source, toURL = destination, error = null)) return destination
+    return copyToStaging(source, destination)
 }
 
 /** Removes a staged file together with its private directory. */
