@@ -353,7 +353,7 @@ folder?.releaseBookmark()
 
 `fromBookmark` returns `null` when access was lost: the permission was released or revoked, or the item was deleted. A bookmark can go stale when the item is moved or renamed, so create a new one from the reopened file and store it each time.
 
-* Get the size in bytes and the MIME type using the `getSize` and `getMimeType` extension functions. Both return `null` when the value is unknown:
+* Get the size in bytes and the MIME type using the `getSize` and `getMimeType` extension functions. Both return `null` when the value is unknown, and `getSize` is `null` for a folder:
 
 ```kotlin
 val size: Long? = file.getSize()
@@ -433,7 +433,7 @@ This avoids loading the entire file content into memory. On each platform, the f
 
 > **Safari and Firefox:** a web page cannot open a save dialog in these browsers; where a download goes is the user's browser setting. To be asked for a location on every download, users can set Safari → Settings → General → *File download location* to **Ask for each download**, or turn on **Always ask you where to save files** in Firefox's settings. Calf's download then opens the system save panel, though `onResult` is still not called.
 
-If the source cannot be read or written, the failure is reported as described above, and on Android the empty document is deleted.
+If the source cannot be read or written, the failure is reported as described above. On Android the save sheet returns either a new, empty document, which is then deleted, or an existing file the user chose to overwrite, which is left as it was.
 
 > **Android process death:** the save dialog runs in another app, so Android may kill yours while it is open. A `KmpFile` source is restored when the result arrives; a `ByteArray` source is not, because it can be larger than the saved instance state allows. In that case saving fails. Save from a `KmpFile` when that matters.
 
