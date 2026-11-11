@@ -378,7 +378,7 @@ kinds and priorities, shown without the tab bar for this reason.
 | `badge` | Both: a Material badge, the native `badgeValue` on iOS |
 | `iosTitle`, `iosImage`, `iosSelectedImage` | Native `UITabBarItem` |
 
-`AdaptiveTabDisplay` takes `iosConfiguration` (`UIKitTabBarConfiguration`: item tint colors, translucency), `iosSidebarAdaptable`, and on Material `materialLayoutType` (force a bottom bar, rail or drawer) and `materialColors`.
+`AdaptiveTabDisplay` takes `iosConfiguration` (`UIKitTabBarConfiguration`: item colors, title font, background and translucency; [what each iOS version takes](ui/adaptive-navigation-bar.md#per-state-colors-title-font-and-background)), `iosSidebarAdaptable`, and on Material `materialLayoutType` (force a bottom bar, rail or drawer) and `materialColors`.
 
 ## State, ViewModels and persistence
 

@@ -92,14 +92,15 @@ AdaptiveNavigationBar(
 | Property              | Description                                                                                                |
 |-----------------------|------------------------------------------------------------------------------------------------------------|
 | `selectedItemColor`   | Tint color for selected tab bar items (icon + label). Maps to `UITabBar.tintColor`. Default: iOS system blue. |
-| `unselectedItemColor` | Color for unselected tab bar items (icon + label). Maps to `UITabBar.unselectedItemTintColor`. Note: Liquid Glass (iOS 26+) ignores this property; use the per-state colors below instead. |
+| `unselectedItemColor` | Color for unselected tab bar items (icon + label). Maps to `UITabBar.unselectedItemTintColor`. Liquid Glass (iOS 26+) ignores it. |
 | `isTranslucent`       | Whether the tab bar is translucent. Default: `true`.                                                       |
 
 ### Per-state colors, title font and background
 
 For finer control, set the per-state colors, the title font and the background color. They are
 applied through `UITabBarAppearance` and take precedence over the tint colors for the state they
-cover:
+cover. The same configuration styles the tab bar of the [bar host](#inside-the-bar-host-ios) and
+of `AdaptiveTabDisplay` in `calf-navigation`:
 
 ```kotlin
 UIKitTabBarConfiguration(
@@ -120,6 +121,19 @@ UIKitTabBarConfiguration(
 | `unselectedIconColor`  | Icon color of unselected items.                                                       |
 | `unselectedTitleColor` | Title color of unselected items.                                                      |
 | `titleFont`            | Font of the item titles: `UIKitFont.System(size, weight)` or `UIKitFont.Named(postScriptName, size)`. `null` keeps the system font. |
+
+What each bar takes, as seen on the iOS 18.5, 26.2 and 27.1 simulators:
+
+| Property                                      | iOS 18 | Liquid Glass (iOS 26+) |
+|-----------------------------------------------|--------|------------------------|
+| `selectedIconColor`, `selectedTitleColor`     | Yes    | Yes                    |
+| `unselectedIconColor`, `unselectedTitleColor` | Yes    | Ignored                |
+| `titleFont`                                   | Yes    | Yes                    |
+| `backgroundColor`                             | Yes    | Ignored                |
+
+Liquid Glass draws its own bar, so the unselected colors and the background do not reach it,
+whichever property sets them. In the vertical bar of an iPhone Duo the items show their images
+only, and the selected one keeps the system color.
 
 !!! note
     `UIKitFont.Named` needs a font UIKit knows: bundle it through the `UIAppFonts` Info.plist key
@@ -155,11 +169,12 @@ UIKitUITabBarItem(
 
 ```kotlin
 val homeIcon = painterResource(Res.drawable.ic_home)
-val avatar = rememberAsyncImagePainter(user.avatarUrl)
 
 UIKitUITabBarItem(title = "Home", image = UIKitImage.Painter(homeIcon))
-UIKitUITabBarItem(
-    title = "Profile",
-    image = UIKitImage.Painter(avatar, renderingMode = UIKitImageRenderingMode.Original),
-)
 ```
+
+!!! note
+    A painter is drawn once, when the item is set, and stretched to its `size`. An image that
+    loads later, like an image loader's painter, is not drawn again: give the item its image once
+    it has loaded, for example as a `UIKitImage.Bitmap` with
+    `renderingMode = UIKitImageRenderingMode.Original`.

@@ -55,6 +55,9 @@ and shared elements in Compose; the bar host moves one set of Calf bars into the
 - **A tab bar inside an outer stack shares the strip badly** (iOS 27.1): UIKit sizes the items as if the tab bar
   were not there. Keep to three image items per side on a screen that shows the tab bar, or hide it with
   `tabBarShown = false` on a screen that needs more.
+- **Tab bar colors stay out of the strip** (iOS 27.1): there the items show their images only and the selected
+  one is drawn in the system color, whatever `UIKitTabBarConfiguration` sets. Painter and vector images move
+  with the bar.
 - **Start a list-detail stack at the list.** Entries below the list are shown inside the narrow list column on
   iOS.
 - **Build with Xcode 27.1 or later** to run on a Duo; the fold values are read through a runtime lookup, so the

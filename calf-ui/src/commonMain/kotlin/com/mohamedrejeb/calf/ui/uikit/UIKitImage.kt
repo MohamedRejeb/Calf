@@ -69,7 +69,11 @@ sealed interface UIKitImage {
      * On iOS, the painter is drawn offscreen at [size] times the screen density, so it stays
      * sharp on any display scale. Everything a painter can draw is preserved: even-odd fills,
      * strokes, group transforms, clip paths, alpha, bitmaps. Use this for images loaded with
-     * `painterResource(...)`, `rememberVectorPainter(...)` or an image loading library.
+     * `painterResource(...)` or `rememberVectorPainter(...)`.
+     *
+     * The painter is drawn once, when the item it belongs to is set, and stretched to [size]. A
+     * painter whose content arrives later, like an image loader's, is not drawn again: give the
+     * item its image once it has loaded, as a [Bitmap] or as another painter.
      *
      * The painter is compared by reference, so keep it stable across recompositions (the
      * `painterResource` / `rememberVectorPainter` results already are).
