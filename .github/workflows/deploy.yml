@@ -140,7 +140,7 @@ jobs:
         NEW_ROW="| ${{ steps.versions.outputs.kotlin }}         | ${{ steps.versions.outputs.compose }}          | ${{ inputs.version }}       |"
         HEADER="| Kotlin version | Compose version | Calf version |"
 
-        for file in README.md docs/installation.md docs/ui.md; do
+        for file in README.md docs/index.md docs/installation.md docs/ui.md; do
           # Insert new row after the table header separator line
           sed -i "/^|----------------|-----------------|--------------|$/a\\
         $NEW_ROW" "$file"
