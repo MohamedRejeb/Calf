@@ -40,7 +40,7 @@ fun Screen.nativeImplementation(platform: Platform, isLiquidGlass: Boolean): Str
             Platform.IOS -> "UIDocumentPickerViewController"
             Platform.Android -> "ActivityResultContracts.CreateDocument"
             Platform.Desktop -> "Native save dialog"
-            Platform.Web -> "Browser download"
+            Platform.Web -> "Browser save dialog or download"
         }
         Screen.Nav3ListDetail -> "Navigation 3 NavDisplay"
         Screen.NavigationBar -> if (ios) "UITabBar" else "Material 3 NavigationBar"
