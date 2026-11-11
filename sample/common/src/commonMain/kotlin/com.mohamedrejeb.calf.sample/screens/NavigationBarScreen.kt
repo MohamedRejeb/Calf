@@ -57,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
@@ -65,7 +66,9 @@ import com.mohamedrejeb.calf.ui.navigation.AdaptiveNavigationBar
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveScaffold
 import com.mohamedrejeb.calf.ui.navigation.AdaptiveTopBar
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
+import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
+import com.mohamedrejeb.calf.ui.uikit.UIKitFont
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
 import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
@@ -836,6 +839,11 @@ fun NavigationBarScreen(
         Icons.Filled.Favorite,
         Icons.Filled.Person
     )
+    // Painters keep everything an ImageVector can draw (strokes, even-odd fills, groups); the same
+    // works for painterResource(...) and image loaders.
+    val profilePainter = rememberVectorPainter(Icons.Outlined.Person)
+    val profileSelectedPainter = rememberVectorPainter(Icons.Filled.Person)
+    val primaryColor = MaterialTheme.colorScheme.primary
 
     AdaptiveScaffold(
         topBar = {
@@ -898,11 +906,17 @@ fun NavigationBarScreen(
                     ),
                     UIKitUITabBarItem(
                         title = "Profile",
-                        image = UIKitImage.Vector(Icons.Rounded.Person),
+                        image = UIKitImage.Painter(profilePainter),
+                        selectedImage = UIKitImage.Painter(profileSelectedPainter),
                     ),
                 ),
                 iosSelectedIndex = selectedIndex,
                 iosOnItemSelected = { selectedIndex = it },
+                iosConfiguration = UIKitTabBarConfiguration(
+                    selectedIconColor = primaryColor,
+                    selectedTitleColor = primaryColor,
+                    titleFont = UIKitFont.System(size = 11f, weight = FontWeight.SemiBold),
+                ),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 items.forEachIndexed { index, item ->
