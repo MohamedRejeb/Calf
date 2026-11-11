@@ -8,6 +8,12 @@ import org.w3c.files.File
 internal actual fun isSaveFilePickerSupported(): Boolean =
     js("typeof window !== 'undefined' && typeof window.showSaveFilePicker === 'function'")
 
+internal actual fun revokeObjectUrlLater(url: String): Unit =
+    revokeObjectUrlAfter(url, OBJECT_URL_REVOKE_DELAY_MS)
+
+private fun revokeObjectUrlAfter(url: String, delayMs: Int): Unit =
+    js("{ setTimeout(function () { URL.revokeObjectURL(url); }, delayMs); }")
+
 internal actual fun showSaveFilePicker(
     blob: Blob,
     suggestedName: String,

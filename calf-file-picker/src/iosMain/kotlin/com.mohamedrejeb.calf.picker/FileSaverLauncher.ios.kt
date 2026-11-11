@@ -62,7 +62,7 @@ actual fun rememberFileSaverLauncher(
         scope.launch {
             val stagedUrl = withContext(Dispatchers.IO) { stage() }
             if (stagedUrl == null) {
-                currentOnError(FilePickerException("Could not prepare the file to save"))
+                failSave(FilePickerException("Could not prepare the file to save"), currentOnError, currentOnResult)
                 return@launch
             }
             pendingTempUrls.add(stagedUrl)

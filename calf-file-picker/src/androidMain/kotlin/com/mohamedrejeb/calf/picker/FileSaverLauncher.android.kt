@@ -7,8 +7,11 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.webkit.MimeTypeMap
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.InputStream
+import java.io.OutputStream
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -21,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import com.mohamedrejeb.calf.core.ExperimentalCalfApi
 import com.mohamedrejeb.calf.io.KmpFile
+import com.mohamedrejeb.calf.io.getSize
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,7 +35,8 @@ import kotlinx.coroutines.withContext
  *
  * A [KmpFile] source survives process death while the sheet is open; a `ByteArray` source does
  * not, because it can be larger than the saved instance state allows. If the source is lost, or
- * cannot be written, the created document is deleted and `onError` is called.
+ * cannot be written, `onError` is called and a newly created, empty document is deleted; an
+ * existing document the user chose to overwrite is left as it was.
  */
 @ExperimentalCalfApi
 @Composable
@@ -43,7 +48,7 @@ actual fun rememberFileSaverLauncher(
     val scope = rememberCoroutineScope()
     val currentOnResult by rememberUpdatedState(onResult)
     val currentOnError by rememberUpdatedState(onError)
-    val contentResolver = LocalContext.current.applicationContext.contentResolver
+    val context = LocalContext.current.applicationContext
 
     val pendingSource = rememberSaveable(saver = PendingSaveSource.Saver) { PendingSaveSource() }
 
@@ -57,8 +62,8 @@ actual fun rememberFileSaverLauncher(
             }
 
             scope.launch {
-                val failure = contentResolver.writeSaveSource(source, uri)
-                if (failure == null) currentOnResult(KmpFile(uri)) else currentOnError(failure)
+                val failure = context.writeSaveSource(source, uri)
+                if (failure == null) currentOnResult(KmpFile(uri)) else failSave(failure, currentOnError, currentOnResult)
             }
         },
     )
@@ -70,7 +75,7 @@ actual fun rememberFileSaverLauncher(
         } catch (e: ActivityNotFoundException) {
             // No app handles ACTION_CREATE_DOCUMENT, e.g. the documents app is disabled.
             pendingSource.take()
-            currentOnError(FilePickerException("No app on this device can save files", e))
+            failSave(FilePickerException("No app on this device can save files", e), currentOnError, currentOnResult)
         }
     }
 
@@ -87,17 +92,23 @@ actual fun rememberFileSaverLauncher(
 }
 
 /**
- * Writes [source] into the document the save sheet created at [destination].
+ * Writes [source] into [destination], the document the save sheet returned: a new, empty document,
+ * or an existing one the user chose to overwrite.
  *
- * @return `null` if the source was written; otherwise why not, and the empty document is deleted.
+ * @return `null` if the source was written; otherwise why not. An empty document is then deleted.
+ * A document with content is untouched when the failure comes before writing starts (the source
+ * is lost or unreadable, or the provider refuses to open it); a failure while writing can leave
+ * it partly written, as any in-place overwrite can.
  */
-private suspend fun ContentResolver.writeSaveSource(source: SaveSource?, destination: Uri): FilePickerException? =
+private suspend fun Context.writeSaveSource(source: SaveSource?, destination: Uri): FilePickerException? =
     withContext(Dispatchers.IO) {
+        // Unknown size counts as not empty: never delete or half-overwrite what might be the user's file.
+        val isEmpty = KmpFile(destination).getSize(this@writeSaveSource) == 0L
         val failure = if (source == null) {
             FilePickerException("The content to save was lost, likely because the app was restarted while the save dialog was open")
         } else {
             try {
-                write(source, destination)
+                contentResolver.write(source, destination, isEmpty)
                 null
             } catch (e: CancellationException) {
                 throw e
@@ -105,23 +116,37 @@ private suspend fun ContentResolver.writeSaveSource(source: SaveSource?, destina
                 FilePickerException("Could not write the saved file", e)
             }
         }
-        if (failure != null) deleteCreatedDocument(destination)
+        if (failure != null && isEmpty) contentResolver.deleteCreatedDocument(destination)
         failure
     }
 
-private fun ContentResolver.write(source: SaveSource, destination: Uri) {
-    val output = openOutputStream(destination, TRUNCATE_WRITE_MODE)
-        ?: throw FileNotFoundException("The provider gave no output stream for $destination")
-    output.use { outputStream ->
-        when (source) {
-            is SaveSource.Bytes -> outputStream.write(source.bytes)
-            is SaveSource.File -> {
-                val input = openInputStream(source.file.uri)
-                    ?: throw FileNotFoundException("The provider gave no input stream for ${source.file.uri}")
-                input.use { it.copyTo(outputStream) }
-            }
-        }
+/** Opens the source first, so a source that cannot be read never truncates the destination. */
+private fun ContentResolver.write(source: SaveSource, destination: Uri, isEmpty: Boolean) {
+    openSource(source).use { input ->
+        openDestination(destination, isEmpty).use { output -> input.copyTo(output) }
     }
+}
+
+private fun ContentResolver.openSource(source: SaveSource): InputStream = when (source) {
+    is SaveSource.Bytes -> ByteArrayInputStream(source.bytes)
+    is SaveSource.File -> openInputStream(source.file.uri)
+        ?: throw FileNotFoundException("The provider gave no input stream for ${source.file.uri}")
+}
+
+/**
+ * Opens with "wt", which truncates an existing document. Some providers only accept "w"; that is
+ * used for an empty document only, because on a longer one it would keep the old file's tail.
+ */
+private fun ContentResolver.openDestination(destination: Uri, isEmpty: Boolean): OutputStream {
+    val output = try {
+        openOutputStream(destination, TRUNCATE_WRITE_MODE)
+    } catch (e: Exception) {
+        // A provider refusing the mode throws one of these; anything else is a real failure.
+        val refusedMode = e is IllegalArgumentException || e is FileNotFoundException
+        if (!isEmpty || !refusedMode) throw e
+        openOutputStream(destination, WRITE_MODE)
+    }
+    return output ?: throw FileNotFoundException("The provider gave no output stream for $destination")
 }
 
 private fun ContentResolver.deleteCreatedDocument(document: Uri) {
@@ -147,6 +172,8 @@ private const val FALLBACK_MIME_TYPE = "application/octet-stream"
 
 /** Truncates a document that already has content, which some providers keep with plain "w". */
 private const val TRUNCATE_WRITE_MODE = "wt"
+
+private const val WRITE_MODE = "w"
 
 @ExperimentalCalfApi
 @Stable

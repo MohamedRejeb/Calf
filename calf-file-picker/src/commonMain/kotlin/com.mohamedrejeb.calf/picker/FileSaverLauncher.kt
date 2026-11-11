@@ -8,12 +8,14 @@ import com.mohamedrejeb.calf.io.KmpFile
 /**
  * Remembers a [FileSaverLauncher] that can save a file to a user-chosen location.
  *
- * Failures are reported through [onError], and [onResult] is not called for them: no app on the
- * device can save files, the source could not be read, or the chosen file could not be written.
+ * Every save ends with exactly one [onResult] call. Failures are reported through [onError] first:
+ * no app on the device can save files, the source could not be read, or the chosen file could not
+ * be written. [onResult] then receives `null`. On the web, a browser without a save dialog
+ * downloads the file instead, and [onResult] receives the downloaded file.
  *
  * @param settings Dialog settings (title, initial directory, etc.).
- * @param onError Called when saving fails. Cancelling the dialog is not a failure.
- * @param onResult Called with the saved [KmpFile], or `null` if the user cancelled.
+ * @param onError Called before [onResult] when saving fails. Cancelling the dialog is not a failure.
+ * @param onResult Called with the saved [KmpFile], or `null` if the user cancelled or saving failed.
  */
 @ExperimentalCalfApi
 @Composable
@@ -37,7 +39,7 @@ fun rememberFileSaverLauncher(
     onResult: (KmpFile?) -> Unit,
 ): FileSaverLauncher = rememberFileSaverLauncher(
     settings = settings,
-    onError = { onResult(null) },
+    onError = {},
     onResult = onResult,
 )
 

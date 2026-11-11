@@ -7,6 +7,7 @@ import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -43,6 +44,22 @@ class PickedFileStagingTest {
         removeStaging(source)
         removeStaging(first)
         removeStaging(second)
+    }
+
+    @Test
+    fun aCopyThePickerMadeForTheAppIsMovedRatherThanCopiedAgain() {
+        val pickersCopy = givenFile("Report Final.pdf")
+
+        val staged = assertNotNull(stagePickedFile(pickersCopy, isAppsOwnCopy = true))
+
+        assertEquals("Report Final.pdf", staged.lastPathComponent)
+        assertTrue(NSFileManager.defaultManager.fileExistsAtPath(assertNotNull(staged.path)))
+        assertFalse(
+            NSFileManager.defaultManager.fileExistsAtPath(assertNotNull(pickersCopy.path)),
+            "the picked file is not stored twice",
+        )
+        removeStaging(pickersCopy)
+        removeStaging(staged)
     }
 
     @Test

@@ -28,7 +28,11 @@ actual fun rememberFilePickerLauncher(
     initializeKmpFileContext(LocalContext.current.applicationContext)
 
     val currentOnError by rememberUpdatedState(onError)
-    val reportError: (FilePickerException) -> Unit = remember { { error -> currentOnError(error) } }
+    val currentOnResult by rememberUpdatedState(onResult)
+    // A launch that fails still ends with onResult, after onError.
+    val failLaunch: (FilePickerException) -> Unit = remember {
+        { error -> failPick(error, currentOnError, currentOnResult) }
+    }
 
     return when (selectionMode) {
         FilePickerSelectionMode.Single -> {
@@ -36,20 +40,20 @@ actual fun rememberFilePickerLauncher(
                 FilePickerFileType.Image, FilePickerFileType.Video, FilePickerFileType.ImageVideo ->
                     pickSingleVisualMedia(
                         type = type,
-                        onError = reportError,
+                        onError = failLaunch,
                         onResult = onResult,
                     )
                 FilePickerFileType.Folder ->
                     pickFolder(
                         type = type,
                         initialDirectory = settings.initialDirectory,
-                        onError = reportError,
+                        onError = failLaunch,
                         onResult = onResult,
                     )
                 else ->
                     pickSingleFile(
                         type = type,
-                        onError = reportError,
+                        onError = failLaunch,
                         onResult = onResult,
                     )
             }
@@ -60,21 +64,21 @@ actual fun rememberFilePickerLauncher(
                     pickMultipleVisualMedia(
                         type = type,
                         maxItems = selectionMode.maxItems,
-                        onError = reportError,
+                        onError = failLaunch,
                         onResult = onResult,
                     )
                 FilePickerFileType.Folder ->
                     pickFolder(
                         type = type,
                         initialDirectory = settings.initialDirectory,
-                        onError = reportError,
+                        onError = failLaunch,
                         onResult = onResult,
                     )
                 else ->
                     pickMultipleFiles(
                         type = type,
                         maxItems = selectionMode.maxItems,
-                        onError = reportError,
+                        onError = failLaunch,
                         onResult = onResult,
                     )
             }

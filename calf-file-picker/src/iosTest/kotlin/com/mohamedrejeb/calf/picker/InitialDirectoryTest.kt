@@ -33,4 +33,11 @@ class InitialDirectoryTest {
         assertNull(initialDirectoryUrl(null))
         assertNull(initialDirectoryUrl(""))
     }
+
+    /** Parsed like `KmpFile.fromUriString`: only absolute paths and `file:` URLs are folders. */
+    @Test
+    fun whatIsNotAFileReferenceGivesNoUrl() {
+        assertNull(initialDirectoryUrl("Calf Exports"))
+        assertNull(initialDirectoryUrl("https://example.com/Calf Exports"))
+    }
 }

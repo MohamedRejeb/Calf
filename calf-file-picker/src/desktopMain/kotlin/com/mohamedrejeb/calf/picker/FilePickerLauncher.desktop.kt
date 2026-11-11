@@ -15,6 +15,7 @@ import androidx.compose.ui.window.FrameWindowScope
 import com.mohamedrejeb.calf.io.KmpFile
 import com.mohamedrejeb.calf.picker.platform.PlatformFilePicker
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -125,6 +126,9 @@ private fun rememberFilePickerLauncherInternal(
     // Settings update acquires the lock to safely destroy/recreate the handle.
     // launch() acquires the lock to show the dialog with a valid handle.
     val dialogMutex = remember { Mutex() }
+    // Completed once the first creation attempt is over, so an early launch() waits for it instead
+    // of taking a dialog that does not exist yet for a failed one.
+    val firstDialogCreated = remember { CompletableDeferred<Unit>() }
 
     // Create the native dialog handle off the main thread
     LaunchedEffect(
@@ -162,6 +166,7 @@ private fun rememberFilePickerLauncherInternal(
                 }
             }
             dialogHandle.longValue = handle
+            firstDialogCreated.complete(Unit)
         }
     }
 
@@ -181,12 +186,16 @@ private fun rememberFilePickerLauncherInternal(
             selectionMode = selectionMode,
             onLaunch = {
                 scope.launch {
+                    firstDialogCreated.await()
                     dialogMutex.withLock {
                         val handle = dialogHandle.longValue
                         if (handle == 0L) {
-                            dialogFailure.value?.let { failure ->
-                                currentOnError(FilePickerException("Could not create the file dialog", failure))
-                            }
+                            // Creation was attempted and failed, by throwing or by returning no handle.
+                            failPick(
+                                FilePickerException("Could not create the file dialog", dialogFailure.value),
+                                currentOnError,
+                                currentOnResult,
+                            )
                             return@launch
                         }
 
@@ -201,7 +210,7 @@ private fun rememberFilePickerLauncherInternal(
                         } catch (e: CancellationException) {
                             throw e
                         } catch (e: Throwable) {
-                            currentOnError(FilePickerException("Could not show the file dialog", e))
+                            failPick(FilePickerException("Could not show the file dialog", e), currentOnError, currentOnResult)
                             return@launch
                         }
                         currentOnResult(picked.map { KmpFile(it) })

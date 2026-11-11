@@ -15,7 +15,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-/** Devices can have the documents app disabled; picking must then fail without crashing. */
+/**
+ * Devices can have the documents app disabled; picking must then fail without crashing. Every
+ * launch ends with `onResult`, after `onError` when it failed, so a caller waiting for the result,
+ * for example to hide a loading indicator, is never left waiting.
+ */
 @RunWith(RobolectricTestRunner::class)
 class FilePickerLauncherTest {
     @get:Rule
@@ -24,10 +28,11 @@ class FilePickerLauncherTest {
     private val registry = RecordingActivityResultRegistry()
     private var result: List<KmpFile>? = null
     private var error: FilePickerException? = null
+    private var errorBeforeResult: Boolean? = null
     private lateinit var launcher: FilePickerLauncher
 
     @Test
-    fun withOnErrorADeviceWithoutADocumentsAppIsAnError() {
+    fun withOnErrorADeviceWithoutADocumentsAppIsAnErrorThenAnEmptyResult() {
         registry.hasDocumentsApp = false
         setContent(type = FilePickerFileType.Pdf, withOnError = true)
 
@@ -35,7 +40,8 @@ class FilePickerLauncherTest {
         composeRule.waitForIdle()
 
         assertNotNull(error)
-        assertNull(result)
+        assertEquals(emptyList(), result)
+        assertEquals(true, errorBeforeResult)
     }
 
     @Test
@@ -47,17 +53,18 @@ class FilePickerLauncherTest {
         composeRule.waitForIdle()
 
         assertNotNull(error)
+        assertEquals(emptyList(), result)
     }
 
     @Test
-    fun withoutOnErrorAMissingDocumentsAppDoesNotCrash() {
+    fun withoutOnErrorAMissingDocumentsAppEndsWithAnEmptyResult() {
         registry.hasDocumentsApp = false
         setContent(type = FilePickerFileType.Pdf, withOnError = false)
 
         composeRule.runOnIdle { launcher.launch() }
         composeRule.waitForIdle()
 
-        assertNull(result)
+        assertEquals(emptyList(), result)
     }
 
     @Test
@@ -79,7 +86,10 @@ class FilePickerLauncherTest {
         }
         composeRule.setContent {
             CompositionLocalProvider(LocalActivityResultRegistryOwner provides owner) {
-                val onResult: (List<KmpFile>) -> Unit = { files -> result = files }
+                val onResult: (List<KmpFile>) -> Unit = { files ->
+                    errorBeforeResult = error != null
+                    result = files
+                }
                 launcher = if (withOnError) {
                     rememberFilePickerLauncher(type = type, onError = { error = it }, onResult = onResult)
                 } else {

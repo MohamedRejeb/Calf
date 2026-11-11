@@ -49,7 +49,7 @@ actual fun rememberFileSaverLauncher(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Throwable) {
-                    currentOnError(FilePickerException("Could not save the file", e))
+                    failSave(FilePickerException("Could not save the file", e), currentOnError, currentOnResult)
                     return@launch
                 }
                 currentOnResult(saved?.let { KmpFile(it) })

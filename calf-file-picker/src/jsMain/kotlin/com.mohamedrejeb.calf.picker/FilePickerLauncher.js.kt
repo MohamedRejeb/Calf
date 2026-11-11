@@ -70,20 +70,19 @@ actual fun rememberFilePickerLauncher(
                                 ?.asList()
                                 .orEmpty()
                         } catch (e: Throwable) {
+                            // Reported, then the launch still ends with an empty onResult below.
                             currentOnError(FilePickerException("Could not read the picked files", e))
-                            null
+                            emptyList()
                         } finally {
                             cleanup()
                         }
 
-                        if (files != null) {
-                            // Apply maxItems limit if set
-                            val maxItems = (currentSelectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
-                            val limitedFiles = if (maxItems != null) files.take(maxItems) else files
+                        // Apply maxItems limit if set
+                        val maxItems = (currentSelectionMode as? FilePickerSelectionMode.Multiple)?.maxItems
+                        val limitedFiles = if (maxItems != null) files.take(maxItems) else files
 
-                            currentOnResult(limitedFiles.map { KmpFile(it) })
-                            fileDialogVisible = false
-                        }
+                        currentOnResult(limitedFiles.map { KmpFile(it) })
+                        fileDialogVisible = false
                     }
 
                     oncancel = {

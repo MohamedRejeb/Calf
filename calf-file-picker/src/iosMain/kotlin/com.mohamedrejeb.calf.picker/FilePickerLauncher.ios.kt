@@ -85,7 +85,8 @@ private fun rememberDocumentPickerLauncher(
                         if (currentType == FilePickerFileType.Folder)
                             StagedPick(files = picked.map { KmpFile(it) }, failure = null)
                         else
-                            withContext(Dispatchers.IO) { stagePickedUrls(picked) }
+                            // Opened with asCopy, so each URL is already the app's own copy.
+                            withContext(Dispatchers.IO) { stagePickedUrls(picked, isAppsOwnCopy = true) }
 
                     staged.failure?.let { currentOnError(it) }
                     currentOnResult(staged.files)

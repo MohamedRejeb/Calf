@@ -43,8 +43,10 @@ actual class KmpFile @InternalCalfApi constructor(
     actual companion object
 }
 
+@OptIn(InternalCalfApi::class)
 actual fun KmpFile.exists(context: PlatformContext): Boolean {
-    return NSFileManager.defaultManager.fileExistsAtPath(url.path ?: return false)
+    val path = url.path ?: return false
+    return url.withSecurityScopedAccess { NSFileManager.defaultManager.fileExistsAtPath(path) }
 }
 
 @OptIn(ExperimentalForeignApi::class, InternalCalfApi::class)
@@ -81,11 +83,16 @@ actual fun KmpFile.Companion.fromUriString(uriString: String): KmpFile? {
     return url?.takeIf { it.isFileURL() }?.let(::KmpFile)
 }
 
-/** The size of the readable file; a directory has none. */
-@OptIn(ExperimentalForeignApi::class)
+/**
+ * The size of the readable file; a directory has none. Read with the URL's security-scoped access,
+ * like the content, so it also works on a security-scoped URL such as the saver's result.
+ */
+@OptIn(ExperimentalForeignApi::class, InternalCalfApi::class)
 actual fun KmpFile.getSize(context: PlatformContext): Long? {
     val path = url.path ?: return null
-    val attributes = NSFileManager.defaultManager.attributesOfItemAtPath(path, error = null) ?: return null
+    val attributes = url.withSecurityScopedAccess {
+        NSFileManager.defaultManager.attributesOfItemAtPath(path, error = null)
+    } ?: return null
     if (attributes[NSFileType] != NSFileTypeRegular) return null
     return (attributes[NSFileSize] as? NSNumber)?.longLongValue
 }
@@ -100,9 +107,11 @@ actual fun KmpFile.getMimeType(context: PlatformContext): String? {
 private const val FILE_URL_PREFIX = "file:"
 private const val PATH_SEPARATOR = "/"
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, InternalCalfApi::class)
 actual fun KmpFile.isDirectory(context: PlatformContext): Boolean {
-    val result = originalUrl.resourceValuesForKeys(listOf(NSURLIsDirectoryKey), error = null)
+    val result = originalUrl.withSecurityScopedAccess {
+        originalUrl.resourceValuesForKeys(listOf(NSURLIsDirectoryKey), error = null)
+    }
     return result?.get(NSURLIsDirectoryKey) == true
 }
 

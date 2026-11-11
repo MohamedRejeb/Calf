@@ -17,6 +17,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -36,6 +38,7 @@ class FileSaverLauncherTest {
     private val registry = RecordingActivityResultRegistry()
     private val recompositions = mutableIntStateOf(0)
     private var result: SaverResult? = null
+    private var resultCount = 0
     private var error: FilePickerException? = null
     private lateinit var launcher: FileSaverLauncher
 
@@ -126,28 +129,51 @@ class FileSaverLauncherTest {
         assertNull(result?.file)
     }
 
+    // Every save ends with exactly one onResult call; a failure reports onError first, then null.
+
     @Test
-    fun withOnErrorAFailedSaveIsOnlyAnError() {
+    fun withOnErrorAFailedSaveIsAnErrorThenANullResult() {
         setContent(withOnError = true)
         val missing = KmpFile(Uri.fromFile(tempFolder.root.resolve("missing.pdf")))
         val destination = tempFolder.newFile("Copy.pdf")
 
         composeRule.runOnIdle { launcher.launch(file = missing, baseName = "Copy", extension = "pdf") }
-        composeRule.runOnIdle { registry.dispatchLast(Uri.fromFile(destination)) }
-        composeRule.waitUntil(timeoutMillis = 5_000) { error != null }
+        deliver(Uri.fromFile(destination))
+        composeRule.waitForIdle()
 
-        assertNull(result, "a failure does not also report a result")
+        assertNotNull(error)
+        assertNull(result?.file)
+        assertEquals(true, result?.afterError)
+        assertEquals(1, resultCount)
     }
 
     @Test
-    fun withOnErrorADeviceWithoutADocumentsAppIsAnError() {
+    fun withOnErrorADeviceWithoutADocumentsAppIsAnErrorThenANullResult() {
         registry.hasDocumentsApp = false
         setContent(withOnError = true)
 
         composeRule.runOnIdle { launcher.launch(bytes = byteArrayOf(1), baseName = "Report", extension = "pdf") }
-        composeRule.waitUntil(timeoutMillis = 5_000) { error != null }
+        composeRule.waitUntil(timeoutMillis = 5_000) { result != null }
+        composeRule.waitForIdle()
 
-        assertNull(result)
+        assertNotNull(error)
+        assertNull(result?.file)
+        assertEquals(true, result?.afterError)
+        assertEquals(1, resultCount)
+    }
+
+    @Test
+    fun withoutOnErrorAFailedSaveIsASingleNullResult() {
+        setContent()
+        val missing = KmpFile(Uri.fromFile(tempFolder.root.resolve("missing.pdf")))
+        val destination = tempFolder.newFile("Copy.pdf")
+
+        composeRule.runOnIdle { launcher.launch(file = missing, baseName = "Copy", extension = "pdf") }
+        deliver(Uri.fromFile(destination))
+        composeRule.waitForIdle()
+
+        assertNull(result?.file)
+        assertEquals(1, resultCount)
     }
 
     @Test
@@ -161,6 +187,76 @@ class FileSaverLauncherTest {
         assertNull(error)
     }
 
+    // The save sheet returns either a new, empty document or an existing one the user chose to
+    // overwrite. A failed save may only remove the first.
+
+    @Test
+    fun aFailedSaveLeavesAnExistingFileUntouched() {
+        val existing = tempFolder.newFile("Report.pdf").apply { writeBytes(byteArrayOf(5, 6, 7)) }
+
+        saveUnreadableSourceTo(Uri.fromFile(existing))
+
+        assertContentEquals(byteArrayOf(5, 6, 7), existing.readBytes())
+    }
+
+    @Test
+    fun anEmptyDocumentTheSheetCreatedIsDeletedWhenTheSaveFails() {
+        val provider = FakeDocumentsProvider.install(tempFolder.newFolder("documents"))
+        val created = provider.root.resolve("Report.pdf").apply { createNewFile() }
+
+        saveUnreadableSourceTo(provider.documentUri("Report.pdf"))
+
+        assertFalse(created.exists(), "the empty document is removed")
+    }
+
+    @Test
+    fun anExistingDocumentIsKeptWhenTheSaveFails() {
+        val provider = FakeDocumentsProvider.install(tempFolder.newFolder("documents"))
+        val existing = provider.root.resolve("Report.pdf").apply { writeBytes(byteArrayOf(5, 6, 7)) }
+
+        saveUnreadableSourceTo(provider.documentUri("Report.pdf"))
+
+        assertContentEquals(byteArrayOf(5, 6, 7), existing.readBytes())
+    }
+
+    @Test
+    fun aProviderThatRefusesTruncationStillSavesIntoANewDocument() {
+        val provider = FakeDocumentsProvider.install(tempFolder.newFolder("documents"))
+        provider.refusesTruncation = true
+        val created = provider.root.resolve("Report.pdf").apply { createNewFile() }
+        setContent(withOnError = true)
+
+        composeRule.runOnIdle { launcher.launch(bytes = byteArrayOf(1, 2, 3), baseName = "Report", extension = "pdf") }
+        deliver(provider.documentUri("Report.pdf"))
+
+        assertContentEquals(byteArrayOf(1, 2, 3), created.readBytes())
+        assertNull(error)
+    }
+
+    @Test
+    fun aProviderThatRefusesTruncationLeavesAnExistingDocumentAlone() {
+        val provider = FakeDocumentsProvider.install(tempFolder.newFolder("documents"))
+        provider.refusesTruncation = true
+        val existing = provider.root.resolve("Report.pdf").apply { writeBytes(byteArrayOf(5, 6, 7, 8)) }
+        setContent(withOnError = true)
+
+        composeRule.runOnIdle { launcher.launch(bytes = byteArrayOf(1, 2), baseName = "Report", extension = "pdf") }
+        composeRule.runOnIdle { registry.dispatchLast(provider.documentUri("Report.pdf")) }
+        composeRule.waitUntil(timeoutMillis = 5_000) { error != null }
+
+        assertContentEquals(byteArrayOf(5, 6, 7, 8), existing.readBytes(), "a plain \"w\" would keep the old tail")
+    }
+
+    /** Saves a source that cannot be read into [destination] and waits for the error. */
+    private fun saveUnreadableSourceTo(destination: Uri) {
+        setContent(withOnError = true)
+        val missing = KmpFile(Uri.fromFile(tempFolder.root.resolve("missing.pdf")))
+
+        composeRule.runOnIdle { launcher.launch(file = missing, baseName = "Report", extension = "pdf") }
+        composeRule.runOnIdle { registry.dispatchLast(destination) }
+        composeRule.waitUntil(timeoutMillis = 5_000) { error != null }
+    }
+
     private fun setContent(withOnError: Boolean = false) {
         val owner = object : ActivityResultRegistryOwner {
             override val activityResultRegistry: ActivityResultRegistry = registry
@@ -170,7 +266,10 @@ class FileSaverLauncherTest {
                 // Reading the counter here, and capturing it in onResult, makes every bump re-run
                 // rememberFileSaverLauncher, like the resume after the system sheet does.
                 val generation = recompositions.intValue
-                val onResult: (KmpFile?) -> Unit = { file -> result = SaverResult(file, generation) }
+                val onResult: (KmpFile?) -> Unit = { file ->
+                    resultCount++
+                    result = SaverResult(file, generation, afterError = error != null)
+                }
                 launcher = if (withOnError) {
                     rememberFileSaverLauncher(onError = { error = it }, onResult = onResult)
                 } else {
@@ -190,5 +289,5 @@ class FileSaverLauncherTest {
         composeRule.waitUntil(timeoutMillis = 5_000) { result != null }
     }
 
-    private class SaverResult(val file: KmpFile?, val generation: Int)
+    private class SaverResult(val file: KmpFile?, val generation: Int, val afterError: Boolean)
 }

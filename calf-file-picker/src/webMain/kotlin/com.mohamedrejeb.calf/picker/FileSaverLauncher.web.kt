@@ -18,6 +18,9 @@ import org.w3c.files.Blob
  */
 internal expect fun createBlob(bytes: ByteArray, mimeType: String): Blob
 
+/** Platform-specific: wraps [blob] in a [File] named [fileName]. */
+internal expect fun createFile(blob: Blob, fileName: String, mimeType: String): File
+
 /**
  * Whether the browser has the File System Access save dialog (`window.showSaveFilePicker`).
  * Chromium browsers have it; Safari and Firefox do not.
@@ -41,9 +44,19 @@ internal expect fun showSaveFilePicker(
 )
 
 /**
+ * Revokes the object URL [url] after [OBJECT_URL_REVOKE_DELAY_MS]. Safari reads a download's blob
+ * after the click returns and fails the download if the URL is already revoked.
+ */
+internal expect fun revokeObjectUrlLater(url: String)
+
+/** The delay FileSaver.js uses: long enough for any browser to start reading the download. */
+internal const val OBJECT_URL_REVOKE_DELAY_MS = 40_000
+
+/**
  * Saves through the browser's save dialog where there is one, so the user picks the location and
- * `onResult` receives the saved file, or `null` when they cancel. Elsewhere the file is downloaded:
- * the browser decides where it goes and `onResult` is not called.
+ * `onResult` receives the saved file, or `null` when they cancel. Elsewhere, or when the browser
+ * refuses to show the dialog, the file is downloaded: the browser decides where it goes, and
+ * `onResult` receives the downloaded file once the download is handed to the browser.
  */
 @ExperimentalCalfApi
 @Composable
@@ -57,19 +70,27 @@ actual fun rememberFileSaverLauncher(
 
     val save: (Blob, String, String) -> Unit = { blob, baseName, extension ->
         val fileName = "$baseName.$extension"
+        val mimeType = extensionToMimeType(extension)
+        // Like every save, a download ends with onResult: the file handed to the browser.
+        val download = {
+            triggerDownload(blob, fileName)
+            currentOnResult(KmpFile(createFile(blob, fileName, mimeType)))
+        }
         if (isSaveFilePickerSupported()) {
             showSaveFilePicker(
                 blob = blob,
                 suggestedName = fileName,
-                mimeType = extensionToMimeType(extension),
+                mimeType = mimeType,
                 extension = extension,
                 onSaved = { file -> currentOnResult(KmpFile(file)) },
                 onCancelled = { currentOnResult(null) },
-                onPickerFailed = { triggerDownload(blob, fileName) },
-                onWriteFailed = { currentOnError(FilePickerException("Could not write the saved file")) },
+                onPickerFailed = download,
+                onWriteFailed = {
+                    failSave(FilePickerException("Could not write the saved file"), currentOnError, currentOnResult)
+                },
             )
         } else {
-            triggerDownload(blob, fileName)
+            download()
         }
     }
 
@@ -101,7 +122,7 @@ private fun triggerDownload(blob: Blob, fileName: String) {
     document.body?.appendChild(anchor)
     anchor.click()
     anchor.remove()
-    URL.revokeObjectURL(url)
+    revokeObjectUrlLater(url)
 }
 
 internal fun extensionToMimeType(extension: String): String {

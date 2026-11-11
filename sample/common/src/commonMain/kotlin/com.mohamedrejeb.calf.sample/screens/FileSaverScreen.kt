@@ -100,10 +100,17 @@ fun FileSaverScreen(navigateBack: () -> Unit) {
             status = null
         },
     )
+
+    // onError comes first and onResult always ends the save, with null after a failure.
+    var saveFailure by remember { mutableStateOf<ExportStatus.Failed?>(null) }
     val saverLauncher = rememberFileSaverLauncher(
-        onError = { error -> status = ExportStatus.Failed(error.message ?: "Saving failed") },
+        onError = { error -> saveFailure = ExportStatus.Failed(error.message ?: "Saving failed") },
         onResult = { file ->
-            status = if (file != null) ExportStatus.Saved(file.getName()) else ExportStatus.Cancelled
+            status = when {
+                file != null -> ExportStatus.Saved(file.getName())
+                else -> saveFailure ?: ExportStatus.Cancelled
+            }
+            saveFailure = null
         },
     )
 
