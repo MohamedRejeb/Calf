@@ -38,6 +38,7 @@ internal class TabBarManager(
     private val configurationApplier = TabBarConfigurationApplier(tabBar)
 
     private var currentItems = emptyList<UIKitUITabBarItem>()
+    private var currentRendering: ImageRendering? = null
     private var currentConfiguration = UIKitTabBarConfiguration()
 
     init {
@@ -49,7 +50,8 @@ internal class TabBarManager(
      *
      * When only the content of the items changed (titles, images) and their count did not, the
      * existing native items are updated in place, so the tab bar does not rebuild and animate
-     * its items, e.g. when an asynchronously loaded image arrives.
+     * its items, e.g. when an asynchronously loaded image arrives. A new [density] or
+     * [layoutDirection] draws every image again: the ones the bar holds were made for the old one.
      */
     fun setItems(
         items: List<UIKitUITabBarItem>,
@@ -59,27 +61,30 @@ internal class TabBarManager(
     ) {
         if (items.isEmpty()) return
 
+        val rendering = ImageRendering(density, layoutDirection)
+        val imagesAreStale = rendering != currentRendering
         val existingItems = tabBar.items?.filterIsInstance<UITabBarItem>().orEmpty()
         val uiKitItems =
             when {
-                items == currentItems && existingItems.size == items.size -> existingItems
-                existingItems.size == items.size -> {
-                    items.forEachIndexed { index, item ->
-                        if (item != currentItems.getOrNull(index)) {
-                            existingItems[index].update(item, density, layoutDirection)
-                        }
-                    }
-                    existingItems
-                }
-                else -> {
+                existingItems.size != items.size -> {
                     val newItems = items.mapIndexed { index, item ->
                         item.toUITabBarItem(index.toLong(), density, layoutDirection)
                     }
                     tabBar.setItems(newItems)
                     newItems
                 }
+                items == currentItems && !imagesAreStale -> existingItems
+                else -> {
+                    items.forEachIndexed { index, item ->
+                        if (imagesAreStale || item != currentItems.getOrNull(index)) {
+                            existingItems[index].update(item, density, layoutDirection)
+                        }
+                    }
+                    existingItems
+                }
             }
         currentItems = items
+        currentRendering = rendering
         val safeSelectedIndex = selectedIndex.coerceIn(uiKitItems.indices)
         tabBar.selectedItem = uiKitItems[safeSelectedIndex]
     }
@@ -92,6 +97,9 @@ internal class TabBarManager(
         currentConfiguration = configuration
     }
 }
+
+/** What the item images were drawn with. */
+private data class ImageRendering(val density: Float, val layoutDirection: LayoutDirection)
 
 /**
  * Applies a [UIKitTabBarConfiguration] to one native tab bar. Shared by the standalone bar, the
