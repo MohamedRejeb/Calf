@@ -124,7 +124,11 @@ class AdaptiveListDetailDisplayTest {
         }
 
         // Back to the list in one pane: its saved state was kept while it was covered.
+        // One entry per frame. Popping both in the same frame after the layout went from two panes
+        // to one leaves the list blank in some runs; plain NavDisplay with Material's list-detail
+        // strategy does the same without Calf (Navigation 3 1.2.0, Material 3 Adaptive 1.3.0).
         backStack.removeLastOrNull()
+        waitForIdle()
         backStack.removeLastOrNull()
         waitForIdle()
         onNodeWithText("inbox 1").assertIsDisplayed()
