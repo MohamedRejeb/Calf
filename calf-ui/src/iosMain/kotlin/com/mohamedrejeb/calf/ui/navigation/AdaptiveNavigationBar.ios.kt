@@ -82,8 +82,8 @@ actual fun AdaptiveNavigationBar(
         tabBarView.applyLayoutDirection(layoutDirection)
     }
 
-    LaunchedEffect(iosItems, iosSelectedIndex) {
-        tabBarManager.setItems(iosItems, iosSelectedIndex, density.density)
+    LaunchedEffect(iosItems, iosSelectedIndex, density, layoutDirection) {
+        tabBarManager.setItems(iosItems, iosSelectedIndex, density.density, layoutDirection)
     }
 
     SideEffect {
