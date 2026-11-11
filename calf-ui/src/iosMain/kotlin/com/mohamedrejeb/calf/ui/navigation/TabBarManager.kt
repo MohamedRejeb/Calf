@@ -35,12 +35,7 @@ internal class TabBarManager(
         onItemSelected = onItemSelected,
     )
 
-    // Capture the original tint colors and appearances so we can restore iOS defaults when the
-    // user switches back to Color.Unspecified.
-    private val defaultTintColor: UIColor = tabBar.tintColor
-    private val defaultUnselectedItemTintColor: UIColor? = tabBar.unselectedItemTintColor
-    private val defaultStandardAppearance: UITabBarAppearance = tabBar.standardAppearance
-    private val defaultScrollEdgeAppearance: UITabBarAppearance? = tabBar.scrollEdgeAppearance
+    private val configurationApplier = TabBarConfigurationApplier(tabBar)
 
     private var currentItems = emptyList<UIKitUITabBarItem>()
     private var currentConfiguration = UIKitTabBarConfiguration()
@@ -93,41 +88,56 @@ internal class TabBarManager(
         configuration: UIKitTabBarConfiguration,
     ) {
         if (configuration == currentConfiguration) return
-        tabBar.applyTabBarConfiguration(configuration, defaultTintColor, defaultUnselectedItemTintColor)
-
-        if (configuration.usesCustomAppearance) {
-            val appearance = configuration.toUITabBarAppearance()
-            tabBar.standardAppearance = appearance
-            tabBar.scrollEdgeAppearance = appearance
-        } else {
-            tabBar.standardAppearance = defaultStandardAppearance
-            tabBar.scrollEdgeAppearance = defaultScrollEdgeAppearance
-        }
-
+        configurationApplier.apply(configuration)
         currentConfiguration = configuration
     }
 }
 
 /**
- * Applies [configuration] to a native tab bar. Unspecified colors restore the
- * captured defaults so switching back to `Color.Unspecified` returns to the
- * system look. Shared with `calf-navigation`'s `UITabBarController` host.
+ * Applies a [UIKitTabBarConfiguration] to one native tab bar. Shared by the standalone bar, the
+ * bar host and `calf-navigation`'s `UITabBarController`, so the three style a tab bar alike.
  *
- * Liquid Glass (iOS 26+) ignores `unselectedItemTintColor`.
+ * Create it before anything configures [tabBar]: the tint colors and appearances the bar has at
+ * that moment are what a configuration going back to its defaults restores.
  */
 @InternalCalfApi
-public fun UITabBar.applyTabBarConfiguration(
-    configuration: UIKitTabBarConfiguration,
-    defaultTintColor: UIColor,
-    defaultUnselectedItemTintColor: UIColor?,
-) {
-    translucent = configuration.isTranslucent
-    tintColor =
-        if (configuration.selectedItemColor.isSpecified) configuration.selectedItemColor.toUIColor()
-        else defaultTintColor
-    unselectedItemTintColor =
-        if (configuration.unselectedItemColor.isSpecified) configuration.unselectedItemColor.toUIColor()
-        else defaultUnselectedItemTintColor
+public class TabBarConfigurationApplier(private val tabBar: UITabBar) {
+    private val defaultTintColor: UIColor = tabBar.tintColor
+    private val defaultUnselectedItemTintColor: UIColor? = tabBar.unselectedItemTintColor
+    private val defaultStandardAppearance: UITabBarAppearance = tabBar.standardAppearance
+    private val defaultScrollEdgeAppearance: UITabBarAppearance? = tabBar.scrollEdgeAppearance
+
+    private var hasCustomAppearance = false
+
+    public fun apply(configuration: UIKitTabBarConfiguration) {
+        tabBar.translucent = configuration.isTranslucent
+        tabBar.tintColor =
+            if (configuration.selectedItemColor.isSpecified) configuration.selectedItemColor.toUIColor()
+            else defaultTintColor
+        // Liquid Glass (iOS 26+) ignores `unselectedItemTintColor`.
+        tabBar.unselectedItemTintColor =
+            if (configuration.unselectedItemColor.isSpecified) configuration.unselectedItemColor.toUIColor()
+            else defaultUnselectedItemTintColor
+        applyAppearance(configuration)
+    }
+
+    /**
+     * The appearances are only replaced for a configuration that asks for one, and only put back
+     * after Calf replaced them: a bar that never had a custom appearance keeps whatever the
+     * system or the app gave it.
+     */
+    private fun applyAppearance(configuration: UIKitTabBarConfiguration) {
+        if (configuration.usesCustomAppearance) {
+            val appearance = configuration.toUITabBarAppearance()
+            tabBar.standardAppearance = appearance
+            tabBar.scrollEdgeAppearance = appearance
+            hasCustomAppearance = true
+        } else if (hasCustomAppearance) {
+            tabBar.standardAppearance = defaultStandardAppearance
+            tabBar.scrollEdgeAppearance = defaultScrollEdgeAppearance
+            hasCustomAppearance = false
+        }
+    }
 }
 
 @OptIn(ExperimentalForeignApi::class)

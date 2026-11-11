@@ -12,13 +12,12 @@ import com.mohamedrejeb.calf.navigation.IosTabItem
 import com.mohamedrejeb.calf.navigation.AdaptiveTabState
 import com.mohamedrejeb.calf.navigation.ExperimentalCalfNavigationApi
 import com.mohamedrejeb.calf.navigation.IosSplitViewConfiguration
+import com.mohamedrejeb.calf.ui.navigation.TabBarConfigurationApplier
 import com.mohamedrejeb.calf.ui.navigation.UIKitTabBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.UIKitUITabBarItem
-import com.mohamedrejeb.calf.ui.navigation.applyTabBarConfiguration
 import com.mohamedrejeb.calf.ui.navigation.toUITabBarItem
 import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.UIKit.UIColor
 import platform.UIKit.UITabBarController
 import platform.UIKit.UITabBarControllerDelegateProtocol
 import platform.UIKit.UITabBarControllerModeAutomatic
@@ -79,8 +78,7 @@ internal class IosTabController<T : NavKey>(
             )
         }
     }
-    private val defaultTintColor: UIColor = uiTabBarController.tabBar.tintColor
-    private val defaultUnselectedItemTintColor: UIColor? = uiTabBarController.tabBar.unselectedItemTintColor
+    private val tabBarConfigurationApplier: TabBarConfigurationApplier
 
     init {
         updateTabs(tabs.map { it.iosItem })
@@ -90,6 +88,9 @@ internal class IosTabController<T : NavKey>(
         )
         uiTabBarController.delegate = delegate
         keepClassicBarBackground()
+        // After the classic background is in place: it is part of what a configuration going
+        // back to its defaults restores.
+        tabBarConfigurationApplier = TabBarConfigurationApplier(uiTabBarController.tabBar)
         setSidebarAdaptable(sidebarAdaptable)
         select(state.selectedTab)
     }
@@ -121,11 +122,7 @@ internal class IosTabController<T : NavKey>(
     }
 
     fun applyConfiguration(configuration: UIKitTabBarConfiguration) {
-        uiTabBarController.tabBar.applyTabBarConfiguration(
-            configuration = configuration,
-            defaultTintColor = defaultTintColor,
-            defaultUnselectedItemTintColor = defaultUnselectedItemTintColor,
-        )
+        tabBarConfigurationApplier.apply(configuration)
     }
 
     /** Compose → UIKit selection. */

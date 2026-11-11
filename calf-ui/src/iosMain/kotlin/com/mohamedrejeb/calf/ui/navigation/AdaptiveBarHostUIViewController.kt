@@ -140,9 +140,8 @@ internal class BarHostContainer(
     private var appliedTabBar: HostedTabBar? = null
     private var hasAppliedBars = false
 
-    // Restored when a tab bar configuration goes back to unspecified colours.
-    private var defaultTintColor: UIColor? = null
-    private var defaultUnselectedItemTintColor: UIColor? = null
+    // Lives as long as the tab bar controller: it holds the looks that bar started with.
+    private var tabBarConfigurationApplier: TabBarConfigurationApplier? = null
 
     init {
         // The root is all the app keeps: it owns the container, and with it the host.
@@ -237,11 +236,7 @@ internal class BarHostContainer(
         }
         val tabBarController = tabBarController()
         if (itemsChanged) {
-            tabBarController.tabBar.applyTabBarConfiguration(
-                configuration = tabBar.configuration,
-                defaultTintColor = defaultTintColor ?: tabBarController.tabBar.tintColor,
-                defaultUnselectedItemTintColor = defaultUnselectedItemTintColor,
-            )
+            tabBarConfigurationApplier?.apply(tabBar.configuration)
             appliedTabBar = tabBar
         }
         selectedIndex = selected
@@ -257,8 +252,7 @@ internal class BarHostContainer(
         tabBarController ?: UITabBarController().also { controller ->
             tabBarController = controller
             controller.delegate = tabBarDelegate
-            defaultTintColor = controller.tabBar.tintColor
-            defaultUnselectedItemTintColor = controller.tabBar.unselectedItemTintColor
+            tabBarConfigurationApplier = TabBarConfigurationApplier(controller.tabBar)
             // The tab bar controller takes the root from the navigation controller, which goes over
             // its tabs in the same turn: out of the window for longer, Compose would drop its scene.
             rootController.show(controller)
@@ -320,6 +314,7 @@ internal class BarHostContainer(
         controller.setViewControllers(emptyList<UIViewController>(), animated = false)
         controller.delegate = null
         tabBarController = null
+        tabBarConfigurationApplier = null
         placeholders = emptyList()
         appliedTabBar = null
     }

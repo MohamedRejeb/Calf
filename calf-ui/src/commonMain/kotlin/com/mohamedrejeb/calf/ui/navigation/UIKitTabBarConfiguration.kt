@@ -46,7 +46,7 @@ data class UIKitTabBarConfiguration(
     val titleFont: UIKitFont? = null,
 ) {
     /** `true` when any property that needs a `UITabBarAppearance` is set. */
-    val usesCustomAppearance: Boolean
+    internal val usesCustomAppearance: Boolean
         get() = backgroundColor.isSpecified ||
             selectedIconColor.isSpecified ||
             selectedTitleColor.isSpecified ||
