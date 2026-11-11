@@ -1,13 +1,20 @@
 package com.mohamedrejeb.calf.io
 
+import android.content.ContentResolver
 import android.net.Uri
+import android.provider.DocumentsContract
+import android.provider.OpenableColumns
+import android.webkit.MimeTypeMap
 import androidx.documentfile.provider.DocumentFile
 import com.mohamedrejeb.calf.core.PlatformContext
+import java.io.File
 import java.io.FileNotFoundException
 
 actual class KmpFile(
     val uri: Uri,
-)
+) {
+    actual companion object
+}
 
 actual fun KmpFile.exists(context: PlatformContext): Boolean =
     try {
@@ -38,15 +45,96 @@ actual suspend fun KmpFile.readByteArray(context: PlatformContext): ByteArray {
 }
 
 actual fun KmpFile.getName(context: PlatformContext): String? {
-    val documentFile = DocumentFile.fromSingleUri(context, uri)
+    val documentFile = DocumentFile.fromSingleUri(context, queryUri)
 
     return documentFile?.name
 }
 
-actual fun KmpFile.getPath(context: PlatformContext): String? = uri.toString()
+/**
+ * The URI to ask the provider about. A picked folder is a bare tree URI, which documents providers
+ * refuse to query, so the question goes to the document URI of the tree's root instead.
+ */
+private val KmpFile.queryUri: Uri
+    get() = uri.takeIf { it.isBareTreeUri() }
+        ?.let { DocumentsContract.buildDocumentUriUsingTree(it, DocumentsContract.getTreeDocumentId(it)) }
+        ?: uri
+
+private fun Uri.isBareTreeUri(): Boolean =
+    scheme == ContentResolver.SCHEME_CONTENT && pathSegments.size == 2 && pathSegments[0] == TREE_PATH_SEGMENT
+
+/** A `content:` URI has no file system path, so only `file:` URIs have one. */
+actual fun KmpFile.getPath(context: PlatformContext): String? =
+    uri.takeIf { it.scheme == ContentResolver.SCHEME_FILE }?.path
+
+actual fun KmpFile.toUriString(): String? = uri.toString()
+
+actual fun KmpFile.Companion.fromUriString(uriString: String): KmpFile? = when {
+    uriString.startsWith(PATH_SEPARATOR) -> KmpFile(Uri.fromFile(File(uriString)))
+    else -> Uri.parse(uriString).takeIf { it.scheme in FILE_REFERENCE_SCHEMES }?.let(::KmpFile)
+}
+
+actual fun KmpFile.getSize(context: PlatformContext): Long? = when (uri.scheme) {
+    ContentResolver.SCHEME_FILE -> uri.path?.let(::File)?.takeIf { it.isFile }?.length()
+    else -> queryProviderSize(context)
+}
+
+/**
+ * Asks the provider in one query; it may not know the size, and a folder has none. Only documents
+ * providers are asked for the type as well, since other providers may reject an unknown column.
+ */
+private fun KmpFile.queryProviderSize(context: PlatformContext): Long? {
+    val target = queryUri
+    val isDocument = target.pathSegments.firstOrNull() in DOCUMENT_PATH_SEGMENTS
+    val projection =
+        if (isDocument) arrayOf(OpenableColumns.SIZE, DocumentsContract.Document.COLUMN_MIME_TYPE)
+        else arrayOf(OpenableColumns.SIZE)
+    return try {
+        context.contentResolver.query(target, projection, null, null, null)?.use { cursor ->
+            if (!cursor.moveToFirst()) return@use null
+            val typeColumn = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
+            val isFolder = typeColumn >= 0 && cursor.getString(typeColumn) == DocumentsContract.Document.MIME_TYPE_DIR
+            val sizeColumn = cursor.getColumnIndex(OpenableColumns.SIZE)
+            if (isFolder || sizeColumn < 0 || cursor.isNull(sizeColumn)) null else cursor.getLong(sizeColumn)
+        }
+    } catch (e: RuntimeException) {
+        // Providers refuse a query in their own ways (SecurityException, IllegalArgumentException,
+        // UnsupportedOperationException); the size is then unknown, which is what null means.
+        null
+    }
+}
+
+actual fun KmpFile.getMimeType(context: PlatformContext): String? {
+    val providerType = if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
+        try {
+            context.contentResolver.getType(queryUri)
+        } catch (e: RuntimeException) {
+            // Unknown to the provider: fall back to the extension.
+            null
+        }
+    } else {
+        null
+    }
+    return providerType ?: mimeTypeFromName(context)
+}
+
+private fun KmpFile.mimeTypeFromName(context: PlatformContext): String? {
+    val name = if (uri.scheme == ContentResolver.SCHEME_FILE) uri.lastPathSegment else getName(context)
+    val extension = name?.substringAfterLast('.', missingDelimiterValue = "")?.lowercase()
+    return extension?.takeIf { it.isNotEmpty() }?.let { MimeTypeMap.getSingleton().getMimeTypeFromExtension(it) }
+}
+
+private const val PATH_SEPARATOR = "/"
+
+/** The first path segment of a tree URI, as built by DocumentsContract.buildTreeDocumentUri. */
+private const val TREE_PATH_SEGMENT = "tree"
+
+/** First path segments of the URIs a documents provider serves. */
+private val DOCUMENT_PATH_SEGMENTS = setOf("document", TREE_PATH_SEGMENT)
+
+private val FILE_REFERENCE_SCHEMES = setOf(ContentResolver.SCHEME_CONTENT, ContentResolver.SCHEME_FILE)
 
 actual fun KmpFile.isDirectory(context: PlatformContext): Boolean {
-    val documentFile = DocumentFile.fromSingleUri(context, uri)
+    val documentFile = DocumentFile.fromSingleUri(context, queryUri)
 
     return documentFile?.isDirectory == true
 }

@@ -88,9 +88,16 @@ fun FileSaverScreen(navigateBack: () -> Unit) {
         },
     )
 
+    // onError comes first and onResult always ends the save, with null after a failure.
+    var saveFailure by remember { mutableStateOf<String?>(null) }
     val saverLauncher = rememberFileSaverLauncher(
+        onError = { error -> saveFailure = "Save failed: ${error.message}" },
         onResult = { file ->
-            saveMessage = if (file != null) "Saved successfully" else "Save cancelled"
+            saveMessage = when {
+                file != null -> SAVED_MESSAGE
+                else -> saveFailure ?: "Save cancelled"
+            }
+            saveFailure = null
         },
     )
 
@@ -201,15 +208,17 @@ fun FileSaverScreen(navigateBack: () -> Unit) {
                 text = saveMessage ?: "Export status",
                 style = MaterialTheme.typography.bodyMedium,
                 color = when (saveMessage) {
-                    "Save cancelled" -> Color(0xFFF44336)
+                    SAVED_MESSAGE -> Color(0xFF4CAF50)
                     null -> Color.Transparent
-                    else -> Color(0xFF4CAF50)
+                    else -> Color(0xFFF44336)
                 },
                 modifier = Modifier.alpha(if (saveMessage != null) 1f else 0f),
             )
         }
     }
 }
+
+private const val SAVED_MESSAGE = "Saved successfully"
 
 private fun circleCropImage(bytes: ByteArray): ByteArray {
     val source = bytes.toImageBitmap()

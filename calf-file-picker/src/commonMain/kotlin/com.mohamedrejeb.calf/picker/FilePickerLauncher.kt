@@ -5,13 +5,48 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.mohamedrejeb.calf.io.KmpFile
 
+/**
+ * Remembers a [FilePickerLauncher] that lets the user pick files or a folder.
+ *
+ * Every launch ends with exactly one [onResult] call, so a loading state can always be cleared
+ * there. Failures are reported through [onError] first: no app on the device can pick files, the
+ * picker could not be shown, or picked files could not be read. [onResult] then receives the files
+ * that could be read, an empty list when none could.
+ *
+ * @param onError Called before [onResult] when picking fails. Cancelling the picker is not a failure.
+ * @param onResult Called once per launch with the picked files, or an empty list if the user
+ * cancelled or picking failed.
+ */
 @Composable
 expect fun rememberFilePickerLauncher(
     type: FilePickerFileType = FilePickerFileType.All,
     selectionMode: FilePickerSelectionMode = FilePickerSelectionMode.Single,
     settings: FilePickerSettings = defaultFilePickerSettings(),
+    onError: (FilePickerException) -> Unit,
     onResult: (List<KmpFile>) -> Unit,
 ): FilePickerLauncher
+
+/**
+ * Remembers a [FilePickerLauncher] that lets the user pick files or a folder. Failures are not
+ * reported, but the launch still ends with [onResult]; use the overload with `onError` to observe
+ * them.
+ *
+ * @param onResult Called once per launch with the picked files, or an empty list if the user
+ * cancelled or picking failed.
+ */
+@Composable
+fun rememberFilePickerLauncher(
+    type: FilePickerFileType = FilePickerFileType.All,
+    selectionMode: FilePickerSelectionMode = FilePickerSelectionMode.Single,
+    settings: FilePickerSettings = defaultFilePickerSettings(),
+    onResult: (List<KmpFile>) -> Unit,
+): FilePickerLauncher = rememberFilePickerLauncher(
+    type = type,
+    selectionMode = selectionMode,
+    settings = settings,
+    onError = {},
+    onResult = onResult,
+)
 
 @Immutable
 sealed class FilePickerFileType(vararg val value: String) {

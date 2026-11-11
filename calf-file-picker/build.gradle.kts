@@ -18,6 +18,14 @@ kotlin {
         implementation(libs.activity.compose)
     }
 
+    // Robolectric tests that run the real launchers in a Compose activity.
+    sourceSets.named("androidHostTest").dependencies {
+        implementation(libs.junit)
+        implementation(libs.robolectric)
+        implementation(libs.androidx.compose.ui.test.junit4)
+        implementation(libs.androidx.compose.ui.test.manifest)
+    }
+
     sourceSets.webMain.dependencies {
         implementation(libs.kotlinx.browser)
     }
