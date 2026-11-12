@@ -10,6 +10,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.number
 import kotlinx.datetime.plus
+import kotlinx.datetime.todayIn
 import platform.Foundation.NSCalendar
 import platform.Foundation.NSDate
 import platform.Foundation.NSDateComponents
@@ -17,6 +18,7 @@ import platform.Foundation.NSDayCalendarUnit
 import platform.Foundation.NSMonthCalendarUnit
 import platform.Foundation.NSYearCalendarUnit
 import platform.Foundation.dateWithTimeIntervalSince1970
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 private val calendarModel = KotlinxDatetimeCalendarModel()
@@ -49,6 +51,19 @@ internal fun localEndOfDay(utcTimeMillis: Long): NSDate {
         .toEpochMilliseconds()
     return NSDate.dateWithTimeIntervalSince1970((nextDayStartMillis - 1) / MILLIS_PER_SECOND)
 }
+
+/** The UTC start of the month containing the UTC day timestamp [utcTimeMillis]. */
+internal fun utcMonthStart(utcTimeMillis: Long): Long =
+    utcDayToLocalDate(utcTimeMillis).firstOfMonthUtcMillis()
+
+/** The UTC start of the month the device is in today. */
+internal fun currentUtcMonthStart(): Long =
+    Clock.System.todayIn(TimeZone.currentSystemDefault()).firstOfMonthUtcMillis()
+
+private fun LocalDate.firstOfMonthUtcMillis(): Long =
+    LocalDate(year = year, month = month, day = 1)
+        .atStartOfDayIn(TimeZone.UTC)
+        .toEpochMilliseconds()
 
 /** The UTC start of the calendar day this date falls on in the device time zone. */
 internal fun NSDate.toUtcDayMillis(): Long {

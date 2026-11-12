@@ -2,38 +2,60 @@ package com.mohamedrejeb.calf.sample.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary
-val Blue400 = Color(0xFF4572E8)
-val Blue200 = Color(0xFF90B0F5)
-val Blue700 = Color(0xFF2B52B4)
-val Blue900 = Color(0xFF0D2260)
-val Blue100 = Color(0xFFD6E2FC)
+// Brand: the indigo and the coral of the Calf logo.
+internal val Indigo10 = Color(0xFF0C0C72)
+internal val Indigo30 = Color(0xFF2E2EA0)
+internal val Indigo40 = Color(0xFF3F3FCF)
+internal val Indigo80 = Color(0xFFBDBCFF)
+internal val Indigo90 = Color(0xFFE2E1FF)
+internal val Indigo20 = Color(0xFF1C1C6E)
 
-// Secondary
-val Teal400 = Color(0xFF26A69A)
-val Teal200 = Color(0xFF80CBC4)
-val Teal700 = Color(0xFF00796B)
-val Teal900 = Color(0xFF003D33)
-val Teal100 = Color(0xFFCCEEEB)
+internal val Coral20 = Color(0xFF5C0019)
+internal val Coral30 = Color(0xFF8C1734)
+internal val Coral40 = Color(0xFFE0325A)
+internal val Coral80 = Color(0xFFFFB1BF)
+internal val Coral90 = Color(0xFFFFD9DF)
 
-// Tertiary
-val Purple400 = Color(0xFF7E57C2)
-val Purple200 = Color(0xFFB39DDB)
-val Purple700 = Color(0xFF4A2D80)
-val Purple100 = Color(0xFFE8DEFF)
+internal val Slate20 = Color(0xFF2E2F42)
+internal val Slate30 = Color(0xFF444559)
+internal val Slate40 = Color(0xFF5C5D72)
+internal val Slate80 = Color(0xFFC5C4DD)
+internal val Slate90 = Color(0xFFE1E0F9)
 
-// Light theme surfaces
-val SurfaceLight = Color(0xFFFBFBFF)
-val SurfaceVariantLight = Color(0xFFE2E2EC)
-val OnSurfaceVariantLight = Color(0xFF44474E)
-val OutlineLight = Color(0xFF74777F)
-val SurfaceContainerLight = Color(0xFFF0F0F6)
-val SurfaceContainerHighLight = Color(0xFFE6E6EC)
+// Neutrals: a grouped background with plain cards on top, like a settings screen.
+internal val LightBackground = Color(0xFFF3F3F7)
+internal val LightCard = Color(0xFFFFFFFF)
+internal val LightContainer = Color(0xFFEAEAF0)
+internal val LightContainerHigh = Color(0xFFE2E2EA)
+internal val LightContainerHighest = Color(0xFFDADAE3)
+internal val LightOnSurface = Color(0xFF16161C)
+internal val LightOnSurfaceVariant = Color(0xFF5E5E6A)
+internal val LightOutline = Color(0xFF8A8A96)
+internal val LightOutlineVariant = Color(0xFFE0E0E8)
 
-// Dark theme surfaces
-val SurfaceDark = Color(0xFF1B1B1F)
-val SurfaceVariantDark = Color(0xFF44474E)
-val OnSurfaceVariantDark = Color(0xFFC4C6CF)
-val OutlineDark = Color(0xFF8E9099)
-val SurfaceContainerDark = Color(0xFF211F26)
-val SurfaceContainerHighDark = Color(0xFF2B2930)
+internal val DarkBackground = Color(0xFF0E0E12)
+internal val DarkCard = Color(0xFF1B1B21)
+internal val DarkContainer = Color(0xFF222229)
+internal val DarkContainerHigh = Color(0xFF2A2A32)
+internal val DarkContainerHighest = Color(0xFF34343D)
+internal val DarkOnSurface = Color(0xFFE6E5EE)
+internal val DarkOnSurfaceVariant = Color(0xFFA9A8B6)
+internal val DarkOutline = Color(0xFF75747F)
+internal val DarkOutlineVariant = Color(0xFF2C2C35)
+
+// Code snippets are dark in both themes.
+internal val CodeBackground = Color(0xFF16161E)
+internal val CodeText = Color(0xFFE4E4EE)
+internal val CodeKeyword = Color(0xFFFF8FA6)
+internal val CodeString = Color(0xFFA6E3A1)
+internal val CodeCall = Color(0xFFB9B8FF)
+internal val CodeComment = Color(0xFF7C7C8C)
+internal val CodeNumber = Color(0xFFFFCB6B)
+
+/** Tints of the icon tiles on the home list, one per category. */
+internal val TileIndigo = Color(0xFF5B5BE6)
+internal val TileCoral = Color(0xFFE8476B)
+internal val TileAmber = Color(0xFFE59A1A)
+internal val TileTeal = Color(0xFF1E9E8F)
+internal val TileViolet = Color(0xFF8A4FD8)
+internal val TileBlue = Color(0xFF2F80ED)

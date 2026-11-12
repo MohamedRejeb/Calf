@@ -2,9 +2,9 @@
 
 `AdaptiveSwitch` is a switch/toggle composable that adapts to the platform it is running on. On Android, Desktop, and Web, it uses the Material `Switch`. On iOS < 26, it uses a Cupertino-style switch, and on iOS 26+, it uses a Liquid Glass switch.
 
-| Material (Android, Desktop, Web)                                               | Cupertino (iOS < 26)                                                    | Liquid Glass (iOS 26+)                                                                    |
-|--------------------------------------------------------------------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| ![AdaptiveSwitch Material](../images/gif/AdaptiveSwitch-material.gif)          | ![AdaptiveSwitch iOS](../images/gif/AdaptiveSwitch-ios.gif)            | ![AdaptiveSwitch Liquid Glass](../images/gif/AdaptiveSwitch-ios-liquid-glass.gif)         |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveSwitch material](../images/gif/AdaptiveSwitch-material.gif) | ![AdaptiveSwitch ios](../images/gif/AdaptiveSwitch-ios.gif) | ![AdaptiveSwitch ios-liquid-glass](../images/gif/AdaptiveSwitch-ios-liquid-glass.gif) |
 
 ## Usage
 
@@ -70,3 +70,7 @@ AdaptiveSwitch(
     },
 )
 ```
+
+## Platform notes
+
+On iOS the whole switch is the touch target: a tap anywhere on it toggles, a drag anywhere moves the thumb, and the hit area is extended to the 48dp minimum, as for a Material `Switch`. `colors` apply to the Cupertino switch (iOS before 26); the Liquid Glass switch (iOS 26+) uses the system green and glass tones.

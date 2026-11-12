@@ -1,244 +1,265 @@
 package com.mohamedrejeb.calf.sample.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.currentPlatform
+import com.mohamedrejeb.calf.sample.components.DemoDivider
+import com.mohamedrejeb.calf.sample.components.DemoListCard
+import com.mohamedrejeb.calf.sample.components.DemoRow
+import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
+import com.mohamedrejeb.calf.sample.components.IconTile
+import com.mohamedrejeb.calf.sample.components.NativeBadge
+import com.mohamedrejeb.calf.sample.components.SectionTitle
+import com.mohamedrejeb.calf.sample.isLiquidGlassAvailable
 import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.sample.navigation.SampleNavigation
 import com.mohamedrejeb.calf.sample.navigation.ScreenCategory
+import com.mohamedrejeb.calf.sample.navigation.isShownIn
+import com.mohamedrejeb.calf.sample.resources.Res
+import com.mohamedrejeb.calf.sample.resources.calf_logo
+import com.mohamedrejeb.calf.sample.ui.theme.PageMaxWidth
+import com.mohamedrejeb.calf.sample.ui.theme.Spacing
+import com.mohamedrejeb.calf.sample.ui.theme.TileAmber
+import com.mohamedrejeb.calf.sample.ui.theme.TileBlue
+import com.mohamedrejeb.calf.sample.ui.theme.TileCoral
+import com.mohamedrejeb.calf.sample.ui.theme.TileIndigo
+import com.mohamedrejeb.calf.sample.ui.theme.TileTeal
+import com.mohamedrejeb.calf.sample.ui.theme.TileViolet
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.toggle.AdaptiveSwitch
+import org.jetbrains.compose.resources.painterResource
 
+/** Test tag of the home list, which is only composed while the list is on screen. */
+const val HOME_LIST_TAG = "home-list"
+
+private val HeaderLogoSize = 64.dp
+private val PlaceholderLogoSize = 120.dp
+private const val PLACEHOLDER_LOGO_ALPHA = 0.9f
+
+/** The home list's demos in [navigation], grouped by category in display order. */
+private fun demosByCategory(navigation: SampleNavigation): List<Pair<ScreenCategory, List<Screen>>> =
+    ScreenCategory.entries.map { category ->
+        category to Screen.entries.filter {
+            it != Screen.Home && it.category == category && it.isShownIn(navigation)
+        }
+    }.filter { (_, screens) -> screens.isNotEmpty() }
+
+/**
+ * The component list. It is the list pane of the sample's list-detail display, so beside an open
+ * demo it highlights [selectedScreen]; on a narrow window it is the screen the demos are pushed
+ * over.
+ *
+ * @param contentPadding the insets of the navigation entry: the pane's own safe area, not the
+ *   window's (in a split view the two differ).
+ * @param navigation the shell showing the list; its demos are listed.
+ * @param onNavigationChange switches shells; `null` hides the switch.
+ */
 @Composable
 fun HomeScreen(
-    navigate: (String) -> Unit,
+    navigate: (Screen) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(),
+    selectedScreen: Screen? = null,
+    navigation: SampleNavigation = SampleNavigation.Native,
+    onNavigationChange: ((SampleNavigation) -> Unit)? = null,
 ) {
-    val screensByCategory = Screen.entries
-        .filter { it != Screen.Home && it != Screen.Showcase }
-        .groupBy { it.category }
-
-    val colorScheme = MaterialTheme.colorScheme
-
-    Column(
+    LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = contentPadding,
         modifier = Modifier
             .fillMaxSize()
-            .background(colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
+            .background(MaterialTheme.colorScheme.background)
+            .testTag(HOME_LIST_TAG),
     ) {
-        Text(
-            text = "Calf",
-            style = MaterialTheme.typography.displayLarge.copy(
-                fontWeight = FontWeight.Bold
-            ),
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier
-                .padding(top = 16.dp, bottom = 4.dp)
-        )
+        item(key = "header") {
+            HomeHeader(modifier = Modifier.homeColumn().padding(top = Spacing.l, bottom = Spacing.s))
+        }
 
-        Text(
-            text = buildAnnotatedString {
-                val spanStyle = SpanStyle(fontWeight = FontWeight.Bold, color = colorScheme.primary)
-                withStyle(spanStyle) { append("C") }
-                append("ompose ")
-                withStyle(spanStyle) { append("A") }
-                append("daptive ")
-                withStyle(spanStyle) { append("L") }
-                append("ook & ")
-                withStyle(spanStyle) { append("F") }
-                append("eel")
+        if (onNavigationChange != null) {
+            item(key = "navigation") {
+                NavigationSwitch(
+                    navigation = navigation,
+                    onNavigationChange = onNavigationChange,
+                    modifier = Modifier.homeColumn().padding(top = Spacing.l),
+                )
+            }
+        }
+
+        demosByCategory(navigation).forEach { (category, screens) ->
+            item(key = category.name) {
+                Column(modifier = Modifier.homeColumn().padding(top = Spacing.xl)) {
+                    SectionTitle(category.title)
+                    DemoListCard(modifier = Modifier.padding(top = Spacing.s)) {
+                        screens.forEachIndexed { index, screen ->
+                            if (index > 0) DemoDivider(startIndent = DividerIndentWithIcon)
+                            DemoRow(
+                                title = screen.title,
+                                subtitle = screen.description,
+                                leading = { IconTile(icon = screen.icon, color = category.tileColor) },
+                                selected = screen == selectedScreen,
+                                onClick = { navigate(screen) },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        item(key = "footer") {
+            Text(
+                text = "Every screen here is the same Kotlin code on Android, iOS, desktop and web.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.homeColumn().padding(vertical = Spacing.xl),
+            )
+        }
+    }
+}
+
+/** A home list item: full width up to [PageMaxWidth], with the page margins. */
+private fun Modifier.homeColumn(): Modifier =
+    widthIn(max = PageMaxWidth)
+        .fillMaxWidth()
+        .padding(horizontal = Spacing.pageMargin)
+
+@Composable
+private fun HomeHeader(modifier: Modifier = Modifier) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.l),
+        modifier = modifier,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.m),
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.calf_logo),
+                contentDescription = null,
+                modifier = Modifier.size(HeaderLogoSize),
+            )
+            Column {
+                Text(
+                    text = Screen.Home.title,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                Text(
+                    text = Screen.Home.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        NativeBadge(platform = currentPlatform, implementation = platformLook())
+    }
+}
+
+/**
+ * Switches the whole sample between calf-navigation and plain Navigation 3. Both show the same
+ * demos; what differs is who owns the screens and, on iOS, the bars.
+ */
+@OptIn(ExperimentalCalfUiApi::class)
+@Composable
+private fun NavigationSwitch(
+    navigation: SampleNavigation,
+    onNavigationChange: (SampleNavigation) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isCompose = navigation == SampleNavigation.Compose
+    val toggle = {
+        onNavigationChange(if (isCompose) SampleNavigation.Native else SampleNavigation.Compose)
+    }
+    DemoListCard(modifier = modifier) {
+        DemoRow(
+            title = "Plain Compose navigation",
+            subtitle = if (isCompose)
+                "Navigation 3, with the demos' own bars in the bar host"
+            else
+                "Off: calf-navigation, a native container per screen",
+            leading = { IconTile(icon = Icons.Outlined.SwapHoriz, color = TileTeal) },
+            trailing = {
+                AdaptiveSwitch(checked = isCompose, onCheckedChange = { toggle() })
             },
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier
-                .padding(bottom = 16.dp)
+            onClick = toggle,
         )
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            item(key = "showcase") {
-                ShowcaseBanner(
-                    onClick = { navigate(Screen.Showcase.name) },
-                )
-            }
-
-            ScreenCategory.entries.forEach { category ->
-                val screens = screensByCategory[category] ?: return@forEach
-
-                item(key = category.name) {
-                    SectionHeader(title = category.title)
-                }
-
-                items(
-                    items = screens,
-                    key = { it.name },
-                ) { screen ->
-                    FeatureListItem(
-                        onClick = { navigate(screen.name) },
-                        title = screen.title,
-                        description = screen.description,
-                        icon = screen.icon,
-                    )
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
-        }
     }
 }
 
-@Composable
-private fun SectionHeader(
-    title: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.SemiBold,
-        modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    )
-}
-
-@Composable
-private fun ShowcaseBanner(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
-        onClick = onClick,
-        shape = MaterialTheme.shapes.large,
-        modifier = modifier
-            .padding(horizontal = 12.dp, vertical = 4.dp)
-            .fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 16.dp)
-        ) {
-            Icon(
-                imageVector = Screen.Showcase.icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(28.dp),
-            )
-            Spacer(modifier = Modifier.width(14.dp))
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = Screen.Showcase.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-                Text(
-                    text = Screen.Showcase.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowForwardIos,
-                contentDescription = "Navigate",
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(16.dp),
-            )
-        }
+/** The look the adaptive components take on this platform. */
+private fun platformLook(): String =
+    when {
+        !currentPlatform.isIOS -> "Material 3"
+        isLiquidGlassAvailable -> "Liquid Glass"
+        else -> "UIKit"
     }
-}
 
+private val ScreenCategory.tileColor: Color
+    get() = when (this) {
+        ScreenCategory.StartHere -> TileIndigo
+        ScreenCategory.Components -> TileBlue
+        ScreenCategory.Presentation -> TileViolet
+        ScreenCategory.Pickers -> TileAmber
+        ScreenCategory.Navigation -> TileTeal
+        ScreenCategory.PlatformAPIs -> TileCoral
+    }
+
+/** Fills the detail pane while two panes are shown and no demo is open. */
 @Composable
-private fun FeatureListItem(
-    onClick: () -> Unit,
-    title: String,
-    description: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
-        onClick = onClick,
-        shape = MaterialTheme.shapes.medium,
-        modifier = modifier
-            .padding(horizontal = 12.dp, vertical = 4.dp)
-            .fillMaxWidth()
+fun HomeDetailPlaceholder(contentPadding: PaddingValues) {
+    // Background before the padding: it fills the pane, the content keeps clear of the bars.
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(contentPadding),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Spacing.s),
+            modifier = Modifier.padding(Spacing.xxl),
         ) {
-            Icon(
-                imageVector = icon,
+            Image(
+                painter = painterResource(Res.drawable.calf_logo),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier
+                    .size(PlaceholderLogoSize)
+                    .alpha(PLACEHOLDER_LOGO_ALPHA),
             )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                if (description.isNotEmpty()) {
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowForwardIos,
-                contentDescription = "Navigate",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp),
+            Text(
+                text = "Select a component",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(top = Spacing.l),
+            )
+            Text(
+                text = "Pick a demo from the list. It opens here, next to it.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
             )
         }
     }

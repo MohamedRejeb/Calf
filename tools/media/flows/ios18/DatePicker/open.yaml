@@ -1,0 +1,30 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Inline, compact and range pickers"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "Inline, compact and range pickers"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveDatePicker
+- swipe:
+    start: 50%, 80%
+    end: 50%, 25%
+    duration: 800
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveDatePicker-inline
+- swipe:
+    start: 50%, 14%
+    end: 50%, 92%
+    duration: 500
+- waitForAnimationToEnd
+- swipe:
+    start: 50%, 14%
+    end: 50%, 92%
+    duration: 500
+- waitForAnimationToEnd

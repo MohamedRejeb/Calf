@@ -1,8 +1,8 @@
 package com.mohamedrejeb.calf.ui.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -30,12 +30,13 @@ import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
  * @param windowInsets The window insets for the Material3 TopAppBar.
  * @param colors The colors for the Material3 TopAppBar.
  * @param scrollBehavior The scroll behavior for the Material3 TopAppBar.
+ * @param contentPadding The padding around the content of the Material3 TopAppBar. Material only;
+ *   ignored on iOS.
  * @param iosTitle The title string for the iOS UINavigationBar.
  * @param iosLeadingItems The list of bar button items on the leading side of the iOS navigation bar.
  * @param iosTrailingItems The list of bar button items on the trailing side of the iOS navigation bar.
  * @param iosConfiguration Configuration for the iOS UINavigationBar appearance.
  */
-@ExperimentalMaterial3Api
 @ExperimentalCalfUiApi
 @Composable
 expect fun AdaptiveTopBar(
@@ -47,6 +48,7 @@ expect fun AdaptiveTopBar(
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    contentPadding: PaddingValues = TopAppBarDefaults.ContentPadding,
     iosTitle: String = "",
     iosLeadingItems: List<UIKitUIBarButtonItem> = emptyList(),
     iosTrailingItems: List<UIKitUIBarButtonItem> = emptyList(),

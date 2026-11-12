@@ -1,239 +1,280 @@
 package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.currentPlatform
-import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
+import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.sample.ui.theme.Spacing
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.toolbar.AdaptiveToolbar
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
-import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 import com.mohamedrejeb.calf.ui.web.LoadingState
+import com.mohamedrejeb.calf.ui.web.WebViewNavigator
+import com.mohamedrejeb.calf.ui.web.WebViewState
 import com.mohamedrejeb.calf.ui.web.WebView
 import com.mohamedrejeb.calf.ui.web.rememberWebViewNavigator
 import com.mohamedrejeb.calf.ui.web.rememberWebViewState
 
+// Most sites refuse to be framed, and the web actual is an iframe, so it opens a page that allows it.
 private val INITIAL_URL =
-    if (currentPlatform.isWeb)
-        "https://en.wikipedia.org/wiki/Main_Page/"
-    else
-        "https://github.com/MohamedRejeb"
+    if (currentPlatform.isWeb) "https://en.wikipedia.org/wiki/Main_Page/"
+    else "https://github.com/MohamedRejeb/Calf"
 
-private val DUMMY_HTML = """
+/**
+ * The page of the "Load HTML" button: plain inline HTML that follows the system theme. Its hex
+ * colours mirror `ui.theme/Color.kt` (the `Light*` and `Dark*` neutrals, `Indigo40` and
+ * `Indigo80` for links), so the page looks like the rest of the sample; change them together.
+ */
+private val INLINE_HTML = """
     <!DOCTYPE html>
     <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Calf WebView Demo</title>
+        <title>Calf WebView</title>
         <style>
+            :root { color-scheme: light dark; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 margin: 0;
-                padding: 24px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: #fff;
-                min-height: 100vh;
+                padding: 24px 20px 120px;
+                background: #F3F3F7;
+                color: #16161C;
+                line-height: 1.5;
             }
-            h1 { margin-top: 0; }
-            .card {
-                background: rgba(255,255,255,0.15);
-                border-radius: 12px;
-                padding: 16px;
-                margin: 12px 0;
-                backdrop-filter: blur(10px);
+            h1 { font-size: 28px; margin: 8px 0 4px; }
+            .lead { color: #5E5E6A; margin: 0 0 20px; }
+            .card { background: #FFFFFF; border-radius: 16px; padding: 4px 16px; margin: 0 0 16px; }
+            .row { display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid #E0E0E8; }
+            .row:first-child { border-top: none; }
+            .row span:last-child { color: #5E5E6A; }
+            code { font-family: ui-monospace, Menlo, monospace; font-size: 14px; }
+            a { color: #3F3FCF; }
+            @media (prefers-color-scheme: dark) {
+                body { background: #0E0E12; color: #E6E5EE; }
+                .lead, .row span:last-child { color: #A9A8B6; }
+                .card { background: #1B1B21; }
+                .row { border-top-color: #2C2C35; }
+                a { color: #BDBCFF; }
             }
-            a { color: #ffd700; }
-            ul { padding-left: 20px; }
-            li { margin: 6px 0; }
         </style>
     </head>
     <body>
-        <h1>🐄 Calf WebView</h1>
+        <h1>Inline HTML</h1>
+        <p class="lead">This page is a string, loaded with <code>navigator.loadHtml()</code>.
+        The toolbar below drives the same <code>WebViewNavigator</code>.</p>
         <div class="card">
-            <h2>Hello from loadHtml!</h2>
-            <p>This page was loaded using <strong>navigator.loadHtml()</strong> with inline HTML content.</p>
+            <div class="row"><span>Back, Forward</span><span>History</span></div>
+            <div class="row"><span>Reload</span><span>Load the page again</span></div>
+            <div class="row"><span>Stop</span><span>Cancel loading</span></div>
+            <div class="row"><span>Globe</span><span>Load a URL</span></div>
+            <div class="row"><span>Code</span><span>Load this HTML</span></div>
         </div>
-        <div class="card">
-            <h3>Navigation Test</h3>
-            <p>Try using the navigation buttons below:</p>
-            <ul>
-                <li><strong>Back / Forward</strong> – navigate through history</li>
-                <li><strong>Reload</strong> – reload this page</li>
-                <li><strong>Stop</strong> – stop loading</li>
-                <li><strong>Load URL</strong> – load a remote URL</li>
-                <li><strong>Load HTML</strong> – load this page again</li>
-            </ul>
-        </div>
-        <div class="card">
-            <p>Visit <a href="https://github.com/nickel-lang/nickel">a link</a> to test in-page navigation.</p>
-        </div>
+        <p>Follow <a href="https://github.com/MohamedRejeb/Calf">the Calf repository</a>,
+        then come back with the back button.</p>
     </body>
     </html>
 """.trimIndent()
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalCalfUiApi::class)
+/**
+ * A small browser: the page title and address in the bar, a floating toolbar for history,
+ * reload, stop and the URL or inline HTML content. It draws its own bar, so it applies the
+ * system bar and keyboard insets itself.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WebViewScreen(
-    navigateBack: () -> Unit
-) {
+fun WebViewScreen(navigateBack: () -> Unit) {
     val state = rememberWebViewState(url = INITIAL_URL)
     val navigator = rememberWebViewNavigator()
-
-    val iosItems by remember(navigator.canGoBack, navigator.canGoForward) {
-        mutableStateOf(
-            listOf(
-                UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName(SFSymbol.chevronLeft),
-                    enabled = navigator.canGoBack,
-                    onClick = { navigator.navigateBack() },
-                ),
-                UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName(SFSymbol.chevronRight),
-                    enabled = navigator.canGoForward,
-                    onClick = { navigator.navigateForward() },
-                ),
-                UIKitUIBarButtonItem.flexibleSpace(),
-                UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName(SFSymbol.arrowClockwise),
-                    onClick = { navigator.reload() },
-                ),
-                UIKitUIBarButtonItem.flexibleSpace(),
-                UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName(SFSymbol.xmark),
-                    onClick = { navigator.stopLoading() },
-                ),
-                UIKitUIBarButtonItem.flexibleSpace(),
-                UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName(SFSymbol.globe),
-                    onClick = { navigator.loadUrl(INITIAL_URL) },
-                ),
-                UIKitUIBarButtonItem.image(
-                    image = UIKitImage.SystemName(SFSymbol.chevronLeftForwardslashChevronRight),
-                    onClick = { navigator.loadHtml(DUMMY_HTML) },
-                ),
-            )
-        )
-    }
 
     LaunchedEffect(Unit) {
         state.settings.javaScriptEnabled = true
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                navigationIcon = {
-                    AdaptiveIconButton(onClick = { navigateBack() }) {
-                        Icon(Icons.Filled.ArrowBackIosNew, contentDescription = "Back")
-                    }
-                },
-                title = {
-                    Column {
-                        Text(
-                            text = state.pageTitle ?: "Web View",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        state.lastLoadedUrl?.let { url ->
-                            Text(
-                                text = url,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                                style = MaterialTheme.typography.bodySmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
-                }
-            )
-        },
+        topBar = { PageTitleBar(state = state, navigateBack = navigateBack) },
         containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.systemBars)
-            .windowInsetsPadding(WindowInsets.ime)
+            .windowInsetsPadding(WindowInsets.ime),
     ) { paddingValues ->
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
+                .background(MaterialTheme.colorScheme.background),
         ) {
             WebView(
                 state = state,
                 navigator = navigator,
                 modifier = Modifier.fillMaxSize(),
             )
-
-            val loadingState = state.loadingState
-            if (loadingState is LoadingState.Loading) {
-                val progress = loadingState.progress
-                if (progress in 0.0f..1.0f) {
-                    LinearProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter)
-                    )
-                } else {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter)
-                    )
-                }
-            }
-
-            AdaptiveToolbar(
-                expanded = true,
+            LoadingBar(state.loadingState, Modifier.align(Alignment.TopCenter))
+            BrowserToolbar(
+                navigator = navigator,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp),
-                content = {
-                    AdaptiveIconButton(
-                        onClick = { navigator.navigateBack() },
-                        enabled = navigator.canGoBack,
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate Back")
-                    }
-                    AdaptiveIconButton(
-                        onClick = { navigator.navigateForward() },
-                        enabled = navigator.canGoForward,
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Navigate Forward")
-                    }
-                    AdaptiveIconButton(onClick = { navigator.reload() }) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Reload")
-                    }
-                    AdaptiveIconButton(onClick = { navigator.stopLoading() }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Stop Loading")
-                    }
-                    AdaptiveIconButton(onClick = { navigator.loadUrl(INITIAL_URL) }) {
-                        Icon(Icons.Filled.Language, contentDescription = "Load URL")
-                    }
-                    AdaptiveIconButton(onClick = { navigator.loadHtml(DUMMY_HTML) }) {
-                        Icon(Icons.Filled.Code, contentDescription = "Load HTML")
-                    }
-                },
-                iosItems = iosItems,
+                    .padding(bottom = Spacing.l),
             )
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PageTitleBar(state: WebViewState, navigateBack: () -> Unit) {
+    TopAppBar(
+        navigationIcon = {
+            AdaptiveIconButton(onClick = navigateBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        },
+        title = {
+            Column {
+                Text(
+                    text = state.pageTitle ?: Screen.WebView.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                state.lastLoadedUrl?.let { url ->
+                    Text(
+                        text = url,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            scrolledContainerColor = MaterialTheme.colorScheme.background,
+        ),
+    )
+}
+
+/** A determinate bar while the page reports progress, an indeterminate one otherwise. */
+@Composable
+private fun LoadingBar(loadingState: LoadingState, modifier: Modifier = Modifier) {
+    if (loadingState !is LoadingState.Loading) return
+    val progress = loadingState.progress
+    if (progress in 0f..1f) {
+        LinearProgressIndicator(progress = { progress }, modifier = modifier.fillMaxWidth())
+    } else {
+        LinearProgressIndicator(modifier = modifier.fillMaxWidth())
+    }
+}
+
+@OptIn(ExperimentalCalfUiApi::class)
+@Composable
+private fun BrowserToolbar(navigator: WebViewNavigator, modifier: Modifier = Modifier) {
+    val canGoBack = navigator.canGoBack
+    val canGoForward = navigator.canGoForward
+    val iosItems = remember(navigator, canGoBack, canGoForward) {
+        browserBarItems(navigator, canGoBack, canGoForward)
+    }
+    AdaptiveToolbar(
+        expanded = true,
+        modifier = modifier,
+        content = {
+            AdaptiveIconButton(onClick = { navigator.navigateBack() }, enabled = canGoBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate Back")
+            }
+            AdaptiveIconButton(onClick = { navigator.navigateForward() }, enabled = canGoForward) {
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Navigate Forward")
+            }
+            AdaptiveIconButton(onClick = { navigator.reload() }) {
+                Icon(Icons.Filled.Refresh, contentDescription = "Reload")
+            }
+            AdaptiveIconButton(onClick = { navigator.stopLoading() }) {
+                Icon(Icons.Filled.Close, contentDescription = "Stop Loading")
+            }
+            AdaptiveIconButton(onClick = { navigator.loadUrl(INITIAL_URL) }) {
+                Icon(Icons.Filled.Language, contentDescription = "Load URL")
+            }
+            AdaptiveIconButton(onClick = { navigator.loadHtml(INLINE_HTML) }) {
+                Icon(Icons.Filled.Code, contentDescription = "Load HTML")
+            }
+        },
+        iosItems = iosItems,
+    )
+}
+
+/** The same actions as SF Symbols bar items, for the native toolbar on iOS. */
+@OptIn(ExperimentalCalfUiApi::class)
+private fun browserBarItems(
+    navigator: WebViewNavigator,
+    canGoBack: Boolean,
+    canGoForward: Boolean,
+): List<UIKitUIBarButtonItem> = listOf(
+    UIKitUIBarButtonItem.image(
+        image = UIKitImage.SystemName(SFSymbol.chevronLeft),
+        enabled = canGoBack,
+        label = "Navigate Back",
+        onClick = { navigator.navigateBack() },
+    ),
+    UIKitUIBarButtonItem.image(
+        image = UIKitImage.SystemName(SFSymbol.chevronRight),
+        enabled = canGoForward,
+        label = "Navigate Forward",
+        onClick = { navigator.navigateForward() },
+    ),
+    UIKitUIBarButtonItem.flexibleSpace(),
+    UIKitUIBarButtonItem.image(
+        image = UIKitImage.SystemName(SFSymbol.arrowClockwise),
+        label = "Reload",
+        onClick = { navigator.reload() },
+    ),
+    UIKitUIBarButtonItem.flexibleSpace(),
+    UIKitUIBarButtonItem.image(
+        image = UIKitImage.SystemName(SFSymbol.xmark),
+        label = "Stop Loading",
+        onClick = { navigator.stopLoading() },
+    ),
+    UIKitUIBarButtonItem.flexibleSpace(),
+    UIKitUIBarButtonItem.image(
+        image = UIKitImage.SystemName(SFSymbol.globe),
+        label = "Load URL",
+        onClick = { navigator.loadUrl(INITIAL_URL) },
+    ),
+    UIKitUIBarButtonItem.image(
+        image = UIKitImage.SystemName(SFSymbol.chevronLeftForwardslashChevronRight),
+        label = "Load HTML",
+        onClick = { navigator.loadHtml(INLINE_HTML) },
+    ),
+)

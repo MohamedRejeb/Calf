@@ -6,6 +6,7 @@ import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.number
 import kotlin.time.ExperimentalTime
 
 internal class KotlinxDatetimeCalendarModel {
@@ -27,8 +28,8 @@ internal fun Instant.toCalendarDate(
 
     return CalendarDate(
         year = dateTime.year,
-        month = dateTime.monthNumber,
-        dayOfMonth = dateTime.dayOfMonth,
+        month = dateTime.month.number,
+        dayOfMonth = dateTime.day,
         utcTimeMillis = toEpochMilliseconds()
     )
 }

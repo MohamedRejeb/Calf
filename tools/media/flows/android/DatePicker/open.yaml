@@ -1,0 +1,16 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Inline, compact and range pickers"
+    direction: DOWN
+- tapOn: "Inline, compact and range pickers"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveDatePicker
+- tapOn: "Pick a day"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveDatePicker-dialog
+- tapOn: "Cancel"

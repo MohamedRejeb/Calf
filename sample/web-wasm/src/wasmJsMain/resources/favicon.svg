@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Calf">
+  <!-- Calf: one component, two looks. The pill has squared Material corners on the left and the
+       fully round corners of an iOS control on the right; the thumb sits on the native side. -->
+  <defs>
+    <linearGradient id="track" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#0EA5E9"/>
+    </linearGradient>
+    <radialGradient id="glass" cx="0.78" cy="0.18" r="0.6">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.30"/>
+    </filter>
+  </defs>
+  <path id="pill" d="M52 72H172a56 56 0 0 1 0 112H52a24 24 0 0 1-24-24V96a24 24 0 0 1 24-24z" fill="url(#track)"/>
+  <path d="M52 72H172a56 56 0 0 1 0 112H52a24 24 0 0 1-24-24V96a24 24 0 0 1 24-24z" fill="url(#glass)"/>
+  <circle cx="172" cy="128" r="40" fill="#FFFFFF" filter="url(#shadow)"/>
+</svg>

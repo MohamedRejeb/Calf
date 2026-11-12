@@ -11,61 +11,80 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.calf.sample.coil.setSingletonImageLoaderFactory
 
-private val DarkColorScheme =
-    darkColorScheme(
-        primary = Blue400,
-        onPrimary = Color.White,
-        primaryContainer = Blue900,
-        onPrimaryContainer = Blue100,
-        secondary = Teal400,
-        onSecondary = Color.White,
-        secondaryContainer = Teal900,
-        onSecondaryContainer = Teal100,
-        tertiary = Purple400,
-        onTertiary = Color.White,
-        tertiaryContainer = Purple700,
-        onTertiaryContainer = Purple100,
-        background = SurfaceDark,
-        onBackground = Color(0xFFE4E2E6),
-        surface = SurfaceDark,
-        onSurface = Color(0xFFE4E2E6),
-        surfaceVariant = SurfaceVariantDark,
-        onSurfaceVariant = OnSurfaceVariantDark,
-        outline = OutlineDark,
-        surfaceContainer = SurfaceContainerDark,
-        surfaceContainerHigh = SurfaceContainerHighDark,
-    )
-
+// Cards use surfaceContainerLowest: white on the grey background in light, one step above the
+// background in dark. Material components keep their usual container roles.
 private val LightColorScheme =
     lightColorScheme(
-        primary = Blue400,
+        primary = Indigo40,
         onPrimary = Color.White,
-        primaryContainer = Blue100,
-        onPrimaryContainer = Blue900,
-        secondary = Teal400,
+        primaryContainer = Indigo90,
+        onPrimaryContainer = Indigo10,
+        inversePrimary = Indigo80,
+        secondary = Slate40,
         onSecondary = Color.White,
-        secondaryContainer = Teal100,
-        onSecondaryContainer = Teal900,
-        tertiary = Purple400,
+        secondaryContainer = Slate90,
+        onSecondaryContainer = Slate20,
+        tertiary = Coral40,
         onTertiary = Color.White,
-        tertiaryContainer = Purple100,
-        onTertiaryContainer = Purple700,
-        background = SurfaceLight,
-        onBackground = Color(0xFF1B1B1F),
-        surface = SurfaceLight,
-        onSurface = Color(0xFF1B1B1F),
-        surfaceVariant = SurfaceVariantLight,
-        onSurfaceVariant = OnSurfaceVariantLight,
-        outline = OutlineLight,
-        surfaceContainer = SurfaceContainerLight,
-        surfaceContainerHigh = SurfaceContainerHighLight,
+        tertiaryContainer = Coral90,
+        onTertiaryContainer = Coral20,
+        background = LightBackground,
+        onBackground = LightOnSurface,
+        surface = LightBackground,
+        onSurface = LightOnSurface,
+        surfaceVariant = LightContainerHigh,
+        onSurfaceVariant = LightOnSurfaceVariant,
+        surfaceTint = Indigo40,
+        outline = LightOutline,
+        outlineVariant = LightOutlineVariant,
+        surfaceBright = LightCard,
+        surfaceDim = LightContainerHigh,
+        surfaceContainerLowest = LightCard,
+        surfaceContainerLow = LightCard,
+        surfaceContainer = LightContainer,
+        surfaceContainerHigh = LightContainerHigh,
+        surfaceContainerHighest = LightContainerHighest,
+    )
+
+private val DarkColorScheme =
+    darkColorScheme(
+        primary = Indigo80,
+        onPrimary = Indigo20,
+        primaryContainer = Indigo30,
+        onPrimaryContainer = Indigo90,
+        inversePrimary = Indigo40,
+        secondary = Slate80,
+        onSecondary = Slate20,
+        secondaryContainer = Slate30,
+        onSecondaryContainer = Slate90,
+        tertiary = Coral80,
+        onTertiary = Coral20,
+        tertiaryContainer = Coral30,
+        onTertiaryContainer = Coral90,
+        background = DarkBackground,
+        onBackground = DarkOnSurface,
+        surface = DarkBackground,
+        onSurface = DarkOnSurface,
+        surfaceVariant = DarkContainerHigh,
+        onSurfaceVariant = DarkOnSurfaceVariant,
+        surfaceTint = Indigo80,
+        outline = DarkOutline,
+        outlineVariant = DarkOutlineVariant,
+        surfaceBright = DarkContainerHighest,
+        surfaceDim = DarkBackground,
+        surfaceContainerLowest = DarkCard,
+        surfaceContainerLow = DarkCard,
+        surfaceContainer = DarkContainer,
+        surfaceContainerHigh = DarkContainerHigh,
+        surfaceContainerHighest = DarkContainerHighest,
     )
 
 private val AppShapes = Shapes(
-    small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(16.dp),
-    extraLarge = RoundedCornerShape(24.dp),
+    extraSmall = RoundedCornerShape(6.dp),
+    small = RoundedCornerShape(10.dp),
+    medium = RoundedCornerShape(14.dp),
+    large = RoundedCornerShape(20.dp),
+    extraLarge = RoundedCornerShape(28.dp),
 )
 
 @Composable
@@ -75,14 +94,8 @@ internal fun CalfTheme(
 ) {
     setSingletonImageLoaderFactory()
 
-    val colorScheme =
-        if (darkTheme)
-            DarkColorScheme
-        else
-            LightColorScheme
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
         typography = Typography,
         shapes = AppShapes,
         content = content,

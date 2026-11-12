@@ -4,9 +4,12 @@
 
 On iOS, the native UITabBar is created using the `iosItems`, `iosSelectedIndex`, and `iosOnItemSelected` parameters. On Material platforms, the `content` lambda is used to provide full customization of the NavigationBar content (typically `NavigationBarItem`s).
 
-| Material (Android, Desktop, Web)                                                       | Cupertino (iOS < 26)                                                            | Liquid Glass (iOS 26+)                                                                            |
-|----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| ![AdaptiveNavigationBar Material](../images/gif/AdaptiveNavigationBar-material.gif)    | ![AdaptiveNavigationBar iOS](../images/gif/AdaptiveNavigationBar-ios.gif)       | ![AdaptiveNavigationBar Liquid Glass](../images/gif/AdaptiveNavigationBar-ios-liquid-glass.gif)   |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveNavigationBar material](../images/gif/AdaptiveNavigationBar-material.gif) | ![AdaptiveNavigationBar ios](../images/gif/AdaptiveNavigationBar-ios.gif) | ![AdaptiveNavigationBar ios-liquid-glass](../images/gif/AdaptiveNavigationBar-ios-liquid-glass.gif) |
+
+!!! tip "Navigating between screens with tabs?"
+    `AdaptiveNavigationBar` is a bar view laid over your Compose content. On iOS it cannot follow a Navigation 3 transition (it disappears only after the exit animation and reappears at the start of a back swipe). If your tabs own navigation stacks, use [`AdaptiveTabDisplay`](../navigation.md) from `calf-navigation` instead: it hosts a real `UITabBarController`, so the tab bar rides every transition natively.
 
 ## Usage
 
@@ -54,6 +57,20 @@ fun MyNavigationBar() {
 | `iosConfiguration`   | Configuration for the iOS UITabBar appearance (item tint colors, translucency). See `UIKitTabBarConfiguration`. |
 | `content`            | The content of the navigation bar on Material platforms, typically `NavigationBarItem`s within a `RowScope`.  |
 
+## Content padding on iOS
+
+On iOS the bar is a native `UITabBar` that Compose never measures. Inside an `AdaptiveScaffold`, the bar reports the room it takes and the scaffold adds it to the bottom of the `PaddingValues` it hands to `content`. The padding is updated when the device rotates and when the safe area changes. See [Top Bar](adaptive-top-bar.md#content-padding-on-ios).
+
+## Inside the bar host (iOS)
+
+With [`AdaptiveBarHostUIViewController`](../ui.md#installing-the-bar-host-ios) as the app's iOS entry point, up to five items become the tabs of the host's `UITabBarController`. Selection works both ways: `iosSelectedIndex` selects the tab, and a tap on a tab calls `iosOnItemSelected`. Your Compose content is not split per tab: the one Compose hierarchy moves into the selected tab, so its state and your own tab transitions are kept.
+
+The tab bar belongs to the screen whose `AdaptiveScaffold` shows it, and to the screens nested inside that scaffold's content. When a screen outside it takes the bars, a pushed detail for example, the tab bar hides at the start of the transition instead of staying over the new screen. On an iPhone Duo the tab bar moves into the vertical bar.
+
+With more than five items the bar stays standalone: a `UITabBarController` would move the rest behind its own "More" tab.
+
+![The sample on plain Compose navigation on an open iPhone Duo: the Showcase with its bar items and tab bar in the vertical strip](../images/BarHost-duo-showcase.png)
+
 ## iOS Configuration
 
 You can customize the iOS tab bar appearance using `UIKitTabBarConfiguration`:
@@ -75,8 +92,53 @@ AdaptiveNavigationBar(
 | Property              | Description                                                                                                |
 |-----------------------|------------------------------------------------------------------------------------------------------------|
 | `selectedItemColor`   | Tint color for selected tab bar items (icon + label). Maps to `UITabBar.tintColor`. Default: iOS system blue. |
-| `unselectedItemColor` | Color for unselected tab bar items (icon + label). Note: Liquid Glass (iOS 26+) ignores this property; not yet supported. |
+| `unselectedItemColor` | Color for unselected tab bar items (icon + label). Maps to `UITabBar.unselectedItemTintColor`. Liquid Glass (iOS 26+) ignores it. |
 | `isTranslucent`       | Whether the tab bar is translucent. Default: `true`.                                                       |
+
+### Per-state colors, title font and background
+
+For finer control, set the per-state colors, the title font and the background color. They are
+applied through `UITabBarAppearance` and take precedence over the tint colors for the state they
+cover. The same configuration styles the tab bar of the [bar host](#inside-the-bar-host-ios) and
+of `AdaptiveTabDisplay` in `calf-navigation`:
+
+```kotlin
+UIKitTabBarConfiguration(
+    backgroundColor = Color.White,
+    selectedIconColor = Color.Red,
+    selectedTitleColor = Color.Red,
+    unselectedIconColor = Color.Gray,
+    unselectedTitleColor = Color.DarkGray,
+    titleFont = UIKitFont.Named(name = "Rubik-Medium", size = 12f),
+)
+```
+
+| Property               | Description                                                                           |
+|------------------------|---------------------------------------------------------------------------------------|
+| `backgroundColor`      | Background color of the tab bar, drawn over the translucent material when `isTranslucent` is `true`. |
+| `selectedIconColor`    | Icon color of the selected item.                                                      |
+| `selectedTitleColor`   | Title color of the selected item.                                                     |
+| `unselectedIconColor`  | Icon color of unselected items.                                                       |
+| `unselectedTitleColor` | Title color of unselected items.                                                      |
+| `titleFont`            | Font of the item titles: `UIKitFont.System(size, weight)` or `UIKitFont.Named(postScriptName, size)`. `null` keeps the system font. |
+
+What each bar takes, as seen on the iOS 18.5, 26.2 and 27.1 simulators:
+
+| Property                                      | iOS 18 | Liquid Glass (iOS 26+) |
+|-----------------------------------------------|--------|------------------------|
+| `selectedIconColor`, `selectedTitleColor`     | Yes    | Yes                    |
+| `unselectedIconColor`, `unselectedTitleColor` | Yes    | Ignored                |
+| `titleFont`                                   | Yes    | Yes                    |
+| `backgroundColor`                             | Yes    | Ignored                |
+
+Liquid Glass draws its own bar, so the unselected colors and the background do not reach it,
+whichever property sets them. In the vertical bar of an iPhone Duo the items show their images
+only, and the selected one keeps the system color.
+
+!!! note
+    `UIKitFont.Named` needs a font UIKit knows: bundle it through the `UIAppFonts` Info.plist key
+    or register it at runtime (`CTFontManagerRegisterGraphicsFont`). Fonts loaded only through
+    Compose resources are not visible to UIKit; an unknown name falls back to the system font.
 
 ## iOS Tab Bar Items
 
@@ -92,3 +154,27 @@ UIKitUITabBarItem(
 
 !!! tip
     Use type-safe `SFSymbol` constants from `calf-ui` instead of raw strings. See [SF Symbols & Cupertino Icons](../sf-symbols.md) for details.
+
+
+### Images
+
+`UIKitImage` supports several sources:
+
+| Type                     | Description                                                                                  |
+|--------------------------|----------------------------------------------------------------------------------------------|
+| `UIKitImage.SystemName`  | An SF Symbol.                                                                                |
+| `UIKitImage.Painter`     | Any Compose `Painter`, e.g. `painterResource(Res.drawable.home)` or `rememberVectorPainter(...)`. Drawn offscreen at the screen density, so even-odd fills, strokes, transforms and bitmaps are preserved. Set `renderingMode = UIKitImageRenderingMode.Original` for photos that must keep their colors. |
+| `UIKitImage.Vector`      | An `ImageVector`, rasterized as a single filled shape (no fill rules, strokes or transforms). Prefer `Painter` for anything but simple icons. |
+| `UIKitImage.Bitmap`      | An `ImageBitmap`. Pass `scale` so a bitmap rendered at the screen density shows at its intended point size. |
+
+```kotlin
+val homeIcon = painterResource(Res.drawable.ic_home)
+
+UIKitUITabBarItem(title = "Home", image = UIKitImage.Painter(homeIcon))
+```
+
+!!! note
+    A painter is drawn once, when the item is set, and stretched to its `size`. An image that
+    loads later, like an image loader's painter, is not drawn again: give the item its image once
+    it has loaded, for example as a `UIKitImage.Bitmap` with
+    `renderingMode = UIKitImageRenderingMode.Original`.

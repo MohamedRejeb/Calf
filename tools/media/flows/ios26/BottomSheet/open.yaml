@@ -1,0 +1,16 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Native sheet presentation with detents on iOS"
+    direction: DOWN
+- tapOn: "Native sheet presentation with detents on iOS"
+- waitForAnimationToEnd
+- tapOn: "Share"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveBottomSheet
+- tapOn: "Done"

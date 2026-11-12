@@ -1,9 +1,12 @@
 package com.mohamedrejeb.calf.ui.datepicker
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerColors
+import androidx.compose.material3.DatePickerFormatter
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -14,7 +17,8 @@ actual fun AdaptiveDatePicker(
     title: @Composable() (() -> Unit)?,
     headline: @Composable() (() -> Unit)?,
     showModeToggle: Boolean,
-    colors: DatePickerColors
+    colors: DatePickerColors,
+    focusRequester: FocusRequester?,
 ) {
     DatePicker(
         state = state.datePickerState,
@@ -24,5 +28,6 @@ actual fun AdaptiveDatePicker(
         headline = headline,
         showModeToggle = showModeToggle,
         colors = colors,
+        focusRequester = focusRequester,
     )
 }

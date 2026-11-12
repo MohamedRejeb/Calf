@@ -14,6 +14,9 @@ internal interface IosDatePickerBackend {
     /** Shows [utcTimeMillis] as the selection without notifying the selection callback. */
     fun setSelectedDate(utcTimeMillis: Long?)
 
+    /** Scrolls to the month of [utcTimeMillis]; pickers without a visible month ignore it. */
+    fun showMonth(utcTimeMillis: Long)
+
     /** Restricts the pickable range; a null bound is open on that side. */
     fun applyDateBounds(minDateMillis: Long?, maxDateMillis: Long?)
 

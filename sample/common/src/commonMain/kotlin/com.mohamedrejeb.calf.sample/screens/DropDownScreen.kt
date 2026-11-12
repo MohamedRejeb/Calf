@@ -1,287 +1,179 @@
 package com.mohamedrejeb.calf.sample.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import com.mohamedrejeb.calf.ui.button.AdaptiveIconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.automirrored.outlined.Article
+import androidx.compose.material.icons.outlined.Archive
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.DriveFileRenameOutline
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.FolderOpen
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.outlined.Print
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.components.BarOverflowMenu
+import com.mohamedrejeb.calf.sample.components.CodeSnippet
+import com.mohamedrejeb.calf.sample.components.DemoCard
+import com.mohamedrejeb.calf.sample.components.DemoDivider
+import com.mohamedrejeb.calf.sample.components.DemoHeader
+import com.mohamedrejeb.calf.sample.components.DemoListCard
+import com.mohamedrejeb.calf.sample.components.DemoPage
+import com.mohamedrejeb.calf.sample.components.DemoRow
+import com.mohamedrejeb.calf.sample.components.DemoSection
+import com.mohamedrejeb.calf.sample.components.DividerIndentWithIcon
+import com.mohamedrejeb.calf.sample.components.IconTile
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
+import com.mohamedrejeb.calf.sample.components.ValueRow
+import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.sample.ui.theme.TileBlue
+import com.mohamedrejeb.calf.sample.ui.theme.TileCoral
+import com.mohamedrejeb.calf.sf.symbols.SFSymbol
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
-import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDown
-import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownItem
-import com.mohamedrejeb.calf.ui.dropdown.AdaptiveDropDownSection
 import com.mohamedrejeb.calf.ui.navigation.UIKitUIBarButtonItem
 import com.mohamedrejeb.calf.ui.uikit.UIKitImage
-import com.mohamedrejeb.calf.sf.symbols.SFSymbol
+
+private const val USAGE = """
+var expanded by remember { mutableStateOf(false) }
+val items = listOf(
+    AdaptiveDropDownItem(
+        title = "Share",
+        iosIcon = UIKitImage.SystemName(SFSymbol.squareAndArrowUp),
+        onClick = { share(file) },
+    ),
+    AdaptiveDropDownItem(title = "Delete", isDestructive = true, onClick = { delete(file) }),
+)
+
+Box {
+    AdaptiveIconButton(onClick = { expanded = true }) {
+        Icon(Icons.Filled.MoreVert, contentDescription = "More")
+    }
+    AdaptiveDropDown(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        iosItems = items,
+    ) {
+        items.forEach { item ->
+            DropdownMenuItem(
+                text = { Text(item.title) },
+                onClick = { expanded = false; item.onClick() },
+            )
+        }
+    }
+}
+"""
+
+private const val NO_ACTION = "None yet"
+private const val REPORT = "Q3 report.pdf"
+private const val ITINERARY = "Lisbon itinerary"
 
 @OptIn(ExperimentalCalfUiApi::class)
 @Composable
-fun DropDownScreen(
-    navigateBack: () -> Unit,
-) {
-    var selectedAction by remember { mutableStateOf("Tap a button to open a drop-down") }
+fun DropDownScreen(navigateBack: () -> Unit) {
+    var lastAction by rememberSaveable { mutableStateOf(NO_ACTION) }
+    val barMenu = remember { barMenuEntries(onAction = { lastAction = it }) }
 
-    var topBarMenuExpanded by remember { mutableStateOf(false) }
-
-    val topBarMenuItems = listOf(
-        AdaptiveDropDownItem(
-            title = "Edit",
-            iosIcon = UIKitImage.SystemName(SFSymbol.pencil),
-            onClick = { selectedAction = "Editing!" },
-        ),
-        AdaptiveDropDownItem(
-            title = "Duplicate",
-            iosIcon = UIKitImage.SystemName(SFSymbol.documentOnDocument),
-            onClick = { selectedAction = "Duplicated!" },
-        ),
-        AdaptiveDropDownItem(
-            title = "Delete",
-            iosIcon = UIKitImage.SystemName(SFSymbol.trash),
-            isDestructive = true,
-            onClick = { selectedAction = "Deleted!" },
-        ),
-    )
-
+    // The demo is the bar: it keeps its own top bar (SampleHost.DetailOwnBar) so the menu lives in it.
     SampleScreenScaffold(
-        title = "Adaptive Drop Down",
+        title = Screen.DropDown.title,
         navigateBack = navigateBack,
         actions = {
-            Box {
-                AdaptiveIconButton(onClick = { topBarMenuExpanded = true }) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = "More options")
-                }
-                DropdownMenu(
-                    expanded = topBarMenuExpanded,
-                    onDismissRequest = { topBarMenuExpanded = false },
-                ) {
-                    topBarMenuItems.forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(item.title) },
-                            onClick = {
-                                topBarMenuExpanded = false
-                                item.onClick()
-                            },
-                        )
-                    }
-                }
-            }
+            BarOverflowMenu(items = barMenu.map { it.item }, icons = barMenu.map { it.materialIcon })
         },
         iosTrailingItems = listOf(
             UIKitUIBarButtonItem.withMenu(
                 image = UIKitImage.SystemName(SFSymbol.ellipsisCircle),
-                menuItems = topBarMenuItems,
+                menuItems = barMenu.map { it.item },
+                label = "More",
             ),
         ),
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            Text(
-                text = "Context menus using iOS UIMenu and Material3 DropdownMenu.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-
-            Text(
-                text = selectedAction,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Simple drop-down
-            var simpleExpanded by remember { mutableStateOf(false) }
-
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Simple Drop Down",
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            text = "Tap the button to see Copy, Share, Delete options",
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                    Box {
-                        AdaptiveIconButton(onClick = { simpleExpanded = true }) {
-                            Icon(Icons.Filled.MoreVert, contentDescription = "More options")
-                        }
-
-                        val items = listOf(
-                            AdaptiveDropDownItem(
-                                title = "Copy",
-                                onClick = { selectedAction = "Copied!" },
-                            ),
-                            AdaptiveDropDownItem(
-                                title = "Share",
-                                onClick = { selectedAction = "Shared!" },
-                            ),
-                            AdaptiveDropDownItem(
-                                title = "Delete",
-                                isDestructive = true,
-                                onClick = { selectedAction = "Deleted!" },
-                            ),
-                        )
-
-                        AdaptiveDropDown(
-                            expanded = simpleExpanded,
-                            onDismissRequest = { simpleExpanded = false },
-                            iosItems = items,
-                        ) {
-                            items.forEach { item ->
-                                DropdownMenuItem(
-                                    text = { Text(item.title) },
-                                    enabled = !item.isDisabled,
-                                    onClick = {
-                                        simpleExpanded = false
-                                        item.onClick()
-                                    },
-                                )
-                            }
-                        }
-                    }
+        DemoPage(contentPadding = padding) {
+            DemoHeader(Screen.DropDown)
+            FilesSection(onAction = { lastAction = it })
+            DemoSection(title = "Result") {
+                DemoCard {
+                    ValueRow(label = "Last action", value = lastAction)
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Drop-down with sections
-            var sectionedExpanded by remember { mutableStateOf(false) }
-
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Sectioned Drop Down",
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            text = "Tap the button to see grouped menu with sections",
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                    Box {
-                        AdaptiveIconButton(onClick = { sectionedExpanded = true }) {
-                            Icon(Icons.Filled.MoreVert, contentDescription = "More options")
-                        }
-
-                        val items = listOf(
-                            AdaptiveDropDownItem(
-                                title = "Open",
-                                onClick = { selectedAction = "Opened!" },
-                            ),
-                            AdaptiveDropDownItem(
-                                title = "Edit",
-                                onClick = { selectedAction = "Editing!" },
-                            ),
-                        )
-
-                        val sections = listOf(
-                            AdaptiveDropDownSection(
-                                title = "Danger Zone",
-                                items = listOf(
-                                    AdaptiveDropDownItem(
-                                        title = "Archive",
-                                        onClick = { selectedAction = "Archived!" },
-                                    ),
-                                    AdaptiveDropDownItem(
-                                        title = "Delete",
-                                        isDestructive = true,
-                                        onClick = { selectedAction = "Deleted!" },
-                                    ),
-                                ),
-                            ),
-                        )
-
-                        AdaptiveDropDown(
-                            expanded = sectionedExpanded,
-                            onDismissRequest = { sectionedExpanded = false },
-                            iosItems = items,
-                            iosSections = sections,
-                        ) {
-                            items.forEach { item ->
-                                DropdownMenuItem(
-                                    text = { Text(item.title) },
-                                    enabled = !item.isDisabled,
-                                    onClick = {
-                                        sectionedExpanded = false
-                                        item.onClick()
-                                    },
-                                )
-                            }
-
-                            sections.forEach { section ->
-                                HorizontalDivider()
-                                section.items.forEach { item ->
-                                    DropdownMenuItem(
-                                        text = { Text(item.title) },
-                                        enabled = !item.isDisabled,
-                                        onClick = {
-                                            sectionedExpanded = false
-                                            item.onClick()
-                                        },
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+            DemoSection(title = "Usage") {
+                CodeSnippet(USAGE.trimIndent())
             }
         }
     }
+}
+
+@Composable
+private fun FilesSection(onAction: (String) -> Unit) {
+    val reportMenu = remember(onAction) { reportMenuEntries(onAction) }
+    val (items, sections) = remember(onAction) { itineraryMenu(onAction) }
+    DemoSection(
+        title = "Recent files",
+        footer = "The report menu has icons, a disabled item and a destructive one; the itinerary menu adds a " +
+            "titled section. The more button in the top bar has a menu too: on iOS, the bar button's own UIMenu.",
+    ) {
+        DemoListCard {
+            DemoRow(
+                title = REPORT,
+                subtitle = "2.4 MB · Edited today",
+                leading = { IconTile(icon = Icons.Outlined.Description, color = TileCoral) },
+                trailing = { FileMenuButton(entries = reportMenu) },
+            )
+            DemoDivider(startIndent = DividerIndentWithIcon)
+            DemoRow(
+                title = ITINERARY,
+                subtitle = "Shared with Sara",
+                leading = { IconTile(icon = Icons.AutoMirrored.Outlined.Article, color = TileBlue) },
+                trailing = { FileMenuButton(entries = items, sections = sections) },
+            )
+        }
+    }
+}
+
+private fun barMenuEntries(onAction: (String) -> Unit): List<MenuEntry> =
+    listOf(
+        MenuEntry("Edit", SFSymbol.pencil, Icons.Outlined.Edit) { onAction("Editing $ITINERARY") },
+        MenuEntry("Duplicate", SFSymbol.documentOnDocument, Icons.Outlined.ContentCopy) {
+            onAction("Duplicated $ITINERARY")
+        },
+        MenuEntry("Pin", SFSymbol.pin, Icons.Outlined.PushPin) { onAction("Pinned $ITINERARY") },
+        MenuEntry("Delete", SFSymbol.trash, Icons.Outlined.Delete, isDestructive = true) {
+            onAction("Deleted $ITINERARY")
+        },
+    )
+
+private fun reportMenuEntries(onAction: (String) -> Unit): List<MenuEntry> =
+    listOf(
+        MenuEntry("Copy", SFSymbol.documentOnDocument, Icons.Outlined.ContentCopy) { onAction("Copied $REPORT") },
+        MenuEntry("Share", SFSymbol.squareAndArrowUp, Icons.Outlined.Share) { onAction("Shared $REPORT") },
+        // No printer nearby: shown, but greyed out on both platforms.
+        MenuEntry("Print", SFSymbol.printer, Icons.Outlined.Print, isDisabled = true) { onAction("Printed $REPORT") },
+        MenuEntry("Delete", SFSymbol.trash, Icons.Outlined.Delete, isDestructive = true) {
+            onAction("Deleted $REPORT")
+        },
+    )
+
+private fun itineraryMenu(onAction: (String) -> Unit): Pair<List<MenuEntry>, List<MenuSection>> {
+    val items = listOf(
+        MenuEntry("Open", SFSymbol.folder, Icons.Outlined.FolderOpen) { onAction("Opened $ITINERARY") },
+        MenuEntry("Rename", SFSymbol.pencil, Icons.Outlined.DriveFileRenameOutline) {
+            onAction("Renaming $ITINERARY")
+        },
+    )
+    val manage = MenuSection(
+        title = "Manage",
+        entries = listOf(
+            MenuEntry("Archive", SFSymbol.archivebox, Icons.Outlined.Archive) { onAction("Archived $ITINERARY") },
+            MenuEntry("Delete", SFSymbol.trash, Icons.Outlined.Delete, isDestructive = true) {
+                onAction("Deleted $ITINERARY")
+            },
+        ),
+    )
+    return items to listOf(manage)
 }

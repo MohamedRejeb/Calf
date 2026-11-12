@@ -15,6 +15,8 @@ import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosActionStyle
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosProperties
 import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosStyle
+import com.mohamedrejeb.calf.ui.navigation.LocalAdaptiveBarHost
+import com.mohamedrejeb.calf.ui.navigation.currentHostedScaffold
 
 @OptIn(InternalCalfApi::class)
 @Composable
@@ -94,7 +96,10 @@ actual fun AdaptiveAlertDialog(
         alertDialogManager.updateDialogProperties()
     }
 
+    val anchorPane = actionSheetPane()
+
     DisposableEffect(Unit) {
+        alertDialogManager.anchorPane = anchorPane
         alertDialogManager.showAlertDialog()
 
         onDispose {
@@ -133,11 +138,29 @@ actual fun AdaptiveBasicAlertDialog(
         alertDialogManager.updateDialogProperties()
     }
 
+    val anchorPane = actionSheetPane()
+
     DisposableEffect(Unit) {
+        alertDialogManager.anchorPane = anchorPane
         alertDialogManager.showAlertDialog()
 
         onDispose {
             alertDialogManager.dismiss()
         }
+    }
+}
+
+/**
+ * The pane of the bar host's surface an action sheet is centred in: the hosted scaffold around
+ * the dialog, or, for a dialog declared beside its screen's scaffold, the screen that owns the
+ * bars. Nothing outside the bar host's surface, where the presenting controller is the column.
+ */
+@Composable
+private fun actionSheetPane(): () -> ClosedFloatingPointRange<Double>? {
+    val scaffold = currentHostedScaffold()
+    val host = LocalAdaptiveBarHost.current?.takeIf { it.isHostSurface(LocalUIViewController.current) }
+    return {
+        val span = scaffold?.let { it.host.state.spanOf(it) } ?: host?.state?.ownerSpan
+        span?.takeUnless { it.fillsWidth }?.let { it.left.value.toDouble()..it.right.value.toDouble() }
     }
 }

@@ -1,7 +1,7 @@
 [versions]
-agp = "9.4.0"
-kotlin = "2.4.20"
-compose = "1.12.0"
+agp = "9.4.1"
+kotlin = "2.4.21"
+compose = "1.12.1"
 material3 = "1.12.0-alpha03"
 material-icons-extended = "1.7.3"
 kotlinx-datetime = "0.8.0"
@@ -9,9 +9,18 @@ kotlinx-io = "0.9.1"
 kotlinx-browser = "0.5.0"
 vanniktech-maven-publish = "0.37.0"
 documentfile = "1.1.0"
-coil = "3.6.2"
+coil = "3.6.3"
 kyant-backdrop = "2.0.1"
 kyant-shapes = "1.2.1"
+# Lifecycle follows the CMP 1.12.1 release-notes table; Navigation3 is the newest JetBrains line (1.2.0-rc01,
+# built against Google's KMP navigation3-runtime 1.2.0, minSdk 23), ahead of the table's 1.1.2.
+nav3-runtime = "1.2.0"
+nav3-ui = "1.2.0-rc01"
+jetbrains-lifecycle = "2.11.0"
+jetbrains-savedstate = "1.4.0"
+# Material3 Adaptive 1.3.0 is the stable release of the CMP 1.12.1 table's 1.3.0-rc01; WindowManager follows the table.
+material3-adaptive = "1.3.0"
+androidx-window = "1.5.1"
 
 calf = "0.14.0"
 
@@ -22,8 +31,6 @@ java = "17"
 
 # For sample
 activity-compose = "1.13.0"
-# androidx.navigation 2.10+ declares minSdk 24; 2.9.x is the last line that keeps calf-navigation at minSdk 23.
-android-navigation-compose = "2.9.7"
 # The sample pairs CMP 1.12 with JetBrains navigation 2.10, whose Android artifact requires minSdk 24.
 android-sample-minSdk = "24"
 kotlinx-coroutines = "1.11.0"
@@ -34,8 +41,8 @@ robolectric = "4.16.1"
 junit = "4.13.2"
 android-lifecycle = "2.2.0"
 play-services-location = "21.4.0"
-jetbrains-navigation-compose = "2.10.0-alpha02"
-ktor = "3.5.2"
+jetbrains-navigation-compose = "2.10.0-rc01"
+ktor = "3.6.0"
 
 [libraries]
 gradlePlugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -50,6 +57,7 @@ compose-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", v
 compose-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-ui" }
 lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "android-lifecycle" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
@@ -68,6 +76,18 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 junit = { module = "junit:junit", version.ref = "junit" }
 compose-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "compose" }
 compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "material3" }
+compose-material3-adaptive-navigation-suite = { group = "org.jetbrains.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "material3" }
+compose-ui-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "compose" }
+compose-material3-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "material3-adaptive" }
+compose-material3-adaptive-navigation3 = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-navigation3", version.ref = "material3-adaptive" }
+androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
+
+# Navigation
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3-runtime" }
+androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "nav3-ui" }
+jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "jetbrains-lifecycle" }
+jetbrains-lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "jetbrains-lifecycle" }
+jetbrains-savedstate = { module = "org.jetbrains.androidx.savedstate:savedstate", version.ref = "jetbrains-savedstate" }
 compose-material-icons-extended = { group = "org.jetbrains.compose.material", name = "material-icons-extended", version.ref = "material-icons-extended" }
 
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
@@ -82,7 +102,6 @@ documentfile = { module = "androidx.documentfile:documentfile", version.ref = "d
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
 
 # For sample
-android-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "android-navigation-compose" }
 jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-navigation-compose" }
 
 calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }

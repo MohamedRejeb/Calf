@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+---
+- tapOn: "Share"
+- waitForAnimationToEnd
+- swipe:
+    start: 50%, 70%
+    end: 50%, 20%
+    duration: 700
+- swipe:
+    start: 50%, 40%
+    end: 50%, 95%
+    duration: 700
+- runFlow: ../_sleep.yaml

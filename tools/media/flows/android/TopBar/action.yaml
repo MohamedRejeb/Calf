@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- tapOn:
+    point: "81%,9%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "93%,9%"
+- waitForAnimationToEnd
+- swipe:
+    direction: UP
+    duration: 900
+- swipe:
+    direction: DOWN
+    duration: 900

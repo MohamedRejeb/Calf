@@ -1,0 +1,21 @@
+appId: ${APP_ID}
+---
+- tapOn:
+    point: "84%,32%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "84%,64%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "84%,56%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "84%,32%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "84%,64%"
+- waitForAnimationToEnd
+- tapOn:
+    point: "84%,56%"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml

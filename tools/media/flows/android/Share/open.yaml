@@ -1,0 +1,15 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Text, links and files through the share sheet"
+    direction: DOWN
+- tapOn: "Text, links and files through the share sheet"
+- waitForAnimationToEnd
+- takeScreenshot: Share
+- tapOn: "Share link"
+- waitForAnimationToEnd
+- takeScreenshot: Share-sheet

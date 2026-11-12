@@ -1,0 +1,8 @@
+appId: ${APP_ID}
+---
+- tapOn: "Arrows"
+- tapOn: "Media"
+- tapOn: "All"
+- swipe:
+    direction: UP
+    duration: 1500

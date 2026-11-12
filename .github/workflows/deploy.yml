@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g., 0.11.0)'
+        description: 'Release version (e.g., 1.0.0)'
         required: true
         type: string
 
@@ -131,12 +131,16 @@ jobs:
       run: |
         sed -i "s/calf_version: .*/calf_version: '${{ inputs.version }}'/" mkdocs.yml
 
+    - name: Update README quick start
+      run: |
+        sed -i "s/\(com\.mohamedrejeb\.calf:calf-ui:\)[^\"]*\"/\1${{ inputs.version }}\"/" README.md
+
     - name: Update compatibility tables
       run: |
         NEW_ROW="| ${{ steps.versions.outputs.kotlin }}         | ${{ steps.versions.outputs.compose }}          | ${{ inputs.version }}       |"
         HEADER="| Kotlin version | Compose version | Calf version |"
 
-        for file in README.md docs/installation.md docs/ui.md; do
+        for file in README.md docs/index.md docs/installation.md docs/ui.md; do
           # Insert new row after the table header separator line
           sed -i "/^|----------------|-----------------|--------------|$/a\\
         $NEW_ROW" "$file"

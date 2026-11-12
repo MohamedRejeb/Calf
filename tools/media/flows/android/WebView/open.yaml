@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "WKWebView, Android WebView and more"
+    direction: DOWN
+- tapOn: "WKWebView, Android WebView and more"
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn:
+    text: "zzz-never"
+    optional: true
+- tapOn:
+    text: "zzz-never"
+    optional: true
+- takeScreenshot: WebView

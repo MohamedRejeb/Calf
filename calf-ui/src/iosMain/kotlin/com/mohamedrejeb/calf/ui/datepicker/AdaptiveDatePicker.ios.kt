@@ -2,7 +2,6 @@ package com.mohamedrejeb.calf.ui.datepicker
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerFormatter
@@ -14,6 +13,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
@@ -22,6 +22,7 @@ import com.mohamedrejeb.calf.core.InternalCalfApi
 import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
 import kotlinx.cinterop.ExperimentalForeignApi
+import com.mohamedrejeb.calf.ui.utils.SafeAreaIsolatingView
 
 @OptIn(
     ExperimentalForeignApi::class, ExperimentalMaterial3Api::class, InternalCalfApi::class,
@@ -35,7 +36,8 @@ actual fun AdaptiveDatePicker(
     title: @Composable (() -> Unit)?,
     headline: @Composable (() -> Unit)?,
     showModeToggle: Boolean,
-    colors: DatePickerColors
+    colors: DatePickerColors,
+    focusRequester: FocusRequester?,
 ) {
     val datePickerManager = rememberDatePickerManager(
         state = state,
@@ -58,7 +60,7 @@ actual fun AdaptiveDatePicker(
         key(datePickerManager) {
             UIKitView(
                 factory = {
-                    datePickerManager.view
+                    SafeAreaIsolatingView(datePickerManager.view)
                 },
                 properties = UIKitInteropProperties(
                     interactionMode = UIKitInteropInteractionMode.NonCooperative,
@@ -66,13 +68,7 @@ actual fun AdaptiveDatePicker(
                 modifier = Modifier
                     .background(colors.containerColor)
                     .fillMaxWidth()
-                    .then(
-                        if (datePickerManager.aspectRatio.isFinite() && datePickerManager.aspectRatio > 0f)
-                            Modifier
-                                .aspectRatio(datePickerManager.aspectRatio)
-                        else
-                            Modifier
-                    )
+                    .then(remember(datePickerManager) { Modifier.uikitFittingHeight(datePickerManager.view) })
             )
         }
     }
@@ -131,6 +127,11 @@ internal fun SyncNativeDatePicker(
 
     LaunchedEffect(state.selectedDateMillis) {
         manager.setSelectedDate(state.selectedDateMillis)
+    }
+
+    // After the selection, so the displayed month wins when both change in the same frame.
+    LaunchedEffect(state.displayedMonthMillis) {
+        manager.showMonth(state.displayedMonthMillis)
     }
 
     LaunchedEffect(enabled) {

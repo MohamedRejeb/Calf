@@ -1,0 +1,21 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "A complete screen built only from adaptive components"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "A complete screen built only from adaptive components"
+- waitForAnimationToEnd
+- takeScreenshot: Showcase
+- tapOn: "Schedule"
+- waitForAnimationToEnd
+- takeScreenshot: Showcase-schedule
+- tapOn: "People"
+- waitForAnimationToEnd
+- takeScreenshot: Showcase-people
+- tapOn: "Plan"

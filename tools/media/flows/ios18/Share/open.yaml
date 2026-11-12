@@ -1,0 +1,23 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Text, links and files through the share sheet"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "Text, links and files through the share sheet"
+- waitForAnimationToEnd
+- takeScreenshot: Share
+- tapOn: "Share link"
+- extendedWaitUntil:
+    visible: "Copy"
+    timeout: 15000
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- takeScreenshot: Share-sheet
+- tapOn:
+    point: 50%, 6%

@@ -1,0 +1,246 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
+package com.mohamedrejeb.calf.ui.navigation
+
+import com.mohamedrejeb.calf.core.InternalCalfApi
+import com.mohamedrejeb.calf.ui.utils.isIOSVersionAtLeast
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.readValue
+import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGPointMake
+import platform.CoreGraphics.CGRectZero
+import platform.CoreGraphics.CGSizeMake
+import platform.UIKit.NSDirectionalRectEdge
+import platform.UIKit.NSDirectionalRectEdgeTop
+import platform.UIKit.UIScrollView
+import platform.UIKit.UIView
+import platform.UIKit.UIViewAutoresizingFlexibleHeight
+import platform.UIKit.UIViewAutoresizingFlexibleWidth
+import platform.UIKit.UIViewController
+import kotlin.math.abs
+
+/**
+ * Invisible, non-interactive scroll view registered as a view controller's content scroll view,
+ * so a navigation bar above Compose content collapses its large title and switches its
+ * scroll-edge appearance as if the content were a native scroll view. Shared by every iOS host
+ * of Compose content inside a `UINavigationController`: calf-navigation's entries and calf-ui's
+ * bar host.
+ *
+ * UIKit expands the bar while the offset is at or past `-adjustedContentInset.top` measured with
+ * the bar expanded, and collapses it as the offset rises from there. The inset itself shrinks
+ * with the bar, so it is sampled as the largest value seen while the content is at its top;
+ * parking the rest offset past that position (a bounce at the top, which UIKit renders fully
+ * expanded) is what expands the bar on the very first layout, before the expanded inset is known.
+ *
+ * The scroll view must stay *above* the Compose view: iOS 26 renders the large title (and the
+ * scroll-edge effect) inside the content scroll view's space, so a scroll view behind the Compose
+ * surface would draw them out of sight.
+ *
+ * @param density points to pixels, for the offsets reported by [reportScrollOffset].
+ * @param onSafeAreaInsetsChange called when the scroll view's safe area changes outside a layout
+ *   pass of its view controller (it fills that view, so it has the same safe area).
+ */
+@InternalCalfApi
+public class LargeTitleScrollMirror(
+    private val density: Float,
+    onSafeAreaInsetsChange: () -> Unit,
+) {
+    /** The mirrored scroll view. Content added to its superview goes below it. */
+    public val scrollView: UIScrollView = MirrorScrollView(onSafeAreaInsetsChange).apply {
+        // Transparent and touch-transparent: it only exists to be observed.
+        userInteractionEnabled = false
+        opaque = false
+        showsVerticalScrollIndicator = false
+        showsHorizontalScrollIndicator = false
+        autoresizingMask = UIViewAutoresizingFlexibleWidth or UIViewAutoresizingFlexibleHeight
+    }
+
+    private var registeredIn: UIViewController? = null
+    private var registeredEdges: NSDirectionalRectEdge = NSDirectionalRectEdgeTop
+    private var trackedScrollPx: Float = 0f
+    private var calibration = NavBarInsetCalibration()
+
+    /** The screen the current calibration belongs to, and what was learnt for recent screens. */
+    private var calibrationKey: Any? = null
+    private val rememberedCalibrations = LinkedHashMap<Any, NavBarInsetCalibration>()
+    private val titleMovesWithContent = isIOSVersionAtLeast(LIQUID_GLASS_MIN_IOS)
+
+    /**
+     * Puts the scroll view on top of [viewController]'s view and registers it there for [edges]
+     * (`NSDirectionalRectEdge` flags). Called again with another controller, it moves over (the
+     * bar host moves its content between tabs).
+     *
+     * Registered for the bottom edge too, a tab bar or toolbar keeps its standard appearance:
+     * without a scroll view for its edge UIKit treats the content as scrolled to that edge and
+     * makes the bar transparent (iOS 15–18), over whatever is behind it.
+     */
+    public fun install(
+        viewController: UIViewController,
+        edges: NSDirectionalRectEdge = NSDirectionalRectEdgeTop,
+    ) {
+        // The previous controller's bar would keep drawing its large title into this scroll view
+        // (iOS 26 renders it in the content scroll view's space), over the new one's.
+        unregister()
+        val view = viewController.view
+        scrollView.removeFromSuperview()
+        scrollView.setFrame(view.bounds)
+        view.addSubview(scrollView)
+        if (isIOSVersionAtLeast(CONTENT_SCROLL_VIEW_MIN_IOS)) {
+            viewController.setContentScrollView(scrollView, forEdge = edges)
+        }
+        registeredIn = viewController
+        registeredEdges = edges
+    }
+
+    /**
+     * Registers the scroll view for [edges] in [viewController] as well, without moving it: for a
+     * bar that belongs to a container other than the one the content is in (the bar host's tab bar,
+     * whose tabs are empty placeholders under the content). A bar whose edge has no scroll view is
+     * drawn transparent over the content on iOS 15–18.
+     */
+    public fun share(
+        viewController: UIViewController,
+        edges: NSDirectionalRectEdge,
+    ) {
+        if (isIOSVersionAtLeast(CONTENT_SCROLL_VIEW_MIN_IOS)) {
+            viewController.setContentScrollView(scrollView, forEdge = edges)
+        }
+    }
+
+    public fun remove() {
+        unregister()
+        scrollView.removeFromSuperview()
+    }
+
+    private fun unregister() {
+        val previous = registeredIn ?: return
+        if (isIOSVersionAtLeast(CONTENT_SCROLL_VIEW_MIN_IOS)) {
+            previous.setContentScrollView(null, forEdge = registeredEdges)
+        }
+        registeredIn = null
+    }
+
+    /** The content's scroll distance from its top, in pixels, as a [LargeTitleScrollTracker] reports it. */
+    public fun reportScrollOffset(offsetPx: Float) {
+        trackedScrollPx = offsetPx
+        applyScrollOffset()
+    }
+
+    /** Call from the view controller's `viewDidLayoutSubviews`: keeps the rest position on the expanded bar. */
+    public fun layout() {
+        // Tall enough that any mirrored offset is a valid position.
+        scrollView.setContentSize(
+            scrollView.bounds.useContents { CGSizeMake(size.width, size.height + CONTENT_SCROLL_EXTENT) },
+        )
+        applyScrollOffset()
+    }
+
+    /**
+     * Starts the calibration over, as after a size change: at the next layout pass a bar that is
+     * collapsed while the content is at its top expands again. For a bar that changes without a
+     * size change: shown, or switched between a large and an inline title.
+     *
+     * With a [memoryKey] (the screen whose bar is shown) the calibration learnt for that screen is
+     * brought back instead of starting over, and the one being left is kept for it. Popping back
+     * to a scrolled list thus keeps the expanded inset its content is padded with; starting over
+     * would pad it with the collapsed one until it scrolled to the top, a jump of the large title's
+     * height. Only the last few screens are remembered.
+     */
+    public fun recalibrate(memoryKey: Any? = null) {
+        calibrationKey?.let { leaving ->
+            if (calibration.expandedTopInset > 0.0) rememberCalibration(leaving, calibration)
+        }
+        calibrationKey = memoryKey
+        calibration = memoryKey?.let(rememberedCalibrations::get) ?: NavBarInsetCalibration()
+        scrollView.superview?.setNeedsLayout()
+    }
+
+    private fun rememberCalibration(key: Any, value: NavBarInsetCalibration) {
+        rememberedCalibrations.remove(key)
+        rememberedCalibrations[key] = value
+        while (rememberedCalibrations.size > REMEMBERED_SCREENS) {
+            rememberedCalibrations.remove(rememberedCalibrations.keys.first())
+        }
+    }
+
+    /** Top inset for the content: stable while the large title collapses. See [NavBarInsetCalibration]. */
+    public fun contentTopInset(liveTopInset: Double): Double =
+        calibration.contentTopInset(liveTopInset)
+
+    private fun applyScrollOffset() {
+        if (scrollView.superview == null) return
+        val width = scrollView.bounds.useContents { size.width }
+        // Bar heights differ per orientation; recalibrate after a size change.
+        val recalibrated = calibration.forWidth(width)
+        val isRecalibrating = recalibrated !== calibration
+        calibration = recalibrated
+
+        val atTop = trackedScrollPx == 0f
+        val topInsetBefore = scrollView.adjustedContentInset.useContents { top }
+        if ((atTop && isRecalibrating) || calibration.isCollapsedAtTop(atTop, topInsetBefore)) {
+            expandCollapsedBar()
+        }
+        // Changing the offset can change the bar height, and UIKit then shifts
+        // the offset by the inset delta to keep content still. Re-applying once
+        // puts the title where the scroll says instead of one frame later.
+        repeat(OFFSET_APPLY_PASSES) {
+            val currentTopInset = scrollView.adjustedContentInset.useContents { top }
+            if (atTop) {
+                calibration = calibration.sampledAtTop(currentTopInset)
+            }
+            val offsetY = calibration.mirroredOffsetY(
+                atTop = atTop,
+                currentTopInset = currentTopInset,
+                scrolledPoints = mirroredScrollPoints(
+                    scrolledPoints = (trackedScrollPx / density).toDouble(),
+                    titleMovesWithContent = titleMovesWithContent,
+                ),
+            )
+            scrollView.setContentOffset(CGPointMake(0.0, offsetY), animated = false)
+            val applied = scrollView.contentOffset.useContents { y }
+            if (abs(applied - offsetY) < OFFSET_EPSILON) return
+        }
+    }
+
+    /**
+     * The bar can be collapsed although the content is at its top: after a size change (iPhone
+     * landscape shows the title inline, and rotating back to portrait keeps it inline) and
+     * after a one-step collapse on systems whose title only snaps. The rest offset sits exactly
+     * on the *current* inset, which is then the collapsed one, and that is a stable state for
+     * UIKit, so nothing would ever expand the bar again.
+     * Pulling the offset past the inset once makes UIKit expand it (synchronously, the inset
+     * grows with it), and the regular passes then settle the offset on the expanded inset.
+     */
+    private fun expandCollapsedBar() {
+        val collapsedTopInset = scrollView.adjustedContentInset.useContents { top }
+        scrollView.setContentOffset(
+            CGPointMake(0.0, -(collapsedTopInset + EXPANSION_PULL_DOWN)),
+            animated = false,
+        )
+    }
+}
+
+/**
+ * `viewSafeAreaInsetsDidChange` cannot be overridden from Kotlin, this can. The scroll view fills
+ * its view controller's view, so it has the same safe-area insets.
+ */
+private class MirrorScrollView(
+    private val onSafeAreaInsetsChange: () -> Unit,
+) : UIScrollView(frame = CGRectZero.readValue()) {
+    override fun safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
+        onSafeAreaInsetsChange()
+    }
+}
+
+private const val CONTENT_SCROLL_VIEW_MIN_IOS = 15
+
+/** Screens whose calibration is kept: a back stack a user walks back through, not an app's whole life. */
+private const val REMEMBERED_SCREENS = 8
+private const val LIQUID_GLASS_MIN_IOS = 26
+private const val CONTENT_SCROLL_EXTENT = 100_000.0
+private const val OFFSET_APPLY_PASSES = 2
+private const val OFFSET_EPSILON = 0.5
+
+/** Points past the inset; anything taller than a large title's extra height works. */
+private const val EXPANSION_PULL_DOWN = 200.0

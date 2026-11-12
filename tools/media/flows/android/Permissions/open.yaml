@@ -1,0 +1,17 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+    permissions:
+      all: deny
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Ask for and track runtime permissions"
+    direction: DOWN
+- tapOn: "Ask for and track runtime permissions"
+- waitForAnimationToEnd
+- takeScreenshot: Permissions
+- tapOn: "Ask for camera and microphone"
+- waitForAnimationToEnd
+- takeScreenshot: Permissions-prompt

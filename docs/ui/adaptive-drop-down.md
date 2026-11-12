@@ -4,9 +4,9 @@
 
 On iOS, this provides the system drop-down experience with `showsMenuAsPrimaryAction`. On non-iOS platforms, it delegates directly to Material3 `DropdownMenu`.
 
-| Material (Android, Desktop, Web)                                                   | Cupertino (iOS < 26)                                                        | Liquid Glass (iOS 26+)                                                                        |
-|------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| ![AdaptiveDropdownMenu Material](../images/gif/AdaptiveDropdownMenu-material.gif)  | ![AdaptiveDropdownMenu iOS](../images/gif/AdaptiveDropdownMenu-ios.gif)     | ![AdaptiveDropdownMenu Liquid Glass](../images/gif/AdaptiveDropdownMenu-ios-liquid-glass.gif) |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveDropdownMenu material](../images/gif/AdaptiveDropdownMenu-material.gif) | ![AdaptiveDropdownMenu ios](../images/gif/AdaptiveDropdownMenu-ios.gif) | ![AdaptiveDropdownMenu ios-liquid-glass](../images/gif/AdaptiveDropdownMenu-ios-liquid-glass.gif) |
 
 ## Usage
 

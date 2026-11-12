@@ -1,44 +1,23 @@
 package com.mohamedrejeb.calf.ui.navigation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onPlaced
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.uikit.LocalUIViewController
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalLayoutDirection
 import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
 import com.mohamedrejeb.calf.ui.utils.applyLayoutDirection
 import com.mohamedrejeb.calf.ui.utils.isIOS26OrAbove
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
-import platform.UIKit.NSLayoutConstraint
-import platform.UIKit.UIDevice
 import platform.UIKit.UITabBar
 
 /**
@@ -46,6 +25,10 @@ import platform.UIKit.UITabBar
  *
  * This implementation uses UIKit's UITabBar to create a native iOS tab bar.
  * The [content] lambda is ignored on iOS — items are built from [iosItems].
+ *
+ * Inside an [AdaptiveBarHostUIViewController] the tab bar is the host's `UITabBarController`,
+ * for up to [MAX_HOSTED_TABS] items; with more, UIKit would move the rest behind its own "More"
+ * tab, so the bar stays standalone.
  */
 @OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
 @ExperimentalCalfUiApi
@@ -62,13 +45,22 @@ actual fun AdaptiveNavigationBar(
     iosConfiguration: UIKitTabBarConfiguration,
     content: @Composable RowScope.() -> Unit
 ) {
+    val hostedScaffold = currentHostedScaffold()
+    if (hostedScaffold != null && iosItems.size in 1..MAX_HOSTED_TABS) {
+        PublishTabBar(
+            scaffold = hostedScaffold,
+            bar = HostedTabBar(
+                items = iosItems,
+                selectedIndex = iosSelectedIndex,
+                configuration = iosConfiguration,
+            ),
+            onItemSelected = iosOnItemSelected,
+        )
+        return
+    }
+
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
-    val viewController = LocalUIViewController.current
-
-    // Write the measured tab bar height to the CompositionLocal so AdaptiveScaffold
-    // can automatically adjust content padding on iOS.
-    val iosTabBarPaddingState = LocalIosTabBarPadding.current
 
     val tabBarView = remember {
         UITabBar().apply {
@@ -90,8 +82,8 @@ actual fun AdaptiveNavigationBar(
         tabBarView.applyLayoutDirection(layoutDirection)
     }
 
-    LaunchedEffect(iosItems, iosSelectedIndex) {
-        tabBarManager.setItems(iosItems, iosSelectedIndex, density.density)
+    LaunchedEffect(iosItems, iosSelectedIndex, density, layoutDirection) {
+        tabBarManager.setItems(iosItems, iosSelectedIndex, density.density, layoutDirection)
     }
 
     SideEffect {
@@ -100,105 +92,30 @@ actual fun AdaptiveNavigationBar(
         )
     }
 
-    val initialSafeAreaBottom = remember {
-        if (isLiquidGlassEnabled) 0.dp
-        else viewController.view.safeAreaInsets.useContents { bottom.dp }
-    }
-    val cachedTabBarHeight = remember { IosBarHeightCache.lastTabBarHeight }
+    // Pins the bar to the bottom and re-measures it whenever UIKit lays it out again
+    // (rotation, safe-area change). The Liquid Glass tab bar extends under the home
+    // indicator, so its height already includes the bottom inset.
+    val tabBarLayout = rememberIosBarLayout(
+        barView = tabBarView,
+        edge = IosBarEdge.Bottom,
+        kind = IosBarKind.TabBar,
+        barCoversSafeArea = isLiquidGlassEnabled,
+    )
 
-    var topLeft by remember { mutableStateOf(DpOffset.Zero) }
-    var positionInRoot by remember { mutableStateOf(DpOffset.Zero) }
-    var tabBarWidth by remember { mutableStateOf(0.dp) }
-    var tabBarHeight by remember {
-        val tabBarHeight = initialSafeAreaBottom + cachedTabBarHeight
-        if (tabBarHeight.value > 0f) {
-            iosTabBarPaddingState.value = PaddingValues(bottom = tabBarHeight)
-        }
-        mutableStateOf(tabBarHeight)
-    }
+    IosBarPlaceholder(layout = { tabBarLayout.value })
+}
 
-    DisposableEffect(tabBarView, viewController) {
-        viewController.view.addSubview(tabBarView)
-
-        NSLayoutConstraint.activateConstraints(
-            listOf(
-                tabBarView.leadingAnchor.constraintEqualToAnchor(viewController.view.leadingAnchor),
-                tabBarView.trailingAnchor.constraintEqualToAnchor(viewController.view.trailingAnchor),
-                tabBarView.bottomAnchor.constraintEqualToAnchor(
-                    if (isLiquidGlassEnabled)
-                        viewController.view.bottomAnchor
-                    else
-                        viewController.view.safeAreaLayoutGuide.bottomAnchor
-                ),
-            )
-        )
-
-        onDispose {
-            tabBarView.removeFromSuperview()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        var tabBarHeightConsistencyCounter = 0
-
-        while (true) {
-            tabBarView.frame.useContents {
-                topLeft = DpOffset(
-                    x = origin.x.dp,
-                    y = origin.y.dp,
-                )
-                tabBarWidth = size.width.dp
-                val safeAreaBottom =
-                    if (isLiquidGlassEnabled)
-                        0.dp
-                    else
-                        viewController.view.safeAreaInsets.useContents { bottom.dp }
-                val newTabBarHeight = size.height.dp + safeAreaBottom
-
-                IosBarHeightCache.updateTabBarHeight(size.height.dp)
-
-                if (tabBarHeight != newTabBarHeight) {
-                    tabBarHeight = newTabBarHeight
-                    tabBarHeightConsistencyCounter = 0
-
-                    if (newTabBarHeight.value > 0f) {
-                        iosTabBarPaddingState.value = PaddingValues(bottom = newTabBarHeight)
-                    }
-                } else {
-                    tabBarHeightConsistencyCounter++
-                }
-            }
-
-            if (tabBarHeight.value > 0f && tabBarHeightConsistencyCounter > 6)
-                break
-
-            withFrameMillis { }
-        }
-    }
-
-    // Clean up the padding when this composable leaves the composition
-    DisposableEffect(Unit) {
-        onDispose {
-            iosTabBarPaddingState.value = PaddingValues()
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .onPlaced {
-                val positionInRootPx = it.positionInRoot()
-                positionInRoot = with(density) {
-                    DpOffset(
-                        x = positionInRootPx.x.toDp(),
-                        y = positionInRootPx.y.toDp(),
-                    )
-                }
-            }
-            .graphicsLayer {
-                translationX = (topLeft.x - positionInRoot.x).toPx()
-                translationY = (topLeft.y - positionInRoot.y).toPx()
-            }
-            .width(tabBarWidth)
-            .height(tabBarHeight)
+/** Inside an [AdaptiveBarHostUIViewController] the container's tab bar shows [bar]. */
+@Composable
+private fun PublishTabBar(scaffold: HostedScaffold, bar: HostedTabBar, onItemSelected: (Int) -> Unit) {
+    val currentOnItemSelected by rememberUpdatedState(onItemSelected)
+    SideEffect { scaffold.host.setTabSelection(scaffold) { currentOnItemSelected(it) } }
+    PublishHostedBar(
+        scaffold = scaffold,
+        publish = { it.copy(tabBar = bar) },
+        withdraw = { it.copy(tabBar = null) },
     )
 }
+
+/** The most tabs a `UITabBarController` shows on an iPhone without its "More" tab. */
+private const val MAX_HOSTED_TABS = 5

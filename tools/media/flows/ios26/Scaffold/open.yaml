@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Top bar, tab bar and content insets together"
+    direction: DOWN
+- tapOn: "Top bar, tab bar and content insets together"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: AdaptiveScaffold

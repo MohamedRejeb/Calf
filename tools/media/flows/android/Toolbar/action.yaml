@@ -1,0 +1,7 @@
+appId: ${APP_ID}
+---
+- tapOn: "Bold"
+- tapOn: "Underline"
+- tapOn: "Italic"
+- tapOn: "Bold"
+- tapOn: "Italic"

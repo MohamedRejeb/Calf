@@ -1,0 +1,22 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Pick, edit and save a file back to disk"
+    direction: DOWN
+- tapOn: "Pick, edit and save a file back to disk"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- tapOn: "Choose photo"
+- runFlow: ../_sleep.yaml
+- takeScreenshot: FileSaver-picker
+- tapOn:
+    point: "20%,38%"
+- runFlow: ../_sleep.yaml
+- takeScreenshot: FileSaver-picked
+- tapOn: "Save photo"
+- runFlow: ../_sleep.yaml
+- takeScreenshot: FileSaver-system

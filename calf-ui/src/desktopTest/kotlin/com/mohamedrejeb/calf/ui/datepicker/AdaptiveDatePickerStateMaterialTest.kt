@@ -169,4 +169,62 @@ class AdaptiveDatePickerStateMaterialTest {
         assertEquals(march, state.selectableDates)
         assertNull(state.selectedDateMillis)
     }
+
+    @Test
+    fun `displayed month is the start of the month it is set to`() {
+        val state = state()
+
+        state.displayedMonthMillis = MAR_15_2026
+
+        assertEquals(MAR_1_2026, state.displayedMonthMillis)
+        assertEquals(MAR_1_2026, state.datePickerState.displayedMonthMillis)
+    }
+
+    @Test
+    fun `displayed month outside the year range is ignored`() {
+        val state = state()
+        state.displayedMonthMillis = MAR_15_2026
+
+        state.displayedMonthMillis = JAN_1_1870
+
+        assertEquals(MAR_1_2026, state.displayedMonthMillis)
+    }
+
+    @Test
+    fun `exposes the year range, the display mode and the default locale`() {
+        val state = state()
+
+        assertEquals(DatePickerDefaults.YearRange, state.yearRange)
+        assertEquals(UIKitDisplayMode.Picker, state.initialUIKitDisplayMode)
+        assertEquals(getCalendarLocalDefault(), state.locale)
+    }
+
+    @Test
+    fun `saver round-trips the displayed month`() {
+        val saver = AdaptiveDatePickerState.Saver()
+        val original = state()
+        original.displayedMonthMillis = MAR_15_2026
+
+        val saved = requireNotNull(with(saver) { SaverScope { true }.save(original) })
+        val restored = requireNotNull(saver.restore(saved))
+
+        assertEquals(MAR_1_2026, restored.displayedMonthMillis)
+        assertNull(restored.selectedDateMillis)
+    }
+
+    @Test
+    fun `setting the displayed month scrolls the calendar to it`() = runComposeUiTest {
+        val state = state()
+        state.displayedMonthMillis = JAN_1_2025
+        setContent {
+            AdaptiveDatePicker(state = state)
+        }
+        waitForIdle()
+        assertTrue(onAllNodes(dayCellMatcher(MAR_14_2026)).fetchSemanticsNodes().isEmpty())
+
+        state.displayedMonthMillis = MAR_15_2026
+        waitForIdle()
+
+        dayCell(MAR_14_2026).assertIsEnabled()
+    }
 }

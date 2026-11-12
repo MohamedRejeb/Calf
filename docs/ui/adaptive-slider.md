@@ -2,9 +2,9 @@
 
 `AdaptiveSlider` is a slider composable that adapts to the platform it is running on. On Android, Desktop, and Web, it uses the Material `Slider`. On iOS < 26, it uses a Cupertino-style slider, and on iOS 26+, it uses a Liquid Glass slider.
 
-| Material (Android, Desktop, Web)                                               | Cupertino (iOS < 26)                                                    | Liquid Glass (iOS 26+)                                                                    |
-|--------------------------------------------------------------------------------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| ![AdaptiveSlider Material](../images/gif/AdaptiveSlider-material.gif)          | ![AdaptiveSlider iOS](../images/gif/AdaptiveSlider-ios.gif)            | ![AdaptiveSlider Liquid Glass](../images/gif/AdaptiveSlider-ios-liquid-glass.gif)         |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveSlider material](../images/gif/AdaptiveSlider-material.gif) | ![AdaptiveSlider ios](../images/gif/AdaptiveSlider-ios.gif) | ![AdaptiveSlider ios-liquid-glass](../images/gif/AdaptiveSlider-ios-liquid-glass.gif) |
 
 ## Usage
 
@@ -30,6 +30,8 @@ AdaptiveSlider(
 | `onValueChangeFinished` | Called when the user finishes changing the value (e.g., lifts finger).                          |
 | `colors`                | The colors for the slider on Material platforms. Uses `SliderDefaults.colors()` by default.     |
 | `interactionSource`     | The `MutableInteractionSource` for the slider.                                                  |
+| `thumb`                 | A custom thumb, called with the `SliderState`; `null` keeps `SliderDefaults.Thumb`. Material only, ignored on iOS. |
+| `track`                 | A custom track, called with the `SliderState`; `null` keeps `SliderDefaults.Track`. Material only, ignored on iOS. |
 
 ## Example
 
@@ -69,6 +71,20 @@ AdaptiveSlider(
     onValueChange = { brightness = it },
     onValueChangeFinished = {
         println("Brightness set to: $brightness")
+    },
+)
+
+// Custom track: the thumb and track slots are Material only, iOS keeps the native slider
+AdaptiveSlider(
+    value = brightness,
+    onValueChange = { brightness = it },
+    track = { sliderState ->
+        SliderDefaults.Track(
+            sliderState = sliderState,
+            modifier = Modifier.height(4.dp),
+            thumbTrackGapSize = 0.dp,
+            drawStopIndicator = null,
+        )
     },
 )
 

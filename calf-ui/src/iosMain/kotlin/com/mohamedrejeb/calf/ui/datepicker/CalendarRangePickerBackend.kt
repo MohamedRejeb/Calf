@@ -60,15 +60,10 @@ internal class CalendarRangePickerBackend(
     val view: UIView
         get() = host.calendarView
 
-    /** Width divided by height of the calendar, or 0 when it has no intrinsic size yet. */
-    val aspectRatio: Float
-
     init {
         host.calendarView.selectionBehavior = multiSelection
         render(animated = false)
         selection.start?.let { host.showMonth(it, animated = false) }
-        host.calendarView.sizeToFit()
-        aspectRatio = host.calendarView.aspectRatioOrZero()
     }
 
     private fun onTap(utcTimeMillis: Long) {

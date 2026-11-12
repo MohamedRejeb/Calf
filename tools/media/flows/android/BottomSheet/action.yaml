@@ -1,0 +1,10 @@
+appId: ${APP_ID}
+---
+- tapOn: "Share"
+- waitForAnimationToEnd
+- swipe:
+    start: 50%, 70%
+    end: 50%, 20%
+    duration: 900
+- waitForAnimationToEnd
+- tapOn: "Done"

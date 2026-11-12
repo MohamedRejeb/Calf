@@ -18,6 +18,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.window.DialogProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,11 +36,16 @@ actual fun AdaptiveCompactDatePicker(
     materialDismissText: String,
     materialTitle: (@Composable () -> Unit)?,
     materialHeadline: (@Composable () -> Unit)?,
+    materialShowModeToggle: Boolean,
+    materialFocusRequester: FocusRequester?,
+    materialDialogShape: Shape,
+    materialDialogTonalElevation: Dp,
+    materialDialogProperties: DialogProperties,
 ) {
     var isDialogOpen by rememberSaveable { mutableStateOf(false) }
 
     val label = state.selectedDateMillis
-        ?.let { dateFormatter.formatDate(it, getCalendarLocalDefault()) }
+        ?.let { dateFormatter.formatDate(it, state.locale) }
         ?: materialPlaceholder
 
     OutlinedButton(
@@ -71,7 +80,10 @@ actual fun AdaptiveCompactDatePicker(
                 Text(materialDismissText)
             }
         },
+        shape = materialDialogShape,
+        tonalElevation = materialDialogTonalElevation,
         colors = colors,
+        properties = materialDialogProperties,
     ) {
         DatePicker(
             state = dialogState,
@@ -80,6 +92,7 @@ actual fun AdaptiveCompactDatePicker(
                 DatePickerDefaults.DatePickerTitle(
                     displayMode = dialogState.displayMode,
                     modifier = Modifier.padding(DatePickerTitlePadding),
+                    contentColor = colors.titleContentColor,
                 )
             },
             headline = materialHeadline ?: {
@@ -88,20 +101,26 @@ actual fun AdaptiveCompactDatePicker(
                     displayMode = dialogState.displayMode,
                     dateFormatter = dateFormatter,
                     modifier = Modifier.padding(DatePickerHeadlinePadding),
+                    contentColor = colors.headlineContentColor,
                 )
             },
+            showModeToggle = materialShowModeToggle,
             colors = colors,
+            focusRequester = materialFocusRequester,
         )
     }
 }
 
-/** A Material3 state seeded from this state that keeps following its rule. */
+/**
+ * A Material3 state seeded from this state that keeps following its rule. The dialog opens on the
+ * selected day's month, or on [AdaptiveDatePickerState.displayedMonthMillis] while nothing is selected.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 private fun AdaptiveDatePickerState.newDialogState(): DatePickerState {
     val scratch = DatePickerState(
-        locale = getCalendarLocalDefault(),
+        locale = locale,
         initialSelectedDateMillis = selectedDateMillis,
-        initialDisplayedMonthMillis = selectedDateMillis,
+        initialDisplayedMonthMillis = selectedDateMillis ?: displayedMonthMillis,
         yearRange = yearRange,
         initialDisplayMode = displayMode,
     )

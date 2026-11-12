@@ -1,0 +1,21 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Native tabs, stacks and split view from one back stack"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "Native tabs, stacks and split view from one back stack"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveNavigation
+- tapOn: "Mail"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveNavigation-mail
+- tapOn: "Priya Shah"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveNavigation-message
+- tapOn: "Home"

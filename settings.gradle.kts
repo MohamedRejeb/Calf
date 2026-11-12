@@ -51,6 +51,8 @@ include(
     ":calf-maps",
     ":calf-camera-picker",
     ":calf-share",
+    ":calf-foldable",
+    ":calf-foldable-navigation3",
     // Sample modules
     ":sample:android",
     ":sample:desktop",

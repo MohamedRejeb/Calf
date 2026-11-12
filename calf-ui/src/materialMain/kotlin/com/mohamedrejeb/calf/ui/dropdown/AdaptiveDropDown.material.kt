@@ -36,6 +36,14 @@ actual fun BoxScope.AdaptiveDropDown(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         modifier = modifier,
+        offset = offset,
+        scrollState = scrollState,
+        properties = properties,
+        shape = shape,
+        containerColor = containerColor,
+        tonalElevation = tonalElevation,
+        shadowElevation = shadowElevation,
+        border = border,
         content = materialContent,
     )
 }

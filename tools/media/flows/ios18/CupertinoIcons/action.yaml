@@ -1,0 +1,10 @@
+appId: ${APP_ID}
+---
+- tapOn: "Arrows"
+- waitForAnimationToEnd
+- tapOn: "Communication"
+- waitForAnimationToEnd
+- tapOn: "Devices"
+- waitForAnimationToEnd
+- tapOn: "All"
+- waitForAnimationToEnd

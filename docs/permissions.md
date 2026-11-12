@@ -131,9 +131,9 @@ if (multiplePermissionsState.allPermissionsGranted) {
 }
 ```
 
-| Android                                                      | iOS                                                  |
-|--------------------------------------------------------------|------------------------------------------------------|
-| ![Permission Dialog Android](images/Permissions-android.png) | ![Permission Dialog iOS](images/Permissions-ios.png) |
+| The permission prompt (Android) | The permission prompt (iOS) |
+| --- | --- |
+| ![The permission prompt Android](images/Permissions-material-prompt.png) | ![The permission prompt iOS](images/Permissions-ios-liquid-glass-prompt.png) |
 
 ## Permissions Reference
 

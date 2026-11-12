@@ -28,11 +28,26 @@ Add the following dependencies to your module `build.gradle.kts` file:
 // For Adaptive UI components
 api("com.mohamedrejeb.calf:calf-ui:{{ calf_version }}")
 
+// For Adaptive Navigation (Navigation 3 with native iOS stacks and tabs)
+implementation("com.mohamedrejeb.calf:calf-navigation:{{ calf_version }}")
+
 // For WebView
 implementation("com.mohamedrejeb.calf:calf-webview:{{ calf_version }}")
 
 // For FilePicker
 implementation("com.mohamedrejeb.calf:calf-file-picker:{{ calf_version }}")
+
+// For Foldables and iPhone Duo (fold state, panes; the Navigation 3 list-detail strategy)
+implementation("com.mohamedrejeb.calf:calf-foldable:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-foldable-navigation3:{{ calf_version }}")
+
+// For the camera, the share sheet and files
+implementation("com.mohamedrejeb.calf:calf-camera-picker:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-share:{{ calf_version }}")
+implementation("com.mohamedrejeb.calf:calf-io:{{ calf_version }}")
+
+// For Cupertino icons on every platform
+implementation("com.mohamedrejeb.calf:calf-cupertino-icons:{{ calf_version }}")
 
 // For Permissions (pick only the modules you need — see Permissions docs)
 implementation("com.mohamedrejeb.calf:calf-permissions-core:{{ calf_version }}")

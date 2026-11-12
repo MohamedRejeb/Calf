@@ -31,9 +31,16 @@ compose.desktop {
             packageVersion = "1.0.0"
 
             macOS {
+                iconFile.set(project.file("icons/app.icns"))
                 jvmArgs(
                     "-Dapple.awt.application.appearance=system",
                 )
+            }
+            windows {
+                iconFile.set(project.file("icons/app.ico"))
+            }
+            linux {
+                iconFile.set(project.file("icons/app.png"))
             }
         }
     }

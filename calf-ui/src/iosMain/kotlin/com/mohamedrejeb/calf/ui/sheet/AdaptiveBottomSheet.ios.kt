@@ -4,17 +4,19 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalAbsoluteTonalElevation
 import androidx.compose.material3.ModalBottomSheetProperties
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentCompositionLocalContext
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -23,6 +25,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.uikit.LocalUIViewController
 import androidx.compose.ui.unit.Dp
+import com.mohamedrejeb.calf.ui.navigation.IosBarEdgeInsets
 import com.mohamedrejeb.calf.ui.utils.surfaceColorAtElevation
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +35,7 @@ actual fun AdaptiveBottomSheet(
     modifier: Modifier,
     adaptiveSheetState: AdaptiveSheetState,
     sheetMaxWidth: Dp,
+    sheetGesturesEnabled: Boolean,
     shape: Shape,
     containerColor: Color,
     contentColor: Color,
@@ -52,7 +56,14 @@ actual fun AdaptiveBottomSheet(
     val tonalElevationState = rememberUpdatedState(tonalElevation)
     val contentState = rememberUpdatedState(content)
     val onDismissRequestState = rememberUpdatedState(onDismissRequest)
-    val confirmValueChangeState = rememberUpdatedState(adaptiveSheetState.confirmValueChange)
+    val sheetStateState = rememberUpdatedState(adaptiveSheetState)
+
+    val presentationOptions = sheetPresentationOptions(
+        state = adaptiveSheetState,
+        hasDragHandle = dragHandle != null,
+        sheetGesturesEnabled = sheetGesturesEnabled,
+    )
+    val grabberShownState = rememberUpdatedState(presentationOptions.showsGrabber)
 
     val isDark = isSystemInDarkTheme()
 
@@ -64,30 +75,47 @@ actual fun AdaptiveBottomSheet(
             elevation = absoluteElevation
         )
 
+    val sheetSafeArea = remember { mutableStateOf(IosBarEdgeInsets.Zero) }
+
     val sheetManager = remember(currentUIViewController) {
         BottomSheetManager(
             parentUIViewController = currentUIViewController,
             isDark = isDark,
             containerColor = containerColorAtElevation,
             onDismiss = {
+                sheetStateState.value.onSheetGone()
                 onDismissRequestState.value.invoke()
             },
             confirmValueChange = {
-                confirmValueChangeState.value.invoke(it)
+                sheetStateState.value.confirmValueChange(it)
             },
+            onDetentChange = {
+                sheetStateState.value.onDetentSelected(it)
+            },
+            onSafeAreaChange = { sheetSafeArea.value = it },
             content = {
                 val sheetCompositionLocalContext = currentCompositionLocalContext
 
                 CompositionLocalProvider(compositionLocalContext.value) {
                     CompositionLocalProvider(sheetCompositionLocalContext) {
+                        // The surface fills the whole sheet, not just the content's height, so the
+                        // sheet is one colour from the grabber to the bottom edge whatever the detent.
                         Surface(
                             color = containerColorState.value,
                             contentColor = contentColorState.value,
                             tonalElevation = tonalElevationState.value,
-                            modifier = modifierState.value.fillMaxWidth()
+                            modifier = modifierState.value.fillMaxSize()
                         ) {
+                            val insets = sheetContentInsets(
+                                sheetSafeArea = sheetSafeArea.value,
+                                grabberShown = grabberShownState.value,
+                            )
                             Column(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    // Below the grabber, and out of what the sheet reaches under
+                                    // (an iPhone Duo's vertical bar).
+                                    .absolutePadding(left = insets.left, top = insets.top, right = insets.right),
                                 content = contentState.value,
                             )
                         }
@@ -105,13 +133,13 @@ actual fun AdaptiveBottomSheet(
         adaptiveSheetState.iosSheetManager = sheetManager
     }
 
-    LaunchedEffect(adaptiveSheetState, dragHandle) {
-        adaptiveSheetState.showDragHandle = dragHandle != null
-    }
-
     /**
      * Update ios sheet manager properties
      */
+
+    LaunchedEffect(sheetManager, presentationOptions) {
+        sheetManager.applyPresentationOptions(presentationOptions)
+    }
 
     LaunchedEffect(sheetManager, layoutDirection) {
         sheetManager.layoutDirection = layoutDirection
@@ -126,11 +154,11 @@ actual fun AdaptiveBottomSheet(
     }
 
     /**
-     * Show sheet on init
+     * Show sheet on init, at the value the state already holds
      */
 
     LaunchedEffect(adaptiveSheetState) {
-        adaptiveSheetState.show()
+        adaptiveSheetState.presentOnEnter()
     }
 
     /**
@@ -140,8 +168,7 @@ actual fun AdaptiveBottomSheet(
     DisposableEffect(Unit) {
         onDispose {
             sheetManager.hide()
-            adaptiveSheetState.iosCurrentValue = SheetValue.Hidden
-            adaptiveSheetState.iosTargetValue = SheetValue.Hidden
+            adaptiveSheetState.onSheetGone()
         }
     }
 }

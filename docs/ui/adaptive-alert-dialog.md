@@ -7,9 +7,9 @@ Calf provides two different alert dialog composables that adapt to the platform 
 
 Both composables use native `UIAlertController` on iOS and Material dialogs on other platforms (Android, Desktop, Web).
 
-| Material (Android, Desktop, Web)                                       | Cupertino (iOS < 26)                                                   | Liquid Glass (iOS 26+)                                                                    |
-|------------------------------------------------------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| ![Alert Dialog Android](../images/AdaptiveAlertDialog-android.png)     | ![Alert Dialog iOS](../images/AdaptiveAlertDialog-ios.png)             | ![Alert Dialog Liquid Glass](../images/AdaptiveAlertDialog-ios-liquid-glass.png)          |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveAlertDialog material](../images/AdaptiveAlertDialog-material.png) | ![AdaptiveAlertDialog ios](../images/AdaptiveAlertDialog-ios.png) | ![AdaptiveAlertDialog ios-liquid-glass](../images/AdaptiveAlertDialog-ios-liquid-glass.png) |
 
 ## AdaptiveAlertDialog
 
@@ -180,9 +180,9 @@ if (showActionSheetDialog) {
 }
 ```
 
-| iOS Action Sheet (Cupertino, iOS < 26)                                          | iOS Action Sheet (Liquid Glass, iOS 26+)                                                                  |
-|---------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| ![iOS Action Sheet](../images/AdaptiveAlertDialog-ios-action-sheet.png)         | ![iOS Action Sheet Liquid Glass](../images/AdaptiveAlertDialog-ios-liquid-glass-action-sheet.png)         |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveAlertDialog material](../images/AdaptiveAlertDialog-material-action-sheet.png) | ![AdaptiveAlertDialog ios](../images/AdaptiveAlertDialog-ios-action-sheet.png) | ![AdaptiveAlertDialog ios-liquid-glass](../images/AdaptiveAlertDialog-ios-liquid-glass-action-sheet.png) |
 
 ## Dialog with Text Fields (iOS)
 
@@ -244,9 +244,9 @@ if (showComplexDialog) {
 }
 ```
 
-| iOS Dialog with Text Fields                                                  |
-|------------------------------------------------------------------------------|
-| ![iOS Dialog with Text Fields](../images/AdaptiveAlertDialog-ios-with-text-field.png) |
+| Material (Android, Desktop, Web) | Cupertino (iOS < 26) | Liquid Glass (iOS 26+) |
+| --- | --- | --- |
+| ![AdaptiveAlertDialog material](../images/AdaptiveAlertDialog-material-text-field.png) | ![AdaptiveAlertDialog ios](../images/AdaptiveAlertDialog-ios-text-field.png) | ![AdaptiveAlertDialog ios-liquid-glass](../images/AdaptiveAlertDialog-ios-liquid-glass-text-field.png) |
 
 ## Customizing Action Styles (iOS)
 
@@ -273,3 +273,11 @@ val actions = listOf(
     )
 )
 ```
+
+## Placement on iPad and iPhone Duo
+
+The alert is a `UIAlertController`, and iOS decides where it goes: centred on the window (on an iPhone Duo opened flat, across the fold), or on a half-open iPhone Duo in the leading pane. Apple's own split-view apps behave the same way. iOS offers no way to move an alert into the column that raised it: it ignores the presentation context and the presentation style, and the iOS 27 sheet placement does not exist for alerts.
+
+The action-sheet style (`AlertDialogIosStyle.ActionSheet`) becomes a popover on an iPad or an open iPhone Duo. Calf centres that popover, without an arrow, in the column that raised it: the detail column of a calf-navigation split view, or with the bar host the pane of the screen that owns the bars. On compact width it slides up from the bottom as usual.
+
+![The action-sheet style on an open iPhone Duo, raised from the detail column and centred in it](../images/AdaptiveAlertDialog-duo-open-action-sheet.png)

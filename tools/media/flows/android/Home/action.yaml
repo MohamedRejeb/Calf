@@ -1,0 +1,8 @@
+appId: ${APP_ID}
+---
+- swipe:
+    direction: UP
+    duration: 1200
+- swipe:
+    direction: DOWN
+    duration: 1200

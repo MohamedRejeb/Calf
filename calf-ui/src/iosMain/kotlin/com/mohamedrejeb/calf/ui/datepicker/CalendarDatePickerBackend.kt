@@ -53,7 +53,6 @@ internal class CalendarDatePickerBackend(
             selection.setSelectedDate(utcDayToDateComponents(millis), animated = false)
             host.showMonth(millis, animated = false)
         }
-        host.calendarView.sizeToFit()
     }
 
     override fun setSelectedDate(utcTimeMillis: Long?) {
@@ -62,6 +61,10 @@ internal class CalendarDatePickerBackend(
 
         selection.setSelectedDate(utcTimeMillis?.let(::utcDayToDateComponents), animated = true)
         utcTimeMillis?.let { millis -> host.showMonth(millis, animated = true) }
+    }
+
+    override fun showMonth(utcTimeMillis: Long) {
+        host.showMonth(utcTimeMillis, animated = true)
     }
 
     override fun applyDateBounds(minDateMillis: Long?, maxDateMillis: Long?) {

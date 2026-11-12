@@ -16,6 +16,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -46,6 +47,7 @@ fun CupertinoSwitch(
 
     Column(
         modifier
+            .minimumInteractiveComponentSize()
             .toggleable(
                 value = checked,
                 onValueChange = {

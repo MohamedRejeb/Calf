@@ -1,0 +1,6 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- takeScreenshot: Home

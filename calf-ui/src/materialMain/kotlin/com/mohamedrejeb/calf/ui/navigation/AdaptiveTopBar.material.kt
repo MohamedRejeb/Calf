@@ -1,11 +1,11 @@
 package com.mohamedrejeb.calf.ui.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,6 +29,7 @@ actual fun AdaptiveTopBar(
     windowInsets: WindowInsets,
     colors: TopAppBarColors,
     scrollBehavior: TopAppBarScrollBehavior?,
+    contentPadding: PaddingValues,
     iosTitle: String,
     iosLeadingItems: List<UIKitUIBarButtonItem>,
     iosTrailingItems: List<UIKitUIBarButtonItem>,
@@ -43,5 +44,6 @@ actual fun AdaptiveTopBar(
         windowInsets = windowInsets,
         colors = colors,
         scrollBehavior = scrollBehavior,
+        contentPadding = contentPadding,
     )
 }

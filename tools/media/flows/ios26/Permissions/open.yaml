@@ -1,0 +1,21 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+    permissions:
+      all: unset
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Ask for and track runtime permissions"
+    direction: DOWN
+- tapOn: "Ask for and track runtime permissions"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- tapOn: "Ask for camera and microphone"
+- runFlow: ../_sleep.yaml
+- takeScreenshot: Permissions-prompt
+# leave no system alert behind for the next flow
+- tapOn:
+    text: "Allow"
+    optional: true

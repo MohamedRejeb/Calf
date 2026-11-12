@@ -75,12 +75,13 @@ actual fun WebView(
 
                 addEventListener("load", { _: Event ->
                     state.loadingState = LoadingState.Finished
-                    // Try to read title (only works same-origin)
+                    // The title and the final URL are readable only for a same-origin page; a
+                    // cross-origin page keeps the URL that was asked for, never a stale one.
                     try {
                         state.pageTitle = contentDocument?.title
-                        state.lastLoadedUrl = contentWindow?.location?.href
+                        state.lastLoadedUrl = contentWindow?.location?.href ?: src
                     } catch (_: Throwable) {
-                        // Cross-origin: cannot access contentDocument/contentWindow.location
+                        state.lastLoadedUrl = src
                     }
                     navigator.canGoBack = false
                     navigator.canGoForward = false

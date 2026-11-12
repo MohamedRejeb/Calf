@@ -1,0 +1,11 @@
+appId: ${APP_ID}
+---
+- tapOn:
+    text: "Sync"
+    index: 0
+- tapOn:
+    text: "Sync"
+    index: 0
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveCircularProgressIndicator-done
+- runFlow: ../_sleep.yaml

@@ -3,7 +3,6 @@
 package com.mohamedrejeb.calf.ui.datepicker
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
@@ -16,7 +15,6 @@ import com.mohamedrejeb.calf.ui.utils.toUIColor
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.UIKit.UIDatePicker
-import platform.UIKit.UIDatePickerMode
 import platform.UIKit.UIDatePickerStyle
 import platform.UIKit.UIView
 
@@ -75,10 +73,6 @@ class DatePickerManager internal constructor(
     val view: UIView
         get() = backend.view
 
-    /** Width divided by height of the native view, or 0 when it has no intrinsic size yet. */
-    internal var aspectRatio by mutableFloatStateOf(0f)
-        private set
-
     /**
      * Intrinsic size of the native view in points, which equal dp on iOS. The compact picker
      * resizes with its date label, so it is measured again after every selection change.
@@ -86,11 +80,6 @@ class DatePickerManager internal constructor(
     internal var viewSize: DpSize by mutableStateOf(backend.view.currentSize())
         private set
 
-    init {
-        aspectRatio = backend.view.aspectRatioOrZero()
-            .takeIf { it > 0f }
-            ?: inlineDatePickerAspectRatio()
-    }
 
     internal fun applyColors(
         containerColor: Color,
@@ -122,6 +111,10 @@ class DatePickerManager internal constructor(
         remeasureCompactView()
     }
 
+    internal fun showMonth(utcTimeMillis: Long) {
+        backend.showMonth(utcTimeMillis)
+    }
+
     private fun remeasureCompactView() {
         if (presentation != IosDatePickerPresentation.Compact) return
         backend.view.sizeToFit()
@@ -143,14 +136,3 @@ private fun IosDatePickerPresentation.toUIDatePickerStyle(): UIDatePickerStyle =
 private fun UIView.currentSize(): DpSize =
     frame.useContents { DpSize(size.width.dp, size.height.dp) }
 
-internal fun UIView.aspectRatioOrZero(): Float =
-    frame.useContents {
-        if (size.height > 0.0) (size.width / size.height).toFloat() else 0f
-    }
-
-/** Size of a stock inline `UIDatePicker`, used when the calendar view reports no size yet. */
-internal fun inlineDatePickerAspectRatio(): Float =
-    UIDatePicker().apply {
-        datePickerMode = UIDatePickerMode.UIDatePickerModeDate
-        preferredDatePickerStyle = UIDatePickerStyle.UIDatePickerStyleInline
-    }.aspectRatioOrZero()

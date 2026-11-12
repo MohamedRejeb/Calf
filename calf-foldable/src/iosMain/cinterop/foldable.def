@@ -1,0 +1,115 @@
+package = com.mohamedrejeb.calf.foldable.cinterop
+language = Objective-C
+---
+#import <UIKit/UIKit.h>
+
+// The iOS 27.1 hinge and reserved-region APIs, reached at runtime.
+//
+// Kotlin/Native's platform libraries predate the iOS 27.1 SDK, and Calf must keep building with
+// Xcode 26. So nothing here names an SDK 27.1 declaration: classes are looked up by name, and the
+// protocols below only give clang the method signatures for the message sends. They are never
+// adopted by anything and cannot clash with UIKit's own @interface declarations when the 27.1
+// SDK is present. Every entry point returns an empty value on an iOS without the API.
+
+@protocol CalfFoldableHinge
+@property (nonatomic, readonly) NSInteger status;
+@property (nonatomic, readonly) CGFloat angle;
+@end
+
+@protocol CalfFoldableHingeUpdate
+@property (nonatomic, readonly, copy, nullable) id<CalfFoldableHinge> hinge;
+@end
+
+@protocol CalfFoldableHingeInteraction <UIInteraction>
+- (instancetype _Nonnull)initWithUpdateHandler:(void (^ _Nonnull)(id _Nonnull, id<CalfFoldableHingeUpdate> _Nonnull))updateHandler;
+@end
+
+@protocol CalfFoldableRegionKind
++ (id _Nonnull)occlusionRegionKind;
++ (id _Nonnull)divisionRegionKind;
+@end
+
+@protocol CalfFoldableRegion
+@property (nonatomic, readonly) CGRect frame;
+@property (nonatomic, readonly) UIEdgeInsets margins;
+@property (nonatomic, readonly, getter=isActive) BOOL active;
+@end
+
+@protocol CalfFoldableRegionQuerying
+- (NSArray<id<CalfFoldableRegion>> * _Nonnull)reservedRegionsOfKind:(id _Nonnull)kind options:(NSUInteger)options;
+@end
+
+// Values of `kind` in calf_foldable_reservedRegions.
+static const int CalfFoldableRegionKindDivision = 0;
+static const int CalfFoldableRegionKindOcclusion = 1;
+
+// UIViewReservedRegionQueryOptionsIncludeInactive
+static const NSUInteger CalfFoldableRegionQueryIncludeInactive = 1 << 0;
+
+static inline BOOL calf_foldable_isHingeApiAvailable(void) {
+    Class interactionClass = NSClassFromString(@"UIHingeInteraction");
+    return interactionClass != nil
+        && [interactionClass instancesRespondToSelector:NSSelectorFromString(@"initWithUpdateHandler:")];
+}
+
+static inline BOOL calf_foldable_isRegionsApiAvailable(void) {
+    return NSClassFromString(@"UIViewReservedRegionKind") != nil
+        && [UIView instancesRespondToSelector:NSSelectorFromString(@"reservedRegionsOfKind:options:")];
+}
+
+// A UIHingeInteraction, or nil before iOS 27.1. `handler` receives (hasHinge, UIHingeStatus raw
+// value, angle in radians). `hasHinge` is NO when iOS delivers a nil hinge: the interaction left a
+// hierarchy that provides hinge updates. The interaction keeps `handler` alive until it is released.
+static inline id<UIInteraction> _Nullable calf_foldable_makeHingeInteraction(void (^ _Nonnull handler)(BOOL, NSInteger, double)) {
+    if (!calf_foldable_isHingeApiAvailable()) return nil;
+    id<CalfFoldableHingeInteraction> allocated = [NSClassFromString(@"UIHingeInteraction") alloc];
+    return [allocated initWithUpdateHandler:^(id interaction, id<CalfFoldableHingeUpdate> update) {
+        id<CalfFoldableHinge> hinge = update.hinge;
+        BOOL hasHinge = hinge != nil;
+        NSInteger status = hasHinge ? hinge.status : 0;
+        double angle = hasHinge ? (double)hinge.angle : 0.0;
+        // UIKit declares the handler main-actor. The receiver writes UI state, so hold it to that
+        // even if a future iOS does not.
+        if (NSThread.isMainThread) {
+            handler(hasHinge, status, angle);
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{ handler(hasHinge, status, angle); });
+        }
+    }];
+}
+
+// The reserved regions of `view`, in its coordinate space and in points. One entry per region:
+// [x, y, width, height, marginTop, marginLeft, marginBottom, marginRight, isActive].
+// `frame` includes the margins. Empty before iOS 27.1.
+static inline NSArray<NSArray<NSNumber *> *> * _Nonnull calf_foldable_reservedRegions(UIView * _Nonnull view, int kind, BOOL includeInactive) {
+    if (!calf_foldable_isRegionsApiAvailable()) return @[];
+    Class<CalfFoldableRegionKind> kindClass = NSClassFromString(@"UIViewReservedRegionKind");
+    id kindObject = kind == CalfFoldableRegionKindOcclusion ? [kindClass occlusionRegionKind] : [kindClass divisionRegionKind];
+    NSUInteger options = includeInactive ? CalfFoldableRegionQueryIncludeInactive : 0;
+    NSArray<id<CalfFoldableRegion>> *regions = [(id<CalfFoldableRegionQuerying>)view reservedRegionsOfKind:kindObject options:options];
+    NSMutableArray<NSArray<NSNumber *> *> *result = [NSMutableArray arrayWithCapacity:regions.count];
+    for (id<CalfFoldableRegion> region in regions) {
+        CGRect frame = region.frame;
+        UIEdgeInsets margins = region.margins;
+        [result addObject:@[
+            @(frame.origin.x), @(frame.origin.y), @(frame.size.width), @(frame.size.height),
+            @(margins.top), @(margins.left), @(margins.bottom), @(margins.right),
+            @(region.isActive),
+        ]];
+    }
+    return result;
+}
+
+// Which of the iOS 27.1 classes and selectors the running iOS really has, one per line.
+static inline NSString * _Nonnull calf_foldable_runtimeReport(void) {
+    NSMutableArray<NSString *> *lines = [NSMutableArray array];
+    for (NSString *name in @[@"UIHingeInteraction", @"UIHingeInteractionUpdate", @"UIHinge",
+                             @"UIViewReservedRegion", @"UIViewReservedRegionKind", @"UIArrangementViewController"]) {
+        [lines addObject:[NSString stringWithFormat:@"class %@: %@", name, NSClassFromString(name) != nil ? @"yes" : @"no"]];
+    }
+    for (NSString *name in @[@"reservedRegionsOfKind:", @"reservedRegionsOfKind:options:"]) {
+        BOOL responds = [UIView instancesRespondToSelector:NSSelectorFromString(name)];
+        [lines addObject:[NSString stringWithFormat:@"-[UIView %@]: %@", name, responds ? @"yes" : @"no"]];
+    }
+    return [lines componentsJoinedByString:@"\n"];
+}

@@ -1,0 +1,30 @@
+appId: ${APP_ID}
+---
+- tapOn: "Lisbon"
+- waitForAnimationToEnd
+- tapOn: "Increment"
+- tapOn: "Increment"
+- swipe:
+    start: 50%, 80%
+    end: 50%, 30%
+    duration: 800
+- waitForAnimationToEnd
+- tapOn: "Open Dolomites"
+- waitForAnimationToEnd
+- swipe:
+    start: 50%, 80%
+    end: 50%, 30%
+    duration: 800
+- waitForAnimationToEnd
+- tapOn: "Back to Home"
+- waitForAnimationToEnd
+- tapOn: "Mail"
+- waitForAnimationToEnd
+- tapOn: "Explore"
+- waitForAnimationToEnd
+- tapOn: "Settings"
+- waitForAnimationToEnd
+- tapOn:
+    point: "18%,94%"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml

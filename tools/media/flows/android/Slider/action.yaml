@@ -1,0 +1,18 @@
+appId: ${APP_ID}
+---
+- swipe:
+    start: 70%, 34%
+    end: 20%, 34%
+    duration: 1200
+- swipe:
+    start: 60%, 44%
+    end: 90%, 44%
+    duration: 1200
+- swipe:
+    start: 40%, 55%
+    end: 88%, 55%
+    duration: 1200
+- swipe:
+    start: 20%, 34%
+    end: 75%, 34%
+    duration: 1200

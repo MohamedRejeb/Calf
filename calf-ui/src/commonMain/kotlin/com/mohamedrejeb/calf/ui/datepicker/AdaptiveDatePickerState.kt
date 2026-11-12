@@ -3,6 +3,7 @@ package com.mohamedrejeb.calf.ui.datepicker
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 
 /**
@@ -23,7 +24,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
  * remembered value) so the picker does not re-evaluate on every recomposition.
  */
 @Composable
-@ExperimentalMaterial3Api
 fun rememberAdaptiveDatePickerState(
     initialSelectedDateMillis: Long? = null,
     initialDisplayedMonthMillis: Long? = initialSelectedDateMillis,
@@ -86,25 +86,8 @@ expect class AdaptiveDatePickerState(
      * from the epoch.
      *
      * In case no date was selected or provided, the state will hold a `null` value.
-     *
-     * @see [setSelection]
      */
     var selectedDateMillis: Long?
-
-    /**
-     * Sets the selected date.
-     *
-     * @param dateMillis timestamp in _UTC_ milliseconds from the epoch that represents the date
-     * selection, or `null` to indicate no selection.
-     *
-     * @throws IllegalArgumentException in case the given timestamps do not fall within the year
-     * range this state was created with.
-     */
-    @Deprecated(
-        message = "Use selectedDateMillis property instead",
-        replaceWith = ReplaceWith("selectedDateMillis = dateMillis"),
-    )
-    fun setSelection(dateMillis: Long?)
 
     /**
      * A mutable state of [DisplayMode] that represents the current display mode of the UI
@@ -125,6 +108,30 @@ expect class AdaptiveDatePickerState(
      */
     var selectableDates: SelectableDates
 
+    /**
+     * A timestamp that represents the _start_ of the currently displayed month in _UTC_
+     * milliseconds from the epoch. Observable.
+     *
+     * Setting it moves the calendar to that month; a value whose year is outside [yearRange] is
+     * ignored. On Material platforms it also follows the month the user scrolls to. On iOS the
+     * 16+ inline calendar scrolls to it, and selecting a day moves it to that day's month, which
+     * is what the native calendar shows; iOS does not report the month the user scrolls to, and
+     * the wheels and the compact picker show no month, so there it is only stored.
+     */
+    var displayedMonthMillis: Long
+
+    /** The years the picker is limited to. */
+    val yearRange: IntRange
+
+    /** The [UIKitDisplayMode] the iOS picker was created with; Material platforms ignore it. */
+    val initialUIKitDisplayMode: UIKitDisplayMode
+
+    /**
+     * The locale used to format dates and to choose the input format: the system default on
+     * every platform, read when the state is created.
+     */
+    val locale: CalendarLocale
+
     companion object {
         /**
          * The default [Saver] implementation for [AdaptiveDatePickerState].
@@ -134,6 +141,47 @@ expect class AdaptiveDatePickerState(
         fun Saver(selectableDates: SelectableDates = DatePickerDefaults.AllDates): Saver<AdaptiveDatePickerState, Any>
     }
 }
+
+private const val SAVED_SELECTION_INDEX = 0
+private const val SAVED_FIRST_YEAR_INDEX = 1
+private const val SAVED_LAST_YEAR_INDEX = 2
+private const val SAVED_DISPLAY_MODE_INDEX = 3
+private const val SAVED_UIKIT_DISPLAY_MODE_INDEX = 4
+private const val SAVED_DISPLAYED_MONTH_INDEX = 5
+
+/**
+ * Saves the selection, the year range, both display modes and the displayed month; the platform
+ * [AdaptiveDatePickerState.Saver] implementations delegate to it. Lists saved before the
+ * displayed month was persisted restore the selection's month, as they always did.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+internal fun adaptiveDatePickerStateSaver(
+    selectableDates: SelectableDates,
+): Saver<AdaptiveDatePickerState, Any> =
+    listSaver(
+        save = {
+            listOf(
+                it.selectedDateMillis,
+                it.yearRange.first,
+                it.yearRange.last,
+                it.displayMode.value,
+                it.initialUIKitDisplayMode.value,
+                it.displayedMonthMillis,
+            )
+        },
+        restore = { value ->
+            val selectedDateMillis = value[SAVED_SELECTION_INDEX] as Long?
+            AdaptiveDatePickerState(
+                initialSelectedDateMillis = selectedDateMillis,
+                initialDisplayedMonthMillis = value.getOrNull(SAVED_DISPLAYED_MONTH_INDEX) as Long?
+                    ?: selectedDateMillis,
+                yearRange = IntRange(value[SAVED_FIRST_YEAR_INDEX] as Int, value[SAVED_LAST_YEAR_INDEX] as Int),
+                initialMaterialDisplayMode = displayModeFromValue(value[SAVED_DISPLAY_MODE_INDEX] as Int),
+                initialUIKitDisplayMode = uiKitDisplayModeFromValue(value[SAVED_UIKIT_DISPLAY_MODE_INDEX] as Int),
+                selectableDates = selectableDates,
+            )
+        },
+    )
 
 @OptIn(ExperimentalMaterial3Api::class)
 internal val DisplayMode.value: Int

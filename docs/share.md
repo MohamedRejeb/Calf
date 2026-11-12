@@ -2,6 +2,10 @@
 
 `calf-share` provides cross-platform content sharing using the platform's native share mechanism.
 
+| The share sheet (Android) | The share sheet (iOS) |
+| --- | --- |
+| ![The share sheet Android](images/Share-material-sheet.png) | ![The share sheet iOS](images/Share-ios-liquid-glass-sheet.png) |
+
 ## Installation
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.mohamedrejeb.calf/calf-share)](https://search.maven.org/search?q=g:com.mohamedrejeb.calf)

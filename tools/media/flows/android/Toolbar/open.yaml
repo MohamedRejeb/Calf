@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Liquid Glass toolbar and Material 3 Expressive"
+    direction: DOWN
+- tapOn: "Liquid Glass toolbar and Material 3 Expressive"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveToolbar

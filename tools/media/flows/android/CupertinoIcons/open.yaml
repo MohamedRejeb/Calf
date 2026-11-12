@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "1300+ SF Symbols style icons on every platform"
+    direction: DOWN
+- tapOn: "1300+ SF Symbols style icons on every platform"
+- waitForAnimationToEnd
+- takeScreenshot: CupertinoIcons

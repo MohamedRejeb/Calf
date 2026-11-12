@@ -1,32 +1,14 @@
-import androidx.compose.ui.window.ComposeUIViewController
 import com.mohamedrejeb.calf.sample.App
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.navigation.AdaptiveBarHostUIViewController
 import platform.UIKit.UIViewController
 
-fun MainViewController(): UIViewController {
-//    lateinit var uiViewController: UIViewController
-//    val uiNavigationController: UINavigationController by lazy {
-//        UINavigationController(rootViewController = uiViewController)
-//    }
-
-//    uiViewController = ComposeUIViewController {
-//        App(
-//            navigate = {
-//                println("kotlin navigationController")
-//                println("kotlin navigationController")
-//                println(uiViewController)
-//                println(uiViewController.navigationController)
-////                navigate()
-//                uiViewController.navigationController?.pushViewController(
-//                    SecondViewController(),
-//                    true
-//                )
-//            }
-//        )
-//    }
-
-//    savedUiViewController = uiViewController
-
-    return ComposeUIViewController {
+/**
+ * The bar host: screens on plain Compose navigation get their `AdaptiveScaffold` bars as UIKit
+ * container bars. The calf-navigation shell is unaffected (no hosted screen, no hosted bars).
+ */
+@OptIn(ExperimentalCalfUiApi::class)
+fun MainViewController(): UIViewController =
+    AdaptiveBarHostUIViewController {
         App()
     }
-}

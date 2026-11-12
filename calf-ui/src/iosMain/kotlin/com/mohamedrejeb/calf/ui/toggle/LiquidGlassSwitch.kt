@@ -4,6 +4,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -142,10 +143,23 @@ fun LiquidGlassSwitch(
 
     val disabledAlpha = if (enabled) 1f else LiquidGlassSwitchDefaults.DisabledAlpha
 
+    // The whole switch is the touch target, as with UISwitch: a tap anywhere on the track
+    // toggles it, and a drag anywhere moves the thumb. The gesture reads deltas, so where
+    // the finger lands does not matter.
     Box(
         contentAlignment = Alignment.CenterStart,
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .alpha(disabledAlpha)
+            .semantics(mergeDescendants = true) {
+                role = Role.Switch
+                toggleableState = ToggleableState(checked)
+                stateDescription = if (checked) "On" else "Off"
+                if (!enabled) {
+                    disabled()
+                }
+            }
+            .then(dampedDragAnimation.modifier)
     ) {
         Box(
             Modifier
@@ -167,15 +181,6 @@ fun LiquidGlassSwitch(
                         if (currentIsLtr) lerp(padding, padding + dragWidth, fraction)
                         else lerp(-padding, -(padding + dragWidth), fraction)
                 }
-                .semantics {
-                    role = Role.Switch
-                    toggleableState = ToggleableState(checked)
-                    stateDescription = if (checked) "On" else "Off"
-                    if (!enabled) {
-                        disabled()
-                    }
-                }
-                .then(dampedDragAnimation.modifier)
                 .drawBackdrop(
                     backdrop = rememberCombinedBackdrop(
                         backdrop,
@@ -231,8 +236,11 @@ fun LiquidGlassSwitch(
                         drawRect(Color.White.copy(alpha = 1f - progress))
                     }
                 )
-                .size(LiquidGlassSwitchDefaults.ThumbWidth, LiquidGlassSwitchDefaults.ThumbHeight)
-        )
+                .size(LiquidGlassSwitchDefaults.ThumbWidth, LiquidGlassSwitchDefaults.ThumbHeight),
+            contentAlignment = Alignment.Center,
+        ) {
+            thumbContent?.invoke()
+        }
     }
 }
 
@@ -291,6 +299,7 @@ internal fun LiquidGlassSwitchColors.thumbBorderColor(enabled: Boolean, checked:
  */
 object LiquidGlassSwitchDefaults {
 
+    /** iOS 26's toggle: a low track with a wide, oval glass thumb, not UISwitch's round one. */
     val TrackWidth = 64.dp
     val TrackHeight = 28.dp
     val TrackShape = RoundedCornerShape(50)

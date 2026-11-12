@@ -1,8 +1,19 @@
 plugins {
     id("compose.multiplatform")
+    // Generates the serializers of the Adaptive Navigation demo's @Serializable NavKeys.
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
+    // commonTest runs in the browser, which needs the Skiko runtime bundled by webpack.
+    withBrowserTestBundling()
+
+    android {
+        // Packs composeResources (the logo, and calf-cupertino-icons' font) into the APK. The AGP 9
+        // KMP library target leaves Android resources off by default.
+        androidResources.enable = true
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
@@ -21,6 +32,7 @@ kotlin {
         api(libs.compose.material3)
         implementation(libs.compose.material.icons.extended)
 
+        implementation(libs.compose.components.resources)
         implementation(libs.kotlinx.datetime)
 
         // Calf
@@ -33,6 +45,8 @@ kotlin {
         implementation(projects.calfNavigation)
         implementation(projects.calfCameraPicker)
         implementation(projects.calfShare)
+        implementation(projects.calfFoldable)
+        implementation(projects.calfFoldableNavigation3)
         implementation(projects.calfCupertinoIcons)
 
         // Coil
@@ -66,4 +80,17 @@ kotlin {
     sourceSets.wasmJsMain.dependencies {
         implementation(libs.ktor.client.wasm)
     }
+
+    sourceSets.commonTest.dependencies {
+        implementation(libs.kotlin.test)
+    }
+
+    sourceSets.desktopTest.dependencies {
+        implementation(libs.compose.ui.test)
+        implementation(compose.desktop.currentOs)
+    }
+}
+
+compose.resources {
+    packageOfResClass = "com.mohamedrejeb.calf.sample.resources"
 }

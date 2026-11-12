@@ -3,36 +3,37 @@
 package com.mohamedrejeb.calf.sample.screens
 
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DatePickerColors
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.EventBusy
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.sample.components.CodeSnippet
+import com.mohamedrejeb.calf.sample.components.DemoDivider
+import com.mohamedrejeb.calf.sample.components.DemoHeader
+import com.mohamedrejeb.calf.sample.components.DemoListCard
+import com.mohamedrejeb.calf.sample.components.DemoPage
+import com.mohamedrejeb.calf.sample.components.DemoRow
+import com.mohamedrejeb.calf.sample.components.DemoSection
+import com.mohamedrejeb.calf.sample.components.IconTile
 import com.mohamedrejeb.calf.sample.components.SampleScreenScaffold
 import com.mohamedrejeb.calf.sample.currentPlatform
-import com.mohamedrejeb.calf.ui.datepicker.AdaptiveCompactDatePicker
-import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
-import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDateRangePicker
+import com.mohamedrejeb.calf.sample.navigation.Screen
+import com.mohamedrejeb.calf.sample.ui.theme.Spacing
+import com.mohamedrejeb.calf.sample.ui.theme.TileAmber
 import com.mohamedrejeb.calf.ui.datepicker.DateBounds
 import com.mohamedrejeb.calf.ui.datepicker.UIKitDisplayMode
 import com.mohamedrejeb.calf.ui.datepicker.and
@@ -49,6 +50,18 @@ import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+
+private const val USAGE = """
+val state = rememberAdaptiveDatePickerState(
+    // Bookable from today, never on a weekend.
+    selectableDates = DateBounds(minDateMillis = todayMillis) and WeekdaysOnly,
+)
+
+AdaptiveDatePicker(state = state)          // the full calendar
+AdaptiveCompactDatePicker(state = state)   // a field that opens it
+
+val selected: Long? = state.selectedDateMillis
+"""
 
 private const val RANGE_LENGTH_DAYS = 30
 
@@ -72,21 +85,52 @@ private object WeekdaysOnly : SelectableDates {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerScreen(
-    navigateBack: () -> Unit
-) {
-    var rangeOption by remember { mutableStateOf(RangeOption.AnyDate) }
-    var weekdaysOnly by remember { mutableStateOf(false) }
+fun DatePickerScreen(navigateBack: () -> Unit) {
+    var rangeOption by rememberSaveable { mutableStateOf(RangeOption.AnyDate) }
+    var weekdaysOnly by rememberSaveable { mutableStateOf(false) }
+    val selectableDates = rememberSelectableDates(rangeOption, weekdaysOnly)
 
-    val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
-    val todayMillis = remember(today) {
-        today.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+    // Every picker on the page shares the same rule, so the options above restrict them all.
+    val departureState = rememberAdaptiveDatePickerState(selectableDates = selectableDates)
+    val stayState = rememberAdaptiveDateRangePickerState(selectableDates = selectableDates)
+    val tourState = rememberAdaptiveDatePickerState(selectableDates = selectableDates)
+    val returnState = rememberAdaptiveDatePickerState(
+        initialUIKitDisplayMode = UIKitDisplayMode.Wheels,
+        selectableDates = selectableDates,
+    )
+
+    SampleScreenScaffold(title = Screen.DatePicker.title, navigateBack = navigateBack) { padding ->
+        DemoPage(contentPadding = padding) {
+            DemoHeader(Screen.DatePicker)
+            BookableDaysSection(
+                rangeOption = rangeOption,
+                onRangeOptionChange = { rangeOption = it },
+                weekdaysOnly = weekdaysOnly,
+                onWeekdaysOnlyChange = { weekdaysOnly = it },
+            )
+            DepartureSection(state = departureState)
+            StaySection(state = stayState)
+            TourSection(state = tourState)
+            if (currentPlatform.isIOS) {
+                ReturnFlightSection(state = returnState)
+            }
+            DemoSection(title = "Usage") {
+                CodeSnippet(USAGE.trimIndent())
+            }
+        }
     }
+}
+
+/** The rule of the chosen options: a [DateBounds] for the range, combined with [WeekdaysOnly]. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun rememberSelectableDates(rangeOption: RangeOption, weekdaysOnly: Boolean): SelectableDates {
+    val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
+    val todayMillis = remember(today) { today.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds() }
     val endOfRangeMillis = remember(today) {
         today.plus(RANGE_LENGTH_DAYS, DateTimeUnit.DAY).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
     }
-
-    val selectableDates: SelectableDates = remember(rangeOption, weekdaysOnly, todayMillis, endOfRangeMillis) {
+    return remember(rangeOption, weekdaysOnly, todayMillis, endOfRangeMillis) {
         val bounds: SelectableDates = when (rangeOption) {
             RangeOption.AnyDate -> DatePickerDefaults.AllDates
             RangeOption.FromToday -> DateBounds(minDateMillis = todayMillis)
@@ -94,192 +138,42 @@ fun DatePickerScreen(
         }
         if (weekdaysOnly) bounds and WeekdaysOnly else bounds
     }
+}
 
-    val inlineState = rememberAdaptiveDatePickerState(selectableDates = selectableDates)
-    val compactState = rememberAdaptiveDatePickerState(selectableDates = selectableDates)
-    val rangeState = rememberAdaptiveDateRangePickerState(selectableDates = selectableDates)
-    val wheelsState = rememberAdaptiveDatePickerState(
-        initialUIKitDisplayMode = UIKitDisplayMode.Wheels,
-        selectableDates = selectableDates,
-    )
-
-    SampleScreenScaffold(
-        title = "Adaptive Date Picker",
-        navigateBack = navigateBack,
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Inline, compact and range date pickers backed by the native iOS controls " +
-                    "and the Material3 pickers. The controls below restrict every picker on this screen.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Selectable range",
-                style = MaterialTheme.typography.labelLarge,
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
+@Composable
+private fun BookableDaysSection(
+    rangeOption: RangeOption,
+    onRangeOptionChange: (RangeOption) -> Unit,
+    weekdaysOnly: Boolean,
+    onWeekdaysOnlyChange: (Boolean) -> Unit,
+) {
+    DemoSection(
+        title = "Bookable days",
+        footer = "Every picker on this page follows these rules: a DateBounds for the range, " +
+            "combined with a weekdays rule through and(). Days outside are greyed out.",
+    ) {
+        DemoListCard {
             Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s),
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = Spacing.l, vertical = Spacing.s),
             ) {
-                RangeOption.entries.forEachIndexed { index, option ->
+                RangeOption.entries.forEach { option ->
                     FilterChip(
                         selected = rangeOption == option,
-                        onClick = { rangeOption = option },
+                        onClick = { onRangeOptionChange(option) },
                         label = { Text(option.label) },
                     )
-                    if (index < RangeOption.entries.lastIndex) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Weekdays only",
-                    modifier = Modifier.weight(1f),
-                )
-                AdaptiveSwitch(
-                    checked = weekdaysOnly,
-                    onCheckedChange = { weekdaysOnly = it },
-                )
-            }
-
-            SectionDivider()
-
-            SectionTitle(
-                title = "Compact picker",
-                description = "A field that opens the calendar on tap.",
+            DemoDivider()
+            DemoRow(
+                title = "Weekdays only",
+                leading = { IconTile(icon = Icons.Outlined.EventBusy, color = TileAmber) },
+                trailing = { AdaptiveSwitch(checked = weekdaysOnly, onCheckedChange = onWeekdaysOnlyChange) },
             )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Selected: ${compactState.selectedDateMillis.toDateLabel()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f),
-                )
-                AdaptiveCompactDatePicker(
-                    state = compactState,
-                    colors = sampleDatePickerColors(),
-                )
-            }
-
-            SectionDivider()
-
-            SectionTitle(
-                title = "Range picker",
-                description = "Tap a start day, then an end day. Tap again to start a new range.",
-            )
-
-            Text(
-                text = "Range: ${rangeState.selectedStartDateMillis.toDateLabel()} " +
-                    "to ${rangeState.selectedEndDateMillis.toDateLabel()}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AdaptiveDateRangePicker(
-                state = rangeState,
-                colors = sampleDatePickerColors(),
-            )
-
-            SectionDivider()
-
-            SectionTitle(
-                title = "Inline picker",
-                description = "The full calendar, always visible.",
-            )
-
-            Text(
-                text = "Selected: ${inlineState.selectedDateMillis.toDateLabel()}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AdaptiveDatePicker(
-                state = inlineState,
-                colors = sampleDatePickerColors(),
-            )
-
-            if (currentPlatform.isIOS) {
-                SectionDivider()
-
-                SectionTitle(
-                    title = "Wheels picker (iOS)",
-                    description = "UIDatePicker wheels cannot grey out days: a rejected pick snaps " +
-                        "to the nearest selectable day.",
-                )
-
-                Text(
-                    text = "Selected: ${wheelsState.selectedDateMillis.toDateLabel()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                AdaptiveDatePicker(
-                    state = wheelsState,
-                    colors = sampleDatePickerColors(),
-                )
-            }
         }
     }
 }
 
-@Composable
-private fun SectionDivider() {
-    Spacer(modifier = Modifier.height(16.dp))
-    HorizontalDivider()
-    Spacer(modifier = Modifier.height(16.dp))
-}
-
-@Composable
-private fun SectionTitle(title: String, description: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.onSurface,
-    )
-    Spacer(modifier = Modifier.height(4.dp))
-    Text(
-        text = description,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun sampleDatePickerColors(): DatePickerColors =
-    DatePickerDefaults.colors(
-        containerColor = MaterialTheme.colorScheme.surface,
-    )
-
-private fun Long?.toDateLabel(): String =
-    this?.let { millis ->
-        Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC).date.toString()
-    } ?: "None"

@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "UISwitch on iOS, Material 3 elsewhere"
+    direction: DOWN
+- waitForAnimationToEnd
+- waitForAnimationToEnd
+- tapOn: "UISwitch on iOS, Material 3 elsewhere"
+- waitForAnimationToEnd
+- takeScreenshot: AdaptiveSwitch

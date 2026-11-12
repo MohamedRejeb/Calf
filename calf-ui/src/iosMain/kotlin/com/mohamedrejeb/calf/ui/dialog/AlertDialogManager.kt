@@ -6,6 +6,7 @@ import com.mohamedrejeb.calf.core.*
 import com.mohamedrejeb.calf.ui.dialog.uikit.*
 import com.mohamedrejeb.calf.ui.utils.*
 import kotlinx.cinterop.*
+import platform.CoreGraphics.CGRectMake
 import platform.UIKit.*
 import platform.darwin.NSObject
 import platform.objc.sel_registerName
@@ -46,6 +47,12 @@ class AlertDialogManager internal constructor(
      * would stop firing.
      */
     private val textFieldDelegates = mutableListOf<NSObject>()
+
+    /**
+     * The horizontal extent of the pane that raised the dialog, in the presenting view's points,
+     * when one Compose surface holds several panes; `null` to use the presenting view's column.
+     */
+    internal var anchorPane: () -> ClosedFloatingPointRange<Double>? = { null }
 
     /**
      * The ui view controller that is used to present the dialog.
@@ -163,6 +170,7 @@ class AlertDialogManager internal constructor(
         isAnimating = true
 
         dialogUIViewController.applyLayoutDirection(layoutDirection)
+        anchorActionSheet()
 
         parentUIViewController.presentViewController(
             viewControllerToPresent = dialogUIViewController,
@@ -182,6 +190,31 @@ class AlertDialogManager internal constructor(
                 }
             }
         )
+    }
+
+    /**
+     * UIKit shows the action-sheet style as a popover on regular width (iPad, an open iPhone Duo),
+     * and without a source it floats in the middle of the window, over another column. Centred on
+     * the raising column instead, without an arrow: there is no single control to point at.
+     * On compact width UIKit ignores it and slides the sheet up from the bottom.
+     */
+    @OptIn(ExperimentalForeignApi::class)
+    private fun anchorActionSheet() {
+        if (iosProperties.style != AlertDialogIosStyle.ActionSheet) return
+        val popover = dialogUIViewController.popoverPresentationController ?: return
+        val view = parentUIViewController.view
+        val presenter = view.safeAreaLayoutGuide.layoutFrame.useContents {
+            AnchorRect(
+                left = origin.x,
+                top = origin.y,
+                right = origin.x + size.width,
+                bottom = origin.y + size.height,
+            )
+        }
+        val anchor = actionSheetAnchor(presenter, anchorPane())
+        popover.sourceView = view
+        popover.sourceRect = CGRectMake(anchor.x, anchor.y, 1.0, 1.0)
+        popover.permittedArrowDirections = 0u
     }
 
     companion object {

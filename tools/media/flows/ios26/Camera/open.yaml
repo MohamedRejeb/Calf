@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Take a photo with the system camera"
+    direction: DOWN
+- tapOn: "Take a photo with the system camera"
+- waitForAnimationToEnd
+- runFlow: ../_sleep.yaml
+- takeScreenshot: CameraPicker

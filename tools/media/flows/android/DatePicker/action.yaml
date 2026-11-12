@@ -1,0 +1,11 @@
+appId: ${APP_ID}
+---
+- tapOn: "From today"
+- tapOn: "Pick a day"
+- waitForAnimationToEnd
+- tapOn:
+    point: "38%,63%"
+- tapOn: "OK"
+- waitForAnimationToEnd
+- tapOn: "Next 30 days"
+- tapOn: "Weekdays only"
