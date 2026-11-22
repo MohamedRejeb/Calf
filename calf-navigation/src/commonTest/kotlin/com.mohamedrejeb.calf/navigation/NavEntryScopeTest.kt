@@ -1,7 +1,12 @@
 package com.mohamedrejeb.calf.navigation
 
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mohamedrejeb.calf.navigation.internal.AppForegroundState
 import com.mohamedrejeb.calf.navigation.internal.NavEntryScope
 import kotlin.test.Test
@@ -16,6 +21,22 @@ class NavEntryScopeTest {
         override fun onCleared() {
             cleared = true
         }
+    }
+
+    private class HandleViewModel(val handle: SavedStateHandle) : ViewModel()
+
+    @Test
+    fun `a ViewModel can take a SavedStateHandle`() {
+        // The path viewModel { createSavedStateHandle() } and DI helpers such as koinViewModel()
+        // take: no explicit extras, so they come from the owner's defaults and must carry the
+        // registry owner and the store owner.
+        val scope = NavEntryScope()
+        val factory = viewModelFactory { initializer { HandleViewModel(createSavedStateHandle()) } }
+
+        val viewModel = ViewModelProvider.create(scope, factory)[HandleViewModel::class]
+
+        viewModel.handle["key"] = "value"
+        assertEquals("value", viewModel.handle.get<String>("key"))
     }
 
     @Test

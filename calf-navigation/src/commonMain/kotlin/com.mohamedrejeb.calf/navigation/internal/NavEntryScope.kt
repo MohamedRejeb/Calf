@@ -1,10 +1,18 @@
 package com.mohamedrejeb.calf.navigation.internal
 
+import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.SAVED_STATE_REGISTRY_OWNER_KEY
+import androidx.lifecycle.SavedStateViewModelFactory
+import androidx.lifecycle.VIEW_MODEL_STORE_OWNER_KEY
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.enableSavedStateHandles
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
@@ -31,7 +39,8 @@ import androidx.savedstate.SavedStateRegistryOwner
 internal class NavEntryScope :
     LifecycleOwner,
     ViewModelStoreOwner,
-    SavedStateRegistryOwner {
+    SavedStateRegistryOwner,
+    HasDefaultViewModelProviderFactory {
 
     // Unsafe = no main-thread enforcement; UIKit drives it from the main thread anyway.
     private val lifecycleRegistry = LifecycleRegistry.createUnsafe(this)
@@ -44,6 +53,23 @@ internal class NavEntryScope :
     override val lifecycle: Lifecycle get() = lifecycleRegistry
 
     override val viewModelStore: ViewModelStore = ViewModelStore()
+
+    // Like Navigation 3's ViewModel entry decorator: a ViewModel that takes a SavedStateHandle
+    // (koinViewModel(), viewModel { createSavedStateHandle() }) needs this owner's registry in its
+    // CreationExtras, and the registry needs the SavedStateHandles provider installed while the
+    // lifecycle is still INITIALIZED.
+    init {
+        enableSavedStateHandles()
+    }
+
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory = SavedStateViewModelFactory()
+
+    override val defaultViewModelCreationExtras: CreationExtras
+        get() =
+            MutableCreationExtras().apply {
+                this[SAVED_STATE_REGISTRY_OWNER_KEY] = this@NavEntryScope
+                this[VIEW_MODEL_STORE_OWNER_KEY] = this@NavEntryScope
+            }
 
     override val savedStateRegistry: SavedStateRegistry get() =
         savedStateRegistryController.savedStateRegistry
