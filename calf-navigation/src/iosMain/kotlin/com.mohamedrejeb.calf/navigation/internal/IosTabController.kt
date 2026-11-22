@@ -153,7 +153,7 @@ internal class IosTabController<T : NavKey>(
      * and the nav host mirrors that. UIKit has no such rule for a split view, so that pop is ours.
      */
     private fun onUiKitSelected(selected: UIViewController) {
-        val (tab, host) = hosts.entries.firstOrNull { it.value.rootViewController === selected } ?: return
+        val (tab, host) = hosts.entries.firstOrNull { isSameController(it.value.rootViewController, selected) } ?: return
         when {
             tab != state.selectedTab -> state.selectFromPlatform(tab)
             host is IosSplitController -> state.popToRoot(tab)
@@ -169,6 +169,13 @@ private fun IosTabItem.toUITabBarItem(index: Int, density: Float): UITabBarItem 
     UIKitUITabBarItem(title = title, image = image, selectedImage = selectedImage)
         .toUITabBarItem(tag = index.toLong(), density = density)
         .also { it.badgeValue = badge }
+
+/**
+ * Whether UIKit handed back [ours]. Compared with `isEqual:`, not by reference: a controller class
+ * that is not subclassed in Kotlin (the split view of a list-detail tab) comes back from UIKit as a
+ * new Kotlin wrapper, so `===` never matched it and a tap on that tab never reached the state.
+ */
+internal fun isSameController(ours: UIViewController, fromUiKit: UIViewController): Boolean = ours == fromUiKit
 
 private class TabBarControllerDelegate(
     private val onSelected: (UIViewController) -> Unit,
