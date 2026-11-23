@@ -23,6 +23,10 @@ kotlin {
         implementation(compose.desktop.currentOs)
     }
 
+    sourceSets.iosTest.dependencies {
+        implementation(libs.compose.ui.test)
+    }
+
     sourceSets.androidMain.dependencies {
         implementation(libs.activity.compose)
         implementation(libs.kotlinx.coroutines.android)

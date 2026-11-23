@@ -141,6 +141,7 @@ actual fun BoxScope.AdaptiveDropDown(
         modifier = modifier
             .matchParentSize()
             .onPlaced {
+                if (!it.isAttached) return@onPlaced
                 val position = it.positionInWindow()
                 posX = position.x.toDouble() / density.density
                 posY = position.y.toDouble() / density.density
