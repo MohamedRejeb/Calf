@@ -186,6 +186,7 @@ actual fun AdaptiveNavigationBar(
     Box(
         modifier = Modifier
             .onPlaced {
+                if (!it.isAttached) return@onPlaced
                 val positionInRootPx = it.positionInRoot()
                 positionInRoot = with(density) {
                     DpOffset(
